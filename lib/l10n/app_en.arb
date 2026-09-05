@@ -1,0 +1,137 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Quizoo",
+  "@appTitle": {
+    "description": "The application name."
+  },
+
+  "homeGreeting": "Hey, {name} 👋",
+  "@homeGreeting": {
+    "description": "S-04/S-05 Home top bar greeting.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Waleed"
+      }
+    }
+  },
+  "homeSubtitle": "Level {level} · {title}",
+  "@homeSubtitle": {
+    "description": "S-04 Home top bar second line: player level and rank title.",
+    "placeholders": {
+      "level": { "type": "int", "example": "12" },
+      "title": { "type": "String", "example": "Curious Mind" }
+    }
+  },
+  "homePopularThisWeek": "🔥 Popular this week",
+  "@homePopularThisWeek": { "description": "S-04 Home popular rail heading." },
+  "homeCategories": "Categories",
+  "@homeCategories": { "description": "S-04 Home category chip row heading." },
+  "homeDailyChallenge": "🎯 Daily challenge",
+  "@homeDailyChallenge": { "description": "S-04 Home daily banner heading." },
+  "homeSeeAll": "See all",
+  "@homeSeeAll": { "description": "Trailing link on a Home section header." },
+  "homeLevelProgress": "Lv {cleared}/{total}",
+  "@homeLevelProgress": {
+    "description": "S-04 subcategory tile progress caption.",
+    "placeholders": {
+      "cleared": { "type": "int", "example": "7" },
+      "total": { "type": "int", "example": "20" }
+    }
+  },
+  "homeNew": "New",
+  "@homeNew": { "description": "Caption on a subcategory tile never played." },
+
+  "tabHome": "Home",
+  "@tabHome": { "description": "Shell tab 1." },
+  "tabRanks": "Ranks",
+  "@tabRanks": { "description": "Shell tab 2." },
+  "tabPlay": "Play",
+  "@tabPlay": { "description": "Shell centre FAB." },
+  "tabDaily": "Daily",
+  "@tabDaily": { "description": "Shell tab 4." },
+  "tabYou": "You",
+  "@tabYou": { "description": "Shell tab 5." },
+
+  "playSheetTitle": "Play",
+  "@playSheetTitle": { "description": "S-38 play sheet heading." },
+  "playSheetSubtitle": "Pick how you want to play right now.",
+  "@playSheetSubtitle": { "description": "S-38 play sheet body." },
+  "playSheetDuel": "1v1 Duel",
+  "@playSheetDuel": { "description": "S-38 row 1 title." },
+  "playSheetDuelMeta": "5 questions · winner takes 200 🪙",
+  "@playSheetDuelMeta": { "description": "S-38 row 1 caption." },
+  "playSheetQuickPlay": "Quick Play",
+  "@playSheetQuickPlay": { "description": "S-38 row 2 title." },
+  "playSheetQuickPlayMeta": "A random level at your skill tier",
+  "@playSheetQuickPlayMeta": { "description": "S-38 row 2 caption." },
+  "playSheetDaily": "Daily Challenge",
+  "@playSheetDaily": { "description": "S-38 row 3 title." },
+  "playSheetDailyMeta": "Not played yet · 4h 12m left",
+  "@playSheetDailyMeta": { "description": "S-38 row 3 caption." },
+  "playSheetFriend": "Challenge a friend",
+  "@playSheetFriend": { "description": "S-38 row 4 title." },
+  "playSheetFriendMeta": "Danish M. is online now",
+  "@playSheetFriendMeta": { "description": "S-38 row 4 caption." },
+  "playSheetGo": "Go →",
+  "@playSheetGo": { "description": "S-38 primary row trailing affordance." },
+  "playSheetClose": "Close play menu",
+  "@playSheetClose": { "description": "Semantic label for the FAB while the play sheet is open." },
+
+  "questionCounter": "Question {current} of {total}",
+  "@questionCounter": {
+    "description": "S-11 question screen HUD counter.",
+    "placeholders": {
+      "current": { "type": "int", "example": "7" },
+      "total": { "type": "int", "example": "20" }
+    }
+  },
+  "questionLevelMeta": "Level {level} of {total} · {seconds}s per question",
+  "@questionLevelMeta": {
+    "description": "S-11 meta line above the question card.",
+    "placeholders": {
+      "level": { "type": "int", "example": "7" },
+      "total": { "type": "int", "example": "20" },
+      "seconds": { "type": "int", "example": "25" }
+    }
+  },
+  "questionSample": "Which planet has the shortest day in the Solar System?",
+  "@questionSample": { "description": "The bible's sample question, used by the S-11 placeholder and the RTL proof of concept." },
+  "questionStreak": "{count}-day streak",
+  "@questionStreak": {
+    "description": "Streak chip.",
+    "placeholders": { "count": { "type": "int", "example": "12" } }
+  },
+
+  "commonRetry": "Try again",
+  "@commonRetry": { "description": "Error state primary action." },
+  "commonCancel": "Cancel",
+  "@commonCancel": { "description": "Dialog secondary action." },
+  "commonClose": "Close",
+  "@commonClose": { "description": "Sheet / dialog dismiss action." },
+  "commonBack": "Back",
+  "@commonBack": { "description": "Back affordance semantic label." },
+
+  "themeLight": "Light",
+  "@themeLight": { "description": "Settings theme option." },
+  "themeDark": "Dark",
+  "@themeDark": { "description": "Settings theme option." },
+  "themeAuto": "Auto",
+  "@themeAuto": { "description": "Settings theme option — follow the system." },
+
+  "devScreenIndexTitle": "Screen index",
+  "@devScreenIndexTitle": { "description": "Debug screen listing all 54 bible screens." },
+  "devScreenIndexSubtitle": "All 54 screens · debug only",
+  "@devScreenIndexSubtitle": { "description": "Subtitle of the debug screen index." },
+  "devPlaceholderBody": "Not yet implemented — see plan {plan}.",
+  "@devPlaceholderBody": {
+    "description": "Body of a placeholder screen awaiting a later plan.",
+    "placeholders": { "plan": { "type": "String", "example": "003" } }
+  },
+  "devStateOf": "A state of {id}, not its own route.",
+  "@devStateOf": {
+    "description": "Note on a placeholder for a screen ID that shares another screen's route.",
+    "placeholders": { "id": { "type": "String", "example": "S-11" } }
+  }
+}
