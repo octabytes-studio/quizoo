@@ -1,0 +1,49 @@
+{
+  "@@locale": "ur",
+
+  "_comment": "Proof-of-concept subset only (plan 001, Assumption 5). Just enough strings to exercise S-16 / S-43's RTL mirroring and Nastaliq typography on a real screen. Anything absent falls back to English via the generated lookup. Arabic, Hindi and Spanish are content work, deferred to v1.1+.",
+
+  "appTitle": "کوئزو",
+
+  "homeGreeting": "ہیلو، {name} 👋",
+  "homeSubtitle": "لیول {level} · {title}",
+  "homePopularThisWeek": "🔥 اس ہفتے مقبول",
+  "homeCategories": "زمرے",
+  "homeDailyChallenge": "🎯 روزانہ کا چیلنج",
+  "homeSeeAll": "سب دیکھیں",
+  "homeLevelProgress": "لیول {cleared}/{total}",
+  "homeNew": "نیا",
+
+  "tabHome": "ہوم",
+  "tabRanks": "درجہ بندی",
+  "tabPlay": "کھیلیں",
+  "tabDaily": "روزانہ",
+  "tabYou": "آپ",
+
+  "playSheetTitle": "کھیلیں",
+  "playSheetSubtitle": "منتخب کریں کہ ابھی کیسے کھیلنا ہے۔",
+  "playSheetDuel": "ایک بمقابلہ ایک مقابلہ",
+  "playSheetDuelMeta": "۵ سوالات · جیتنے والا لے گا ۲۰۰ 🪙",
+  "playSheetQuickPlay": "فوری کھیل",
+  "playSheetQuickPlayMeta": "آپ کی سطح کا ایک بے ترتیب لیول",
+  "playSheetDaily": "روزانہ کا چیلنج",
+  "playSheetDailyMeta": "ابھی نہیں کھیلا · ۴ گھنٹے ۱۲ منٹ باقی",
+  "playSheetFriend": "دوست کو چیلنج کریں",
+  "playSheetFriendMeta": "دانش ایم ابھی آن لائن ہیں",
+  "playSheetGo": "چلیں ←",
+  "playSheetClose": "کھیل کا مینو بند کریں",
+
+  "questionCounter": "سوال {current} از {total}",
+  "questionLevelMeta": "لیول {level} از {total} · فی سوال {seconds} سیکنڈ",
+  "questionSample": "نظامِ شمسی میں سب سے چھوٹا دن کس سیارے کا ہے؟",
+  "questionStreak": "{count} دن کا سلسلہ",
+
+  "commonRetry": "دوبارہ کوشش کریں",
+  "commonCancel": "منسوخ کریں",
+  "commonClose": "بند کریں",
+  "commonBack": "واپس",
+
+  "themeLight": "روشن",
+  "themeDark": "تاریک",
+  "themeAuto": "خودکار"
+}
