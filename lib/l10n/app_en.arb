@@ -707,5 +707,331 @@
   "contentErrorTitle": "That didn't load",
   "@contentErrorTitle": { "description": "Generic content-error heading for this plan's screens." },
   "contentErrorBody": "Check your connection and give it another go.",
-  "@contentErrorBody": { "description": "Generic content-error body." }
+  "@contentErrorBody": { "description": "Generic content-error body." },
+
+  "commonMockFeature": "Mock — no real sharing wired yet",
+  "@commonMockFeature": { "description": "Snackbar for a plan-003 tap that has no real backend behind it (search, invite, duel, add-friend)." },
+  "commonSharedMock": "Shared! (mock — no real sharing wired yet)",
+  "@commonSharedMock": { "description": "Snackbar after tapping a mock share target in ShareSheet." },
+  "shareSpoilerFree": "Spoiler-free — no answers included.",
+  "@shareSpoilerFree": { "description": "ShareSheet message line for the daily result and badge-unlocked shares." },
+
+  "dailyTitle": "Daily",
+  "@dailyTitle": { "description": "S-27 top bar title." },
+  "dailyStreakChip": "{count} days",
+  "@dailyStreakChip": {
+    "description": "S-27 top bar streak chip, paired with a 🔥 leading glyph.",
+    "placeholders": { "count": { "type": "int", "example": "12" } }
+  },
+  "dailyTodaysChallenge": "TODAY'S CHALLENGE",
+  "@dailyTodaysChallenge": { "description": "S-27 challenge card eyebrow." },
+  "dailyQuestionsMeta": "{questions} questions from {categories} categories · {seconds}s each",
+  "@dailyQuestionsMeta": {
+    "description": "S-27 challenge card meta line.",
+    "placeholders": {
+      "questions": { "type": "int", "example": "10" },
+      "categories": { "type": "int", "example": "10" },
+      "seconds": { "type": "int", "example": "20" }
+    }
+  },
+  "dailyTimeRemaining": "{hours}h {minutes}m left",
+  "@dailyTimeRemaining": {
+    "description": "S-27 challenge card reward chip — time left in today's window.",
+    "placeholders": {
+      "hours": { "type": "int", "example": "4" },
+      "minutes": { "type": "int", "example": "12" }
+    }
+  },
+  "dailyPlayedToday": "{count} PLAYED TODAY",
+  "@dailyPlayedToday": {
+    "description": "S-27 challenge card footer, count already locale-formatted.",
+    "placeholders": { "count": { "type": "String", "example": "18,402" } }
+  },
+  "dailyAverage": "AVG {correct}/{outOf}",
+  "@dailyAverage": {
+    "description": "S-27 challenge card footer.",
+    "placeholders": {
+      "correct": { "type": "int", "example": "6" },
+      "outOf": { "type": "int", "example": "10" }
+    }
+  },
+  "dailyPlayNow": "Play now",
+  "@dailyPlayNow": { "description": "S-27 challenge card CTA." },
+  "dailyYourStreak": "Your streak",
+  "@dailyYourStreak": { "description": "S-27 section header." },
+  "dailyRules": "Rules",
+  "@dailyRules": { "description": "S-27 streak section trailing link." },
+  "dailyRulesUnavailable": "Streak rules — coming soon",
+  "@dailyRulesUnavailable": { "description": "Snackbar for the non-functional Rules link." },
+  "dailyFreezesLeft": "{count} streak freezes left.",
+  "@dailyFreezesLeft": {
+    "description": "S-27 streak-freeze explainer, bold segment.",
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "dailyFreezeExplainer": "Miss a day and one is spent automatically.",
+  "@dailyFreezeExplainer": { "description": "S-27 streak-freeze explainer, remainder." },
+  "dailyMilestones": "Milestones",
+  "@dailyMilestones": { "description": "S-27 section header." },
+
+  "dailyResultScoreLine": "{correct} out of {total}",
+  "@dailyResultScoreLine": {
+    "description": "S-28 headline.",
+    "placeholders": {
+      "correct": { "type": "int", "example": "8" },
+      "total": { "type": "int", "example": "10" }
+    }
+  },
+  "dailyResultBetterThan": "Better than {percent}% of players today",
+  "@dailyResultBetterThan": {
+    "description": "S-28 subheadline.",
+    "placeholders": { "percent": { "type": "int", "example": "82" } }
+  },
+  "dailyResultDistribution": "TODAY'S DISTRIBUTION",
+  "@dailyResultDistribution": { "description": "S-28 chart card eyebrow." },
+  "dailyResultEarned": "EARNED",
+  "@dailyResultEarned": { "description": "S-28 stat pair label." },
+  "dailyResultStreakNow": "STREAK NOW",
+  "@dailyResultStreakNow": { "description": "S-28 stat pair label." },
+  "dailyResultShare": "Share result 📤",
+  "@dailyResultShare": { "description": "S-28 primary CTA." },
+  "dailyResultShareTitle": "Share your daily result",
+  "@dailyResultShareTitle": { "description": "S-28 ShareSheet title." },
+  "dailyResultBackToDaily": "Back to Daily",
+  "@dailyResultBackToDaily": { "description": "S-28 secondary CTA." },
+
+  "leaderboardTitle": "Leaderboard",
+  "@leaderboardTitle": { "description": "S-29 top bar title." },
+  "leaderboardScopeGlobal": "Global",
+  "@leaderboardScopeGlobal": { "description": "S-29 segmented control." },
+  "leaderboardScopeCountry": "🇵🇰 Country",
+  "@leaderboardScopeCountry": { "description": "S-29 segmented control." },
+  "leaderboardScopeFriends": "Friends",
+  "@leaderboardScopeFriends": { "description": "S-29 segmented control." },
+  "leaderboardPeriodWeek": "This week",
+  "@leaderboardPeriodWeek": { "description": "S-29 period chip." },
+  "leaderboardPeriodMonth": "This month",
+  "@leaderboardPeriodMonth": { "description": "S-29 period chip." },
+  "leaderboardPeriodAllTime": "All time",
+  "@leaderboardPeriodAllTime": { "description": "S-29 period chip." },
+  "leaderboardSelfTitle": "You",
+  "@leaderboardSelfTitle": { "description": "S-29 pinned self-row title, signed in." },
+  "leaderboardSelfSubtitle": "Top {percent}% · {location}",
+  "@leaderboardSelfSubtitle": {
+    "description": "S-29 pinned self-row subtitle, signed in.",
+    "placeholders": {
+      "percent": { "type": "int", "example": "3" },
+      "location": { "type": "String", "example": "🇵🇰 Islamabad" }
+    }
+  },
+  "leaderboardSelfGuestTitle": "You",
+  "@leaderboardSelfGuestTitle": { "description": "S-29 pinned self-row title, guest." },
+  "leaderboardSelfGuestSubtitle": "Not ranked — sign in to compete",
+  "@leaderboardSelfGuestSubtitle": { "description": "S-29 pinned self-row subtitle, guest." },
+
+  "categoryLeaderboardSubtitle": "Category leaderboard · this week",
+  "@categoryLeaderboardSubtitle": { "description": "S-30 top bar subtitle." },
+  "categoryLeaderboardRank": "You're #{rank} in {country}",
+  "@categoryLeaderboardRank": {
+    "description": "S-30 header card headline.",
+    "placeholders": {
+      "rank": { "type": "int", "example": "12" },
+      "country": { "type": "String", "example": "Pakistan" }
+    }
+  },
+  "categoryLeaderboardGap": "{points} points from the top 10",
+  "@categoryLeaderboardGap": {
+    "description": "S-30 header card subhead, points already locale-formatted.",
+    "placeholders": { "points": { "type": "String", "example": "1,240" } }
+  },
+  "categoryLeaderboardPlay": "Play {subcategory} Level {level}",
+  "@categoryLeaderboardPlay": {
+    "description": "S-30 footer CTA.",
+    "placeholders": {
+      "subcategory": { "type": "String", "example": "Football" },
+      "level": { "type": "int", "example": "12" }
+    }
+  },
+
+  "friendsTitle": "Friends",
+  "@friendsTitle": { "description": "S-31 top bar title." },
+  "friendsSubtitle": "{friends} friends · {pending} pending",
+  "@friendsSubtitle": {
+    "description": "S-31 top bar subtitle.",
+    "placeholders": {
+      "friends": { "type": "int", "example": "6" },
+      "pending": { "type": "int", "example": "2" }
+    }
+  },
+  "friendsAdd": "Add friend",
+  "@friendsAdd": { "description": "S-31 top bar trailing icon semantic label." },
+  "friendsInvite": "Invite friends",
+  "@friendsInvite": { "description": "S-31 invite card title / empty-state action." },
+  "friendsInviteReward": "You both get 200 🪙",
+  "@friendsInviteReward": { "description": "S-31 invite card body." },
+  "friendsShare": "Share",
+  "@friendsShare": { "description": "S-31 invite card button." },
+  "friendsRequestsHeading": "REQUESTS · {count}",
+  "@friendsRequestsHeading": {
+    "description": "S-31 requests section header.",
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "friendsListHeading": "FRIENDS",
+  "@friendsListHeading": { "description": "S-31 friends section header." },
+  "friendsAccept": "Accept",
+  "@friendsAccept": { "description": "S-31 request row accept button semantic label." },
+  "friendsDecline": "Decline",
+  "@friendsDecline": { "description": "S-31 request row decline button semantic label." },
+  "friendsDuel": "⚔️ Duel",
+  "@friendsDuel": { "description": "S-31 friend row duel pill." },
+  "friendsEmptyTitle": "No friends yet",
+  "@friendsEmptyTitle": { "description": "S-31 empty state, the bible's own S-47 worked example." },
+  "friendsEmptyBody": "Add friends to see who is playing, compare scores, and duel for bragging rights.",
+  "@friendsEmptyBody": { "description": "S-31 empty state body." },
+  "friendsFindPeople": "Find people you know",
+  "@friendsFindPeople": { "description": "S-31 empty state secondary action." },
+
+  "leaguePromotionEyebrow": "RANK UP",
+  "@leaguePromotionEyebrow": { "description": "S-26 eyebrow." },
+  "leaguePromotionPreviousLeague": "SILVER",
+  "@leaguePromotionPreviousLeague": { "description": "S-26 dimmed previous-league label." },
+  "leaguePromotionNewLeague": "GOLD",
+  "@leaguePromotionNewLeague": { "description": "S-26 new-league label." },
+  "leaguePromotionHeadline": "You're in Gold League",
+  "@leaguePromotionHeadline": { "description": "S-26 headline." },
+  "leaguePromotionExplainer": "Top 30 finish this week promotes you to Platinum. Bottom 10 drops back to Silver. Resets Sunday 00:00 UTC.",
+  "@leaguePromotionExplainer": { "description": "S-26 explainer, verbatim from the bible." },
+  "leaguePromotionCta": "Let's go",
+  "@leaguePromotionCta": { "description": "S-26 CTA." },
+
+  "achievementsTitle": "Achievements",
+  "@achievementsTitle": { "description": "S-33 top bar title." },
+  "achievementsUnlockedCount": "{unlocked} of {total} unlocked",
+  "@achievementsUnlockedCount": {
+    "description": "S-33 top bar subtitle.",
+    "placeholders": {
+      "unlocked": { "type": "int", "example": "5" },
+      "total": { "type": "int", "example": "12" }
+    }
+  },
+  "achievementsFilterAll": "All",
+  "@achievementsFilterAll": { "description": "S-33 filter chip." },
+  "achievementsFilterSkill": "Skill",
+  "@achievementsFilterSkill": { "description": "S-33 filter chip." },
+  "achievementsFilterStreak": "Streak",
+  "@achievementsFilterStreak": { "description": "S-33 filter chip." },
+  "achievementsFilterSocial": "Social",
+  "@achievementsFilterSocial": { "description": "S-33 filter chip." },
+  "achievementsFilterRare": "Rare",
+  "@achievementsFilterRare": { "description": "S-33 filter chip." },
+  "achievementsEmptyTitle": "No badges here yet",
+  "@achievementsEmptyTitle": { "description": "S-33 empty state when a filter matches nothing." },
+  "achievementsEmptyBody": "Try a different filter, or come back once you've earned a few more.",
+  "@achievementsEmptyBody": { "description": "S-33 empty state body." },
+
+  "badgeDetailPlay": "Play {subcategory}",
+  "@badgeDetailPlay": {
+    "description": "S-34 locked-badge deep-link CTA.",
+    "placeholders": { "subcategory": { "type": "String", "example": "Hockey" } }
+  },
+  "badgeDetailRarity": "🏆 Rare · {percent}%",
+  "@badgeDetailRarity": {
+    "description": "S-34 rarity chip.",
+    "placeholders": { "percent": { "type": "double", "example": "2.1", "format": "decimalPattern" } }
+  },
+  "badgeDetailReward": "+{coins} 🪙",
+  "@badgeDetailReward": {
+    "description": "S-34 reward chip, also reused on S-23.",
+    "placeholders": { "coins": { "type": "int", "example": "2000" } }
+  },
+  "badgeDetailUnlockedOn": "Unlocked {date}",
+  "@badgeDetailUnlockedOn": {
+    "description": "S-34 unlocked-variant line, date already locale-formatted.",
+    "placeholders": { "date": { "type": "String", "example": "Aug 22, 2026" } }
+  },
+
+  "badgeUnlockedEyebrow": "ACHIEVEMENT UNLOCKED",
+  "@badgeUnlockedEyebrow": { "description": "S-23 eyebrow." },
+  "badgeUnlockedDescription": "{description} Only {percent}% of players have this one.",
+  "@badgeUnlockedDescription": {
+    "description": "S-23 body — the badge's own description plus the rarity framing.",
+    "placeholders": {
+      "description": { "type": "String", "example": "Finish a level with 20/20 correct answers." },
+      "percent": { "type": "double", "example": "4", "format": "decimalPattern" }
+    }
+  },
+  "badgeUnlockedShare": "Share this 📤",
+  "@badgeUnlockedShare": { "description": "S-23 primary CTA." },
+  "badgeUnlockedShareTitle": "Share your new badge",
+  "@badgeUnlockedShareTitle": { "description": "S-23 ShareSheet title." },
+  "badgeUnlockedNice": "Nice",
+  "@badgeUnlockedNice": { "description": "S-23 dismiss CTA." },
+
+  "profileStatPoints": "POINTS",
+  "@profileStatPoints": { "description": "S-32 stat strip label." },
+  "profileStatLevels": "LEVELS",
+  "@profileStatLevels": { "description": "S-32 stat strip label." },
+  "profileStatAccuracy": "ACCURACY",
+  "@profileStatAccuracy": { "description": "S-32 stat strip label." },
+  "profileStatBadges": "BADGES",
+  "@profileStatBadges": { "description": "S-32 stat strip label." },
+  "profileRecentBadges": "Recent badges",
+  "@profileRecentBadges": { "description": "S-32 section header." },
+  "profileAllBadges": "All {count}",
+  "@profileAllBadges": {
+    "description": "S-32 recent-badges section trailing link.",
+    "placeholders": { "count": { "type": "int", "example": "14" } }
+  },
+  "profileBestCategories": "Best categories",
+  "@profileBestCategories": { "description": "S-32 section header." },
+  "profileBestCategoryMeta": "Level {cleared}/{total} · {stars} ⭐",
+  "@profileBestCategoryMeta": {
+    "description": "S-32 best-category row subtitle.",
+    "placeholders": {
+      "cleared": { "type": "int", "example": "12" },
+      "total": { "type": "int", "example": "20" },
+      "stars": { "type": "int", "example": "28" }
+    }
+  },
+  "profileAccuracyLabel": "accuracy",
+  "@profileAccuracyLabel": { "description": "S-32 best-category row trailing caption." },
+  "profileLevelLine": "LEVEL {level} · {rankTitle}",
+  "@profileLevelLine": {
+    "description": "S-32 header XP-bar caption.",
+    "placeholders": {
+      "level": { "type": "int", "example": "12" },
+      "rankTitle": { "type": "String", "example": "Curious Mind" }
+    }
+  },
+  "profileSettings": "Settings",
+  "@profileSettings": { "description": "S-32 header settings-gear semantic label." },
+
+  "statsTitle": "Your stats",
+  "@statsTitle": { "description": "S-35 top bar title." },
+  "statsRangeChip": "Last 30 days ▾",
+  "@statsRangeChip": { "description": "S-35 non-functional date-range chip (plan 003, Assumption 3)." },
+  "statsPointsPerDay": "POINTS PER DAY",
+  "@statsPointsPerDay": { "description": "S-35 chart card eyebrow." },
+  "statsWeekdayLabels": "M,T,W,T,F,S,S",
+  "@statsWeekdayLabels": { "description": "S-35 chart's seven bar labels, comma-separated." },
+  "statsAccuracyByCategory": "Accuracy by category",
+  "@statsAccuracyByCategory": { "description": "S-35 section header." },
+  "statsCoachingIntro": "{category} is your weakest category.",
+  "@statsCoachingIntro": {
+    "description": "S-35 coaching card, first segment.",
+    "placeholders": { "category": { "type": "String", "example": "Maths" } }
+  },
+  "statsCoachingBold": "Ten minutes a day for a week",
+  "@statsCoachingBold": { "description": "S-35 coaching card, bold segment." },
+  "statsCoachingOutcome": "would move you past {percent}%.",
+  "@statsCoachingOutcome": {
+    "description": "S-35 coaching card, final segment.",
+    "placeholders": { "percent": { "type": "int", "example": "60" } }
+  },
+  "statsFastestAnswers": "Fastest answers",
+  "@statsFastestAnswers": { "description": "S-35 section header." },
+  "statsFastestAverage": "{seconds}s average",
+  "@statsFastestAverage": {
+    "description": "S-35 fastest-answers row title, seconds already formatted to one decimal.",
+    "placeholders": { "seconds": { "type": "String", "example": "1.2" } }
+  }
 }

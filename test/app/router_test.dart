@@ -15,6 +15,8 @@ import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.
 import 'package:quizoo/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:quizoo/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:quizoo/features/dev/presentation/screens/screen_index_screen.dart';
+import 'package:quizoo/features/leaderboard/presentation/screens/leaderboard_screen.dart';
+import 'package:quizoo/features/profile/presentation/screens/profile_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
 import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
@@ -138,14 +140,21 @@ void main() {
 
       final l10n = AppLocalizations.of(tester.element(find.byType(AppTabBar)));
 
-      await tester.tap(find.text(l10n.tabRanks));
+      // Scoped to the tab bar itself — the leaderboard's own pinned self-row
+      // and Ranks/You tab labels can otherwise collide on the same text.
+      Finder tabLabel(String label) => find.descendant(
+        of: find.byType(AppTabBar),
+        matching: find.text(label),
+      );
+
+      await tester.tap(tabLabel(l10n.tabRanks));
       await tester.pumpAndSettle();
-      expect(find.text('S-29'), findsOneWidget);
+      expect(find.byType(LeaderboardScreen), findsOneWidget);
       expect(find.byType(AppTabBar), findsOneWidget);
 
-      await tester.tap(find.text(l10n.tabYou));
+      await tester.tap(tabLabel(l10n.tabYou));
       await tester.pumpAndSettle();
-      expect(find.text('S-32'), findsOneWidget);
+      expect(find.byType(ProfileScreen), findsOneWidget);
     });
 
     testWidgets('a pushed route covers the tab bar', (tester) async {

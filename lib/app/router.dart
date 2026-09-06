@@ -3,18 +3,28 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
+import 'package:quizoo/features/achievements/presentation/screens/achievements_screen.dart';
+import 'package:quizoo/features/achievements/presentation/screens/badge_unlocked_screen.dart';
 import 'package:quizoo/features/auth/presentation/screens/profile_creation_screen.dart';
 import 'package:quizoo/features/auth/presentation/widgets/save_progress_sheet.dart';
 import 'package:quizoo/features/catalog/presentation/screens/category_detail_screen.dart';
 import 'package:quizoo/features/catalog/presentation/screens/level_map_screen.dart';
+import 'package:quizoo/features/daily/presentation/screens/daily_result_screen.dart';
+import 'package:quizoo/features/daily/presentation/screens/daily_screen.dart';
 import 'package:quizoo/features/dev/presentation/screens/placeholder_screen.dart';
 import 'package:quizoo/features/dev/presentation/screens/screen_index_screen.dart';
 import 'package:quizoo/features/home/presentation/screens/home_screen.dart';
 import 'package:quizoo/features/home/presentation/screens/search_screen.dart';
+import 'package:quizoo/features/leaderboard/presentation/screens/category_leaderboard_screen.dart';
+import 'package:quizoo/features/leaderboard/presentation/screens/friends_screen.dart';
+import 'package:quizoo/features/leaderboard/presentation/screens/leaderboard_screen.dart';
+import 'package:quizoo/features/leaderboard/presentation/screens/league_promotion_screen.dart';
 import 'package:quizoo/features/onboarding/data/onboarding_repository.dart';
 import 'package:quizoo/features/onboarding/presentation/screens/language_picker_screen.dart';
 import 'package:quizoo/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:quizoo/features/onboarding/presentation/screens/splash_screen.dart';
+import 'package:quizoo/features/profile/presentation/screens/profile_screen.dart';
+import 'package:quizoo/features/profile/presentation/screens/stats_screen.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.dart';
 import 'package:quizoo/features/quiz_result/presentation/screens/quiz_result_screen.dart';
@@ -57,9 +67,30 @@ abstract final class AppRouter {
                 ),
               ],
             ),
-            _branch(AppRoutes.ranks, _screen('S-29')),
-            _branch(AppRoutes.daily, _screen('S-27')),
-            _branch(AppRoutes.you, _screen('S-32')),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.ranks,
+                  builder: (context, state) => const LeaderboardScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.daily,
+                  builder: (context, state) => const DailyScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: AppRoutes.you,
+                  builder: (context, state) => const ProfileScreen(),
+                ),
+              ],
+            ),
           ],
         ),
 
@@ -140,7 +171,12 @@ abstract final class AppRouter {
         // pushed, so a quit can never land on the completion screen.
         _resultRoute(AppRoutes.levelComplete),
         _resultRoute(AppRoutes.levelFailed),
-        _route(AppRoutes.badgeUnlocked, 'S-23'),
+        GoRoute(
+          path: AppRoutes.badgeUnlocked,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) =>
+              BadgeUnlockedScreen(badgeId: state.pathParameters['badgeId']!),
+        ),
         // S-24 is a sheet, so it is a transparent page over whatever pushed
         // it rather than a screen that replaces it.
         GoRoute(
@@ -159,19 +195,53 @@ abstract final class AppRouter {
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const ProfileCreationScreen(),
         ),
-        _route(AppRoutes.leaguePromotion, 'S-26'),
+        GoRoute(
+          path: AppRoutes.leaguePromotion,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const LeaguePromotionScreen(),
+        ),
 
         // Daily
-        _route(AppRoutes.dailyResult, 'S-28'),
+        GoRoute(
+          path: AppRoutes.dailyResult,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const DailyResultScreen(),
+        ),
 
         // Leaderboards & social
-        _route(AppRoutes.categoryLeaderboard, 'S-30'),
-        _route(AppRoutes.friends, 'S-31'),
+        GoRoute(
+          path: AppRoutes.categoryLeaderboard,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => CategoryLeaderboardScreen(
+            categoryId: state.pathParameters['categoryId']!,
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.friends,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const FriendsScreen(),
+        ),
 
         // Profile
-        _route(AppRoutes.achievements, 'S-33'),
-        _route(AppRoutes.badgeDetail, 'S-34'),
-        _route(AppRoutes.stats, 'S-35'),
+        GoRoute(
+          path: AppRoutes.achievements,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const AchievementsScreen(),
+        ),
+        // S-34 is a dialog, so its path opens the grid it belongs to with the
+        // dialog already presented, exactly like S-09's level-brief sheet.
+        GoRoute(
+          path: AppRoutes.badgeDetail,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => AchievementsScreen(
+            initialBadgeId: state.pathParameters['badgeId'],
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.stats,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const StatsScreen(),
+        ),
 
         // Shop
         _route(AppRoutes.shop, 'S-36'),
@@ -199,18 +269,6 @@ abstract final class AppRouter {
           path: AppRoutes.screenIndex,
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const ScreenIndexScreen(),
-        ),
-      ],
-    );
-  }
-
-  /// One tab branch of the shell.
-  static StatefulShellBranch _branch(String path, ScreenRef screen) {
-    return StatefulShellBranch(
-      routes: [
-        GoRoute(
-          path: path,
-          builder: (context, state) => PlaceholderScreen(screen: screen),
         ),
       ],
     );

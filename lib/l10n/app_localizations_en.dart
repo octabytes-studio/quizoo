@@ -777,4 +777,365 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get contentErrorBody =>
       'Check your connection and give it another go.';
+
+  @override
+  String get commonMockFeature => 'Mock — no real sharing wired yet';
+
+  @override
+  String get commonSharedMock => 'Shared! (mock — no real sharing wired yet)';
+
+  @override
+  String get shareSpoilerFree => 'Spoiler-free — no answers included.';
+
+  @override
+  String get dailyTitle => 'Daily';
+
+  @override
+  String dailyStreakChip(int count) {
+    return '$count days';
+  }
+
+  @override
+  String get dailyTodaysChallenge => 'TODAY\'S CHALLENGE';
+
+  @override
+  String dailyQuestionsMeta(int questions, int categories, int seconds) {
+    return '$questions questions from $categories categories · ${seconds}s each';
+  }
+
+  @override
+  String dailyTimeRemaining(int hours, int minutes) {
+    return '${hours}h ${minutes}m left';
+  }
+
+  @override
+  String dailyPlayedToday(String count) {
+    return '$count PLAYED TODAY';
+  }
+
+  @override
+  String dailyAverage(int correct, int outOf) {
+    return 'AVG $correct/$outOf';
+  }
+
+  @override
+  String get dailyPlayNow => 'Play now';
+
+  @override
+  String get dailyYourStreak => 'Your streak';
+
+  @override
+  String get dailyRules => 'Rules';
+
+  @override
+  String get dailyRulesUnavailable => 'Streak rules — coming soon';
+
+  @override
+  String dailyFreezesLeft(int count) {
+    return '$count streak freezes left.';
+  }
+
+  @override
+  String get dailyFreezeExplainer =>
+      'Miss a day and one is spent automatically.';
+
+  @override
+  String get dailyMilestones => 'Milestones';
+
+  @override
+  String dailyResultScoreLine(int correct, int total) {
+    return '$correct out of $total';
+  }
+
+  @override
+  String dailyResultBetterThan(int percent) {
+    return 'Better than $percent% of players today';
+  }
+
+  @override
+  String get dailyResultDistribution => 'TODAY\'S DISTRIBUTION';
+
+  @override
+  String get dailyResultEarned => 'EARNED';
+
+  @override
+  String get dailyResultStreakNow => 'STREAK NOW';
+
+  @override
+  String get dailyResultShare => 'Share result 📤';
+
+  @override
+  String get dailyResultShareTitle => 'Share your daily result';
+
+  @override
+  String get dailyResultBackToDaily => 'Back to Daily';
+
+  @override
+  String get leaderboardTitle => 'Leaderboard';
+
+  @override
+  String get leaderboardScopeGlobal => 'Global';
+
+  @override
+  String get leaderboardScopeCountry => '🇵🇰 Country';
+
+  @override
+  String get leaderboardScopeFriends => 'Friends';
+
+  @override
+  String get leaderboardPeriodWeek => 'This week';
+
+  @override
+  String get leaderboardPeriodMonth => 'This month';
+
+  @override
+  String get leaderboardPeriodAllTime => 'All time';
+
+  @override
+  String get leaderboardSelfTitle => 'You';
+
+  @override
+  String leaderboardSelfSubtitle(int percent, String location) {
+    return 'Top $percent% · $location';
+  }
+
+  @override
+  String get leaderboardSelfGuestTitle => 'You';
+
+  @override
+  String get leaderboardSelfGuestSubtitle => 'Not ranked — sign in to compete';
+
+  @override
+  String get categoryLeaderboardSubtitle => 'Category leaderboard · this week';
+
+  @override
+  String categoryLeaderboardRank(int rank, String country) {
+    return 'You\'re #$rank in $country';
+  }
+
+  @override
+  String categoryLeaderboardGap(String points) {
+    return '$points points from the top 10';
+  }
+
+  @override
+  String categoryLeaderboardPlay(String subcategory, int level) {
+    return 'Play $subcategory Level $level';
+  }
+
+  @override
+  String get friendsTitle => 'Friends';
+
+  @override
+  String friendsSubtitle(int friends, int pending) {
+    return '$friends friends · $pending pending';
+  }
+
+  @override
+  String get friendsAdd => 'Add friend';
+
+  @override
+  String get friendsInvite => 'Invite friends';
+
+  @override
+  String get friendsInviteReward => 'You both get 200 🪙';
+
+  @override
+  String get friendsShare => 'Share';
+
+  @override
+  String friendsRequestsHeading(int count) {
+    return 'REQUESTS · $count';
+  }
+
+  @override
+  String get friendsListHeading => 'FRIENDS';
+
+  @override
+  String get friendsAccept => 'Accept';
+
+  @override
+  String get friendsDecline => 'Decline';
+
+  @override
+  String get friendsDuel => '⚔️ Duel';
+
+  @override
+  String get friendsEmptyTitle => 'No friends yet';
+
+  @override
+  String get friendsEmptyBody =>
+      'Add friends to see who is playing, compare scores, and duel for bragging rights.';
+
+  @override
+  String get friendsFindPeople => 'Find people you know';
+
+  @override
+  String get leaguePromotionEyebrow => 'RANK UP';
+
+  @override
+  String get leaguePromotionPreviousLeague => 'SILVER';
+
+  @override
+  String get leaguePromotionNewLeague => 'GOLD';
+
+  @override
+  String get leaguePromotionHeadline => 'You\'re in Gold League';
+
+  @override
+  String get leaguePromotionExplainer =>
+      'Top 30 finish this week promotes you to Platinum. Bottom 10 drops back to Silver. Resets Sunday 00:00 UTC.';
+
+  @override
+  String get leaguePromotionCta => 'Let\'s go';
+
+  @override
+  String get achievementsTitle => 'Achievements';
+
+  @override
+  String achievementsUnlockedCount(int unlocked, int total) {
+    return '$unlocked of $total unlocked';
+  }
+
+  @override
+  String get achievementsFilterAll => 'All';
+
+  @override
+  String get achievementsFilterSkill => 'Skill';
+
+  @override
+  String get achievementsFilterStreak => 'Streak';
+
+  @override
+  String get achievementsFilterSocial => 'Social';
+
+  @override
+  String get achievementsFilterRare => 'Rare';
+
+  @override
+  String get achievementsEmptyTitle => 'No badges here yet';
+
+  @override
+  String get achievementsEmptyBody =>
+      'Try a different filter, or come back once you\'ve earned a few more.';
+
+  @override
+  String badgeDetailPlay(String subcategory) {
+    return 'Play $subcategory';
+  }
+
+  @override
+  String badgeDetailRarity(double percent) {
+    final intl.NumberFormat percentNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String percentString = percentNumberFormat.format(percent);
+
+    return '🏆 Rare · $percentString%';
+  }
+
+  @override
+  String badgeDetailReward(int coins) {
+    return '+$coins 🪙';
+  }
+
+  @override
+  String badgeDetailUnlockedOn(String date) {
+    return 'Unlocked $date';
+  }
+
+  @override
+  String get badgeUnlockedEyebrow => 'ACHIEVEMENT UNLOCKED';
+
+  @override
+  String badgeUnlockedDescription(String description, double percent) {
+    final intl.NumberFormat percentNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String percentString = percentNumberFormat.format(percent);
+
+    return '$description Only $percentString% of players have this one.';
+  }
+
+  @override
+  String get badgeUnlockedShare => 'Share this 📤';
+
+  @override
+  String get badgeUnlockedShareTitle => 'Share your new badge';
+
+  @override
+  String get badgeUnlockedNice => 'Nice';
+
+  @override
+  String get profileStatPoints => 'POINTS';
+
+  @override
+  String get profileStatLevels => 'LEVELS';
+
+  @override
+  String get profileStatAccuracy => 'ACCURACY';
+
+  @override
+  String get profileStatBadges => 'BADGES';
+
+  @override
+  String get profileRecentBadges => 'Recent badges';
+
+  @override
+  String profileAllBadges(int count) {
+    return 'All $count';
+  }
+
+  @override
+  String get profileBestCategories => 'Best categories';
+
+  @override
+  String profileBestCategoryMeta(int cleared, int total, int stars) {
+    return 'Level $cleared/$total · $stars ⭐';
+  }
+
+  @override
+  String get profileAccuracyLabel => 'accuracy';
+
+  @override
+  String profileLevelLine(int level, String rankTitle) {
+    return 'LEVEL $level · $rankTitle';
+  }
+
+  @override
+  String get profileSettings => 'Settings';
+
+  @override
+  String get statsTitle => 'Your stats';
+
+  @override
+  String get statsRangeChip => 'Last 30 days ▾';
+
+  @override
+  String get statsPointsPerDay => 'POINTS PER DAY';
+
+  @override
+  String get statsWeekdayLabels => 'M,T,W,T,F,S,S';
+
+  @override
+  String get statsAccuracyByCategory => 'Accuracy by category';
+
+  @override
+  String statsCoachingIntro(String category) {
+    return '$category is your weakest category.';
+  }
+
+  @override
+  String get statsCoachingBold => 'Ten minutes a day for a week';
+
+  @override
+  String statsCoachingOutcome(int percent) {
+    return 'would move you past $percent%.';
+  }
+
+  @override
+  String get statsFastestAnswers => 'Fastest answers';
+
+  @override
+  String statsFastestAverage(String seconds) {
+    return '${seconds}s average';
+  }
 }
