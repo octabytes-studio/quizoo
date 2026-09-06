@@ -6,11 +6,15 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 
-/// The full-bleed wash both result screens sit on.
+/// The full-bleed wash a result-style screen sits on.
 ///
 /// `linear-gradient(178deg, <accent> 0%, var(--s0) 46%)` — a saturated band at
 /// the top that dissolves into the app background, so the celebration (or the
 /// commiseration) reads before a single word does.
+///
+/// Lives in `core/` because both `quiz_result` (S-21/S-22) and `daily`
+/// (S-28) sit on this exact chrome — moved here from `quiz_result` when the
+/// daily result screen needed it too (CLAUDE.md §2: reused across features).
 class ResultWash extends StatelessWidget {
   const ResultWash({
     required this.accent,

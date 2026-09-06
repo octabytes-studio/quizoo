@@ -9,6 +9,7 @@ import 'package:quizoo/core/breakpoints.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
 import 'package:quizoo/core/widgets/currency_pill.dart';
+import 'package:quizoo/features/achievements/presentation/screens/badge_unlocked_screen.dart';
 import 'package:quizoo/features/auth/presentation/widgets/save_progress_sheet.dart';
 import 'package:quizoo/features/catalog/presentation/screens/level_map_screen.dart';
 import 'package:quizoo/features/catalog/presentation/widgets/level_brief_sheet.dart';
@@ -153,10 +154,9 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
 
-    // A flawless run earns a badge, so S-23 comes first. It is plan 003's
-    // screen, so it is still a placeholder here — which is the expected
-    // state, and exactly why the result Cubit only ever pushes a route.
-    expect(find.text('S-23'), findsOneWidget);
+    // A flawless run earns a badge, so S-23 comes first — the result Cubit
+    // only ever pushes a route, so this is plan 003's real screen.
+    expect(find.byType(BadgeUnlockedScreen), findsOneWidget);
     expect(find.byType(SaveProgressSheet), findsNothing);
 
     await tester.binding.handlePopRoute();
@@ -257,13 +257,10 @@ void main() {
       expect(find.byType(LevelMapScreen), findsOneWidget);
 
       var caughtPopError = false;
-      await runZonedGuarded(
-        () async {
-          final popped = await tester.binding.handlePopRoute();
-          expect(popped, isTrue);
-        },
-        (error, _) => caughtPopError = true,
-      );
+      await runZonedGuarded(() async {
+        final popped = await tester.binding.handlePopRoute();
+        expect(popped, isTrue);
+      }, (error, _) => caughtPopError = true);
       await tester.pumpAndSettle();
 
       expect(

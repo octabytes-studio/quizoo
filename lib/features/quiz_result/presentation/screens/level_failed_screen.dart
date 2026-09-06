@@ -8,9 +8,9 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
+import 'package:quizoo/core/widgets/result_wash.dart';
 import 'package:quizoo/features/quiz_result/presentation/bloc/quiz_result_cubit.dart';
 import 'package:quizoo/features/quiz_result/presentation/widgets/missed_question_row.dart';
-import 'package:quizoo/features/quiz_result/presentation/widgets/result_wash.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-22 — level failed, reframed as nearly-there.

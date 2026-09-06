@@ -1387,6 +1387,600 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check your connection and give it another go.'**
   String get contentErrorBody;
+
+  /// Snackbar for a plan-003 tap that has no real backend behind it (search, invite, duel, add-friend).
+  ///
+  /// In en, this message translates to:
+  /// **'Mock — no real sharing wired yet'**
+  String get commonMockFeature;
+
+  /// Snackbar after tapping a mock share target in ShareSheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared! (mock — no real sharing wired yet)'**
+  String get commonSharedMock;
+
+  /// ShareSheet message line for the daily result and badge-unlocked shares.
+  ///
+  /// In en, this message translates to:
+  /// **'Spoiler-free — no answers included.'**
+  String get shareSpoilerFree;
+
+  /// S-27 top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get dailyTitle;
+
+  /// S-27 top bar streak chip, paired with a 🔥 leading glyph.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days'**
+  String dailyStreakChip(int count);
+
+  /// S-27 challenge card eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S CHALLENGE'**
+  String get dailyTodaysChallenge;
+
+  /// S-27 challenge card meta line.
+  ///
+  /// In en, this message translates to:
+  /// **'{questions} questions from {categories} categories · {seconds}s each'**
+  String dailyQuestionsMeta(int questions, int categories, int seconds);
+
+  /// S-27 challenge card reward chip — time left in today's window.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m left'**
+  String dailyTimeRemaining(int hours, int minutes);
+
+  /// S-27 challenge card footer, count already locale-formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} PLAYED TODAY'**
+  String dailyPlayedToday(String count);
+
+  /// S-27 challenge card footer.
+  ///
+  /// In en, this message translates to:
+  /// **'AVG {correct}/{outOf}'**
+  String dailyAverage(int correct, int outOf);
+
+  /// S-27 challenge card CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Play now'**
+  String get dailyPlayNow;
+
+  /// S-27 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Your streak'**
+  String get dailyYourStreak;
+
+  /// S-27 streak section trailing link.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules'**
+  String get dailyRules;
+
+  /// Snackbar for the non-functional Rules link.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak rules — coming soon'**
+  String get dailyRulesUnavailable;
+
+  /// S-27 streak-freeze explainer, bold segment.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} streak freezes left.'**
+  String dailyFreezesLeft(int count);
+
+  /// S-27 streak-freeze explainer, remainder.
+  ///
+  /// In en, this message translates to:
+  /// **'Miss a day and one is spent automatically.'**
+  String get dailyFreezeExplainer;
+
+  /// S-27 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get dailyMilestones;
+
+  /// S-28 headline.
+  ///
+  /// In en, this message translates to:
+  /// **'{correct} out of {total}'**
+  String dailyResultScoreLine(int correct, int total);
+
+  /// S-28 subheadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Better than {percent}% of players today'**
+  String dailyResultBetterThan(int percent);
+
+  /// S-28 chart card eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S DISTRIBUTION'**
+  String get dailyResultDistribution;
+
+  /// S-28 stat pair label.
+  ///
+  /// In en, this message translates to:
+  /// **'EARNED'**
+  String get dailyResultEarned;
+
+  /// S-28 stat pair label.
+  ///
+  /// In en, this message translates to:
+  /// **'STREAK NOW'**
+  String get dailyResultStreakNow;
+
+  /// S-28 primary CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Share result 📤'**
+  String get dailyResultShare;
+
+  /// S-28 ShareSheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your daily result'**
+  String get dailyResultShareTitle;
+
+  /// S-28 secondary CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Daily'**
+  String get dailyResultBackToDaily;
+
+  /// S-29 top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get leaderboardTitle;
+
+  /// S-29 segmented control.
+  ///
+  /// In en, this message translates to:
+  /// **'Global'**
+  String get leaderboardScopeGlobal;
+
+  /// S-29 segmented control.
+  ///
+  /// In en, this message translates to:
+  /// **'🇵🇰 Country'**
+  String get leaderboardScopeCountry;
+
+  /// S-29 segmented control.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get leaderboardScopeFriends;
+
+  /// S-29 period chip.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get leaderboardPeriodWeek;
+
+  /// S-29 period chip.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get leaderboardPeriodMonth;
+
+  /// S-29 period chip.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get leaderboardPeriodAllTime;
+
+  /// S-29 pinned self-row title, signed in.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get leaderboardSelfTitle;
+
+  /// S-29 pinned self-row subtitle, signed in.
+  ///
+  /// In en, this message translates to:
+  /// **'Top {percent}% · {location}'**
+  String leaderboardSelfSubtitle(int percent, String location);
+
+  /// S-29 pinned self-row title, guest.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get leaderboardSelfGuestTitle;
+
+  /// S-29 pinned self-row subtitle, guest.
+  ///
+  /// In en, this message translates to:
+  /// **'Not ranked — sign in to compete'**
+  String get leaderboardSelfGuestSubtitle;
+
+  /// S-30 top bar subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Category leaderboard · this week'**
+  String get categoryLeaderboardSubtitle;
+
+  /// S-30 header card headline.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re #{rank} in {country}'**
+  String categoryLeaderboardRank(int rank, String country);
+
+  /// S-30 header card subhead, points already locale-formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} points from the top 10'**
+  String categoryLeaderboardGap(String points);
+
+  /// S-30 footer CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Play {subcategory} Level {level}'**
+  String categoryLeaderboardPlay(String subcategory, int level);
+
+  /// S-31 top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get friendsTitle;
+
+  /// S-31 top bar subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{friends} friends · {pending} pending'**
+  String friendsSubtitle(int friends, int pending);
+
+  /// S-31 top bar trailing icon semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'Add friend'**
+  String get friendsAdd;
+
+  /// S-31 invite card title / empty-state action.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite friends'**
+  String get friendsInvite;
+
+  /// S-31 invite card body.
+  ///
+  /// In en, this message translates to:
+  /// **'You both get 200 🪙'**
+  String get friendsInviteReward;
+
+  /// S-31 invite card button.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get friendsShare;
+
+  /// S-31 requests section header.
+  ///
+  /// In en, this message translates to:
+  /// **'REQUESTS · {count}'**
+  String friendsRequestsHeading(int count);
+
+  /// S-31 friends section header.
+  ///
+  /// In en, this message translates to:
+  /// **'FRIENDS'**
+  String get friendsListHeading;
+
+  /// S-31 request row accept button semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get friendsAccept;
+
+  /// S-31 request row decline button semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get friendsDecline;
+
+  /// S-31 friend row duel pill.
+  ///
+  /// In en, this message translates to:
+  /// **'⚔️ Duel'**
+  String get friendsDuel;
+
+  /// S-31 empty state, the bible's own S-47 worked example.
+  ///
+  /// In en, this message translates to:
+  /// **'No friends yet'**
+  String get friendsEmptyTitle;
+
+  /// S-31 empty state body.
+  ///
+  /// In en, this message translates to:
+  /// **'Add friends to see who is playing, compare scores, and duel for bragging rights.'**
+  String get friendsEmptyBody;
+
+  /// S-31 empty state secondary action.
+  ///
+  /// In en, this message translates to:
+  /// **'Find people you know'**
+  String get friendsFindPeople;
+
+  /// S-26 eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'RANK UP'**
+  String get leaguePromotionEyebrow;
+
+  /// S-26 dimmed previous-league label.
+  ///
+  /// In en, this message translates to:
+  /// **'SILVER'**
+  String get leaguePromotionPreviousLeague;
+
+  /// S-26 new-league label.
+  ///
+  /// In en, this message translates to:
+  /// **'GOLD'**
+  String get leaguePromotionNewLeague;
+
+  /// S-26 headline.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re in Gold League'**
+  String get leaguePromotionHeadline;
+
+  /// S-26 explainer, verbatim from the bible.
+  ///
+  /// In en, this message translates to:
+  /// **'Top 30 finish this week promotes you to Platinum. Bottom 10 drops back to Silver. Resets Sunday 00:00 UTC.'**
+  String get leaguePromotionExplainer;
+
+  /// S-26 CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go'**
+  String get leaguePromotionCta;
+
+  /// S-33 top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievementsTitle;
+
+  /// S-33 top bar subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{unlocked} of {total} unlocked'**
+  String achievementsUnlockedCount(int unlocked, int total);
+
+  /// S-33 filter chip.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get achievementsFilterAll;
+
+  /// S-33 filter chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill'**
+  String get achievementsFilterSkill;
+
+  /// S-33 filter chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get achievementsFilterStreak;
+
+  /// S-33 filter chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get achievementsFilterSocial;
+
+  /// S-33 filter chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Rare'**
+  String get achievementsFilterRare;
+
+  /// S-33 empty state when a filter matches nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No badges here yet'**
+  String get achievementsEmptyTitle;
+
+  /// S-33 empty state body.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different filter, or come back once you\'ve earned a few more.'**
+  String get achievementsEmptyBody;
+
+  /// S-34 locked-badge deep-link CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Play {subcategory}'**
+  String badgeDetailPlay(String subcategory);
+
+  /// S-34 rarity chip.
+  ///
+  /// In en, this message translates to:
+  /// **'🏆 Rare · {percent}%'**
+  String badgeDetailRarity(double percent);
+
+  /// S-34 reward chip, also reused on S-23.
+  ///
+  /// In en, this message translates to:
+  /// **'+{coins} 🪙'**
+  String badgeDetailReward(int coins);
+
+  /// S-34 unlocked-variant line, date already locale-formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked {date}'**
+  String badgeDetailUnlockedOn(String date);
+
+  /// S-23 eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'ACHIEVEMENT UNLOCKED'**
+  String get badgeUnlockedEyebrow;
+
+  /// S-23 body — the badge's own description plus the rarity framing.
+  ///
+  /// In en, this message translates to:
+  /// **'{description} Only {percent}% of players have this one.'**
+  String badgeUnlockedDescription(String description, double percent);
+
+  /// S-23 primary CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this 📤'**
+  String get badgeUnlockedShare;
+
+  /// S-23 ShareSheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your new badge'**
+  String get badgeUnlockedShareTitle;
+
+  /// S-23 dismiss CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice'**
+  String get badgeUnlockedNice;
+
+  /// S-32 stat strip label.
+  ///
+  /// In en, this message translates to:
+  /// **'POINTS'**
+  String get profileStatPoints;
+
+  /// S-32 stat strip label.
+  ///
+  /// In en, this message translates to:
+  /// **'LEVELS'**
+  String get profileStatLevels;
+
+  /// S-32 stat strip label.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCURACY'**
+  String get profileStatAccuracy;
+
+  /// S-32 stat strip label.
+  ///
+  /// In en, this message translates to:
+  /// **'BADGES'**
+  String get profileStatBadges;
+
+  /// S-32 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent badges'**
+  String get profileRecentBadges;
+
+  /// S-32 recent-badges section trailing link.
+  ///
+  /// In en, this message translates to:
+  /// **'All {count}'**
+  String profileAllBadges(int count);
+
+  /// S-32 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Best categories'**
+  String get profileBestCategories;
+
+  /// S-32 best-category row subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {cleared}/{total} · {stars} ⭐'**
+  String profileBestCategoryMeta(int cleared, int total, int stars);
+
+  /// S-32 best-category row trailing caption.
+  ///
+  /// In en, this message translates to:
+  /// **'accuracy'**
+  String get profileAccuracyLabel;
+
+  /// S-32 header XP-bar caption.
+  ///
+  /// In en, this message translates to:
+  /// **'LEVEL {level} · {rankTitle}'**
+  String profileLevelLine(int level, String rankTitle);
+
+  /// S-32 header settings-gear semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get profileSettings;
+
+  /// S-35 top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your stats'**
+  String get statsTitle;
+
+  /// S-35 non-functional date-range chip (plan 003, Assumption 3).
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days ▾'**
+  String get statsRangeChip;
+
+  /// S-35 chart card eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'POINTS PER DAY'**
+  String get statsPointsPerDay;
+
+  /// S-35 chart's seven bar labels, comma-separated.
+  ///
+  /// In en, this message translates to:
+  /// **'M,T,W,T,F,S,S'**
+  String get statsWeekdayLabels;
+
+  /// S-35 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy by category'**
+  String get statsAccuracyByCategory;
+
+  /// S-35 coaching card, first segment.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} is your weakest category.'**
+  String statsCoachingIntro(String category);
+
+  /// S-35 coaching card, bold segment.
+  ///
+  /// In en, this message translates to:
+  /// **'Ten minutes a day for a week'**
+  String get statsCoachingBold;
+
+  /// S-35 coaching card, final segment.
+  ///
+  /// In en, this message translates to:
+  /// **'would move you past {percent}%.'**
+  String statsCoachingOutcome(int percent);
+
+  /// S-35 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Fastest answers'**
+  String get statsFastestAnswers;
+
+  /// S-35 fastest-answers row title, seconds already formatted to one decimal.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds}s average'**
+  String statsFastestAverage(String seconds);
 }
 
 class _AppLocalizationsDelegate
