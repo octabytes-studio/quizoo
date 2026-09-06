@@ -185,7 +185,12 @@ class _PlayFab extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: Transform.translate(
           offset: Offset(0, -AppTabBar.fabOverhang.h),
+          // `heightFactor: 1` is load-bearing: a bare `Center` expands to the
+          // full height it is offered, and `bottomNavigationBar` offers the
+          // whole screen. Without it the FAB stretches the tab bar to the
+          // viewport height and leaves the shell's body nothing to lay out in.
           child: Center(
+            heightFactor: 1,
             child: Container(
               width: AppTabBar.fabSize.w,
               height: AppTabBar.fabSize.w,

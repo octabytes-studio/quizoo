@@ -59,7 +59,12 @@ abstract final class AppTypography {
   }) => TextStyle(
     fontSize: size,
     color: color,
-    height: height,
+    // Emoji are square, and their line box must not inherit whatever text
+    // font happens to be ambient. Without this, the same 19px glyph occupies
+    // a taller box under Urdu — where Noto Nastaliq's metrics are enormous —
+    // than under English, and every fixed-height plate that holds one
+    // (the 56×52 power-up tile first) overflows on a locale change alone.
+    height: height ?? 1,
     letterSpacing: letterSpacing,
   );
 
@@ -222,43 +227,68 @@ abstract final class AppTypography {
   /// translations land.
   static const Set<String> nastaliqLanguages = {'ur', 'ar', 'fa'};
 
-  /// Re-families a [TextTheme] for Nastaliq scripts and opens the line-height
-  /// to the ~2.1 the bible requires.
+  /// Re-families a [TextTheme] for Nastaliq scripts, opening the line-height
+  /// to the ~2.1 the bible requires **for the text that actually flows in
+  /// Urdu**.
   ///
   /// Applied once in `app/app.dart`'s `MaterialApp.builder`, which is where
   /// the active locale first becomes readable — so screens never do this
   /// themselves, exactly as §04's "build this into the theme, not into
   /// individual screens" rule demands.
+  ///
+  /// **Why the line-height is not applied to everything.** The bible's own
+  /// stylesheet scopes it narrowly:
+  ///
+  /// ```css
+  /// .app.rtl .qbox .qt, .app.rtl .ur { font-family: var(--f-urdu);
+  ///                                    line-height: 2.1; font-size: 17px }
+  /// ```
+  ///
+  /// — the question card and anything explicitly marked as Urdu, and nothing
+  /// else. Opening 2.1 on the micro-labels too doubles the height of every
+  /// 8–11px caption, which overflows the app's fixed-size chrome: the 56×52
+  /// power-up tile in the play dock is the first thing to break, by 9px. So
+  /// the Nastaliq **family** goes everywhere, for glyph coverage, while the
+  /// taller leading is reserved for prose. Fixed-height chrome keeps the
+  /// leading it was designed with.
   static TextTheme localize(TextTheme base, Locale locale) {
     if (!nastaliqLanguages.contains(locale.languageCode)) return base;
 
-    TextStyle? nastaliq(TextStyle? style) => style?.copyWith(
-      fontFamily: urdu,
-      fontFamilyFallback: const [body, display],
-      height: urduHeight,
-      // Nastaliq's own forms carry the emphasis; synthetic tracking on top of
-      // them just breaks the joins.
-      letterSpacing: 0,
-    );
+    TextStyle? nastaliq(TextStyle? style, {bool isProse = true}) =>
+        style?.copyWith(
+          fontFamily: urdu,
+          fontFamilyFallback: const [body, display],
+          height: isProse ? urduHeight : style.height,
+          // Nastaliq's own forms carry the emphasis; synthetic tracking on top
+          // of them just breaks the joins.
+          letterSpacing: 0,
+        );
 
     return TextTheme(
-      displayLarge: nastaliq(base.displayLarge),
-      displayMedium: nastaliq(base.displayMedium),
-      displaySmall: nastaliq(base.displaySmall),
-      headlineLarge: nastaliq(base.headlineLarge),
-      headlineMedium: nastaliq(base.headlineMedium),
-      // Urdu question text drops to 17px (§04 type spec: Urdu question 17/36).
+      // Display and title sizes head fixed-height cards and top bars, so they
+      // keep their designed leading and only change family.
+      displayLarge: nastaliq(base.displayLarge, isProse: false),
+      displayMedium: nastaliq(base.displayMedium, isProse: false),
+      displaySmall: nastaliq(base.displaySmall, isProse: false),
+      headlineLarge: nastaliq(base.headlineLarge, isProse: false),
+      headlineMedium: nastaliq(base.headlineMedium, isProse: false),
+      // The question card — the one element the bible names explicitly. Urdu
+      // question text drops to 17px (§04: Urdu question 17/36).
       headlineSmall: nastaliq(base.headlineSmall)?.copyWith(fontSize: 17),
-      titleLarge: nastaliq(base.titleLarge)?.copyWith(fontSize: 19),
-      titleMedium: nastaliq(base.titleMedium),
-      titleSmall: nastaliq(base.titleSmall),
+      titleLarge: nastaliq(
+        base.titleLarge,
+        isProse: false,
+      )?.copyWith(fontSize: 19),
+      titleMedium: nastaliq(base.titleMedium, isProse: false),
+      titleSmall: nastaliq(base.titleSmall, isProse: false),
       // Options drop to 14px with a 2.0 line-height (`.app.rtl .opt`).
       bodyLarge: nastaliq(base.bodyLarge)?.copyWith(fontSize: 14, height: 2),
       bodyMedium: nastaliq(base.bodyMedium),
       bodySmall: nastaliq(base.bodySmall),
-      labelLarge: nastaliq(base.labelLarge),
-      labelMedium: nastaliq(base.labelMedium),
-      labelSmall: nastaliq(base.labelSmall),
+      // Buttons and captions live in fixed-height chrome.
+      labelLarge: nastaliq(base.labelLarge, isProse: false),
+      labelMedium: nastaliq(base.labelMedium, isProse: false),
+      labelSmall: nastaliq(base.labelSmall, isProse: false),
     );
   }
 }

@@ -133,5 +133,579 @@
   "@devStateOf": {
     "description": "Note on a placeholder for a screen ID that shares another screen's route.",
     "placeholders": { "id": { "type": "String", "example": "S-11" } }
-  }
+  },
+
+  "splashTagline": "Play smarter.",
+  "@splashTagline": { "description": "S-01 Splash wordmark subtitle." },
+  "splashVersion": "v{version}",
+  "@splashVersion": {
+    "description": "S-01 Splash build version, pinned to the bottom of the screen.",
+    "placeholders": { "version": { "type": "String", "example": "1.0.0" } }
+  },
+
+  "onboardingSkip": "Skip",
+  "@onboardingSkip": { "description": "S-02 Onboarding skip affordance, present from card one." },
+  "onboardingNext": "Next",
+  "@onboardingNext": { "description": "S-02 Onboarding advance button." },
+  "onboardingStart": "Let's play",
+  "@onboardingStart": { "description": "S-02 Onboarding final-card button." },
+  "onboardingPickTitle": "Pick a topic\nyou actually like",
+  "@onboardingPickTitle": { "description": "S-02 Onboarding card 1 heading." },
+  "onboardingPickBody": "Fourteen categories and hundreds of topics. Start with the one you would argue about.",
+  "@onboardingPickBody": { "description": "S-02 Onboarding card 1 body." },
+  "onboardingClimbTitle": "Climb 20 levels\nin every topic",
+  "@onboardingClimbTitle": { "description": "S-02 Onboarding card 2 heading." },
+  "onboardingClimbBody": "Each level is harder and faster than the last. Three stars means you truly know it.",
+  "@onboardingClimbBody": { "description": "S-02 Onboarding card 2 body." },
+  "onboardingBeatTitle": "Beat your friends\nevery single week",
+  "@onboardingBeatTitle": { "description": "S-02 Onboarding card 3 heading." },
+  "onboardingBeatBody": "Leagues reset every Sunday. Thirty players, one board, nowhere to hide.",
+  "@onboardingBeatBody": { "description": "S-02 Onboarding card 3 body." },
+
+  "languageTitle": "Choose your language",
+  "@languageTitle": { "description": "S-03 Language picker heading." },
+  "languageSubtitle": "You can change this any time in Settings",
+  "@languageSubtitle": { "description": "S-03 Language picker subheading." },
+  "languageQuizCount": "{count} quizzes",
+  "@languageQuizCount": {
+    "description": "S-03 live question count on the selected-language row.",
+    "placeholders": { "count": { "type": "String", "example": "12,400" } }
+  },
+  "languageQuizCountNamed": "{name} · {count} quizzes",
+  "@languageQuizCountNamed": {
+    "description": "S-03 row caption for a language whose native name is not in Latin script.",
+    "placeholders": {
+      "name": { "type": "String", "example": "Urdu" },
+      "count": { "type": "String", "example": "4,100" }
+    }
+  },
+  "languageContinue": "Continue",
+  "@languageContinue": { "description": "S-03 Language picker CTA." },
+  "languagePartialSupport": "Only English and Urdu are translated in this build — the others show English copy.",
+  "@languagePartialSupport": { "description": "S-03 honest note about which locales actually re-render." },
+
+  "homeWelcome": "Welcome 👋",
+  "@homeWelcome": { "description": "S-04 Home top bar greeting for a guest." },
+  "homePlayingAsGuest": "Playing as Guest",
+  "@homePlayingAsGuest": { "description": "S-04 Home top bar second line for a guest." },
+  "homeSaveProgressTitle": "Save your progress",
+  "@homeSaveProgressTitle": { "description": "S-04 Home informational grape card heading." },
+  "homeSaveProgressBody": "Sign in later — play first, we'll remember",
+  "@homeSaveProgressBody": { "description": "S-04 Home informational grape card body." },
+  "homeContinueHeading": "▶︎ Continue",
+  "@homeContinueHeading": { "description": "S-05 Home continue-rail heading." },
+  "homeContinueTitle": "{subcategory} · Level {level}",
+  "@homeContinueTitle": {
+    "description": "S-05 Home continue row title.",
+    "placeholders": {
+      "subcategory": { "type": "String", "example": "Football" },
+      "level": { "type": "int", "example": "12" }
+    }
+  },
+  "homeContinueMeta": "{points} pts · {lives} lives left",
+  "@homeContinueMeta": {
+    "description": "S-05 Home continue row caption.",
+    "placeholders": {
+      "points": { "type": "String", "example": "2,140" },
+      "lives": { "type": "int", "example": "3" }
+    }
+  },
+  "homeResume": "Resume",
+  "@homeResume": { "description": "S-05 Home continue row trailing affordance." },
+  "homeDailyChallengeTitle": "Daily Challenge",
+  "@homeDailyChallengeTitle": { "description": "S-05 Home daily banner heading." },
+  "homeDailyChallengeMeta": "{questions} questions · ends in {remaining}",
+  "@homeDailyChallengeMeta": {
+    "description": "S-05 Home daily banner caption.",
+    "placeholders": {
+      "questions": { "type": "int", "example": "10" },
+      "remaining": { "type": "String", "example": "4h 12m" }
+    }
+  },
+  "homeDailyPlay": "Play",
+  "@homeDailyPlay": { "description": "S-05 Home daily banner action." },
+  "homeAllCategories": "All {count}",
+  "@homeAllCategories": {
+    "description": "S-05 Home categories section trailing link.",
+    "placeholders": { "count": { "type": "int", "example": "14" } }
+  },
+  "homePlayedCount": "👥 {count} played",
+  "@homePlayedCount": {
+    "description": "S-04 popular card play count.",
+    "placeholders": { "count": { "type": "String", "example": "84.2k" } }
+  },
+  "homeHotBadge": "HOT",
+  "@homeHotBadge": { "description": "S-04 popular card badge on a trending quiz." },
+  "homeStreakLevel": "🔥 {streak}-day streak · Level {level}",
+  "@homeStreakLevel": {
+    "description": "S-05 Home top bar second line.",
+    "placeholders": {
+      "streak": { "type": "int", "example": "12" },
+      "level": { "type": "int", "example": "12" }
+    }
+  },
+  "homeSearchLabel": "Search",
+  "@homeSearchLabel": { "description": "Semantic label for Home's search icon button." },
+  "homeLevelsAvailable": "{count} levels",
+  "@homeLevelsAvailable": {
+    "description": "S-04 subcategory tile caption before anything is played.",
+    "placeholders": { "count": { "type": "int", "example": "20" } }
+  },
+  "homeLocked": "Locked",
+  "@homeLocked": { "description": "Caption on a subcategory tile that is not open yet." },
+  "homeFilterAll": "✨ All",
+  "@homeFilterAll": { "description": "S-04 category filter chip that clears the filter." },
+
+  "searchHint": "Search topics",
+  "@searchHint": { "description": "S-06 search field placeholder." },
+  "searchResultCount": "{count} RESULTS",
+  "@searchResultCount": {
+    "description": "S-06 result count meta label.",
+    "placeholders": { "count": { "type": "int", "example": "3" } }
+  },
+  "searchBreadcrumb": "{category} › {path} · {questions} questions",
+  "@searchBreadcrumb": {
+    "description": "S-06 result row caption showing the parent category and sub-path.",
+    "placeholders": {
+      "category": { "type": "String", "example": "Science" },
+      "path": { "type": "String", "example": "Astronomy" },
+      "questions": { "type": "int", "example": "400" }
+    }
+  },
+  "searchPlay": "Play",
+  "@searchPlay": { "description": "S-06 result row trailing affordance." },
+  "searchTrending": "TRENDING SEARCHES",
+  "@searchTrending": { "description": "S-06 trending chip cloud heading." },
+  "searchEmptyTitle": "Nothing matched",
+  "@searchEmptyTitle": { "description": "S-06 empty state heading." },
+  "searchEmptyBody": "Try a shorter word, or pick one of the trending searches below.",
+  "@searchEmptyBody": { "description": "S-06 empty state body." },
+
+  "categoryMeta": "{topics} topics · {questions} questions · {players} players",
+  "@categoryMeta": {
+    "description": "S-07 category header meta line.",
+    "placeholders": {
+      "topics": { "type": "int", "example": "8" },
+      "questions": { "type": "String", "example": "3,200" },
+      "players": { "type": "String", "example": "128k" }
+    }
+  },
+  "categoryTopics": "Topics",
+  "@categoryTopics": { "description": "S-07 topics section heading." },
+  "categorySortPopular": "Sort: Popular",
+  "@categorySortPopular": { "description": "S-07 sort control, currently display-only." },
+  "categoryMore": "More",
+  "@categoryMore": { "description": "Semantic label for S-07's overflow button." },
+
+  "difficultyEasy": "Easy",
+  "@difficultyEasy": { "description": "Levels 1–5 difficulty band (§19)." },
+  "difficultyMedium": "Medium",
+  "@difficultyMedium": { "description": "Levels 6–10 difficulty band." },
+  "difficultyHard": "Hard",
+  "@difficultyHard": { "description": "Levels 11–15 difficulty band." },
+  "difficultyExpert": "Expert",
+  "@difficultyExpert": { "description": "Levels 16–20 difficulty band." },
+
+  "levelMapSubtitle": "{questions} questions · {levels} levels",
+  "@levelMapSubtitle": {
+    "description": "S-08 subcategory header card caption.",
+    "placeholders": {
+      "questions": { "type": "int", "example": "400" },
+      "levels": { "type": "int", "example": "20" }
+    }
+  },
+  "levelMapBestScore": "BEST SCORE",
+  "@levelMapBestScore": { "description": "S-08 header stat label." },
+  "levelMapStars": "STARS",
+  "@levelMapStars": { "description": "S-08 header stat label." },
+  "levelMapRank": "RANK",
+  "@levelMapRank": { "description": "S-08 header stat label." },
+  "levelMapBand": "{difficulty} · {seconds}s PER QUESTION",
+  "@levelMapBand": {
+    "description": "S-08 difficulty band divider.",
+    "placeholders": {
+      "difficulty": { "type": "String", "example": "HARD" },
+      "seconds": { "type": "int", "example": "20" }
+    }
+  },
+  "levelMapYoureHere": "YOU'RE HERE",
+  "@levelMapYoureHere": { "description": "S-08 flag above the current node." },
+  "levelMapBossCleared": "BOSS · CLEARED",
+  "@levelMapBossCleared": { "description": "S-08 label under a cleared boss node." },
+  "levelMapPerfect": "PERFECT",
+  "@levelMapPerfect": { "description": "S-08 label under a 3-starred node." },
+  "levelMapCleared": "CLEARED",
+  "@levelMapCleared": { "description": "S-08 label under a cleared node." },
+  "levelMapCurrent": "{questions} QUESTIONS · {seconds}s EACH",
+  "@levelMapCurrent": {
+    "description": "S-08 label under the current node.",
+    "placeholders": {
+      "questions": { "type": "int", "example": "20" },
+      "seconds": { "type": "int", "example": "20" }
+    }
+  },
+  "levelMapUnlockAfter": "CLEAR LEVEL {level}",
+  "@levelMapUnlockAfter": {
+    "description": "S-08 unlock condition on the next locked node.",
+    "placeholders": { "level": { "type": "int", "example": "12" } }
+  },
+  "levelMapLocked": "LOCKED",
+  "@levelMapLocked": { "description": "S-08 label under a locked node further down the path." },
+  "levelMapPlayLevel": "Play Level {level}",
+  "@levelMapPlayLevel": {
+    "description": "S-08 bottom CTA.",
+    "placeholders": { "level": { "type": "int", "example": "12" } }
+  },
+  "levelMapPlaySub": "{difficulty} · {questions} questions · {seconds}s each",
+  "@levelMapPlaySub": {
+    "description": "S-08 bottom CTA sub-line.",
+    "placeholders": {
+      "difficulty": { "type": "String", "example": "Hard" },
+      "questions": { "type": "int", "example": "20" },
+      "seconds": { "type": "int", "example": "20" }
+    }
+  },
+  "levelMapLeaderboard": "Leaderboard",
+  "@levelMapLeaderboard": { "description": "Semantic label for S-08's trophy button." },
+
+  "levelBriefTitle": "Level {level}",
+  "@levelBriefTitle": {
+    "description": "S-09 level brief sheet heading.",
+    "placeholders": { "level": { "type": "int", "example": "12" } }
+  },
+  "levelBriefSubtitle": "{subcategory} · {difficulty}",
+  "@levelBriefSubtitle": {
+    "description": "S-09 level brief sheet subheading.",
+    "placeholders": {
+      "subcategory": { "type": "String", "example": "Football" },
+      "difficulty": { "type": "String", "example": "Hard" }
+    }
+  },
+  "levelBriefStreakMultiplier": "🔥 Streak ×{multiplier}",
+  "@levelBriefStreakMultiplier": {
+    "description": "S-09 streak multiplier chip.",
+    "placeholders": { "multiplier": { "type": "String", "example": "1.5" } }
+  },
+  "levelBriefQuestions": "QUESTIONS",
+  "@levelBriefQuestions": { "description": "S-09 stat label." },
+  "levelBriefPerQuestion": "PER QUESTION",
+  "@levelBriefPerQuestion": { "description": "S-09 stat label." },
+  "levelBriefLives": "LIVES",
+  "@levelBriefLives": { "description": "S-09 stat label." },
+  "levelBriefSeconds": "{seconds}s",
+  "@levelBriefSeconds": {
+    "description": "S-09 per-question seconds value.",
+    "placeholders": { "seconds": { "type": "int", "example": "20" } }
+  },
+  "levelBriefPowerUps": "POWER-UPS IN HAND",
+  "@levelBriefPowerUps": { "description": "S-09 power-up row heading." },
+  "levelBriefShop": "SHOP",
+  "@levelBriefShop": { "description": "S-09 dimmed shop tile label." },
+  "levelBriefStart": "Start Level {level}",
+  "@levelBriefStart": {
+    "description": "S-09 primary CTA.",
+    "placeholders": { "level": { "type": "int", "example": "12" } }
+  },
+  "levelBriefPreparing": "Preparing level…",
+  "@levelBriefPreparing": { "description": "S-09 CTA label while the level's questions are still prefetching." },
+
+  "countdownMeta": "{subcategory} · LEVEL {level}",
+  "@countdownMeta": {
+    "description": "S-10 countdown meta label.",
+    "placeholders": {
+      "subcategory": { "type": "String", "example": "FOOTBALL" },
+      "level": { "type": "int", "example": "12" }
+    }
+  },
+  "countdownGetReady": "Get ready…",
+  "@countdownGetReady": { "description": "S-10 countdown caption." },
+  "countdownGo": "GO",
+  "@countdownGo": { "description": "S-10 final countdown beat." },
+
+  "quizScore": "Score",
+  "@quizScore": { "description": "S-11 HUD score label, followed by the value." },
+  "quizQuitLabel": "Quit level",
+  "@quizQuitLabel": { "description": "Semantic label for S-11's ✕ button." },
+  "quizPauseLabel": "Pause",
+  "@quizPauseLabel": { "description": "Semantic label for S-11's pause affordance." },
+  "quizStreak": "🔥 {count}",
+  "@quizStreak": {
+    "description": "S-11 HUD streak badge.",
+    "placeholders": { "count": { "type": "int", "example": "4" } }
+  },
+  "quizPowerUpFiftyFifty": "50:50",
+  "@quizPowerUpFiftyFifty": { "description": "Power-up that removes two wrong options." },
+  "quizPowerUpAddTime": "+15s",
+  "@quizPowerUpAddTime": { "description": "Power-up that adds fifteen seconds." },
+  "quizPowerUpSkip": "SKIP",
+  "@quizPowerUpSkip": { "description": "Power-up that skips a question." },
+
+  "feedbackCorrect": "Correct!",
+  "@feedbackCorrect": { "description": "S-12 feedback banner heading." },
+  "feedbackWrong": "Not quite",
+  "@feedbackWrong": { "description": "S-13 feedback banner heading." },
+  "feedbackTimeout": "Time's up",
+  "@feedbackTimeout": { "description": "Feedback banner heading when the clock ran out unanswered." },
+  "feedbackPoints": "+{points}",
+  "@feedbackPoints": {
+    "description": "S-12 points earned, top-right of the banner.",
+    "placeholders": { "points": { "type": "String", "example": "395" } }
+  },
+  "feedbackHeartLost": "−1 ❤️",
+  "@feedbackHeartLost": { "description": "S-13 cost, top-right of the banner." },
+  "feedbackNoHeartLost": "No heart lost",
+  "@feedbackNoHeartLost": { "description": "Timeout banner cost line — a timeout costs the question, not a heart (§19)." },
+  "feedbackNext": "Next question",
+  "@feedbackNext": { "description": "S-12 / S-13 banner action." },
+  "feedbackFinish": "See results",
+  "@feedbackFinish": { "description": "Banner action on the last question of a level." },
+  "feedbackBreakdown": "Speed +{speed} · Difficulty ×{difficulty} · Streak ×{streak}",
+  "@feedbackBreakdown": {
+    "description": "S-12 per-question score breakdown appended to the explanation.",
+    "placeholders": {
+      "speed": { "type": "int", "example": "70" },
+      "difficulty": { "type": "String", "example": "1.55" },
+      "streak": { "type": "String", "example": "1.5" }
+    }
+  },
+  "feedbackStreakReset": "Streak reset.",
+  "@feedbackStreakReset": { "description": "S-13 sentence appended when a streak was broken." },
+  "feedbackLastHeart": "One heart left — the next wrong answer ends the level.",
+  "@feedbackLastHeart": { "description": "S-13 sentence appended when exactly one heart remains." },
+
+  "pauseTitle": "Paused",
+  "@pauseTitle": { "description": "S-17 pause sheet heading." },
+  "pauseBody": "Your timer is frozen. Nothing is lost.",
+  "@pauseBody": { "description": "S-17 pause sheet body." },
+  "pauseResume": "Resume",
+  "@pauseResume": { "description": "S-17 primary action." },
+  "pauseSoundOn": "🔊 Sound on",
+  "@pauseSoundOn": { "description": "S-17 sound toggle, currently on." },
+  "pauseSoundOff": "🔇 Sound off",
+  "@pauseSoundOff": { "description": "S-17 sound toggle, currently off." },
+  "pauseHapticsOn": "📳 Haptics on",
+  "@pauseHapticsOn": { "description": "S-17 haptics toggle, currently on." },
+  "pauseHapticsOff": "📴 Haptics off",
+  "@pauseHapticsOff": { "description": "S-17 haptics toggle, currently off." },
+  "pauseRestart": "Restart level",
+  "@pauseRestart": { "description": "S-17 restart action." },
+  "pauseQuit": "Quit — lose progress",
+  "@pauseQuit": { "description": "S-17 destructive action." },
+
+  "quitTitle": "Quit level {level}?",
+  "@quitTitle": {
+    "description": "S-18 quit dialog heading.",
+    "placeholders": { "level": { "type": "int", "example": "12" } }
+  },
+  "quitBody": "You're {questions} questions in with {points} points. Quitting loses this level's score and one life. Your streak survives.",
+  "@quitBody": {
+    "description": "S-18 quit dialog body, quoting the player's own live numbers.",
+    "placeholders": {
+      "questions": { "type": "int", "example": "6" },
+      "points": { "type": "String", "example": "1,340" }
+    }
+  },
+  "quitKeepPlaying": "Keep playing",
+  "@quitKeepPlaying": { "description": "S-18 safe action, listed first and dominant." },
+  "quitConfirm": "Quit level",
+  "@quitConfirm": { "description": "S-18 destructive action, listed second and never pre-focused." },
+
+  "outOfLivesTitle": "Out of lives",
+  "@outOfLivesTitle": { "description": "S-19 dialog heading." },
+  "outOfLivesBody": "Lives refill one every 30 minutes — the next one lands at {time}. Or keep this run going right now.",
+  "@outOfLivesBody": {
+    "description": "S-19 dialog body. The refill is a clock time, never a relative countdown.",
+    "placeholders": { "time": { "type": "String", "example": "10:14" } }
+  },
+  "outOfLivesWatchAd": "▶ Watch an ad for 1 ❤️",
+  "@outOfLivesWatchAd": { "description": "S-19 free action, listed first and loudest." },
+  "outOfLivesRefill": "Refill 5 ❤️ · {coins} 🪙",
+  "@outOfLivesRefill": {
+    "description": "S-19 paid action.",
+    "placeholders": { "coins": { "type": "int", "example": "300" } }
+  },
+  "outOfLivesBackToMap": "Back to level map",
+  "@outOfLivesBackToMap": { "description": "S-19 abandon action." },
+  "outOfLivesAdPlaying": "Playing ad…",
+  "@outOfLivesAdPlaying": { "description": "S-19 label while the mocked rewarded ad runs." },
+  "outOfLivesNotEnoughCoins": "Not enough coins",
+  "@outOfLivesNotEnoughCoins": { "description": "S-19 sub-label on the refill action when the balance is short." },
+
+  "resultCompleteTitle": "Level {level} complete!",
+  "@resultCompleteTitle": {
+    "description": "S-21 heading.",
+    "placeholders": { "level": { "type": "int", "example": "12" } }
+  },
+  "resultStarsMeta": "{stars} STARS · {needed} MORE CORRECT FOR THE THIRD",
+  "@resultStarsMeta": {
+    "description": "S-21 star caption when the third star is still available.",
+    "placeholders": {
+      "stars": { "type": "int", "example": "2" },
+      "needed": { "type": "int", "example": "3" }
+    }
+  },
+  "resultStarsPerfect": "3 STARS · A PERFECT RUN",
+  "@resultStarsPerfect": { "description": "S-21 star caption at three stars." },
+  "resultFinalScore": "FINAL SCORE",
+  "@resultFinalScore": { "description": "S-21 score card label." },
+  "resultBreakdownCorrect": "{count} correct × 100",
+  "@resultBreakdownCorrect": {
+    "description": "S-21 breakdown row: base points.",
+    "placeholders": { "count": { "type": "int", "example": "17" } }
+  },
+  "resultBreakdownSpeed": "Speed bonus",
+  "@resultBreakdownSpeed": { "description": "S-21 breakdown row." },
+  "resultBreakdownStreak": "Best streak ×{streak}",
+  "@resultBreakdownStreak": {
+    "description": "S-21 breakdown row.",
+    "placeholders": { "streak": { "type": "int", "example": "9" } }
+  },
+  "resultBreakdownCleanRun": "Clean run — no power-ups",
+  "@resultBreakdownCleanRun": { "description": "S-21 breakdown row." },
+  "resultBreakdownFlawless": "Flawless — 20 of 20",
+  "@resultBreakdownFlawless": { "description": "S-21 breakdown row." },
+  "resultBreakdownHearts": "{count} hearts unspent",
+  "@resultBreakdownHearts": {
+    "description": "S-21 breakdown row.",
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "resultBreakdownBoss": "Boss level ×2",
+  "@resultBreakdownBoss": { "description": "S-21 breakdown row on levels 5, 10, 15 and 20." },
+  "resultBreakdownTotal": "Total",
+  "@resultBreakdownTotal": { "description": "S-21 breakdown total row." },
+  "resultCoins": "COINS",
+  "@resultCoins": { "description": "S-21 payout stat label." },
+  "resultExperience": "EXPERIENCE",
+  "@resultExperience": { "description": "S-21 payout stat label." },
+  "resultCoinsValue": "+{coins} 🪙",
+  "@resultCoinsValue": {
+    "description": "S-21 coin payout.",
+    "placeholders": { "coins": { "type": "String", "example": "180" } }
+  },
+  "resultXpValue": "+{xp} XP",
+  "@resultXpValue": {
+    "description": "S-21 XP payout.",
+    "placeholders": { "xp": { "type": "String", "example": "340" } }
+  },
+  "resultPlayerLevel": "LEVEL {level}",
+  "@resultPlayerLevel": {
+    "description": "S-21 XP bar leading label.",
+    "placeholders": { "level": { "type": "int", "example": "12" } }
+  },
+  "resultXpProgress": "{current} / {total}",
+  "@resultXpProgress": {
+    "description": "S-21 XP bar trailing label.",
+    "placeholders": {
+      "current": { "type": "String", "example": "1,240" },
+      "total": { "type": "String", "example": "1,500" }
+    }
+  },
+  "resultNextLevel": "Next level →",
+  "@resultNextLevel": { "description": "S-21 primary CTA." },
+  "resultReplay": "Replay for 3 stars",
+  "@resultReplay": { "description": "S-21 secondary CTA, only when three stars are still unearned." },
+  "resultBackToMap": "Back to map",
+  "@resultBackToMap": { "description": "S-21 / S-22 return action." },
+  "resultShare": "Share",
+  "@resultShare": { "description": "Semantic label for S-21's share button." },
+
+  "failedTitle": "So close!",
+  "@failedTitle": { "description": "S-22 heading. Reframed as nearly-there, never as a scolding." },
+  "failedRanOutOfHearts": "You ran out of hearts on question {question}",
+  "@failedRanOutOfHearts": {
+    "description": "S-22 subheading after a natural loss.",
+    "placeholders": { "question": { "type": "int", "example": "14" } }
+  },
+  "failedQuitEarly": "You left on question {question}",
+  "@failedQuitEarly": {
+    "description": "S-22 subheading after a quit — deliberately different copy from a loss.",
+    "placeholders": { "question": { "type": "int", "example": "6" } }
+  },
+  "failedCorrect": "CORRECT",
+  "@failedCorrect": { "description": "S-22 stat label." },
+  "failedPoints": "POINTS",
+  "@failedPoints": { "description": "S-22 stat label." },
+  "failedAccuracy": "ACCURACY",
+  "@failedAccuracy": { "description": "S-22 stat label." },
+  "failedAccuracyValue": "{percent}%",
+  "@failedAccuracyValue": {
+    "description": "S-22 accuracy stat value.",
+    "placeholders": { "percent": { "type": "int", "example": "71" } }
+  },
+  "failedMissedHeading": "YOU MISSED THESE — TAP TO REVIEW",
+  "@failedMissedHeading": { "description": "S-22 review-list heading." },
+  "failedMissedAnswer": "{correct} — you said {chosen}",
+  "@failedMissedAnswer": {
+    "description": "S-22 review row caption.",
+    "placeholders": {
+      "correct": { "type": "String", "example": "Messi" },
+      "chosen": { "type": "String", "example": "Ronaldo" }
+    }
+  },
+  "failedMissedTimeout": "{correct} — you ran out of time",
+  "@failedMissedTimeout": {
+    "description": "S-22 review row caption for a question that timed out.",
+    "placeholders": { "correct": { "type": "String", "example": "Messi" } }
+  },
+  "failedTryAgain": "Try again",
+  "@failedTryAgain": { "description": "S-22 primary CTA." },
+  "failedTryAgainCost": "· 1 ❤️",
+  "@failedTryAgainCost": { "description": "S-22 primary CTA cost, shown inline after the label." },
+
+  "saveProgressTitle": "Don't lose {points} points",
+  "@saveProgressTitle": {
+    "description": "S-24 sheet heading, quoting the player's own score.",
+    "placeholders": { "points": { "type": "String", "example": "3,470" } }
+  },
+  "saveProgressBody": "You're {percent}% through Level {level} with a {streak}-day streak. Sign in and it's saved on every device — free, 5 seconds.",
+  "@saveProgressBody": {
+    "description": "S-24 sheet body.",
+    "placeholders": {
+      "percent": { "type": "int", "example": "82" },
+      "level": { "type": "int", "example": "12" },
+      "streak": { "type": "int", "example": "12" }
+    }
+  },
+  "saveProgressGoogle": "Continue with Google",
+  "@saveProgressGoogle": { "description": "S-24 vendor sign-in button." },
+  "saveProgressApple": "Continue with Apple",
+  "@saveProgressApple": { "description": "S-24 vendor sign-in button." },
+  "saveProgressEmail": "Continue with Email",
+  "@saveProgressEmail": { "description": "S-24 email sign-in button." },
+  "saveProgressNotNow": "Not now — keep playing as guest",
+  "@saveProgressNotNow": { "description": "S-24 decline. Always plain text, never disabled or hidden." },
+  "saveProgressTerms": "By continuing you agree to our Terms and Privacy Policy.",
+  "@saveProgressTerms": { "description": "S-24 legal microcopy." },
+  "saveProgressSaved": "Progress saved",
+  "@saveProgressSaved": { "description": "Snackbar shown after a mocked sign-in." },
+
+  "profileTitle": "Create your profile",
+  "@profileTitle": { "description": "S-25 heading." },
+  "profileChangeAvatar": "Change avatar",
+  "@profileChangeAvatar": { "description": "S-25 avatar action." },
+  "profileUsername": "USERNAME",
+  "@profileUsername": { "description": "S-25 field label." },
+  "profileCountry": "COUNTRY",
+  "@profileCountry": { "description": "S-25 field label." },
+  "profileEmail": "EMAIL",
+  "@profileEmail": { "description": "S-25 field label." },
+  "profileUsernameAvailable": "✓ available",
+  "@profileUsernameAvailable": { "description": "S-25 live availability result." },
+  "profileUsernameTaken": "Someone has this one — try adding a number",
+  "@profileUsernameTaken": { "description": "S-25 error copy that says what to do, never 'invalid'." },
+  "profileUsernameTooShort": "Use at least three characters",
+  "@profileUsernameTooShort": { "description": "S-25 error copy." },
+  "profileEmailIncomplete": "Add the part after the @ — like gmail.com",
+  "@profileEmailIncomplete": { "description": "S-25 email error copy, verbatim from the bible." },
+  "profileEmailMissing": "Add an email so we can restore your progress",
+  "@profileEmailMissing": { "description": "S-25 empty-email error copy." },
+  "profileCreate": "Create profile",
+  "@profileCreate": { "description": "S-25 CTA, visibly disabled until every field validates." },
+  "profileCreated": "Profile created",
+  "@profileCreated": { "description": "Snackbar after a mocked profile creation." },
+
+  "contentErrorTitle": "That didn't load",
+  "@contentErrorTitle": { "description": "Generic content-error heading for this plan's screens." },
+  "contentErrorBody": "Check your connection and give it another go.",
+  "@contentErrorBody": { "description": "Generic content-error body." }
 }

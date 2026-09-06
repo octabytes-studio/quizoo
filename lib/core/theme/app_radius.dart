@@ -27,6 +27,10 @@ abstract final class AppRadius {
   /// Icon button — 12.
   static const double iconButton = 12;
 
+  /// The inline action pill inside a banner (S-05's daily "Play") — 12.
+  /// Distinct from [pill], which is fully round.
+  static const double inlineAction = 12;
+
   /// Pill / chip — fully round.
   static const double pill = 999;
 

@@ -4,18 +4,39 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/locale_cubit.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/app/theme_cubit.dart';
 import 'package:quizoo/core/breakpoints.dart';
 import 'package:quizoo/core/theme/app_theme.dart';
+import 'package:quizoo/features/auth/data/auth_api.dart';
+import 'package:quizoo/features/auth/data/auth_repository.dart';
+import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
+import 'package:quizoo/features/onboarding/data/onboarding_repository.dart';
+import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
+import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// The application root.
 ///
-/// Three things live here and nowhere else: the single [ScreenUtilInit] (at
+/// Four things live here and nowhere else: the single [ScreenUtilInit] (at
 /// the bible's 390×844 design size), the [MaterialApp.router] carrying both
-/// `ThemeData`s, and the one legitimately app-wide `BlocProvider` — the
-/// [ThemeCubit].
+/// `ThemeData`s, the genuinely app-wide Cubits, and the two mock repositories
+/// that hold session-lifetime state.
+///
+/// **What earns an app-root `BlocProvider`** (CLAUDE.md §3 is explicit that
+/// this is the exception, not the default): [ThemeCubit] and [LocaleCubit],
+/// because every screen renders through them, and [SessionCubit], which
+/// §3 names by example — Home switches its entire layout on it and plans 003
+/// and 004 read it for the profile tab and the player's own leaderboard row.
+///
+/// **Why the `RepositoryProvider`s**: each of the three holds state that
+/// outlives any one screen's Cubit, written on one route and read on another.
+/// [OnboardingRepository] remembers that first-run happened; [AuthRepository]
+/// remembers whether the save-progress sheet has already been offered; and
+/// [QuizPlayRepository] is the prefetch cache the level brief sheet (S-09)
+/// warms and the play surface (S-11) reads, on a different route. All three
+/// are in-memory for this phase; see each class for what that costs.
 class QuizooApp extends StatefulWidget {
   const QuizooApp({super.key, this.router});
 
@@ -28,6 +49,11 @@ class QuizooApp extends StatefulWidget {
 
 class _QuizooAppState extends State<QuizooApp> {
   late final GoRouter _router = widget.router ?? AppRouter.create();
+  final OnboardingRepository _onboardingRepository = OnboardingRepository();
+  late final AuthRepository _authRepository = AuthRepository(AuthApi());
+  late final QuizPlayRepository _quizPlayRepository = QuizPlayRepository(
+    QuizPlayApi(),
+  );
 
   @override
   void initState() {
@@ -47,43 +73,68 @@ class _QuizooAppState extends State<QuizooApp> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ThemeCubit>(
-      create: (_) => ThemeCubit(),
-      child: ScreenUtilInit(
-        designSize: const Size(
-          Breakpoints.designWidth,
-          Breakpoints.designHeight,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<OnboardingRepository>.value(
+          value: _onboardingRepository,
         ),
-        minTextAdapt: true,
-        child: BlocBuilder<ThemeCubit, ThemeState>(
-          builder: (context, state) {
-            return MaterialApp.router(
-              onGenerateTitle: (context) =>
-                  AppLocalizations.of(context).appTitle,
-              debugShowCheckedModeBanner: false,
-              routerConfig: _router,
-              theme: AppTheme.light,
-              darkTheme: AppTheme.dark,
-              themeMode: state.mode.toThemeMode(),
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: AppLocalizations.supportedLocales,
-              // The locale-dependent half of the type system — Nastaliq
-              // families and their taller line-height — can only be applied
-              // below `Localizations`, which is here.
-              builder: (context, child) => Theme(
-                data: AppTheme.localize(
-                  Theme.of(context),
-                  Localizations.localeOf(context),
-                ),
-                child: child ?? const SizedBox.shrink(),
-              ),
-            );
-          },
+        RepositoryProvider<AuthRepository>.value(value: _authRepository),
+        RepositoryProvider<QuizPlayRepository>.value(
+          value: _quizPlayRepository,
+        ),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+          BlocProvider<LocaleCubit>(create: (_) => LocaleCubit()),
+          BlocProvider<SessionCubit>(
+            create: (_) => SessionCubit(_authRepository),
+          ),
+        ],
+        child: ScreenUtilInit(
+          designSize: const Size(
+            Breakpoints.designWidth,
+            Breakpoints.designHeight,
+          ),
+          minTextAdapt: true,
+          child: BlocBuilder<ThemeCubit, ThemeState>(
+            builder: (context, themeState) {
+              return BlocBuilder<LocaleCubit, LocaleState>(
+                builder: (context, localeState) {
+                  return MaterialApp.router(
+                    onGenerateTitle: (context) =>
+                        AppLocalizations.of(context).appTitle,
+                    debugShowCheckedModeBanner: false,
+                    routerConfig: _router,
+                    theme: AppTheme.light,
+                    darkTheme: AppTheme.dark,
+                    themeMode: themeState.mode.toThemeMode(),
+                    // Null follows the device. A language this build does not
+                    // translate resolves back to English by Flutter's own
+                    // rules, which is exactly what S-03 warns about on screen.
+                    locale: localeState.locale,
+                    localizationsDelegates: const [
+                      AppLocalizations.delegate,
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    supportedLocales: AppLocalizations.supportedLocales,
+                    // The locale-dependent half of the type system — Nastaliq
+                    // families and their taller line-height — can only be
+                    // applied below `Localizations`, which is here.
+                    builder: (context, child) => Theme(
+                      data: AppTheme.localize(
+                        Theme.of(context),
+                        Localizations.localeOf(context),
+                      ),
+                      child: child ?? const SizedBox.shrink(),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );

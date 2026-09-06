@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quizoo/core/breakpoints.dart';
+import 'package:quizoo/core/mock/mock_api.dart';
 import 'package:quizoo/core/theme/app_theme.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
@@ -78,4 +79,16 @@ extension PumpApp on WidgetTester {
       await body?.call();
     }
   }
+}
+
+/// Pins every mock API constructed during the test to deterministic success
+/// (or, with [failureRate] of 1, to deterministic failure).
+///
+/// Widget tests run in debug mode, where `MockApi` fails one request in
+/// twenty-five on purpose so the error states get seen during review. That is
+/// right for the demo build and poison for a test suite, so any test that
+/// pumps a screen which loads content calls this in its `main`.
+void useMockApiFailureRate([double failureRate = 0]) {
+  setUp(() => MockApi.failureRateOverride = failureRate);
+  tearDown(() => MockApi.failureRateOverride = null);
 }
