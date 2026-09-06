@@ -15,6 +15,11 @@ abstract class Subcategory with _$Subcategory {
     required String name,
     required String emoji,
 
+    /// The grouping the bible's search breadcrumb prints between the category
+    /// and this topic — "Science › **Astronomy** · 400 questions".
+    /// Empty when the topic sits directly under its category.
+    @Default('') String groupName,
+
     /// Tint behind the tile's emoji plate, as `#RRGGBB`.
     required String plateColor,
     @Default(0) int questionCount,

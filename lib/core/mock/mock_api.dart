@@ -62,13 +62,29 @@ abstract class MockApi {
     this.maxLatency = const Duration(milliseconds: 600),
     double? failureRate,
     Random? random,
-  }) : failureRate = failureRate ?? (kDebugMode ? defaultFailureRate : 0),
+  }) : failureRate =
+           failureRate ??
+           failureRateOverride ??
+           (kDebugMode ? defaultFailureRate : 0),
        _random = random ?? Random();
 
   /// Roughly one request in twenty-five fails in a debug build — often enough
   /// that the error states get seen during review, rare enough that the app is
   /// still usable.
   static const double defaultFailureRate = 0.04;
+
+  /// Pins the failure rate of every mock API constructed after it is set.
+  ///
+  /// Widget tests run in debug mode, so without this every screen that loads
+  /// content would fail one run in twenty-five at random — a whole suite made
+  /// intermittently red by a fixture. A test sets this to `0` for
+  /// deterministic success or `1` to exercise an error state, in `setUp`,
+  /// which reaches APIs a screen constructs internally where constructor
+  /// injection cannot.
+  ///
+  /// Null (the default) leaves the debug-build behaviour above untouched, so
+  /// nothing about the demo build changes.
+  static double? failureRateOverride;
 
   /// The floor of the simulated round trip.
   final Duration minLatency;
@@ -97,9 +113,14 @@ abstract class MockApi {
   ///
   /// [build] is called *after* the delay, so a fixture that reads the clock
   /// sees the time the response "arrived".
+  ///
+  /// [latency] overrides the usual [minLatency]…[maxLatency] spread for one
+  /// call. It exists for reads that a real client would serve from local
+  /// storage rather than the network — Home's cached first paint, which §01
+  /// budgets at effectively zero so Splash → Home stays under 1.2 s.
   @protected
-  Future<T> respond<T>(T Function() build) async {
-    await Future<void>.delayed(_latency);
+  Future<T> respond<T>(T Function() build, {Duration? latency}) async {
+    await Future<void>.delayed(latency ?? _latency);
 
     if (failNextRequest) {
       failNextRequest = false;

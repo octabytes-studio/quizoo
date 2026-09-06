@@ -2,16 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/app.dart';
+
+import '../support/pump_app.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/core/breakpoints.dart';
+import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/features/dev/presentation/screens/placeholder_screen.dart';
+import 'package:quizoo/features/catalog/presentation/screens/level_map_screen.dart';
+import 'package:quizoo/features/home/presentation/screens/home_screen.dart';
+import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.dart';
+import 'package:quizoo/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:quizoo/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:quizoo/features/dev/presentation/screens/screen_index_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
 import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 void main() {
+  useMockApiFailureRate();
+
   setUp(() {
     final view =
         TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
@@ -79,12 +89,20 @@ void main() {
   });
 
   group('router skeleton', () {
-    testWidgets('boots on the splash route', (tester) async {
+    testWidgets('boots on the splash route and hands off to onboarding', (
+      tester,
+    ) async {
       await tester.pumpWidget(const QuizooApp());
+      await tester.pump();
+
+      expect(find.byType(SplashScreen), findsOneWidget);
+
+      // §01's contract: splash never holds longer than 1200 ms, and on a
+      // first launch it hands off to onboarding rather than Home.
       await tester.pumpAndSettle();
 
-      expect(find.text('S-01'), findsOneWidget);
-      expect(find.text('Splash'), findsOneWidget);
+      expect(find.byType(SplashScreen), findsNothing);
+      expect(find.byType(OnboardingScreen), findsOneWidget);
     });
 
     testWidgets('a shell tab renders inside the shell with the tab bar', (
@@ -94,7 +112,23 @@ void main() {
 
       expect(find.byType(AppShellScreen), findsOneWidget);
       expect(find.byType(AppTabBar), findsOneWidget);
-      expect(find.text('S-04'), findsOneWidget);
+      expect(find.byType(HomeScreen), findsOneWidget);
+    });
+
+    testWidgets('the tab bar leaves the shell body room to lay out in', (
+      tester,
+    ) async {
+      await pumpAppAt(tester, AppRoutes.home);
+
+      // A regression guard: the centre FAB used to stretch the bar to the
+      // full viewport height, which left every tab's body at zero and was
+      // invisible while the bodies were all placeholders built from Spacers.
+      final barHeight = tester.getSize(find.byType(AppTabBar)).height;
+      expect(barHeight, lessThan(Breakpoints.designHeight / 4));
+      expect(
+        tester.getSize(find.byType(HomeScreen)).height,
+        greaterThan(Breakpoints.designHeight / 2),
+      );
     });
 
     testWidgets('switching tabs keeps the shell and changes the body', (
@@ -117,17 +151,22 @@ void main() {
     testWidgets('a pushed route covers the tab bar', (tester) async {
       await pumpAppAt(tester, AppRoutes.quizPlayPath('demo'));
 
-      expect(find.text('S-11'), findsOneWidget);
+      expect(find.byType(QuizPlayScreen), findsOneWidget);
       // The play surface is pushed onto the root navigator, so the shell's
       // tab bar is not on screen (§02).
       expect(find.byType(AppTabBar), findsNothing);
     });
 
     testWidgets('a dynamic segment reaches its screen', (tester) async {
-      await pumpAppAt(tester, AppRoutes.levelMapPath('general', 'world-facts'));
+      await pumpAppAt(
+        tester,
+        AppRoutes.levelMapPath(MockCatalog.sportsId, MockCatalog.footballId),
+      );
 
-      expect(find.text('S-08'), findsOneWidget);
-      expect(find.text('Level map'), findsOneWidget);
+      expect(find.byType(LevelMapScreen), findsOneWidget);
+      // The topic names itself twice, as the bible's frame does: once in the
+      // top bar and once on the header stat card.
+      expect(find.text('Football'), findsWidgets);
     });
 
     testWidgets('the debug index lists every screen and navigates', (
@@ -167,7 +206,7 @@ void main() {
         return gradient.colors;
       }
 
-      final router = AppRouter.create()..go(AppRoutes.quizPlayPath('demo'));
+      final router = AppRouter.create()..go(AppRoutes.duelPlayPath('demo'));
 
       await tester.pumpWidget(
         MediaQuery(

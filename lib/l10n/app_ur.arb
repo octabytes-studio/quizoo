@@ -45,5 +45,60 @@
 
   "themeLight": "روشن",
   "themeDark": "تاریک",
-  "themeAuto": "خودکار"
+  "themeAuto": "خودکار",
+
+  "quizScore": "اسکور",
+  "quizQuitLabel": "لیول چھوڑ دیں",
+  "quizPauseLabel": "وقفہ",
+  "quizStreak": "🔥 {count}",
+  "_comment_powerups": "The dock's labels stay Latin under RTL — the bible's own S-16 frame shows '50:50', '+15s' and 'SKIP' unchanged, with only the count badges switching to Eastern Arabic numerals. They are omitted here deliberately so they fall back to English.",
+
+  "countdownMeta": "{subcategory} · لیول {level}",
+  "countdownGetReady": "تیار ہو جائیں…",
+  "countdownGo": "شروع",
+
+  "feedbackCorrect": "درست!",
+  "feedbackWrong": "بالکل نہیں",
+  "feedbackTimeout": "وقت ختم",
+  "feedbackPoints": "+{points}",
+  "feedbackHeartLost": "−۱ ❤️",
+  "feedbackNoHeartLost": "کوئی جان کم نہیں ہوئی",
+  "feedbackNext": "اگلا سوال",
+  "feedbackFinish": "نتائج دیکھیں",
+  "feedbackStreakReset": "سلسلہ ختم ہو گیا۔",
+  "feedbackLastHeart": "ایک جان باقی ہے — اگلا غلط جواب لیول ختم کر دے گا۔",
+
+  "pauseTitle": "وقفہ",
+  "pauseBody": "آپ کا وقت رک گیا ہے۔ کچھ ضائع نہیں ہوا۔",
+  "pauseResume": "جاری رکھیں",
+  "pauseSoundOn": "🔊 آواز آن",
+  "pauseSoundOff": "🔇 آواز آف",
+  "pauseHapticsOn": "📳 ارتعاش آن",
+  "pauseHapticsOff": "📴 ارتعاش آف",
+  "pauseRestart": "لیول دوبارہ شروع کریں",
+  "pauseQuit": "چھوڑ دیں — پیش رفت ضائع ہو گی",
+
+  "quitTitle": "لیول {level} چھوڑ دیں؟",
+  "quitKeepPlaying": "کھیلتے رہیں",
+  "quitConfirm": "لیول چھوڑ دیں",
+
+  "outOfLivesTitle": "جانیں ختم",
+  "outOfLivesWatchAd": "▶ ایک ❤️ کے لیے اشتہار دیکھیں",
+  "outOfLivesRefill": "۵ ❤️ بھریں · {coins} 🪙",
+  "outOfLivesBackToMap": "لیول نقشے پر واپس",
+  "outOfLivesAdPlaying": "اشتہار چل رہا ہے…",
+  "outOfLivesNotEnoughCoins": "سکے ناکافی ہیں",
+
+  "languageTitle": "اپنی زبان منتخب کریں",
+  "languageSubtitle": "آپ اسے کسی بھی وقت ترتیبات میں بدل سکتے ہیں",
+  "languageContinue": "جاری رکھیں",
+
+  "homeWelcome": "خوش آمدید 👋",
+  "homePlayingAsGuest": "بطور مہمان کھیل رہے ہیں",
+  "homeStreakLevel": "🔥 {streak} دن کا سلسلہ · لیول {level}",
+  "homeSearchLabel": "تلاش",
+  "homeResume": "جاری رکھیں",
+
+  "contentErrorTitle": "یہ لوڈ نہیں ہو سکا",
+  "contentErrorBody": "اپنا کنکشن دیکھ کر دوبارہ کوشش کریں۔"
 }

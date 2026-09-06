@@ -9,7 +9,14 @@ import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
 import 'package:quizoo/features/shell/presentation/widgets/play_launcher_sheet.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
+import '../../support/pump_app.dart';
+
 void main() {
+  // Home now loads real content, and MockApi fails one request in
+  // twenty-five in a debug build on purpose. Pin it so this suite is not
+  // intermittently red for reasons it does not test.
+  useMockApiFailureRate();
+
   setUp(() {
     final view =
         TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;

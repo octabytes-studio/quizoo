@@ -8,10 +8,17 @@ import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
+import '../support/pump_app.dart';
+
 /// Exercises the RTL proof of concept from plan 001's Assumption 5: English
 /// complete, a small Urdu subset, and the mirroring/typography that has to
 /// work before any screen is built on top of it.
 void main() {
+  // Home now loads real content, and MockApi fails one request in
+  // twenty-five in a debug build on purpose. Pin it so this suite is not
+  // intermittently red for reasons it does not test.
+  useMockApiFailureRate();
+
   setUp(() {
     final view =
         TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;

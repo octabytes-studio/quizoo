@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quizoo/app/app.dart';
+
+import '../support/pump_app.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/app/theme_cubit.dart';
 import 'package:quizoo/core/breakpoints.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_colors.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
+import 'package:quizoo/features/home/presentation/screens/home_screen.dart';
 import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
 
 void main() {
+  useMockApiFailureRate();
+
   setUp(() {
     final view =
         TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
@@ -29,7 +34,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AppTabBar), findsOneWidget);
-    expect(find.text('S-04'), findsOneWidget);
+    expect(find.byType(HomeScreen), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
