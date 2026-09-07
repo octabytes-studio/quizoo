@@ -49,14 +49,25 @@ The project ref is in the dashboard URL
 supabase db push        # applies supabase/migrations/*.sql in order
 ```
 
-Then run `supabase/seed.sql` once, either via the CLI:
+Then run `supabase/seed.sql` once. It's idempotent, so re-running it is
+harmless either way you do this:
 
-```bash
-psql "$(supabase status -o env | grep DB_URL | cut -d= -f2)" -f supabase/seed.sql
-```
+- **Dashboard SQL Editor (no installs needed)** — open the project's **SQL
+  Editor**, paste in `supabase/seed.sql`'s contents, and run it. This is the
+  fastest path and needs neither Docker nor a local Postgres client.
+- **`psql` from your machine** — `supabase status` only reports on a
+  **local** Docker/Podman-backed dev stack (`supabase start`), so it won't
+  work against a linked remote project and doesn't require Docker to be
+  running for this step at all. Instead, get the connection string from
+  **Project Settings → Database → Connection string** (URI form, "Session
+  pooler" or "Direct connection" both work) and run:
 
-or by pasting its contents into the dashboard's **SQL Editor** and running
-it there — either way it's idempotent, so re-running it is harmless.
+  ```bash
+  psql "<connection-string-from-dashboard>" -f supabase/seed.sql
+  ```
+
+  This needs the `psql` client installed locally — on macOS, if you don't
+  have it: `brew install libpq && brew link --force libpq`.
 
 **Verify:** in the dashboard's **Table Editor**, `categories` should have 6
 rows, `subcategories` 26, `questions` 24, `achievements` 14.

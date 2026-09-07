@@ -208,44 +208,44 @@ on conflict (question_id, locale) do nothing;
 
 insert into public.questions (id, subcategory_id, kind, difficulty, status, media_url)
 values
-  ('00000000-0000-4000-8000-0000000s0001', '00000000-0000-4000-8000-000000000201', 'text',  1, 'live', null),
-  ('00000000-0000-4000-8000-0000000s0002', '00000000-0000-4000-8000-000000000201', 'image', 2, 'live', null),
-  ('00000000-0000-4000-8000-0000000s0003', '00000000-0000-4000-8000-000000000201', 'text',  1, 'live', null),
-  ('00000000-0000-4000-8000-0000000s0004', '00000000-0000-4000-8000-000000000201', 'text',  3, 'live', null),
-  ('00000000-0000-4000-8000-0000000s0005', '00000000-0000-4000-8000-000000000201', 'image', 2, 'live', null),
-  ('00000000-0000-4000-8000-0000000s0006', '00000000-0000-4000-8000-000000000201', 'text',  4, 'live', null),
-  ('00000000-0000-4000-8000-0000000s0007', '00000000-0000-4000-8000-000000000201', 'text',  3, 'live', null),
-  ('00000000-0000-4000-8000-0000000s0008', '00000000-0000-4000-8000-000000000201', 'text',  4, 'live', null),
-  ('00000000-0000-4000-8000-0000000s0009', '00000000-0000-4000-8000-000000000201', 'text',  5, 'live', null)
+  ('00000000-0000-4000-8000-0000000a0001', '00000000-0000-4000-8000-000000000201', 'text',  1, 'live', null),
+  ('00000000-0000-4000-8000-0000000a0002', '00000000-0000-4000-8000-000000000201', 'image', 2, 'live', null),
+  ('00000000-0000-4000-8000-0000000a0003', '00000000-0000-4000-8000-000000000201', 'text',  1, 'live', null),
+  ('00000000-0000-4000-8000-0000000a0004', '00000000-0000-4000-8000-000000000201', 'text',  3, 'live', null),
+  ('00000000-0000-4000-8000-0000000a0005', '00000000-0000-4000-8000-000000000201', 'image', 2, 'live', null),
+  ('00000000-0000-4000-8000-0000000a0006', '00000000-0000-4000-8000-000000000201', 'text',  4, 'live', null),
+  ('00000000-0000-4000-8000-0000000a0007', '00000000-0000-4000-8000-000000000201', 'text',  3, 'live', null),
+  ('00000000-0000-4000-8000-0000000a0008', '00000000-0000-4000-8000-000000000201', 'text',  4, 'live', null),
+  ('00000000-0000-4000-8000-0000000a0009', '00000000-0000-4000-8000-000000000201', 'text',  5, 'live', null)
 on conflict (id) do nothing;
 
 insert into public.question_i18n (question_id, locale, prompt, options, correct_index, explanation, review_state)
 values
-  ('00000000-0000-4000-8000-0000000s0001', 'en', 'Which is the largest planet in the Solar System?',
+  ('00000000-0000-4000-8000-0000000a0001', 'en', 'Which is the largest planet in the Solar System?',
    '["Saturn","Jupiter","Earth","Mars"]', 1,
    'Jupiter — more than twice as massive as every other planet in the Solar System put together.', 'approved'),
-  ('00000000-0000-4000-8000-0000000s0002', 'en', 'Which planet is this?',
+  ('00000000-0000-4000-8000-0000000a0002', 'en', 'Which planet is this?',
    '["Saturn","Uranus","Neptune"]', 0,
    E'Saturn. Its rings are mostly water ice, and they''re only about ten metres thick.', 'approved'),
-  ('00000000-0000-4000-8000-0000000s0003', 'en', 'Which planet is known as the Red Planet?',
+  ('00000000-0000-4000-8000-0000000a0003', 'en', 'Which planet is known as the Red Planet?',
    '["Venus","Mars","Mercury","Jupiter"]', 1,
    'Mars. The colour comes from iron oxide — rust — across its surface.', 'approved'),
-  ('00000000-0000-4000-8000-0000000s0004', 'en', 'Which planet has the shortest day in the Solar System?',
+  ('00000000-0000-4000-8000-0000000a0004', 'en', 'Which planet has the shortest day in the Solar System?',
    '["Mercury","Jupiter","Earth","Venus"]', 1,
    'Jupiter turns once in under ten hours, despite being the largest planet.', 'approved'),
-  ('00000000-0000-4000-8000-0000000s0005', 'en', 'Which body is shown here?',
+  ('00000000-0000-4000-8000-0000000a0005', 'en', 'Which body is shown here?',
    '["The Moon","Europa","Titan"]', 0,
    E'Earth''s Moon. It is drifting away from us at about 3.8 cm a year.', 'approved'),
-  ('00000000-0000-4000-8000-0000000s0006', 'en', 'Which is the hottest planet in the Solar System?',
+  ('00000000-0000-4000-8000-0000000a0006', 'en', 'Which is the hottest planet in the Solar System?',
    '["Mercury","Venus","Mars","Jupiter"]', 1,
    'Venus, at about 465°C. Its thick carbon-dioxide atmosphere traps more heat than Mercury gets from being closer to the Sun.', 'approved'),
-  ('00000000-0000-4000-8000-0000000s0007', 'en', 'How many planets in the Solar System have ring systems?',
+  ('00000000-0000-4000-8000-0000000a0007', 'en', 'How many planets in the Solar System have ring systems?',
    '["One","Two","Four","Eight"]', 2,
    E'Four — Jupiter, Saturn, Uranus and Neptune. Saturn''s are simply the only ones bright enough to see easily.', 'approved'),
-  ('00000000-0000-4000-8000-0000000s0008', 'en', 'The asteroid belt lies between which two planets?',
+  ('00000000-0000-4000-8000-0000000a0008', 'en', 'The asteroid belt lies between which two planets?',
    '["Earth and Mars","Mars and Jupiter","Jupiter and Saturn","Venus and Earth"]', 1,
    E'Mars and Jupiter. Everything in it together weighs less than Earth''s Moon.', 'approved'),
-  ('00000000-0000-4000-8000-0000000s0009', 'en', 'What type of star is the Sun?',
+  ('00000000-0000-4000-8000-0000000a0009', 'en', 'What type of star is the Sun?',
    '["Red giant","White dwarf","Yellow dwarf","Blue supergiant"]', 2,
    'A yellow dwarf, or G-type main-sequence star — about halfway through its life.', 'approved')
 on conflict (question_id, locale) do nothing;
@@ -255,7 +255,7 @@ on conflict (question_id, locale) do nothing;
 -- content, translated, not a separate question.
 insert into public.question_i18n (question_id, locale, prompt, options, correct_index, explanation, review_state)
 values
-  ('00000000-0000-4000-8000-0000000s0001', 'ur', 'نظامِ شمسی میں سب سے بڑا سیارہ کون سا ہے؟',
+  ('00000000-0000-4000-8000-0000000a0001', 'ur', 'نظامِ شمسی میں سب سے بڑا سیارہ کون سا ہے؟',
    '["زحل","مشتری","زمین","مریخ"]', 1,
    'مشتری — یہ باقی تمام سیاروں کے مجموعے سے بھی دوگنا بھاری ہے۔', 'approved')
 on conflict (question_id, locale) do nothing;
