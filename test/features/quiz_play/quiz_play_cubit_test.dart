@@ -1,14 +1,14 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'dart:async';
-
 import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
+import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
-import 'package:quizoo/features/quiz_play/domain/power_up.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/domain/scoring.dart';

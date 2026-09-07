@@ -31,6 +31,10 @@ enum ChunkyButtonVariant {
   /// Lemon. Rewarded / value actions.
   gold,
 
+  /// Raspberry. A destructive action taken deliberately — S-52's "Delete
+  /// permanently", enabled only once its own confirmation gate is satisfied.
+  danger,
+
   /// Surface-coloured with a hairline ledge. The soft decline.
   ghost,
 
@@ -82,6 +86,16 @@ class ChunkyButton extends StatefulWidget {
     this.isSmall = false,
     this.semanticLabel,
   }) : variant = ChunkyButtonVariant.gold;
+
+  const ChunkyButton.danger({
+    required this.label,
+    required this.onPressed,
+    super.key,
+    this.subLabel,
+    this.icon,
+    this.isSmall = false,
+    this.semanticLabel,
+  }) : variant = ChunkyButtonVariant.danger;
 
   const ChunkyButton.ghost({
     required this.label,
@@ -171,6 +185,11 @@ class _ChunkyButtonState extends State<ChunkyButton> {
         quizoo.gold,
         AppColors.onGold,
         quizoo.goldShadow,
+      ),
+      ChunkyButtonVariant.danger => (
+        quizoo.bad,
+        Colors.white,
+        quizoo.badShadow,
       ),
       ChunkyButtonVariant.ghost => (quizoo.s1, quizoo.tx, quizoo.ln),
       ChunkyButtonVariant.line => (

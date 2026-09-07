@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/power_up_tile.dart';
-import 'package:quizoo/features/quiz_play/domain/power_up.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// `.pups` — the three power-up tiles under the options.

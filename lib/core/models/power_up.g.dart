@@ -11,6 +11,7 @@ _PowerUpInventory _$PowerUpInventoryFromJson(Map<String, dynamic> json) =>
       fiftyFifty: (json['fiftyFifty'] as num?)?.toInt() ?? 0,
       addTime: (json['addTime'] as num?)?.toInt() ?? 0,
       skip: (json['skip'] as num?)?.toInt() ?? 0,
+      freeze: (json['freeze'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$PowerUpInventoryToJson(_PowerUpInventory instance) =>
@@ -18,4 +19,5 @@ Map<String, dynamic> _$PowerUpInventoryToJson(_PowerUpInventory instance) =>
       'fiftyFifty': instance.fiftyFifty,
       'addTime': instance.addTime,
       'skip': instance.skip,
+      'freeze': instance.freeze,
     };

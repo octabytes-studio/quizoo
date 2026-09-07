@@ -1033,5 +1033,282 @@
   "@statsFastestAverage": {
     "description": "S-35 fastest-answers row title, seconds already formatted to one decimal.",
     "placeholders": { "seconds": { "type": "String", "example": "1.2" } }
-  }
+  },
+
+  "shopTitle": "Shop",
+  "@shopTitle": { "description": "S-36 top bar title." },
+  "shopFreeCoinsTitle": "Watch a 30s ad",
+  "@shopFreeCoinsTitle": { "description": "S-36 free-coins card heading." },
+  "shopFreeCoinsMeta": "{count} left today",
+  "@shopFreeCoinsMeta": {
+    "description": "S-36 free-coins card caption while ads remain.",
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "shopFreeCoinsNoneLeft": "Come back tomorrow for more",
+  "@shopFreeCoinsNoneLeft": { "description": "S-36 free-coins card caption once today's ads are used up." },
+  "shopPowerUpsHeading": "Power-ups",
+  "@shopPowerUpsHeading": { "description": "S-36 section header." },
+  "shopPowerUpFiftyFiftyBody": "Removes two wrong options",
+  "@shopPowerUpFiftyFiftyBody": { "description": "S-36 50:50 row description." },
+  "shopPowerUpAddTimeBody": "Adds 15 seconds to the clock",
+  "@shopPowerUpAddTimeBody": { "description": "S-36 +15s row description." },
+  "shopPowerUpSkipBody": "Skips a question, no heart lost",
+  "@shopPowerUpSkipBody": { "description": "S-36 Skip row description." },
+  "shopPowerUpFreeze": "Freeze",
+  "@shopPowerUpFreeze": { "description": "S-36 Freeze row title — duel-only, see core/models/power_up.dart." },
+  "shopPowerUpFreezeBody": "Freezes your opponent's timer for 5s in a duel",
+  "@shopPowerUpFreezeBody": { "description": "S-36 Freeze row description." },
+  "shopOwned": "{count} owned",
+  "@shopOwned": {
+    "description": "S-36 power-up row trailing caption.",
+    "placeholders": { "count": { "type": "int", "example": "3" } }
+  },
+  "shopPurchaseSuccess": "Bought {name}",
+  "@shopPurchaseSuccess": {
+    "description": "S-36 snackbar after a successful power-up purchase.",
+    "placeholders": { "name": { "type": "String", "example": "50:50" } }
+  },
+  "shopInsufficientCoins": "Not enough coins",
+  "@shopInsufficientCoins": { "description": "S-36 snackbar when a coin-priced purchase can't be afforded." },
+  "shopInsufficientGems": "Not enough gems",
+  "@shopInsufficientGems": { "description": "S-36 snackbar when a gem-priced purchase can't be afforded." },
+  "shopCoinPacksHeading": "Coin packs",
+  "@shopCoinPacksHeading": { "description": "S-36 section header." },
+  "shopRemoveAdsTitle": "Remove ads forever",
+  "@shopRemoveAdsTitle": { "description": "S-36 remove-ads row title." },
+  "shopRemoveAdsBody": "Free coins stay available — this only removes ads.",
+  "@shopRemoveAdsBody": { "description": "S-36 remove-ads row body, quoting the bible's own product decision about the free-coin route." },
+  "shopRemoveAdsPrice": "$6.99",
+  "@shopRemoveAdsPrice": { "description": "S-36 remove-ads row price." },
+  "shopMockPayment": "Mock — payments not wired",
+  "@shopMockPayment": { "description": "Snackbar for a coin-pack or remove-ads tap, per plan 004's Scope." },
+
+  "rewardedAdTitle": "Watch to earn",
+  "@rewardedAdTitle": { "description": "S-37 dialog title." },
+  "rewardedAdBody": "A 30-second ad gets you {coins} coins. You have {left} of {total} daily rewards left.",
+  "@rewardedAdBody": {
+    "description": "S-37 dialog body.",
+    "placeholders": {
+      "coins": { "type": "int", "example": "50" },
+      "left": { "type": "int", "example": "2" },
+      "total": { "type": "int", "example": "3" }
+    }
+  },
+  "rewardedAdWatch": "▶ Watch now",
+  "@rewardedAdWatch": { "description": "S-37 primary action." },
+  "rewardedAdWatching": "Watching…",
+  "@rewardedAdWatching": { "description": "S-37 primary action while the mocked ad plays." },
+  "rewardedAdNoThanks": "No thanks",
+  "@rewardedAdNoThanks": { "description": "S-37 secondary action." },
+  "rewardedAdFailedTitle": "Ad failed to load",
+  "@rewardedAdFailedTitle": { "description": "S-37 toast when the mocked ad fails, which must fall back rather than leave a dead button." },
+  "rewardedAdFailedBody": "Give it another try",
+  "@rewardedAdFailedBody": { "description": "S-37 toast body." },
+  "rewardedAdSuccessTitle": "+{coins} 🪙 credited",
+  "@rewardedAdSuccessTitle": {
+    "description": "S-37 success snackbar after the dialog closes.",
+    "placeholders": { "coins": { "type": "int", "example": "50" } }
+  },
+
+  "duelMatchmakingTitle": "Finding an opponent",
+  "@duelMatchmakingTitle": { "description": "S-39 heading." },
+  "duelEloLabel": "{elo} ELO",
+  "@duelEloLabel": {
+    "description": "S-39/S-40 VS row caption under the player's own avatar.",
+    "placeholders": { "elo": { "type": "int", "example": "1240" } }
+  },
+  "duelSearchingCaption": "❓ Searching…",
+  "@duelSearchingCaption": { "description": "S-39 VS row caption under the shimmering skeleton avatar." },
+  "duelSearchingStatus": "Searching for {seconds}s · widening range in {next}s",
+  "@duelSearchingStatus": {
+    "description": "S-39 status line under the spinner.",
+    "placeholders": {
+      "seconds": { "type": "int", "example": "14" },
+      "next": { "type": "int", "example": "4" }
+    }
+  },
+  "duelCancelPlayBot": "Cancel — play a bot instead",
+  "@duelCancelPlayBot": { "description": "S-39 button, on screen from frame one per plan 004's Research findings." },
+  "duelRoundLabel": "ROUND {current}/{total}",
+  "@duelRoundLabel": {
+    "description": "S-40 round counter under the timer ring.",
+    "placeholders": {
+      "current": { "type": "int", "example": "3" },
+      "total": { "type": "int", "example": "5" }
+    }
+  },
+  "duelAnsweredIn": "Answered in {seconds}s",
+  "@duelAnsweredIn": {
+    "description": "S-40 status chip once a side has locked an answer.",
+    "placeholders": { "seconds": { "type": "int", "example": "4" } }
+  },
+  "duelThinking": "Thinking…",
+  "@duelThinking": { "description": "S-40 status chip while a side has not answered yet." },
+  "duelResultVictoryTitle": "🏆 Victory!",
+  "@duelResultVictoryTitle": { "description": "S-41 victory headline." },
+  "duelResultDefeatTitle": "Good game",
+  "@duelResultDefeatTitle": { "description": "S-41 defeat headline." },
+  "duelResultRoundsWon": "Rounds won",
+  "@duelResultRoundsWon": { "description": "S-41 stat card row label." },
+  "duelResultAvgTime": "Average answer time",
+  "@duelResultAvgTime": { "description": "S-41 stat card row label." },
+  "duelResultAvgTimeValue": "{player}s vs {opponent}s",
+  "@duelResultAvgTimeValue": {
+    "description": "S-41 stat card row value.",
+    "placeholders": {
+      "player": { "type": "String", "example": "4.2" },
+      "opponent": { "type": "String", "example": "5.6" }
+    }
+  },
+  "duelResultElo": "ELO",
+  "@duelResultElo": { "description": "S-41 stat card row label." },
+  "duelResultReward": "Reward",
+  "@duelResultReward": { "description": "S-41 stat card row label." },
+  "duelResultRematch": "Rematch",
+  "@duelResultRematch": { "description": "S-41 primary action." },
+  "duelResultFindNew": "Find a new opponent",
+  "@duelResultFindNew": { "description": "S-41 secondary action." },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": { "description": "S-42 top bar title." },
+  "settingsAppearance": "APPEARANCE",
+  "@settingsAppearance": { "description": "S-42 group label." },
+  "settingsGame": "GAME",
+  "@settingsGame": { "description": "S-42 group label." },
+  "settingsLanguage": "Language",
+  "@settingsLanguage": { "description": "S-42 row title, opens S-03's picker." },
+  "settingsSoundEffects": "Sound effects",
+  "@settingsSoundEffects": { "description": "S-42 toggle row title." },
+  "settingsMusic": "Music",
+  "@settingsMusic": { "description": "S-42 toggle row title." },
+  "settingsHaptics": "Haptics",
+  "@settingsHaptics": { "description": "S-42 toggle row title." },
+  "settingsAccount": "ACCOUNT",
+  "@settingsAccount": { "description": "S-42 group label." },
+  "settingsNotifications": "Notifications",
+  "@settingsNotifications": { "description": "S-42 row title, opens S-44." },
+  "settingsPrivacy": "Privacy & leaderboard visibility",
+  "@settingsPrivacy": { "description": "S-42 row title — plan 004's Assumption 4 stub destination." },
+  "settingsDeleteAccount": "Delete account",
+  "@settingsDeleteAccount": { "description": "S-42 row title, styled raspberry, opens S-52." },
+  "settingsDeveloper": "DEVELOPER",
+  "@settingsDeveloper": { "description": "Debug-only group label (plan 001's Assumption 7) — not a bible-specified section." },
+  "settingsSimulateOffline": "Simulate offline",
+  "@settingsSimulateOffline": { "description": "Debug toggle driving Home's S-46 variant via ConnectivityCubit." },
+  "settingsPreviewForceUpdate": "Preview: force update screen",
+  "@settingsPreviewForceUpdate": { "description": "Debug row reaching S-50, which has no real version-check trigger in this mock phase." },
+  "settingsPreviewNotificationPermission": "Preview: notification permission",
+  "@settingsPreviewNotificationPermission": { "description": "Debug row reaching S-54, which has no real 3-levels-completed trigger wired by default." },
+  "settingsVersion": "Quizoo v1.0.0 (mock build)",
+  "@settingsVersion": { "description": "S-42 footer version string." },
+
+  "notificationsTitle": "Notifications",
+  "@notificationsTitle": { "description": "S-44 top bar title." },
+  "notificationsMarkAllRead": "Mark all read",
+  "@notificationsMarkAllRead": { "description": "S-44 top bar trailing action." },
+  "notificationsAccept": "Accept",
+  "@notificationsAccept": { "description": "S-44 duel-challenge row's inline action — must never require a second screen." },
+  "notificationsEmpty": "Nothing new right now.",
+  "@notificationsEmpty": { "description": "S-44 empty-list copy." },
+
+  "deleteAccountTitle": "Delete your account?",
+  "@deleteAccountTitle": { "description": "S-52 dialog title." },
+  "deleteAccountBody": "You'll lose {points} points, {badges} badges and a {streak}-day streak. This can't be undone.",
+  "@deleteAccountBody": {
+    "description": "S-52 body, quoting the player's own live mock numbers rather than a hardcoded example.",
+    "placeholders": {
+      "points": { "type": "int", "example": "12400" },
+      "badges": { "type": "int", "example": "5" },
+      "streak": { "type": "int", "example": "12" }
+    }
+  },
+  "deleteAccountBodyLoading": "Loading your account details…",
+  "@deleteAccountBodyLoading": { "description": "S-52 body while the player's numbers are still loading." },
+  "deleteAccountTypeUsername": "Type \"{username}\" to confirm",
+  "@deleteAccountTypeUsername": {
+    "description": "S-52 confirmation field label — the match is case-sensitive and exact.",
+    "placeholders": { "username": { "type": "String", "example": "Waleed" } }
+  },
+  "deleteAccountKeep": "Keep my account",
+  "@deleteAccountKeep": { "description": "S-52 dominant, ghost-styled action." },
+  "deleteAccountDelete": "Delete permanently",
+  "@deleteAccountDelete": { "description": "S-52 destructive action, disabled until the typed username matches exactly." },
+  "deleteAccountDone": "Account deleted (mock) — you're browsing as a guest",
+  "@deleteAccountDone": { "description": "Snackbar after the mocked delete signs the player out to Guest." },
+
+  "forceUpdateTitle": "Time to update",
+  "@forceUpdateTitle": { "description": "S-50 headline." },
+  "forceUpdateBody": "Version 1.4 adds 1v1 duels and 12 new topics. This version can no longer connect.",
+  "@forceUpdateBody": { "description": "S-50 body." },
+  "forceUpdateCta": "Update Quizoo",
+  "@forceUpdateCta": { "description": "S-50 sole action." },
+  "forceUpdateMock": "Mock — no app store wired up",
+  "@forceUpdateMock": { "description": "Snackbar after tapping S-50's CTA, which has nowhere real to send the player." },
+
+  "notificationPermissionTitle": "Keep your streak alive?",
+  "@notificationPermissionTitle": { "description": "S-54 dialog title." },
+  "notificationPermissionBody": "We'll send one reminder a day at a time you choose. Nothing else — no marketing, no \"we miss you\".",
+  "@notificationPermissionBody": { "description": "S-54 dialog body." },
+  "notificationPermissionTimeLabel": "Reminder time",
+  "@notificationPermissionTimeLabel": { "description": "S-54 time-picker row label." },
+  "notificationPermissionTurnOn": "Turn on reminders",
+  "@notificationPermissionTurnOn": { "description": "S-54 primary action." },
+  "notificationPermissionNotNow": "Not now",
+  "@notificationPermissionNotNow": { "description": "S-54 secondary action." },
+  "notificationPermissionOnTitle": "Reminders on for {time}",
+  "@notificationPermissionOnTitle": {
+    "description": "Snackbar after accepting S-54.",
+    "placeholders": { "time": { "type": "String", "example": "8:30 PM" } }
+  },
+
+  "privacyTitle": "Privacy",
+  "@privacyTitle": { "description": "Privacy stub screen top bar title (plan 004, Assumption 4)." },
+  "privacyShowOnLeaderboards": "Show my rank on leaderboards",
+  "@privacyShowOnLeaderboards": { "description": "Privacy stub toggle row." },
+  "privacyShowActivityToFriends": "Show my activity to friends",
+  "@privacyShowActivityToFriends": { "description": "Privacy stub toggle row." },
+
+  "quizReportLabel": "Report this question",
+  "@quizReportLabel": { "description": "S-11 HUD '⋯' semantic label, opening S-51 (plan 004)." },
+
+  "homeOfflineMode": "Offline mode",
+  "@homeOfflineMode": { "description": "S-46 top-of-screen label replacing Home's usual top bar subtitle." },
+  "homeOfflineWarning": "No connection. You can still play {count} downloaded topics. Scores sync when you're back.",
+  "@homeOfflineWarning": {
+    "description": "S-46 inline warning card body.",
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "homeOfflineAvailable": "Available offline",
+  "@homeOfflineAvailable": { "description": "S-46 section header." },
+  "homeOfflineNeedsConnection": "NEEDS CONNECTION",
+  "@homeOfflineNeedsConnection": { "description": "S-46 dimmed strip heading." },
+  "homeOfflineNeedsConnectionList": "Duels · Leaderboards · Daily challenge",
+  "@homeOfflineNeedsConnectionList": { "description": "S-46 dimmed strip body." },
+
+  "reportQuestionTitle": "Report this question",
+  "@reportQuestionTitle": { "description": "S-51 sheet title." },
+  "reportQuestionMeta": "\"{question}\"",
+  "@reportQuestionMeta": {
+    "description": "S-51 sheet body, quoting the question being reported.",
+    "placeholders": { "question": { "type": "String", "example": "Which club has won the most UEFA Champions League titles?" } }
+  },
+  "reportReasonWrong": "The answer is wrong",
+  "@reportReasonWrong": { "description": "S-51 reason." },
+  "reportReasonUnclear": "Question is unclear",
+  "@reportReasonUnclear": { "description": "S-51 reason." },
+  "reportReasonTranslation": "Bad translation",
+  "@reportReasonTranslation": { "description": "S-51 reason." },
+  "reportReasonOffensive": "Offensive content",
+  "@reportReasonOffensive": { "description": "S-51 reason." },
+  "reportReasonImage": "Image doesn't load",
+  "@reportReasonImage": { "description": "S-51 reason." },
+  "reportQuestionSubmit": "Send report",
+  "@reportQuestionSubmit": { "description": "S-51 CTA." },
+  "reportQuestionSent": "Report sent — thanks for the flag",
+  "@reportQuestionSent": { "description": "S-51 snackbar confirmation." },
+
+  "shareDemoTitle": "Share",
+  "@shareDemoTitle": { "description": "S-53's own reserved path, reached with no real result to share." },
+  "shareDemoPreview": "Quizoo — the quiz that plays like a game.",
+  "@shareDemoPreview": { "description": "S-53 demo preview card body." }
 }

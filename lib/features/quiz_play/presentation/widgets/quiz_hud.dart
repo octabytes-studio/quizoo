@@ -15,7 +15,12 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// streak badge swap ends, because [Directionality] already decides what
 /// "start" and "end" mean here.
 class QuizHud extends StatelessWidget {
-  const QuizHud({required this.run, required this.onQuitPressed, super.key});
+  const QuizHud({
+    required this.run,
+    required this.onQuitPressed,
+    required this.onReportPressed,
+    super.key,
+  });
 
   final QuizRun run;
 
@@ -24,6 +29,9 @@ class QuizHud extends StatelessWidget {
   /// would be a silent deviation. Pause is reached the two ways the platform
   /// already offers — see `QuizPlayScreen`.
   final VoidCallback onQuitPressed;
+
+  /// Opens S-51 (plan 004) — the "⋯" overflow next to the streak badge.
+  final VoidCallback onReportPressed;
 
   /// `.play .hud .x` — 34×34.
   static const double closeButtonSize = 34;
@@ -50,6 +58,12 @@ class QuizHud extends StatelessWidget {
               Expanded(child: _ProgressDots(run: run)),
               SizedBox(width: 10.w),
               _StreakBadge(streak: run.currentStreak),
+              SizedBox(width: 10.w),
+              _ChromeButton(
+                glyph: '⋯',
+                semanticLabel: l10n.quizReportLabel,
+                onTap: onReportPressed,
+              ),
             ],
           ),
         ),

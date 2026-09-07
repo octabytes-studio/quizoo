@@ -4,9 +4,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
+import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
-import 'package:quizoo/features/quiz_play/domain/power_up.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/domain/scoring.dart';
@@ -437,6 +437,13 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
           ),
         );
         _scheduleAutoAdvance();
+      case PowerUp.freeze:
+        // Shop-only for now — see `core/models/power_up.dart`. Solo play has
+        // no opponent clock to freeze, so the dock never offers this tile
+        // (`PowerUpDock`'s row list is fixed to the other three) and this
+        // branch is unreachable; it exists only so the switch stays
+        // exhaustive against the shared enum.
+        break;
     }
   }
 

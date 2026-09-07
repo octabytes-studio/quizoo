@@ -1981,6 +1981,612 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{seconds}s average'**
   String statsFastestAverage(String seconds);
+
+  /// S-36 top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get shopTitle;
+
+  /// S-36 free-coins card heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch a 30s ad'**
+  String get shopFreeCoinsTitle;
+
+  /// S-36 free-coins card caption while ads remain.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left today'**
+  String shopFreeCoinsMeta(int count);
+
+  /// S-36 free-coins card caption once today's ads are used up.
+  ///
+  /// In en, this message translates to:
+  /// **'Come back tomorrow for more'**
+  String get shopFreeCoinsNoneLeft;
+
+  /// S-36 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Power-ups'**
+  String get shopPowerUpsHeading;
+
+  /// S-36 50:50 row description.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes two wrong options'**
+  String get shopPowerUpFiftyFiftyBody;
+
+  /// S-36 +15s row description.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds 15 seconds to the clock'**
+  String get shopPowerUpAddTimeBody;
+
+  /// S-36 Skip row description.
+  ///
+  /// In en, this message translates to:
+  /// **'Skips a question, no heart lost'**
+  String get shopPowerUpSkipBody;
+
+  /// S-36 Freeze row title — duel-only, see core/models/power_up.dart.
+  ///
+  /// In en, this message translates to:
+  /// **'Freeze'**
+  String get shopPowerUpFreeze;
+
+  /// S-36 Freeze row description.
+  ///
+  /// In en, this message translates to:
+  /// **'Freezes your opponent\'s timer for 5s in a duel'**
+  String get shopPowerUpFreezeBody;
+
+  /// S-36 power-up row trailing caption.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} owned'**
+  String shopOwned(int count);
+
+  /// S-36 snackbar after a successful power-up purchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Bought {name}'**
+  String shopPurchaseSuccess(String name);
+
+  /// S-36 snackbar when a coin-priced purchase can't be afforded.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough coins'**
+  String get shopInsufficientCoins;
+
+  /// S-36 snackbar when a gem-priced purchase can't be afforded.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough gems'**
+  String get shopInsufficientGems;
+
+  /// S-36 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Coin packs'**
+  String get shopCoinPacksHeading;
+
+  /// S-36 remove-ads row title.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove ads forever'**
+  String get shopRemoveAdsTitle;
+
+  /// S-36 remove-ads row body, quoting the bible's own product decision about the free-coin route.
+  ///
+  /// In en, this message translates to:
+  /// **'Free coins stay available — this only removes ads.'**
+  String get shopRemoveAdsBody;
+
+  /// S-36 remove-ads row price.
+  ///
+  /// In en, this message translates to:
+  /// **'\$6.99'**
+  String get shopRemoveAdsPrice;
+
+  /// Snackbar for a coin-pack or remove-ads tap, per plan 004's Scope.
+  ///
+  /// In en, this message translates to:
+  /// **'Mock — payments not wired'**
+  String get shopMockPayment;
+
+  /// S-37 dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch to earn'**
+  String get rewardedAdTitle;
+
+  /// S-37 dialog body.
+  ///
+  /// In en, this message translates to:
+  /// **'A 30-second ad gets you {coins} coins. You have {left} of {total} daily rewards left.'**
+  String rewardedAdBody(int coins, int left, int total);
+
+  /// S-37 primary action.
+  ///
+  /// In en, this message translates to:
+  /// **'▶ Watch now'**
+  String get rewardedAdWatch;
+
+  /// S-37 primary action while the mocked ad plays.
+  ///
+  /// In en, this message translates to:
+  /// **'Watching…'**
+  String get rewardedAdWatching;
+
+  /// S-37 secondary action.
+  ///
+  /// In en, this message translates to:
+  /// **'No thanks'**
+  String get rewardedAdNoThanks;
+
+  /// S-37 toast when the mocked ad fails, which must fall back rather than leave a dead button.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad failed to load'**
+  String get rewardedAdFailedTitle;
+
+  /// S-37 toast body.
+  ///
+  /// In en, this message translates to:
+  /// **'Give it another try'**
+  String get rewardedAdFailedBody;
+
+  /// S-37 success snackbar after the dialog closes.
+  ///
+  /// In en, this message translates to:
+  /// **'+{coins} 🪙 credited'**
+  String rewardedAdSuccessTitle(int coins);
+
+  /// S-39 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding an opponent'**
+  String get duelMatchmakingTitle;
+
+  /// S-39/S-40 VS row caption under the player's own avatar.
+  ///
+  /// In en, this message translates to:
+  /// **'{elo} ELO'**
+  String duelEloLabel(int elo);
+
+  /// S-39 VS row caption under the shimmering skeleton avatar.
+  ///
+  /// In en, this message translates to:
+  /// **'❓ Searching…'**
+  String get duelSearchingCaption;
+
+  /// S-39 status line under the spinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching for {seconds}s · widening range in {next}s'**
+  String duelSearchingStatus(int seconds, int next);
+
+  /// S-39 button, on screen from frame one per plan 004's Research findings.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel — play a bot instead'**
+  String get duelCancelPlayBot;
+
+  /// S-40 round counter under the timer ring.
+  ///
+  /// In en, this message translates to:
+  /// **'ROUND {current}/{total}'**
+  String duelRoundLabel(int current, int total);
+
+  /// S-40 status chip once a side has locked an answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered in {seconds}s'**
+  String duelAnsweredIn(int seconds);
+
+  /// S-40 status chip while a side has not answered yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get duelThinking;
+
+  /// S-41 victory headline.
+  ///
+  /// In en, this message translates to:
+  /// **'🏆 Victory!'**
+  String get duelResultVictoryTitle;
+
+  /// S-41 defeat headline.
+  ///
+  /// In en, this message translates to:
+  /// **'Good game'**
+  String get duelResultDefeatTitle;
+
+  /// S-41 stat card row label.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounds won'**
+  String get duelResultRoundsWon;
+
+  /// S-41 stat card row label.
+  ///
+  /// In en, this message translates to:
+  /// **'Average answer time'**
+  String get duelResultAvgTime;
+
+  /// S-41 stat card row value.
+  ///
+  /// In en, this message translates to:
+  /// **'{player}s vs {opponent}s'**
+  String duelResultAvgTimeValue(String player, String opponent);
+
+  /// S-41 stat card row label.
+  ///
+  /// In en, this message translates to:
+  /// **'ELO'**
+  String get duelResultElo;
+
+  /// S-41 stat card row label.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward'**
+  String get duelResultReward;
+
+  /// S-41 primary action.
+  ///
+  /// In en, this message translates to:
+  /// **'Rematch'**
+  String get duelResultRematch;
+
+  /// S-41 secondary action.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a new opponent'**
+  String get duelResultFindNew;
+
+  /// S-42 top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// S-42 group label.
+  ///
+  /// In en, this message translates to:
+  /// **'APPEARANCE'**
+  String get settingsAppearance;
+
+  /// S-42 group label.
+  ///
+  /// In en, this message translates to:
+  /// **'GAME'**
+  String get settingsGame;
+
+  /// S-42 row title, opens S-03's picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// S-42 toggle row title.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound effects'**
+  String get settingsSoundEffects;
+
+  /// S-42 toggle row title.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get settingsMusic;
+
+  /// S-42 toggle row title.
+  ///
+  /// In en, this message translates to:
+  /// **'Haptics'**
+  String get settingsHaptics;
+
+  /// S-42 group label.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get settingsAccount;
+
+  /// S-42 row title, opens S-44.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotifications;
+
+  /// S-42 row title — plan 004's Assumption 4 stub destination.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & leaderboard visibility'**
+  String get settingsPrivacy;
+
+  /// S-42 row title, styled raspberry, opens S-52.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get settingsDeleteAccount;
+
+  /// Debug-only group label (plan 001's Assumption 7) — not a bible-specified section.
+  ///
+  /// In en, this message translates to:
+  /// **'DEVELOPER'**
+  String get settingsDeveloper;
+
+  /// Debug toggle driving Home's S-46 variant via ConnectivityCubit.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulate offline'**
+  String get settingsSimulateOffline;
+
+  /// Debug row reaching S-50, which has no real version-check trigger in this mock phase.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: force update screen'**
+  String get settingsPreviewForceUpdate;
+
+  /// Debug row reaching S-54, which has no real 3-levels-completed trigger wired by default.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: notification permission'**
+  String get settingsPreviewNotificationPermission;
+
+  /// S-42 footer version string.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizoo v1.0.0 (mock build)'**
+  String get settingsVersion;
+
+  /// S-44 top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTitle;
+
+  /// S-44 top bar trailing action.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get notificationsMarkAllRead;
+
+  /// S-44 duel-challenge row's inline action — must never require a second screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get notificationsAccept;
+
+  /// S-44 empty-list copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new right now.'**
+  String get notificationsEmpty;
+
+  /// S-52 dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountTitle;
+
+  /// S-52 body, quoting the player's own live mock numbers rather than a hardcoded example.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll lose {points} points, {badges} badges and a {streak}-day streak. This can\'t be undone.'**
+  String deleteAccountBody(int points, int badges, int streak);
+
+  /// S-52 body while the player's numbers are still loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your account details…'**
+  String get deleteAccountBodyLoading;
+
+  /// S-52 confirmation field label — the match is case-sensitive and exact.
+  ///
+  /// In en, this message translates to:
+  /// **'Type \"{username}\" to confirm'**
+  String deleteAccountTypeUsername(String username);
+
+  /// S-52 dominant, ghost-styled action.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep my account'**
+  String get deleteAccountKeep;
+
+  /// S-52 destructive action, disabled until the typed username matches exactly.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get deleteAccountDelete;
+
+  /// Snackbar after the mocked delete signs the player out to Guest.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted (mock) — you\'re browsing as a guest'**
+  String get deleteAccountDone;
+
+  /// S-50 headline.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to update'**
+  String get forceUpdateTitle;
+
+  /// S-50 body.
+  ///
+  /// In en, this message translates to:
+  /// **'Version 1.4 adds 1v1 duels and 12 new topics. This version can no longer connect.'**
+  String get forceUpdateBody;
+
+  /// S-50 sole action.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Quizoo'**
+  String get forceUpdateCta;
+
+  /// Snackbar after tapping S-50's CTA, which has nowhere real to send the player.
+  ///
+  /// In en, this message translates to:
+  /// **'Mock — no app store wired up'**
+  String get forceUpdateMock;
+
+  /// S-54 dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your streak alive?'**
+  String get notificationPermissionTitle;
+
+  /// S-54 dialog body.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send one reminder a day at a time you choose. Nothing else — no marketing, no \"we miss you\".'**
+  String get notificationPermissionBody;
+
+  /// S-54 time-picker row label.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time'**
+  String get notificationPermissionTimeLabel;
+
+  /// S-54 primary action.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on reminders'**
+  String get notificationPermissionTurnOn;
+
+  /// S-54 secondary action.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notificationPermissionNotNow;
+
+  /// Snackbar after accepting S-54.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders on for {time}'**
+  String notificationPermissionOnTitle(String time);
+
+  /// Privacy stub screen top bar title (plan 004, Assumption 4).
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacyTitle;
+
+  /// Privacy stub toggle row.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my rank on leaderboards'**
+  String get privacyShowOnLeaderboards;
+
+  /// Privacy stub toggle row.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my activity to friends'**
+  String get privacyShowActivityToFriends;
+
+  /// S-11 HUD '⋯' semantic label, opening S-51 (plan 004).
+  ///
+  /// In en, this message translates to:
+  /// **'Report this question'**
+  String get quizReportLabel;
+
+  /// S-46 top-of-screen label replacing Home's usual top bar subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode'**
+  String get homeOfflineMode;
+
+  /// S-46 inline warning card body.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. You can still play {count} downloaded topics. Scores sync when you\'re back.'**
+  String homeOfflineWarning(int count);
+
+  /// S-46 section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Available offline'**
+  String get homeOfflineAvailable;
+
+  /// S-46 dimmed strip heading.
+  ///
+  /// In en, this message translates to:
+  /// **'NEEDS CONNECTION'**
+  String get homeOfflineNeedsConnection;
+
+  /// S-46 dimmed strip body.
+  ///
+  /// In en, this message translates to:
+  /// **'Duels · Leaderboards · Daily challenge'**
+  String get homeOfflineNeedsConnectionList;
+
+  /// S-51 sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Report this question'**
+  String get reportQuestionTitle;
+
+  /// S-51 sheet body, quoting the question being reported.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{question}\"'**
+  String reportQuestionMeta(String question);
+
+  /// S-51 reason.
+  ///
+  /// In en, this message translates to:
+  /// **'The answer is wrong'**
+  String get reportReasonWrong;
+
+  /// S-51 reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Question is unclear'**
+  String get reportReasonUnclear;
+
+  /// S-51 reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad translation'**
+  String get reportReasonTranslation;
+
+  /// S-51 reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Offensive content'**
+  String get reportReasonOffensive;
+
+  /// S-51 reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Image doesn\'t load'**
+  String get reportReasonImage;
+
+  /// S-51 CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get reportQuestionSubmit;
+
+  /// S-51 snackbar confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent — thanks for the flag'**
+  String get reportQuestionSent;
+
+  /// S-53's own reserved path, reached with no real result to share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareDemoTitle;
+
+  /// S-53 demo preview card body.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizoo — the quiz that plays like a game.'**
+  String get shareDemoPreview;
 }
 
 class _AppLocalizationsDelegate

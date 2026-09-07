@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
+import 'package:quizoo/core/widgets/app_snackbar.dart';
+import 'package:quizoo/core/widgets/report_question_sheet.dart';
+import 'package:quizoo/core/widgets/share_sheet.dart';
 import 'package:quizoo/features/achievements/presentation/screens/achievements_screen.dart';
 import 'package:quizoo/features/achievements/presentation/screens/badge_unlocked_screen.dart';
 import 'package:quizoo/features/auth/presentation/screens/profile_creation_screen.dart';
@@ -11,8 +14,11 @@ import 'package:quizoo/features/catalog/presentation/screens/category_detail_scr
 import 'package:quizoo/features/catalog/presentation/screens/level_map_screen.dart';
 import 'package:quizoo/features/daily/presentation/screens/daily_result_screen.dart';
 import 'package:quizoo/features/daily/presentation/screens/daily_screen.dart';
-import 'package:quizoo/features/dev/presentation/screens/placeholder_screen.dart';
 import 'package:quizoo/features/dev/presentation/screens/screen_index_screen.dart';
+import 'package:quizoo/features/duel/domain/duel_result.dart';
+import 'package:quizoo/features/duel/presentation/screens/duel_play_screen.dart';
+import 'package:quizoo/features/duel/presentation/screens/duel_result_screen.dart';
+import 'package:quizoo/features/duel/presentation/screens/matchmaking_screen.dart';
 import 'package:quizoo/features/home/presentation/screens/home_screen.dart';
 import 'package:quizoo/features/home/presentation/screens/search_screen.dart';
 import 'package:quizoo/features/leaderboard/presentation/screens/category_leaderboard_screen.dart';
@@ -25,10 +31,20 @@ import 'package:quizoo/features/onboarding/presentation/screens/onboarding_scree
 import 'package:quizoo/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:quizoo/features/profile/presentation/screens/profile_screen.dart';
 import 'package:quizoo/features/profile/presentation/screens/stats_screen.dart';
+import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.dart';
 import 'package:quizoo/features/quiz_result/presentation/screens/quiz_result_screen.dart';
+import 'package:quizoo/features/settings/presentation/screens/delete_account_screen.dart';
+import 'package:quizoo/features/settings/presentation/screens/force_update_screen.dart';
+import 'package:quizoo/features/settings/presentation/screens/notification_permission_screen.dart';
+import 'package:quizoo/features/settings/presentation/screens/notifications_screen.dart';
+import 'package:quizoo/features/settings/presentation/screens/privacy_settings_screen.dart';
+import 'package:quizoo/features/settings/presentation/screens/settings_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
+import 'package:quizoo/features/shell/presentation/widgets/play_launcher_sheet.dart';
+import 'package:quizoo/features/shop/presentation/screens/shop_screen.dart';
+import 'package:quizoo/l10n/app_localizations.dart';
 
 /// The app's one and only [GoRouter].
 ///
@@ -244,26 +260,105 @@ abstract final class AppRouter {
         ),
 
         // Shop
-        _route(AppRoutes.shop, 'S-36'),
-        _route(AppRoutes.rewardedAd, 'S-37'),
+        GoRoute(
+          path: AppRoutes.shop,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const ShopScreen(),
+        ),
+        // S-37 is a dialog, so its path opens the shop with the dialog
+        // already presented, exactly like S-09's level-brief sheet.
+        GoRoute(
+          path: AppRoutes.rewardedAd,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) =>
+              const ShopScreen(showRewardedAdOnOpen: true),
+        ),
 
         // Duel
-        _route(AppRoutes.playLauncher, 'S-38'),
-        _route(AppRoutes.duelMatchmaking, 'S-39'),
-        _route(AppRoutes.duelPlay, 'S-40', isArena: true),
-        _route(AppRoutes.duelResult, 'S-41'),
+        GoRoute(
+          path: AppRoutes.playLauncher,
+          parentNavigatorKey: rootNavigatorKey,
+          pageBuilder: (context, state) =>
+              _sheetPage(state, const PlayLauncherSheet()),
+        ),
+        GoRoute(
+          path: AppRoutes.duelMatchmaking,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const MatchmakingScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.duelPlay,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) {
+            final args = state.extra as DuelPlayArgs?;
+            return DuelPlayScreen(
+              duelId: state.pathParameters['duelId']!,
+              opponent: args?.opponent,
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.duelResult,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) =>
+              DuelResultScreen(result: state.extra as DuelResult?),
+        ),
 
         // Settings
-        _route(AppRoutes.settings, 'S-42'),
-        _route(AppRoutes.notificationSettings, 'S-44'),
+        GoRoute(
+          path: AppRoutes.settings,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.notificationSettings,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const NotificationsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.privacySettings,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const PrivacySettingsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.deleteAccount,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const DeleteAccountScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.notificationPermission,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const NotificationPermissionScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.forceUpdate,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const ForceUpdateScreen(),
+        ),
 
         // System states & overlays
-        _route(AppRoutes.offline, 'S-46'),
-        _route(AppRoutes.forceUpdate, 'S-50'),
-        _route(AppRoutes.reportQuestion, 'S-51'),
-        _route(AppRoutes.deleteAccount, 'S-52'),
-        _route(AppRoutes.share, 'S-53'),
-        _route(AppRoutes.notificationPermission, 'S-54'),
+        GoRoute(
+          path: AppRoutes.offline,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const HomeScreen(forceOffline: true),
+        ),
+        // S-51 is a sheet, reached for design review directly at its own path
+        // with a fixture question — every real call site opens it from
+        // `features/quiz_play`'s HUD instead (see `QuizHud`).
+        GoRoute(
+          path: AppRoutes.reportQuestion,
+          parentNavigatorKey: rootNavigatorKey,
+          pageBuilder: (context, state) =>
+              _sheetPage(state, _reportQuestionDemo(context)),
+        ),
+        // S-53 likewise — every real call site (quiz result, daily result)
+        // builds its own preview and opens `ShareSheet` directly.
+        GoRoute(
+          path: AppRoutes.share,
+          parentNavigatorKey: rootNavigatorKey,
+          pageBuilder: (context, state) =>
+              _sheetPage(state, _shareDemo(context)),
+        ),
 
         GoRoute(
           path: AppRoutes.screenIndex,
@@ -325,18 +420,56 @@ abstract final class AppRouter {
     );
   }
 
-  /// A screen pushed over the shell, on the root navigator so it covers the
-  /// tab bar.
-  static GoRoute _route(String path, String screenId, {bool isArena = false}) {
-    final screen = _screen(screenId);
-    return GoRoute(
-      path: path,
-      parentNavigatorKey: rootNavigatorKey,
-      builder: (context, state) =>
-          PlaceholderScreen(screen: screen, isArena: isArena),
+  /// S-51 built for design review — a fixture question, since there is no
+  /// real "current question" outside `features/quiz_play`'s own HUD, which
+  /// opens this same sheet directly (see `QuizHud`).
+  static Widget _reportQuestionDemo(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final question = MockQuestions.football.first;
+    return ReportQuestionSheet(
+      title: l10n.reportQuestionTitle,
+      message: l10n.reportQuestionMeta(question.text),
+      reasons: [
+        l10n.reportReasonWrong,
+        l10n.reportReasonUnclear,
+        l10n.reportReasonTranslation,
+        l10n.reportReasonOffensive,
+        l10n.reportReasonImage,
+      ],
+      submitLabel: l10n.reportQuestionSubmit,
+      onSubmit: (_) {
+        Navigator.of(context).pop();
+        AppSnackbar.show(
+          context,
+          title: l10n.reportQuestionSent,
+          intent: SnackbarIntent.success,
+        );
+      },
     );
   }
 
-  static ScreenRef _screen(String id) =>
-      kScreenIndex.firstWhere((screen) => screen.id == id);
+  /// S-53 likewise — every real call site (quiz result, daily result) builds
+  /// its own preview and opens [ShareSheet] directly.
+  static Widget _shareDemo(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    void confirm() {
+      Navigator.of(context).pop();
+      AppSnackbar.show(
+        context,
+        title: l10n.commonSharedMock,
+        intent: SnackbarIntent.success,
+      );
+    }
+
+    return ShareSheet(
+      title: l10n.shareDemoTitle,
+      message: l10n.shareSpoilerFree,
+      preview: Text(l10n.shareDemoPreview),
+      targets: [
+        ShareTarget(emoji: '💬', label: 'WhatsApp', onTap: confirm),
+        ShareTarget(emoji: '✖️', label: 'X', onTap: confirm),
+        ShareTarget(emoji: '🔗', label: 'Copy', onTap: confirm),
+      ],
+    );
+  }
 }

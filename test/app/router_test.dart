@@ -8,8 +8,8 @@ import 'package:quizoo/app/router.dart';
 import 'package:quizoo/core/breakpoints.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/router/app_routes.dart';
-import 'package:quizoo/features/dev/presentation/screens/placeholder_screen.dart';
 import 'package:quizoo/features/catalog/presentation/screens/level_map_screen.dart';
+import 'package:quizoo/features/duel/presentation/screens/duel_play_screen.dart';
 import 'package:quizoo/features/home/presentation/screens/home_screen.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.dart';
 import 'package:quizoo/features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -19,6 +19,7 @@ import 'package:quizoo/features/leaderboard/presentation/screens/leaderboard_scr
 import 'package:quizoo/features/profile/presentation/screens/profile_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
 import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
+import 'package:quizoo/features/shop/presentation/screens/shop_screen.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 void main() {
@@ -194,7 +195,7 @@ void main() {
       await tester.tap(find.textContaining('S-36'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(PlaceholderScreen), findsOneWidget);
+      expect(find.byType(ShopScreen), findsOneWidget);
       expect(find.text('Shop'), findsOneWidget);
     });
   });
@@ -205,7 +206,7 @@ void main() {
         final decorated = tester.widget<DecoratedBox>(
           find
               .descendant(
-                of: find.byType(PlaceholderScreen),
+                of: find.byType(DuelPlayScreen),
                 matching: find.byType(DecoratedBox),
               )
               .first,
@@ -238,7 +239,9 @@ void main() {
       // The arena must not repaint on brightness — the easy mistake to make
       // backwards, hence a regression test rather than a comment.
       expect(light, dark);
-      expect(light.first, const Color(0xFF2A1B5E));
+      // The duel surface uses `.lite` (§14) rather than the solo arena's
+      // `.base` — a grape wash, not the deep violet-to-black one.
+      expect(light.first, const Color(0xFF7B4DFF));
     });
   });
 }
