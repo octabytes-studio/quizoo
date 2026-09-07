@@ -1,6 +1,6 @@
 {
-    "name": "quizoo",
-    "short_name": "quizoo",
+    "name": "Quizoo",
+    "short_name": "Quizoo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
