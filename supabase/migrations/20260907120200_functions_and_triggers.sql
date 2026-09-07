@@ -346,38 +346,56 @@ $$;
 -- CATALOG COUNTERS
 -- ============================================================================
 
+-- One function backs triggers on two different tables (questions and
+-- subcategories), each supplying a NEW/OLD row of a different shape.
+-- PL/pgSQL resolves record field access (new.foo) at the moment that line
+-- actually runs, not when the function is defined — so every field access
+-- below is confined to the tg_table_name branch where that field actually
+-- exists on the row, rather than referenced unconditionally at the top
+-- (that was the original bug: `new.category_id` doesn't exist on a
+-- `questions` row, and `new.subcategory_id` doesn't exist on a
+-- `subcategories` row, so whichever table's trigger fired second raised
+-- "record ... has no field ...").
 create or replace function public._refresh_category_counts()
 returns trigger
 language plpgsql security definer
 set search_path = public
 as $$
 declare
-  v_category_id uuid;
+  v_subcategory_id uuid;
+  v_category_ids uuid[];
 begin
-  v_category_id := coalesce(new.category_id, old.category_id);
-  if v_category_id is null and tg_table_name = 'questions' then
-    select category_id into v_category_id from public.subcategories
-      where id = coalesce(new.subcategory_id, old.subcategory_id);
+  if tg_table_name = 'questions' then
+    v_subcategory_id := coalesce(new.subcategory_id, old.subcategory_id);
+
+    update public.subcategories s
+      set question_count = (
+        select count(*) from public.questions q
+        where q.subcategory_id = s.id and q.status = 'live'
+      )
+    where s.id = v_subcategory_id;
+
+    select array_agg(distinct category_id) into v_category_ids
+      from public.subcategories where id = v_subcategory_id;
+
+  elsif tg_table_name = 'subcategories' then
+    -- array, not a single id, so a category reassignment (rare, but
+    -- possible via an admin edit) recomputes both the old and new parent.
+    v_category_ids := array_remove(array[new.category_id, old.category_id], null);
   end if;
 
-  update public.subcategories s
-    set question_count = (
-      select count(*) from public.questions q
-      where q.subcategory_id = s.id and q.status = 'live'
-    )
-  where s.id = coalesce(new.subcategory_id, old.subcategory_id, s.id)
-    and tg_table_name = 'questions';
-
-  update public.categories c
-    set subcategory_count = (
-      select count(*) from public.subcategories s
-      where s.category_id = c.id and s.is_active = true
-    ),
-    question_count = (
-      select coalesce(sum(s.question_count), 0) from public.subcategories s
-      where s.category_id = c.id
-    )
-  where c.id = v_category_id;
+  if v_category_ids is not null then
+    update public.categories c
+      set subcategory_count = (
+        select count(*) from public.subcategories s
+        where s.category_id = c.id and s.is_active = true
+      ),
+      question_count = (
+        select coalesce(sum(s.question_count), 0) from public.subcategories s
+        where s.category_id = c.id
+      )
+    where c.id = any(v_category_ids);
+  end if;
 
   return coalesce(new, old);
 end;
