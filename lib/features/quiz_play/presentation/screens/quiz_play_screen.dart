@@ -11,8 +11,11 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
+import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
+import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
+import 'package:quizoo/core/widgets/report_question_sheet.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
@@ -295,6 +298,35 @@ class _QuestionView extends StatelessWidget {
 
   final QuizPlayInProgress state;
 
+  /// S-51 — reached from the HUD's "⋯", never a second tap away.
+  void _openReportSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final question = state.question;
+    AppBottomSheet.show<void>(
+      context,
+      builder: (sheetContext) => ReportQuestionSheet(
+        title: l10n.reportQuestionTitle,
+        message: l10n.reportQuestionMeta(question.text),
+        reasons: [
+          l10n.reportReasonWrong,
+          l10n.reportReasonUnclear,
+          l10n.reportReasonTranslation,
+          l10n.reportReasonOffensive,
+          l10n.reportReasonImage,
+        ],
+        submitLabel: l10n.reportQuestionSubmit,
+        onSubmit: (_) {
+          Navigator.of(sheetContext).pop();
+          AppSnackbar.show(
+            context,
+            title: l10n.reportQuestionSent,
+            intent: SnackbarIntent.success,
+          );
+        },
+      ),
+    );
+  }
+
   AnswerOptionState _optionState(int index) {
     if (state.eliminatedIndexes.contains(index)) {
       return AnswerOptionState.eliminated;
@@ -333,7 +365,11 @@ class _QuestionView extends StatelessWidget {
 
     final body = Column(
       children: [
-        QuizHud(run: state.run, onQuitPressed: cubit.requestQuit),
+        QuizHud(
+          run: state.run,
+          onQuitPressed: cubit.requestQuit,
+          onReportPressed: () => _openReportSheet(context),
+        ),
         Padding(
           padding: EdgeInsets.only(bottom: hasImage ? 10.h : 12.h),
           child: Center(

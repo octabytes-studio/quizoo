@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PowerUpInventory {
 
- int get fiftyFifty; int get addTime; int get skip;
+ int get fiftyFifty; int get addTime; int get skip; int get freeze;
 /// Create a copy of PowerUpInventory
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $PowerUpInventoryCopyWith<PowerUpInventory> get copyWith => _$PowerUpInventoryCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PowerUpInventory&&(identical(other.fiftyFifty, fiftyFifty) || other.fiftyFifty == fiftyFifty)&&(identical(other.addTime, addTime) || other.addTime == addTime)&&(identical(other.skip, skip) || other.skip == skip));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PowerUpInventory&&(identical(other.fiftyFifty, fiftyFifty) || other.fiftyFifty == fiftyFifty)&&(identical(other.addTime, addTime) || other.addTime == addTime)&&(identical(other.skip, skip) || other.skip == skip)&&(identical(other.freeze, freeze) || other.freeze == freeze));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,fiftyFifty,addTime,skip);
+int get hashCode => Object.hash(runtimeType,fiftyFifty,addTime,skip,freeze);
 
 @override
 String toString() {
-  return 'PowerUpInventory(fiftyFifty: $fiftyFifty, addTime: $addTime, skip: $skip)';
+  return 'PowerUpInventory(fiftyFifty: $fiftyFifty, addTime: $addTime, skip: $skip, freeze: $freeze)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $PowerUpInventoryCopyWith<$Res>  {
   factory $PowerUpInventoryCopyWith(PowerUpInventory value, $Res Function(PowerUpInventory) _then) = _$PowerUpInventoryCopyWithImpl;
 @useResult
 $Res call({
- int fiftyFifty, int addTime, int skip
+ int fiftyFifty, int addTime, int skip, int freeze
 });
 
 
@@ -65,11 +65,12 @@ class _$PowerUpInventoryCopyWithImpl<$Res>
 
 /// Create a copy of PowerUpInventory
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? fiftyFifty = null,Object? addTime = null,Object? skip = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? fiftyFifty = null,Object? addTime = null,Object? skip = null,Object? freeze = null,}) {
   return _then(_self.copyWith(
 fiftyFifty: null == fiftyFifty ? _self.fiftyFifty : fiftyFifty // ignore: cast_nullable_to_non_nullable
 as int,addTime: null == addTime ? _self.addTime : addTime // ignore: cast_nullable_to_non_nullable
 as int,skip: null == skip ? _self.skip : skip // ignore: cast_nullable_to_non_nullable
+as int,freeze: null == freeze ? _self.freeze : freeze // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -155,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int fiftyFifty,  int addTime,  int skip)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int fiftyFifty,  int addTime,  int skip,  int freeze)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PowerUpInventory() when $default != null:
-return $default(_that.fiftyFifty,_that.addTime,_that.skip);case _:
+return $default(_that.fiftyFifty,_that.addTime,_that.skip,_that.freeze);case _:
   return orElse();
 
 }
@@ -176,10 +177,10 @@ return $default(_that.fiftyFifty,_that.addTime,_that.skip);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int fiftyFifty,  int addTime,  int skip)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int fiftyFifty,  int addTime,  int skip,  int freeze)  $default,) {final _that = this;
 switch (_that) {
 case _PowerUpInventory():
-return $default(_that.fiftyFifty,_that.addTime,_that.skip);case _:
+return $default(_that.fiftyFifty,_that.addTime,_that.skip,_that.freeze);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +197,10 @@ return $default(_that.fiftyFifty,_that.addTime,_that.skip);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int fiftyFifty,  int addTime,  int skip)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int fiftyFifty,  int addTime,  int skip,  int freeze)?  $default,) {final _that = this;
 switch (_that) {
 case _PowerUpInventory() when $default != null:
-return $default(_that.fiftyFifty,_that.addTime,_that.skip);case _:
+return $default(_that.fiftyFifty,_that.addTime,_that.skip,_that.freeze);case _:
   return null;
 
 }
@@ -211,12 +212,13 @@ return $default(_that.fiftyFifty,_that.addTime,_that.skip);case _:
 @JsonSerializable()
 
 class _PowerUpInventory extends PowerUpInventory {
-  const _PowerUpInventory({this.fiftyFifty = 0, this.addTime = 0, this.skip = 0}): super._();
+  const _PowerUpInventory({this.fiftyFifty = 0, this.addTime = 0, this.skip = 0, this.freeze = 0}): super._();
   factory _PowerUpInventory.fromJson(Map<String, dynamic> json) => _$PowerUpInventoryFromJson(json);
 
 @override@JsonKey() final  int fiftyFifty;
 @override@JsonKey() final  int addTime;
 @override@JsonKey() final  int skip;
+@override@JsonKey() final  int freeze;
 
 /// Create a copy of PowerUpInventory
 /// with the given fields replaced by the non-null parameter values.
@@ -231,16 +233,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PowerUpInventory&&(identical(other.fiftyFifty, fiftyFifty) || other.fiftyFifty == fiftyFifty)&&(identical(other.addTime, addTime) || other.addTime == addTime)&&(identical(other.skip, skip) || other.skip == skip));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PowerUpInventory&&(identical(other.fiftyFifty, fiftyFifty) || other.fiftyFifty == fiftyFifty)&&(identical(other.addTime, addTime) || other.addTime == addTime)&&(identical(other.skip, skip) || other.skip == skip)&&(identical(other.freeze, freeze) || other.freeze == freeze));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,fiftyFifty,addTime,skip);
+int get hashCode => Object.hash(runtimeType,fiftyFifty,addTime,skip,freeze);
 
 @override
 String toString() {
-  return 'PowerUpInventory(fiftyFifty: $fiftyFifty, addTime: $addTime, skip: $skip)';
+  return 'PowerUpInventory(fiftyFifty: $fiftyFifty, addTime: $addTime, skip: $skip, freeze: $freeze)';
 }
 
 
@@ -251,7 +253,7 @@ abstract mixin class _$PowerUpInventoryCopyWith<$Res> implements $PowerUpInvento
   factory _$PowerUpInventoryCopyWith(_PowerUpInventory value, $Res Function(_PowerUpInventory) _then) = __$PowerUpInventoryCopyWithImpl;
 @override @useResult
 $Res call({
- int fiftyFifty, int addTime, int skip
+ int fiftyFifty, int addTime, int skip, int freeze
 });
 
 
@@ -268,11 +270,12 @@ class __$PowerUpInventoryCopyWithImpl<$Res>
 
 /// Create a copy of PowerUpInventory
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? fiftyFifty = null,Object? addTime = null,Object? skip = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? fiftyFifty = null,Object? addTime = null,Object? skip = null,Object? freeze = null,}) {
   return _then(_PowerUpInventory(
 fiftyFifty: null == fiftyFifty ? _self.fiftyFifty : fiftyFifty // ignore: cast_nullable_to_non_nullable
 as int,addTime: null == addTime ? _self.addTime : addTime // ignore: cast_nullable_to_non_nullable
 as int,skip: null == skip ? _self.skip : skip // ignore: cast_nullable_to_non_nullable
+as int,freeze: null == freeze ? _self.freeze : freeze // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

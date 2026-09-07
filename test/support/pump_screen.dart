@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
@@ -12,9 +13,10 @@ import 'pump_app.dart';
 
 /// Pumps a screen with the same app-root providers the real app gives it.
 ///
-/// Screens in plan 002 read three things off the root — `SessionCubit`,
-/// `AuthRepository` and `QuizPlayRepository` — so a widget test that pumps one
-/// without them is testing a different widget than the one that ships.
+/// Screens read four things off the root — `SessionCubit`, `AuthRepository`,
+/// `QuizPlayRepository` and (plan 004) `ConnectivityCubit` — so a widget test
+/// that pumps one without them is testing a different widget than the one
+/// that ships.
 ///
 /// A [GoRouter] is stood up too, because these screens navigate: `context.pop`
 /// and `context.push` need a router above them, and a bare `MaterialApp` has
@@ -28,6 +30,7 @@ extension PumpScreen on WidgetTester {
     SessionCubit? session,
     AuthRepository? authRepository,
     QuizPlayRepository? quizPlayRepository,
+    ConnectivityCubit? connectivity,
   }) {
     final auth = authRepository ?? AuthRepository(AuthApi());
 
@@ -39,8 +42,15 @@ extension PumpScreen on WidgetTester {
             value: quizPlayRepository ?? QuizPlayRepository(QuizPlayApi()),
           ),
         ],
-        child: BlocProvider<SessionCubit>.value(
-          value: session ?? SessionCubit(auth),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider<SessionCubit>.value(
+              value: session ?? SessionCubit(auth),
+            ),
+            BlocProvider<ConnectivityCubit>.value(
+              value: connectivity ?? ConnectivityCubit(),
+            ),
+          ],
           child: _RouterHost(child: screen),
         ),
       ),

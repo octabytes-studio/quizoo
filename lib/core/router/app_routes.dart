@@ -178,6 +178,11 @@ abstract final class AppRoutes {
   /// S-44 Notification settings.
   static const String notificationSettings = '/settings/notifications';
 
+  /// Privacy & leaderboard visibility — a settings row the bible names but
+  /// never mockups (plan 004, Assumption 4). Not one of the 54 IDs, so it has
+  /// no `sXX` alias below.
+  static const String privacySettings = '/settings/privacy';
+
   // ----------------------------------------------- system states & overlays
   /// S-46 Offline.
   static const String offline = '/offline';

@@ -1136,4 +1136,344 @@ class AppLocalizationsUr extends AppLocalizations {
   String statsFastestAverage(String seconds) {
     return '${seconds}s average';
   }
+
+  @override
+  String get shopTitle => 'Shop';
+
+  @override
+  String get shopFreeCoinsTitle => 'Watch a 30s ad';
+
+  @override
+  String shopFreeCoinsMeta(int count) {
+    return '$count left today';
+  }
+
+  @override
+  String get shopFreeCoinsNoneLeft => 'Come back tomorrow for more';
+
+  @override
+  String get shopPowerUpsHeading => 'Power-ups';
+
+  @override
+  String get shopPowerUpFiftyFiftyBody => 'Removes two wrong options';
+
+  @override
+  String get shopPowerUpAddTimeBody => 'Adds 15 seconds to the clock';
+
+  @override
+  String get shopPowerUpSkipBody => 'Skips a question, no heart lost';
+
+  @override
+  String get shopPowerUpFreeze => 'Freeze';
+
+  @override
+  String get shopPowerUpFreezeBody =>
+      'Freezes your opponent\'s timer for 5s in a duel';
+
+  @override
+  String shopOwned(int count) {
+    return '$count owned';
+  }
+
+  @override
+  String shopPurchaseSuccess(String name) {
+    return 'Bought $name';
+  }
+
+  @override
+  String get shopInsufficientCoins => 'Not enough coins';
+
+  @override
+  String get shopInsufficientGems => 'Not enough gems';
+
+  @override
+  String get shopCoinPacksHeading => 'Coin packs';
+
+  @override
+  String get shopRemoveAdsTitle => 'Remove ads forever';
+
+  @override
+  String get shopRemoveAdsBody =>
+      'Free coins stay available — this only removes ads.';
+
+  @override
+  String get shopRemoveAdsPrice => '\$6.99';
+
+  @override
+  String get shopMockPayment => 'Mock — payments not wired';
+
+  @override
+  String get rewardedAdTitle => 'Watch to earn';
+
+  @override
+  String rewardedAdBody(int coins, int left, int total) {
+    return 'A 30-second ad gets you $coins coins. You have $left of $total daily rewards left.';
+  }
+
+  @override
+  String get rewardedAdWatch => '▶ Watch now';
+
+  @override
+  String get rewardedAdWatching => 'Watching…';
+
+  @override
+  String get rewardedAdNoThanks => 'No thanks';
+
+  @override
+  String get rewardedAdFailedTitle => 'Ad failed to load';
+
+  @override
+  String get rewardedAdFailedBody => 'Give it another try';
+
+  @override
+  String rewardedAdSuccessTitle(int coins) {
+    return '+$coins 🪙 credited';
+  }
+
+  @override
+  String get duelMatchmakingTitle => 'Finding an opponent';
+
+  @override
+  String duelEloLabel(int elo) {
+    return '$elo ELO';
+  }
+
+  @override
+  String get duelSearchingCaption => '❓ Searching…';
+
+  @override
+  String duelSearchingStatus(int seconds, int next) {
+    return 'Searching for ${seconds}s · widening range in ${next}s';
+  }
+
+  @override
+  String get duelCancelPlayBot => 'Cancel — play a bot instead';
+
+  @override
+  String duelRoundLabel(int current, int total) {
+    return 'ROUND $current/$total';
+  }
+
+  @override
+  String duelAnsweredIn(int seconds) {
+    return 'Answered in ${seconds}s';
+  }
+
+  @override
+  String get duelThinking => 'Thinking…';
+
+  @override
+  String get duelResultVictoryTitle => '🏆 Victory!';
+
+  @override
+  String get duelResultDefeatTitle => 'Good game';
+
+  @override
+  String get duelResultRoundsWon => 'Rounds won';
+
+  @override
+  String get duelResultAvgTime => 'Average answer time';
+
+  @override
+  String duelResultAvgTimeValue(String player, String opponent) {
+    return '${player}s vs ${opponent}s';
+  }
+
+  @override
+  String get duelResultElo => 'ELO';
+
+  @override
+  String get duelResultReward => 'Reward';
+
+  @override
+  String get duelResultRematch => 'Rematch';
+
+  @override
+  String get duelResultFindNew => 'Find a new opponent';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsAppearance => 'APPEARANCE';
+
+  @override
+  String get settingsGame => 'GAME';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsSoundEffects => 'Sound effects';
+
+  @override
+  String get settingsMusic => 'Music';
+
+  @override
+  String get settingsHaptics => 'Haptics';
+
+  @override
+  String get settingsAccount => 'ACCOUNT';
+
+  @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get settingsPrivacy => 'Privacy & leaderboard visibility';
+
+  @override
+  String get settingsDeleteAccount => 'Delete account';
+
+  @override
+  String get settingsDeveloper => 'DEVELOPER';
+
+  @override
+  String get settingsSimulateOffline => 'Simulate offline';
+
+  @override
+  String get settingsPreviewForceUpdate => 'Preview: force update screen';
+
+  @override
+  String get settingsPreviewNotificationPermission =>
+      'Preview: notification permission';
+
+  @override
+  String get settingsVersion => 'Quizoo v1.0.0 (mock build)';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get notificationsMarkAllRead => 'Mark all read';
+
+  @override
+  String get notificationsAccept => 'Accept';
+
+  @override
+  String get notificationsEmpty => 'Nothing new right now.';
+
+  @override
+  String get deleteAccountTitle => 'Delete your account?';
+
+  @override
+  String deleteAccountBody(int points, int badges, int streak) {
+    return 'You\'ll lose $points points, $badges badges and a $streak-day streak. This can\'t be undone.';
+  }
+
+  @override
+  String get deleteAccountBodyLoading => 'Loading your account details…';
+
+  @override
+  String deleteAccountTypeUsername(String username) {
+    return 'Type \"$username\" to confirm';
+  }
+
+  @override
+  String get deleteAccountKeep => 'Keep my account';
+
+  @override
+  String get deleteAccountDelete => 'Delete permanently';
+
+  @override
+  String get deleteAccountDone =>
+      'Account deleted (mock) — you\'re browsing as a guest';
+
+  @override
+  String get forceUpdateTitle => 'Time to update';
+
+  @override
+  String get forceUpdateBody =>
+      'Version 1.4 adds 1v1 duels and 12 new topics. This version can no longer connect.';
+
+  @override
+  String get forceUpdateCta => 'Update Quizoo';
+
+  @override
+  String get forceUpdateMock => 'Mock — no app store wired up';
+
+  @override
+  String get notificationPermissionTitle => 'Keep your streak alive?';
+
+  @override
+  String get notificationPermissionBody =>
+      'We\'ll send one reminder a day at a time you choose. Nothing else — no marketing, no \"we miss you\".';
+
+  @override
+  String get notificationPermissionTimeLabel => 'Reminder time';
+
+  @override
+  String get notificationPermissionTurnOn => 'Turn on reminders';
+
+  @override
+  String get notificationPermissionNotNow => 'Not now';
+
+  @override
+  String notificationPermissionOnTitle(String time) {
+    return 'Reminders on for $time';
+  }
+
+  @override
+  String get privacyTitle => 'Privacy';
+
+  @override
+  String get privacyShowOnLeaderboards => 'Show my rank on leaderboards';
+
+  @override
+  String get privacyShowActivityToFriends => 'Show my activity to friends';
+
+  @override
+  String get quizReportLabel => 'Report this question';
+
+  @override
+  String get homeOfflineMode => 'Offline mode';
+
+  @override
+  String homeOfflineWarning(int count) {
+    return 'No connection. You can still play $count downloaded topics. Scores sync when you\'re back.';
+  }
+
+  @override
+  String get homeOfflineAvailable => 'Available offline';
+
+  @override
+  String get homeOfflineNeedsConnection => 'NEEDS CONNECTION';
+
+  @override
+  String get homeOfflineNeedsConnectionList =>
+      'Duels · Leaderboards · Daily challenge';
+
+  @override
+  String get reportQuestionTitle => 'Report this question';
+
+  @override
+  String reportQuestionMeta(String question) {
+    return '\"$question\"';
+  }
+
+  @override
+  String get reportReasonWrong => 'The answer is wrong';
+
+  @override
+  String get reportReasonUnclear => 'Question is unclear';
+
+  @override
+  String get reportReasonTranslation => 'Bad translation';
+
+  @override
+  String get reportReasonOffensive => 'Offensive content';
+
+  @override
+  String get reportReasonImage => 'Image doesn\'t load';
+
+  @override
+  String get reportQuestionSubmit => 'Send report';
+
+  @override
+  String get reportQuestionSent => 'Report sent — thanks for the flag';
+
+  @override
+  String get shareDemoTitle => 'Share';
+
+  @override
+  String get shareDemoPreview => 'Quizoo — the quiz that plays like a game.';
 }

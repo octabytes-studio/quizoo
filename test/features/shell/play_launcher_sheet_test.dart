@@ -76,15 +76,26 @@ void main() {
     Future<void> expectRowNavigatesTo(
       WidgetTester tester,
       String Function(AppLocalizations) rowLabel,
-      String expectedLocation,
-    ) async {
+      String expectedLocation, {
+      bool settle = true,
+    }) async {
       final router = await pumpShell(tester);
 
       await tester.tap(find.text('⚔️'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text(rowLabel(l10nOf(tester))));
-      await tester.pumpAndSettle();
+      // MatchmakingScreen ticks its own clock once a second for up to 20s
+      // (it always auto-offers a bot eventually), which keeps scheduling
+      // frames — `pumpAndSettle` would fast-forward straight through the
+      // whole search and land one screen further than this test cares
+      // about. A single pump is enough to observe the push that follows the
+      // tap.
+      if (settle) {
+        await tester.pumpAndSettle();
+      } else {
+        await tester.pump();
+      }
 
       expect(router.state.uri.toString(), expectedLocation);
     }
@@ -94,6 +105,7 @@ void main() {
         tester,
         (l10n) => l10n.playSheetDuel,
         AppRoutes.duelMatchmaking,
+        settle: false,
       );
     });
 

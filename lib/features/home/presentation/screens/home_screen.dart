@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
+import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
+import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/category_tile.dart';
@@ -37,7 +40,11 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// [HomeCubit] is scoped here rather than at the root, per CLAUDE.md §3:
 /// nothing outside Home reads it.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.forceOffline = false});
+
+  /// S-46's own reserved path forces the offline variant on for design
+  /// review, independent of Settings' "Simulate offline" toggle.
+  final bool forceOffline;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +62,7 @@ class HomeScreen extends StatelessWidget {
           create: (_) =>
               HomeCubit(HomeRepository(HomeApi()))
                 ..load(isSignedIn: isSignedIn),
-          child: _HomeView(session: session),
+          child: _HomeView(session: session, forceOffline: forceOffline),
         );
       },
     );
@@ -63,9 +70,10 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _HomeView extends StatelessWidget {
-  const _HomeView({required this.session});
+  const _HomeView({required this.session, required this.forceOffline});
 
   final SessionState session;
+  final bool forceOffline;
 
   void _openSearch(BuildContext context) => context.push(AppRoutes.search);
 
@@ -79,6 +87,8 @@ class _HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
+    final isOffline =
+        forceOffline || context.watch<ConnectivityCubit>().state.isOffline;
 
     return Scaffold(
       backgroundColor: quizoo.s0,
@@ -86,8 +96,12 @@ class _HomeView extends StatelessWidget {
         bottom: false,
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) => switch (state) {
-            HomeInitial() || HomeLoading() => const _HomeSkeleton(),
+            HomeInitial() || HomeLoading() => _HomeSkeleton(
+              session: session,
+              onSearchPressed: () => _openSearch(context),
+            ),
             HomeError(:final error) => _HomeError(error: error),
+            HomeLoaded() when isOffline => _HomeOfflineView(state: state),
             HomeLoaded() => _HomeContentView(
               state: state,
               session: session,
@@ -98,6 +112,123 @@ class _HomeView extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+/// S-46 — Home offline.
+///
+/// Driven entirely by `ConnectivityCubit` (or [HomeScreen.forceOffline] for
+/// design review) — no real `connectivity_plus` package is added (plan 004,
+/// Assumption 5).
+class _HomeOfflineView extends StatelessWidget {
+  const _HomeOfflineView({required this.state});
+
+  final HomeLoaded state;
+
+  /// The fixed subset of topics flagged as "downloaded" — the two topics
+  /// with real content behind them (plan 002's Assumption 4 fixture).
+  static const Set<String> _downloadedSubcategoryIds = {
+    MockCatalog.footballId,
+    MockCatalog.solarSystemId,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final quizoo = context.quizoo;
+    final l10n = AppLocalizations.of(context);
+    final available = [
+      for (final subcategory in state.content.subcategories)
+        if (_downloadedSubcategoryIds.contains(subcategory.id)) subcategory,
+    ];
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.screenMargin.w,
+        AppSpacing.base.h,
+        AppSpacing.screenMargin.w,
+        AppSpacing.xl.h,
+      ),
+      children: [
+        Row(
+          children: [
+            Text('📡', style: AppTypography.glyph(16.sp)),
+            SizedBox(width: AppSpacing.xs.w),
+            Text(
+              l10n.homeOfflineMode,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ],
+        ),
+        SizedBox(height: AppSpacing.base.h),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(AppSpacing.base.w),
+          decoration: BoxDecoration(
+            color: quizoo.info.withValues(alpha: 0.12),
+            borderRadius: AppRadius.cardAll,
+            border: Border.all(color: quizoo.info.withValues(alpha: 0.3)),
+          ),
+          child: Text(
+            l10n.homeOfflineWarning(available.length),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium!.copyWith(height: 1.4),
+          ),
+        ),
+        SizedBox(height: AppSpacing.lg.h),
+        SectionHeader(title: l10n.homeOfflineAvailable),
+        SizedBox(height: AppSpacing.md.h),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 11.w,
+            mainAxisSpacing: 11.h,
+            mainAxisExtent: 140.h,
+          ),
+          itemCount: available.length,
+          itemBuilder: (context, index) {
+            final subcategory = available[index];
+            return CategoryTile(
+              name: subcategory.name,
+              emoji: subcategory.emoji,
+              plateColor: AppGradients.hex(subcategory.plateColor),
+              onTap: () => context.push(
+                AppRoutes.levelMapPath(subcategory.categoryId, subcategory.id),
+              ),
+            );
+          },
+        ),
+        SizedBox(height: AppSpacing.lg.h),
+        Opacity(
+          opacity: 0.55,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(AppSpacing.base.w),
+            decoration: BoxDecoration(
+              color: quizoo.s2,
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: quizoo.ln),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.homeOfflineNeedsConnection,
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  l10n.homeOfflineNeedsConnectionList,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -356,31 +487,56 @@ class _SubcategoryGrid extends StatelessWidget {
   }
 }
 
-/// S-45 — Home's skeleton, shape-matched to the loaded layout.
+/// S-45 — Home's skeleton.
+///
+/// Chrome renders instantly, never as a skeleton (plan 004, Research
+/// findings): the top bar is the real [GuestTopBar]/[PlayerTopBar], not a
+/// placeholder box, so only the rail/tiles/section headers below it shimmer.
+/// A signed-in player briefly sees the guest-shaped bar until the cached
+/// content resolves — the wallet has nothing real to show before then, and
+/// this state is normally far too transient to notice (§01 budgets the
+/// cached read at effectively zero).
 class _HomeSkeleton extends StatelessWidget {
-  const _HomeSkeleton();
+  const _HomeSkeleton({required this.session, required this.onSearchPressed});
+
+  final SessionState session;
+  final VoidCallback onSearchPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: AppSpacing.base.h),
-          SkeletonBox(width: 160.w, height: 26.h),
-          SizedBox(height: AppSpacing.lg.h),
-          SkeletonBox(height: 64.h),
-          SizedBox(height: AppSpacing.xl.h),
-          SkeletonBox(width: 180.w, height: 20.h),
-          SizedBox(height: AppSpacing.md.h),
-          SkeletonBox(height: PopularQuizCard.height.h),
-          SizedBox(height: AppSpacing.xl.h),
-          SkeletonBox(width: 120.w, height: 20.h),
-          SizedBox(height: AppSpacing.md.h),
-          SkeletonBox(height: 96.h),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (session case SessionSignedIn(:final user))
+          PlayerTopBar(
+            name: user.displayName.isEmpty ? MockPlayer.name : user.displayName,
+            avatarEmoji: user.avatarEmoji,
+            currency: MockPlayer.currency,
+            dayStreak: MockPlayer.dayStreak,
+            playerLevel: MockPlayer.playerLevel,
+            onSearchPressed: onSearchPressed,
+          )
+        else
+          GuestTopBar(onSearchPressed: onSearchPressed),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: AppSpacing.sm.h),
+              SkeletonBox(height: 64.h),
+              SizedBox(height: AppSpacing.xl.h),
+              SkeletonBox(width: 180.w, height: 20.h),
+              SizedBox(height: AppSpacing.md.h),
+              SkeletonBox(height: PopularQuizCard.height.h),
+              SizedBox(height: AppSpacing.xl.h),
+              SkeletonBox(width: 120.w, height: 20.h),
+              SizedBox(height: AppSpacing.md.h),
+              SkeletonBox(height: 96.h),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

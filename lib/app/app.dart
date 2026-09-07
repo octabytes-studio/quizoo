@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/locale_cubit.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/app/theme_cubit.dart';
@@ -29,6 +30,9 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// because every screen renders through them, and [SessionCubit], which
 /// §3 names by example — Home switches its entire layout on it and plans 003
 /// and 004 read it for the profile tab and the player's own leaderboard row.
+/// [ConnectivityCubit] joins them in plan 004: Settings' debug "Simulate
+/// offline" toggle and Home's offline variant (S-46) are on different
+/// routes, so the flag has to live above both.
 ///
 /// **Why the `RepositoryProvider`s**: each of the three holds state that
 /// outlives any one screen's Cubit, written on one route and read on another.
@@ -87,6 +91,7 @@ class _QuizooAppState extends State<QuizooApp> {
         providers: [
           BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
           BlocProvider<LocaleCubit>(create: (_) => LocaleCubit()),
+          BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()),
           BlocProvider<SessionCubit>(
             create: (_) => SessionCubit(_authRepository),
           ),
