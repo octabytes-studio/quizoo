@@ -71,12 +71,12 @@ void main() {
         ).thenAnswer((_) async => const [unread]);
         when(
           () => repository.markAllRead(),
-        ).thenReturn([unread.copyWith(isRead: true)]);
+        ).thenAnswer((_) async => [unread.copyWith(isRead: true)]);
       },
       build: () => NotificationsCubit(repository),
       act: (cubit) async {
         await cubit.load();
-        cubit.markAllRead();
+        await cubit.markAllRead();
       },
       expect: () => [
         isA<NotificationsLoading>(),
@@ -96,12 +96,14 @@ void main() {
         when(
           () => repository.fetchAll(),
         ).thenAnswer((_) async => const [unread, challenge]);
-        when(() => repository.acceptChallenge('n2')).thenReturn([unread]);
+        when(
+          () => repository.acceptChallenge('n2'),
+        ).thenAnswer((_) async => [unread]);
       },
       build: () => NotificationsCubit(repository),
       act: (cubit) async {
         await cubit.load();
-        cubit.acceptChallenge('n2');
+        await cubit.acceptChallenge('n2');
       },
       expect: () => [
         isA<NotificationsLoading>(),

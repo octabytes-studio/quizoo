@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +11,7 @@ import 'package:quizoo/app/locale_cubit.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/app/theme_cubit.dart';
 import 'package:quizoo/core/breakpoints.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_theme.dart';
 import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
@@ -16,7 +19,9 @@ import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
 import 'package:quizoo/features/onboarding/data/onboarding_repository.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
+import 'package:quizoo/features/settings/data/settings_repository.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// The application root.
 ///
@@ -42,10 +47,14 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// warms and the play surface (S-11) reads, on a different route. All three
 /// are in-memory for this phase; see each class for what that costs.
 class QuizooApp extends StatefulWidget {
-  const QuizooApp({super.key, this.router});
+  const QuizooApp({required this.preferences, super.key, this.router});
 
   /// Overridable so a test can pump the app against its own router.
   final GoRouter? router;
+
+  /// Backs [OnboardingRepository] and [AuthRepository]'s device-local flags.
+  /// Obtained once in `main()`, before `runApp`, since loading it is async.
+  final SharedPreferences preferences;
 
   @override
   State<QuizooApp> createState() => _QuizooAppState();
@@ -53,11 +62,20 @@ class QuizooApp extends StatefulWidget {
 
 class _QuizooAppState extends State<QuizooApp> {
   late final GoRouter _router = widget.router ?? AppRouter.create();
-  final OnboardingRepository _onboardingRepository = OnboardingRepository();
-  late final AuthRepository _authRepository = AuthRepository(AuthApi());
-  late final QuizPlayRepository _quizPlayRepository = QuizPlayRepository(
-    QuizPlayApi(),
+  late final OnboardingRepository _onboardingRepository = OnboardingRepository(
+    widget.preferences,
   );
+  late final AuthRepository _authRepository = AuthRepository(
+    AuthApi(supabase),
+    widget.preferences,
+  );
+  late final QuizPlayRepository _quizPlayRepository = QuizPlayRepository(
+    QuizPlayApi(supabase),
+  );
+  late final SettingsRepository _settingsRepository = SettingsRepository(
+    widget.preferences,
+  );
+  late final SessionCubit _sessionCubit = SessionCubit(_authRepository);
 
   @override
   void initState() {
@@ -73,6 +91,16 @@ class _QuizooAppState extends State<QuizooApp> {
         systemNavigationBarDividerColor: Colors.transparent,
       ),
     );
+    // Restores `SessionSignedIn` across a cold start for a previously
+    // signed-in player — a real Supabase session persists where the mock's
+    // never did (plan 005, Design overview).
+    unawaited(_sessionCubit.restore());
+  }
+
+  @override
+  void dispose() {
+    unawaited(_sessionCubit.close());
+    super.dispose();
   }
 
   @override
@@ -86,15 +114,16 @@ class _QuizooAppState extends State<QuizooApp> {
         RepositoryProvider<QuizPlayRepository>.value(
           value: _quizPlayRepository,
         ),
+        RepositoryProvider<SettingsRepository>.value(
+          value: _settingsRepository,
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
           BlocProvider<LocaleCubit>(create: (_) => LocaleCubit()),
           BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()),
-          BlocProvider<SessionCubit>(
-            create: (_) => SessionCubit(_authRepository),
-          ),
+          BlocProvider<SessionCubit>.value(value: _sessionCubit),
         ],
         child: ScreenUtilInit(
           designSize: const Size(

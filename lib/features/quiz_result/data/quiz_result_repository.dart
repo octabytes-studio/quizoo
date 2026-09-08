@@ -1,4 +1,3 @@
-import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/domain/scoring.dart';
@@ -6,7 +5,12 @@ import 'package:quizoo/features/quiz_result/data/quiz_result_api.dart';
 import 'package:quizoo/features/quiz_result/domain/level_result.dart';
 
 /// Turns a finished [QuizRun] into the [LevelResult] the two result screens
-/// render, and records what the run changed.
+/// render, using the server's authoritative score/stars/coins/xp rather than
+/// recomputing them client-side (§19: "the client's own total is display
+/// only") — the SQL in `submit_level_attempt` was transcribed from the same
+/// `Scoring` formulas specifically so client and server agree during play;
+/// this repository is about *which* number becomes the one shown on the
+/// result screen, not about the formulas disagreeing.
 class QuizResultRepository {
   QuizResultRepository(this._api, this._authRepository);
 
@@ -17,9 +21,6 @@ class QuizResultRepository {
 
   Future<LevelResult> submit(QuizRun run, {required bool isGuest}) async {
     final record = await _api.submit(run);
-
-    final stars = run.isComplete ? Scoring.stars(run.correctCount) : 0;
-    final finalScore = run.isComplete ? Scoring.total(run) : run.score;
 
     if (run.isComplete) {
       // Recorded before the prompt rules are evaluated, because "has the
@@ -32,27 +33,17 @@ class QuizResultRepository {
         run.isComplete &&
         _authRepository.shouldOfferSaveProgress(isGuest: isGuest);
 
+    final progress = Scoring.levelProgress(record.totalXp);
+
     return LevelResult(
       run: run,
-      stars: stars,
-      finalScore: finalScore,
-      coinsEarned: run.isComplete
-          ? Scoring.coinsEarned(
-              levelNumber: run.levelNumber,
-              stars: stars,
-              isBoss: run.isBoss,
-            )
-          : 0,
-      xpEarned: run.isComplete
-          ? Scoring.xpEarned(
-              levelNumber: run.levelNumber,
-              stars: stars,
-              isFirstClear: record.isFirstClear,
-            )
-          : 0,
-      playerLevel: MockPlayer.playerLevel,
-      xpIntoLevel: MockPlayer.xpIntoLevel,
-      xpToNextLevel: Scoring.xpToNextLevel(MockPlayer.playerLevel),
+      stars: record.stars,
+      finalScore: record.finalScore,
+      coinsEarned: record.coinsEarned,
+      xpEarned: record.xpEarned,
+      playerLevel: record.playerLevel,
+      xpIntoLevel: progress.xpIntoLevel,
+      xpToNextLevel: progress.xpToNextLevel,
       isFirstClear: record.isFirstClear,
       newlyEarnedBadgeIds: record.newlyEarnedBadgeIds,
       shouldOfferSaveProgress: shouldOffer,

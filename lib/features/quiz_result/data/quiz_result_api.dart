@@ -1,60 +1,139 @@
-import 'package:quizoo/core/mock/mock_api.dart';
-import 'package:quizoo/core/mock/mock_catalog.dart';
+import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// The mocked "submit this run" endpoint.
-///
-/// A real backend recomputes the score from the answer log and returns the
-/// authoritative tally (§19: "the client's own total is display only"). This
-/// stands in for that round trip, and returns the two things only a server
-/// could know: whether this was a first clear, and which achievements it
-/// unlocked.
-class QuizResultApi extends MockApi {
-  QuizResultApi({
-    super.minLatency,
-    super.maxLatency,
-    super.failureRate,
-    super.random,
-  });
+/// The real "submit this run" endpoint, over `submit_level_attempt`
+/// (functions migration) — the server recomputes score from the answer log
+/// rather than trusting [QuizRun.score] (§19: "the client's own total is
+/// display only").
+class QuizResultApi {
+  QuizResultApi(this._client);
 
-  /// Submitting is fast — the result screen's payout animation should never
-  /// be waiting on it.
-  static const Duration submitLatency = Duration(milliseconds: 120);
+  final SupabaseClient _client;
 
-  Future<RunRecord> submit(QuizRun run) => respond(latency: submitLatency, () {
-    final subcategory = MockCatalog.subcategories
-        .where((candidate) => candidate.id == run.subcategoryId)
-        .firstOrNull;
+  Future<RunRecord> submit(QuizRun run) async {
+    try {
+      final response = await _client.rpc<Map<String, dynamic>>(
+        'submit_level_attempt',
+        params: {
+          'p_attempt_id': run.attemptId,
+          'p_answers': [
+            for (final answer in run.answers)
+              {
+                'questionId': answer.question.id,
+                'chosenIndex': answer.chosenIndex,
+                'secondsLeft': answer.secondsLeft,
+                'action': switch (answer.outcome) {
+                  AnswerOutcome.timedOut => 'timedOut',
+                  AnswerOutcome.skipped => 'skipped',
+                  _ => 'answered',
+                },
+              },
+          ],
+          'p_used_power_up': run.usedPowerUp,
+          'p_ending': switch (run.ending) {
+            RunEnding.finished => 'finished',
+            RunEnding.outOfHearts => 'outOfHearts',
+            RunEnding.quit => 'quit',
+            RunEnding.inProgress => throw StateError(
+              'cannot submit an in-progress run',
+            ),
+          },
+        },
+      );
 
-    return RunRecord(
-      // A level beyond the topic's cleared count has never been finished.
-      isFirstClear:
-          run.isComplete && run.levelNumber > (subcategory?.levelsCleared ?? 0),
-      newlyEarnedBadgeIds: _badgesFor(run),
-    );
-  });
+      final totalXp = await _fetchTotalXp();
+      return RunRecord.fromResponse(response, totalXp: totalXp);
+    } on PostgrestException catch (error) {
+      // A retried network call after a timeout that actually succeeded
+      // server-side — treat "already have a result" as success, not a hard
+      // failure (plan 005's Edge cases).
+      if (error.message.contains('attempt_already_submitted')) {
+        return _fetchExistingRecord(run.attemptId);
+      }
+      throw ApiException.fromSupabase(error);
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
 
-  /// The mock achievement rules — a small, honest subset of §13's grid.
-  static List<String> _badgesFor(QuizRun run) {
-    if (!run.isComplete) return const [];
-    return [
-      // "Finish a level with 20/20 correct answers."
-      if (run.isFlawless) 'badge_sharpshooter',
-      // A long streak inside a single level.
-      if (run.longestStreak >= 10) 'badge_on_fire',
-      // Cleared a boss level.
-      if (run.isBoss) 'badge_boss_slayer',
-    ];
+  Future<RunRecord> _fetchExistingRecord(String attemptId) async {
+    try {
+      final row = await _client
+          .from('level_attempts')
+          .select('server_score, stars, correct_count, user_id')
+          .eq('id', attemptId)
+          .single();
+      final profileRow = await _client
+          .from('profiles')
+          .select('player_level, xp')
+          .eq('id', row['user_id'] as String)
+          .single();
+      return RunRecord(
+        isFirstClear: false,
+        finalScore: row['server_score'] as int? ?? 0,
+        stars: row['stars'] as int? ?? 0,
+        coinsEarned: 0,
+        xpEarned: 0,
+        playerLevel: profileRow['player_level'] as int? ?? 1,
+        totalXp: profileRow['xp'] as int? ?? 0,
+        newlyEarnedBadgeIds: const [],
+      );
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  Future<int> _fetchTotalXp() async {
+    final userId = _client.auth.currentUser!.id;
+    final row = await _client
+        .from('profiles')
+        .select('xp')
+        .eq('id', userId)
+        .single();
+    return row['xp'] as int? ?? 0;
   }
 }
 
-/// What the server knows about a submitted run that the client does not.
+/// What the server computed for a submitted run — authoritative, per §19:
+/// "the client's own total is display only".
 class RunRecord {
   const RunRecord({
     required this.isFirstClear,
+    required this.finalScore,
+    required this.stars,
+    required this.coinsEarned,
+    required this.xpEarned,
+    required this.playerLevel,
+    required this.totalXp,
     required this.newlyEarnedBadgeIds,
   });
 
+  factory RunRecord.fromResponse(
+    Map<String, dynamic> response, {
+    required int totalXp,
+  }) => RunRecord(
+    isFirstClear: response['isFirstClear'] as bool? ?? false,
+    finalScore: response['finalScore'] as int? ?? 0,
+    stars: response['stars'] as int? ?? 0,
+    coinsEarned: response['coinsEarned'] as int? ?? 0,
+    xpEarned: response['xpEarned'] as int? ?? 0,
+    playerLevel: response['playerLevel'] as int? ?? 1,
+    totalXp: totalXp,
+    newlyEarnedBadgeIds: (response['newlyEarnedBadgeIds'] as List? ?? const [])
+        .cast<String>(),
+  );
+
   final bool isFirstClear;
+  final int finalScore;
+  final int stars;
+  final int coinsEarned;
+  final int xpEarned;
+  final int playerLevel;
+
+  /// The player's total XP after this run — [QuizResultRepository] derives
+  /// `xpIntoLevel`/`xpToNextLevel` from this, since the RPC only returns the
+  /// level, not where inside it the player sits.
+  final int totalXp;
   final List<String> newlyEarnedBadgeIds;
 }

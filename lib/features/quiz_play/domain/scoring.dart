@@ -1,3 +1,4 @@
+import 'package:quizoo/core/models/xp_curve.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 
 /// §19's scoring maths, transcribed from the bible's own pseudocode.
@@ -85,7 +86,15 @@ abstract final class Scoring {
       };
 
   /// `xpToNext(n) = 300 + 100 × n`.
-  static int xpToNextLevel(int playerLevel) => 300 + 100 * playerLevel;
+  static int xpToNextLevel(int playerLevel) => XpCurve.costFor(playerLevel);
+
+  /// Inverts [xpToNextLevel] over a total-XP figure — the client-side mirror
+  /// of `_player_level_from_xp` (functions migration), since the server's
+  /// `submit_level_attempt` response carries the player's new level but not
+  /// where inside it they sit.
+  static ({int level, int xpIntoLevel, int xpToNextLevel}) levelProgress(
+    int totalXp,
+  ) => XpCurve.progressFor(totalXp);
 
   /// `xpEarned = 100 + 10 × level + star bonus + first-clear bonus`.
   static int xpEarned({

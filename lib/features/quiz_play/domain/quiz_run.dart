@@ -66,6 +66,10 @@ abstract class AnsweredQuestion with _$AnsweredQuestion {
 @freezed
 abstract class QuizRun with _$QuizRun {
   const factory QuizRun({
+    /// The server-issued `level_attempts.id` `submit_level_attempt` needs to
+    /// re-derive correctness against — one per `start_level_attempt` call, so
+    /// a retried level gets a fresh id rather than reusing a stale one.
+    required String attemptId,
     required String levelId,
     required String subcategoryId,
     required String subcategoryName,

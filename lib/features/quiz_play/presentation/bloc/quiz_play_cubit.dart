@@ -128,8 +128,24 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       return;
     }
 
+    final attemptId = _repository.attemptIdFor(
+      levelId,
+      languageCode: languageCode,
+    );
+    if (attemptId == null) {
+      if (!isClosed) {
+        emit(
+          const QuizPlayFailed(
+            ApiException('Missing attempt id', kind: ApiErrorKind.unknown),
+          ),
+        );
+      }
+      return;
+    }
+
     _questionIndex = 0;
     final run = QuizRun(
+      attemptId: attemptId,
       levelId: levelId,
       subcategoryId: subcategoryId,
       subcategoryName: subcategoryName,

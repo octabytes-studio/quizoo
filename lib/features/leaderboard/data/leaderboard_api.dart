@@ -1,319 +1,479 @@
-import 'package:quizoo/core/mock/mock_api.dart';
-import 'package:quizoo/core/mock/mock_catalog.dart';
-import 'package:quizoo/core/models/subcategory.dart';
+import 'package:quizoo/core/format/country_directory.dart';
+import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/leaderboard/domain/friend.dart';
 import 'package:quizoo/features/leaderboard/domain/leaderboard_entry.dart';
 import 'package:quizoo/features/leaderboard/domain/leaderboard_scope.dart';
 import 'package:quizoo/features/leaderboard/domain/league_standing.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// One fixture player's scores across every period, so switching Week/Month/
-/// All-time re-slices *this* roster rather than hitting a fresh query.
-class _RosterPlayer {
-  const _RosterPlayer({
-    required this.id,
-    required this.name,
-    required this.emoji,
-    required this.location,
-    required this.isFriend,
-    required this.week,
-    required this.month,
-    required this.allTime,
-  });
+/// The real leaderboard, league and friends endpoints.
+///
+/// Global/country boards read `lb_{period}_totals` (one real per-player
+/// total, added in `20260908090000_leaderboard_totals.sql` — the functions
+/// migration's own `lb_weekly`/`lb_monthly`/`lb_alltime` group by
+/// `(user, subcategory, category, country)`, the right grain for the
+/// category board but not for a genuine global total). The friends board has
+/// no materialized view at all (plan 006, Design overview) — a friends list
+/// is small enough to aggregate live.
+class LeaderboardApi {
+  LeaderboardApi(this._client);
 
-  final String id;
-  final String name;
-  final String emoji;
+  final SupabaseClient _client;
 
-  /// "🇵🇰 Lahore" — flag plus city.
-  final String location;
-  final bool isFriend;
-  final int week;
-  final int month;
-  final int allTime;
+  static const int _rosterLimit = 50;
 
-  int scoreFor(LeaderboardPeriod period) => switch (period) {
-    LeaderboardPeriod.week => week,
-    LeaderboardPeriod.month => month,
-    LeaderboardPeriod.allTime => allTime,
-  };
-
-  bool get isPakistan => location.startsWith('🇵🇰');
-}
-
-/// The mocked leaderboard, league and friends endpoints.
-class LeaderboardApi extends MockApi {
-  LeaderboardApi({
-    super.minLatency,
-    super.maxLatency,
-    super.failureRate,
-    super.random,
-  });
-
-  static const List<_RosterPlayer> _roster = [
-    _RosterPlayer(
-      id: 'p_danish',
-      name: 'Danish M.',
-      emoji: '🐯',
-      location: '🇵🇰 Karachi',
-      isFriend: true,
-      week: 168000,
-      month: 612000,
-      allTime: 2840000,
-    ),
-    _RosterPlayer(
-      id: 'p_ayesha',
-      name: 'Ayesha K.',
-      emoji: '🦊',
-      location: '🇵🇰 Lahore',
-      isFriend: true,
-      week: 142000,
-      month: 705000,
-      allTime: 3120000,
-    ),
-    _RosterPlayer(
-      id: 'p_zara',
-      name: 'Zara N.',
-      emoji: '🐨',
-      location: '🇮🇳 Delhi',
-      isFriend: true,
-      week: 131000,
-      month: 588000,
-      allTime: 2510000,
-    ),
-    _RosterPlayer(
-      id: 'p_hamza',
-      name: 'Hamza A.',
-      emoji: '🐸',
-      location: '🇵🇰 Lahore',
-      isFriend: false,
-      week: 128400,
-      month: 402000,
-      allTime: 1980000,
-    ),
-    _RosterPlayer(
-      id: 'p_sara',
-      name: 'Sara V.',
-      emoji: '🦉',
-      location: '🇮🇳 Mumbai',
-      isFriend: false,
-      week: 124910,
-      month: 560000,
-      allTime: 2960000,
-    ),
-    _RosterPlayer(
-      id: 'p_omar',
-      name: 'Omar F.',
-      emoji: '🐧',
-      location: '🇦🇪 Dubai',
-      isFriend: false,
-      week: 121300,
-      month: 300000,
-      allTime: 1400000,
-    ),
-    _RosterPlayer(
-      id: 'p_lucia',
-      name: 'Lucia R.',
-      emoji: '🐢',
-      location: '🇪🇸 Madrid',
-      isFriend: false,
-      week: 119880,
-      month: 275000,
-      allTime: 1120000,
-    ),
-    _RosterPlayer(
-      id: 'p_bilal',
-      name: 'Bilal R.',
-      emoji: '🐯',
-      location: '🇵🇰 Islamabad',
-      isFriend: false,
-      week: 98200,
-      month: 340000,
-      allTime: 1560000,
-    ),
-    _RosterPlayer(
-      id: 'p_hina',
-      name: 'Hina S.',
-      emoji: '🐰',
-      location: '🇵🇰 Karachi',
-      isFriend: false,
-      week: 91200,
-      month: 410000,
-      allTime: 2100000,
-    ),
-    _RosterPlayer(
-      id: 'p_faisal',
-      name: 'Faisal T.',
-      emoji: '🦁',
-      location: '🇵🇰 Lahore',
-      isFriend: false,
-      week: 76500,
-      month: 210000,
-      allTime: 980000,
-    ),
-  ];
-
-  /// Rank / score / "Top N%" for the player's own row, per scope × period —
-  /// this small fixture roster cannot itself simulate a 400-player field, so
-  /// the self row's numbers are looked up rather than computed from it.
-  static const Map<LeaderboardScope, Map<LeaderboardPeriod, (int, int, int)>>
-  _selfStats = {
-    LeaderboardScope.global: {
-      LeaderboardPeriod.week: (412, 18420, 3),
-      LeaderboardPeriod.month: (1204, 61000, 4),
-      LeaderboardPeriod.allTime: (8830, 268000, 6),
-    },
-    LeaderboardScope.country: {
-      LeaderboardPeriod.week: (89, 18420, 5),
-      LeaderboardPeriod.month: (240, 61000, 6),
-      LeaderboardPeriod.allTime: (1650, 268000, 8),
-    },
-    LeaderboardScope.friends: {
-      LeaderboardPeriod.week: (4, 18420, 100),
-      LeaderboardPeriod.month: (3, 61000, 75),
-      LeaderboardPeriod.allTime: (4, 268000, 100),
-    },
+  String _viewFor(LeaderboardPeriod period) => switch (period) {
+    LeaderboardPeriod.week => 'lb_weekly_totals',
+    LeaderboardPeriod.month => 'lb_monthly_totals',
+    LeaderboardPeriod.allTime => 'lb_alltime_totals',
   };
 
   Future<List<LeaderboardEntry>> fetchRoster({
     required LeaderboardScope scope,
     required LeaderboardPeriod period,
-  }) => respond(() {
-    final filtered =
-        _roster.where((player) {
-            return switch (scope) {
-              LeaderboardScope.global => true,
-              LeaderboardScope.country => player.isPakistan,
-              LeaderboardScope.friends => player.isFriend,
-            };
-          }).toList()
-          ..sort((a, b) => b.scoreFor(period).compareTo(a.scoreFor(period)));
+  }) async {
+    try {
+      if (scope == LeaderboardScope.friends) {
+        return _friendsRoster(period);
+      }
 
-    return [
-      for (final (index, player) in filtered.indexed)
-        LeaderboardEntry(
-          rank: index + 1,
-          playerId: player.id,
-          name: player.name,
-          avatarEmoji: player.emoji,
-          score: player.scoreFor(period),
-          locationLabel: player.location,
-          rankDelta: _rankDeltaFor(index, period),
-        ),
-    ];
-  });
+      final userId = _client.auth.currentUser?.id;
+      var query = _client
+          .from(_viewFor(period))
+          .select('user_id, country_code, points, rank_global, rank_country');
+
+      if (scope == LeaderboardScope.country) {
+        final myCountry = userId == null
+            ? null
+            : (await _client
+                      .from('profiles')
+                      .select('country_code')
+                      .eq('id', userId)
+                      .maybeSingle())?['country_code']
+                  as String?;
+        if (myCountry == null) return const [];
+        query = query.eq('country_code', myCountry);
+      }
+
+      final rows = await query
+          .order(
+            scope == LeaderboardScope.country ? 'rank_country' : 'rank_global',
+          )
+          .limit(_rosterLimit);
+
+      final profiles = await _profilesFor([
+        for (final row in rows) row['user_id'] as String,
+      ]);
+
+      return [
+        for (final row in rows)
+          _entryFromTotalsRow(
+            row,
+            scope: scope,
+            profile: profiles[row['user_id']],
+            selfId: userId,
+          ),
+      ];
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
 
   Future<LeaderboardEntry> fetchSelfEntry({
     required LeaderboardScope scope,
     required LeaderboardPeriod period,
-  }) => respond(() {
-    final (rank, score, topPercent) = _selfStats[scope]![period]!;
+  }) async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        throw const ApiException(
+          'Not signed in',
+          kind: ApiErrorKind.unauthorized,
+        );
+      }
+
+      if (scope == LeaderboardScope.friends) {
+        final roster = await _friendsRoster(period);
+        final self = roster.where((entry) => entry.isSelf).firstOrNull;
+        if (self != null) return self;
+        return _selfProfileEntry(userId, rank: 0, score: 0, topPercent: 100);
+      }
+
+      final row = await _client
+          .from(_viewFor(period))
+          .select('user_id, country_code, points, rank_global, rank_country')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (row == null) {
+        return _selfProfileEntry(userId, rank: 0, score: 0, topPercent: 100);
+      }
+
+      final rank = scope == LeaderboardScope.country
+          ? row['rank_country'] as int
+          : row['rank_global'] as int;
+      final totalRow = await _client
+          .from(_viewFor(period))
+          .select('user_id')
+          .maybeEq(
+            scope == LeaderboardScope.country ? 'country_code' : null,
+            row['country_code'],
+          );
+      final total = totalRow.length;
+      final topPercent = total == 0 ? 100 : ((rank / total) * 100).ceil();
+
+      return _selfProfileEntry(
+        userId,
+        rank: rank,
+        score: row['points'] as int,
+        topPercent: topPercent.clamp(1, 100),
+      );
+    } catch (error) {
+      if (error is ApiException) rethrow;
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  Future<List<LeaderboardEntry>> fetchCategoryRoster(
+    String subcategoryId,
+  ) async {
+    try {
+      final rows = await _client
+          .from('lb_alltime')
+          .select('user_id, points, rank_subcategory')
+          .eq('subcategory_id', subcategoryId)
+          .order('rank_subcategory')
+          .limit(_rosterLimit);
+
+      final userIds = [for (final row in rows) row['user_id'] as String];
+      final profiles = await _profilesFor(userIds);
+      final progress = await _client
+          .from('level_progress')
+          .select('user_id, stars, completed_at')
+          .eq('subcategory_id', subcategoryId)
+          .inFilter('user_id', userIds);
+
+      final clearedByUser = <String, int>{};
+      final starsByUser = <String, int>{};
+      for (final row in progress) {
+        final userId = row['user_id'] as String;
+        if (row['completed_at'] != null) {
+          clearedByUser[userId] = (clearedByUser[userId] ?? 0) + 1;
+        }
+        starsByUser[userId] =
+            (starsByUser[userId] ?? 0) + (row['stars'] as int? ?? 0);
+      }
+
+      return [
+        for (final row in rows)
+          LeaderboardEntry(
+            rank: row['rank_subcategory'] as int,
+            playerId: row['user_id'] as String,
+            name: profiles[row['user_id']]?.$1 ?? '—',
+            avatarEmoji: profiles[row['user_id']]?.$2 ?? '🐼',
+            score: row['points'] as int,
+            levelsCleared: clearedByUser[row['user_id']] ?? 0,
+            levelCount: 20,
+            starsEarned: starsByUser[row['user_id']] ?? 0,
+          ),
+      ];
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  /// "You're #{rank} in {country}" + "{points} points from the top 10".
+  Future<(int, int, String)> fetchCategoryHeader(String subcategoryId) async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return (0, 0, '');
+
+      final selfRow = await _client
+          .from('lb_alltime')
+          .select('points, rank_subcategory')
+          .eq('subcategory_id', subcategoryId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (selfRow == null) return (0, 0, '');
+
+      final tenthRow = await _client
+          .from('lb_alltime')
+          .select('points')
+          .eq('subcategory_id', subcategoryId)
+          .eq('rank_subcategory', 10)
+          .maybeSingle();
+
+      final profileRow = await _client
+          .from('profiles')
+          .select('country_code')
+          .eq('id', userId)
+          .maybeSingle();
+      final countryCode = profileRow?['country_code'] as String?;
+
+      final pointsFromTop =
+          ((tenthRow?['points'] as int?) ?? (selfRow['points'] as int)) -
+          (selfRow['points'] as int);
+
+      return (
+        selfRow['rank_subcategory'] as int,
+        pointsFromTop.abs(),
+        countryCode == null ? '' : CountryDirectory.nameFor(countryCode),
+      );
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  Future<List<Friend>> fetchFriends() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return const [];
+
+      final rows = await _client
+          .from('friendships')
+          .select('requester_id, addressee_id, status')
+          .or('requester_id.eq.$userId,addressee_id.eq.$userId');
+
+      final otherIds = [
+        for (final row in rows)
+          row['requester_id'] == userId
+              ? row['addressee_id'] as String
+              : row['requester_id'] as String,
+      ];
+      final profiles = await _profilesFor(otherIds);
+
+      return [
+        for (final row in rows)
+          _friendFromRow(row, userId: userId, profiles: profiles),
+      ];
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  Future<List<LeagueStanding>> fetchLeagueNeighbors() async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return const [];
+
+      final now = DateTime.now().toUtc();
+      final weekStart = DateTime.utc(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: now.weekday - 1));
+
+      final membershipRow = await _client
+          .from('league_memberships')
+          .select('cohort_id, league_cohorts!inner(week_start)')
+          .eq('user_id', userId)
+          .eq(
+            'league_cohorts.week_start',
+            weekStart.toIso8601String().split('T').first,
+          )
+          .maybeSingle();
+      if (membershipRow == null) return const [];
+      final cohortId = membershipRow['cohort_id'] as String;
+
+      final rows = await _client
+          .from('league_memberships')
+          .select('user_id, points')
+          .eq('cohort_id', cohortId)
+          .order('points', ascending: false);
+
+      final userIds = [for (final row in rows) row['user_id'] as String];
+      final profiles = await _profilesFor(userIds);
+      final selfIndex = rows.indexWhere((row) => row['user_id'] == userId);
+      final lo = (selfIndex - 2).clamp(0, rows.length);
+      final hi = (selfIndex + 3).clamp(0, rows.length);
+
+      return [
+        for (var index = lo; index < hi; index++)
+          LeagueStanding(
+            rank: index + 1,
+            playerId: rows[index]['user_id'] as String,
+            name: profiles[rows[index]['user_id']]?.$1 ?? '—',
+            avatarEmoji: profiles[rows[index]['user_id']]?.$2 ?? '🐼',
+            points: rows[index]['points'] as int,
+            isSelf: rows[index]['user_id'] == userId,
+          ),
+      ];
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  // ------------------------------------------------------------- internals
+
+  Future<List<LeaderboardEntry>> _friendsRoster(
+    LeaderboardPeriod period,
+  ) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return const [];
+
+    final friendshipRows = await _client
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or('requester_id.eq.$userId,addressee_id.eq.$userId');
+
+    final ids = {
+      userId,
+      for (final row in friendshipRows)
+        row['requester_id'] == userId
+            ? row['addressee_id'] as String
+            : row['requester_id'] as String,
+    }.toList();
+
+    final since = switch (period) {
+      LeaderboardPeriod.week => _startOfWeekUtc(),
+      LeaderboardPeriod.month => _startOfMonthUtc(),
+      LeaderboardPeriod.allTime => null,
+    };
+
+    var query = _client
+        .from('score_events')
+        .select('user_id, points')
+        .inFilter('user_id', ids);
+    if (since != null) {
+      query = query.gte('occurred_at', since.toIso8601String());
+    }
+    final rows = await query;
+
+    final totals = <String, int>{for (final id in ids) id: 0};
+    for (final row in rows) {
+      final id = row['user_id'] as String;
+      totals[id] = (totals[id] ?? 0) + (row['points'] as int);
+    }
+
+    final profiles = await _profilesFor(ids);
+    final ranked = totals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return [
+      for (final (index, entry) in ranked.indexed)
+        LeaderboardEntry(
+          rank: index + 1,
+          playerId: entry.key,
+          name: profiles[entry.key]?.$1 ?? '—',
+          avatarEmoji: profiles[entry.key]?.$2 ?? '🐼',
+          score: entry.value,
+          isSelf: entry.key == userId,
+        ),
+    ];
+  }
+
+  Future<LeaderboardEntry> _selfProfileEntry(
+    String userId, {
+    required int rank,
+    required int score,
+    required int topPercent,
+  }) async {
+    final profile = await _profilesFor([userId]);
     return LeaderboardEntry(
       rank: rank,
-      playerId: 'self',
-      name: 'You',
-      avatarEmoji: '🐼',
+      playerId: userId,
+      name: profile[userId]?.$1 ?? 'You',
+      avatarEmoji: profile[userId]?.$2 ?? '🐼',
       score: score,
-      locationLabel: '🇵🇰 Islamabad',
-      rankDelta: 27,
+      locationLabel: profile[userId]?.$3,
       isSelf: true,
       topPercent: topPercent,
     );
-  });
+  }
 
-  static const List<(String, String, String, int, int, int)> _categoryRoster = [
-    ('p_danish', 'Danish M.', '🐯', 32400, 20, 58),
-    ('p_ayesha', 'Ayesha K.', '🦊', 31120, 20, 55),
-    ('p_zara', 'Zara N.', '🐨', 29880, 19, 52),
-    ('p_omar', 'Omar F.', '🐧', 27410, 18, 49),
-  ];
+  LeaderboardEntry _entryFromTotalsRow(
+    Map<String, dynamic> row, {
+    required LeaderboardScope scope,
+    required (String, String, String?)? profile,
+    required String? selfId,
+  }) {
+    final userId = row['user_id'] as String;
+    return LeaderboardEntry(
+      rank: scope == LeaderboardScope.country
+          ? row['rank_country'] as int
+          : row['rank_global'] as int,
+      playerId: userId,
+      name: profile?.$1 ?? '—',
+      avatarEmoji: profile?.$2 ?? '🐼',
+      score: row['points'] as int,
+      locationLabel: profile?.$3,
+      isSelf: userId == selfId,
+    );
+  }
 
-  Future<List<LeaderboardEntry>> fetchCategoryRoster(String subcategoryId) =>
-      respond(() {
-        final subcategory = _subcategoryOrFallback(subcategoryId);
-        return [
-          for (final (index, row) in _categoryRoster.indexed)
-            LeaderboardEntry(
-              rank: index + 1,
-              playerId: row.$1,
-              name: row.$2,
-              avatarEmoji: row.$3,
-              score: row.$4,
-              levelsCleared: row.$5,
-              levelCount: subcategory.levelCount,
-              starsEarned: row.$6,
-            ),
-        ];
-      });
+  Friend _friendFromRow(
+    Map<String, dynamic> row, {
+    required String userId,
+    required Map<String, (String, String, String?)> profiles,
+  }) {
+    final isRequester = row['requester_id'] == userId;
+    final otherId = isRequester
+        ? row['addressee_id'] as String
+        : row['requester_id'] as String;
+    final status = row['status'] as String;
+    final profile = profiles[otherId];
 
-  /// "You're #{rank} in {country}" + "{points} points from the top 10".
-  Future<(int, int, String)> fetchCategoryHeader(String subcategoryId) =>
-      respond(() => (12, 1240, 'Pakistan'));
+    final friendStatus = status == 'pending' && !isRequester
+        ? FriendStatus.pending
+        : FriendStatus.offline;
 
-  static const List<Friend> _friends = [
-    Friend(
-      id: 'p_hina',
-      name: 'Hina S.',
-      avatarEmoji: '🐰',
-      status: FriendStatus.pending,
-      subtitle: 'Level 22 · Gold League',
-    ),
-    Friend(
-      id: 'p_danish',
-      name: 'Danish M.',
-      avatarEmoji: '🐯',
-      status: FriendStatus.online,
-      subtitle: '🟢 Playing Cricket now',
-    ),
-    Friend(
-      id: 'p_ayesha',
-      name: 'Ayesha K.',
-      avatarEmoji: '🦊',
-      status: FriendStatus.offline,
-      subtitle: 'Last seen 2h ago · 142k pts',
-    ),
-    Friend(
-      id: 'p_zara',
-      name: 'Zara N.',
-      avatarEmoji: '🐨',
-      status: FriendStatus.offline,
-      subtitle: 'Last seen yesterday · 131k pts',
-    ),
-  ];
+    return Friend(
+      id: otherId,
+      name: profile?.$1 ?? '—',
+      avatarEmoji: profile?.$2 ?? '🐼',
+      status: friendStatus,
+      subtitle: friendStatus == FriendStatus.pending
+          ? 'Wants to be friends'
+          : 'Offline',
+    );
+  }
 
-  Future<List<Friend>> fetchFriends() => respond(() => _friends);
+  Future<Map<String, (String, String, String?)>> _profilesFor(
+    List<String> userIds,
+  ) async {
+    if (userIds.isEmpty) return const {};
+    final rows = await _client
+        .from('profiles')
+        .select('id, username, avatar_key, country_code, city')
+        .inFilter('id', userIds.toSet().toList());
 
-  static const List<(String, String, String, int)> _leagueNeighbors = [
-    ('p_ayesha', 'Ayesha K.', '🦊', 9120),
-    ('self', 'You', '🐼', 8980),
-    ('p_bilal', 'Bilal R.', '🐯', 8740),
-  ];
-
-  Future<List<LeagueStanding>> fetchLeagueNeighbors() => respond(
-    () => [
-      for (final (index, row) in _leagueNeighbors.indexed)
-        LeagueStanding(
-          rank: 28 + index,
-          playerId: row.$1,
-          name: row.$2,
-          avatarEmoji: row.$3,
-          points: row.$4,
-          isSelf: row.$1 == 'self',
+    return {
+      for (final row in rows)
+        row['id'] as String: (
+          row['username'] as String? ?? '—',
+          row['avatar_key'] as String? ?? '🐼',
+          _locationLabel(
+            row['country_code'] as String?,
+            row['city'] as String?,
+          ),
         ),
-    ],
-  );
-
-  /// A small, deterministic ▲/▼/— spread so the list does not read as every
-  /// row climbing or every row falling.
-  static int _rankDeltaFor(int index, LeaderboardPeriod period) {
-    final seed = (index * 7 + period.index * 3) % 5;
-    return seed - 2;
+    };
   }
 
-  static Subcategory _subcategoryOrFallback(String id) {
-    try {
-      return MockCatalog.subcategoryById(id);
-    } on StateError {
-      return MockCatalog.subcategoryById(MockCatalog.footballId);
-    }
+  static String? _locationLabel(String? countryCode, String? city) {
+    if (countryCode == null) return null;
+    final flag = CountryDirectory.flagFor(countryCode);
+    return city == null || city.isEmpty ? flag : '$flag $city';
   }
+
+  static DateTime _startOfWeekUtc() {
+    final now = DateTime.now().toUtc();
+    return DateTime.utc(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
+  }
+
+  static DateTime _startOfMonthUtc() {
+    final now = DateTime.now().toUtc();
+    return DateTime.utc(now.year, now.month);
+  }
+}
+
+extension _MaybeEq<T> on PostgrestFilterBuilder<T> {
+  /// `.eq(column, value)` only when [column] is non-null — used where a
+  /// count-all-rows query is sometimes scoped to a country, sometimes not.
+  PostgrestFilterBuilder<T> maybeEq(String? column, Object? value) =>
+      column == null ? this : eq(column, value as Object);
 }

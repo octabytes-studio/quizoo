@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
@@ -37,7 +38,10 @@ class QuizResultScreen extends StatelessWidget {
 
     return BlocProvider<QuizResultCubit>(
       create: (_) => QuizResultCubit(
-        QuizResultRepository(QuizResultApi(), context.read<AuthRepository>()),
+        QuizResultRepository(
+          QuizResultApi(supabase),
+          context.read<AuthRepository>(),
+        ),
       )..submit(run, isGuest: context.read<SessionCubit>().isGuest),
       child: BlocBuilder<QuizResultCubit, QuizResultState>(
         builder: (context, state) => switch (state) {

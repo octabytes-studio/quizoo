@@ -9,7 +9,8 @@ class NotificationsRepository {
 
   Future<List<AppNotification>> fetchAll() => _api.fetchAll();
 
-  List<AppNotification> markAllRead() => _api.markAllRead();
+  Future<List<AppNotification>> markAllRead() => _api.markAllRead();
 
-  List<AppNotification> acceptChallenge(String id) => _api.acceptChallenge(id);
+  Future<List<AppNotification>> acceptChallenge(String id) =>
+      _api.acceptChallenge(id);
 }

@@ -1,23 +1,25 @@
 import 'dart:math';
 
-import 'package:quizoo/core/mock/mock_api.dart';
+import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/duel/domain/duel_opponent.dart';
-import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
+import 'package:quizoo/features/duel/domain/duel_round.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// The mocked duel endpoints.
+/// The real duel endpoints.
 ///
-/// There is no real matchmaking server (plan 004, Scope) — [fetchBotOpponent]
-/// always deals a bot, explicitly labelled as one, drawn from a small fixed
-/// roster rather than pretending to be a person the bible's "never a secret
-/// bot" rule forbids.
-class DuelApi extends MockApi {
-  DuelApi({
-    super.minLatency,
-    super.maxLatency,
-    super.failureRate,
-    super.random,
-  });
+/// There is still no real matchmaking server (plan 006, Assumption #3) —
+/// [fetchBotOpponent] keeps dealing a bot, explicitly labelled as one, from
+/// the same small fixed roster; only [fetchRoundQuestions] and
+/// [submitBotDuel] talk to Supabase now. `playerElo` here still comes from
+/// whatever the caller passes in (`matchmaking_screen.dart`'s constant) —
+/// threading `profiles.elo` all the way up into that screen's construction
+/// is flagged as a follow-up, not resolved by this rewrite, to keep this
+/// change contained to the data layer.
+class DuelApi {
+  DuelApi(this._client);
+
+  final SupabaseClient _client;
 
   /// Best-of-5 (§14).
   static const int roundCount = 5;
@@ -31,27 +33,113 @@ class DuelApi extends MockApi {
     ('Talon', '🦅'),
   ];
 
-  /// A bot within roughly ±120 of [playerElo] — the mock stand-in for
-  /// `MatchmakingCubit`'s widening ELO-band search.
-  Future<DuelOpponent> fetchBotOpponent({required int playerElo}) =>
-      respond(() {
-        final random = Random();
-        final (name, emoji) = _botRoster[random.nextInt(_botRoster.length)];
-        final elo = (playerElo + random.nextInt(241) - 120).clamp(400, 2400);
-        return DuelOpponent(
-          id: 'bot_${DateTime.now().microsecondsSinceEpoch}',
-          name: name,
-          avatarEmoji: emoji,
-          elo: elo,
-        );
-      });
+  /// A bot within roughly ±120 of [playerElo] — still a scripted opponent,
+  /// not a real matchmaking search (plan 006, Assumption #3).
+  Future<DuelOpponent> fetchBotOpponent({required int playerElo}) async {
+    final random = Random();
+    final (name, emoji) = _botRoster[random.nextInt(_botRoster.length)];
+    final elo = (playerElo + random.nextInt(241) - 120).clamp(400, 2400);
+    return DuelOpponent(
+      id: 'bot_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+      avatarEmoji: emoji,
+      elo: elo,
+    );
+  }
 
-  /// Five questions for the duel — the same authored Football pool
-  /// `features/quiz_play` draws from (plan 002's Assumption 4 fixture),
-  /// reused rather than duplicated, shuffled with a fixed seed so a duel's
-  /// question order is stable across a single mocked session.
-  Future<List<Question>> fetchRoundQuestions() => respond(() {
-    final pool = [...MockQuestions.football]..shuffle(Random(7));
-    return pool.take(roundCount).toList();
+  /// Five live questions for the duel — the same content pool
+  /// `start_level_attempt` draws from, reused rather than duplicated. Only
+  /// Football has seeded content today, so this pulls from there directly
+  /// until more topics exist (plan 006, Design overview).
+  Future<List<Question>> fetchRoundQuestions() async {
+    try {
+      final subcategoryRow = await _client
+          .from('subcategories')
+          .select('id')
+          .eq('slug', 'football')
+          .maybeSingle();
+      if (subcategoryRow == null) return const [];
+
+      final rows = await _client
+          .from('questions')
+          .select(
+            'id, subcategory_id, difficulty, kind, media_url, '
+            'question_i18n!inner(prompt, options, correct_index, explanation, locale)',
+          )
+          .eq('subcategory_id', subcategoryRow['id'] as String)
+          .eq('status', 'live')
+          .eq('question_i18n.locale', 'en');
+
+      final questions = [for (final row in rows) _questionFromRow(row)]
+        ..shuffle(Random());
+      return questions.take(roundCount).toList();
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  /// Persists a finished bot duel via `submit_bot_duel` (functions
+  /// migration) — the one change plan 006 Phase 5 makes to the duel flow:
+  /// the result is saved for real, rather than vanishing on next launch.
+  Future<BotDuelRecord> submitBotDuel({
+    required int opponentElo,
+    required int playerRoundsWon,
+    required int opponentRoundsWon,
+    required List<DuelRoundRecord> rounds,
+  }) async {
+    try {
+      final response = await _client.rpc<Map<String, dynamic>>(
+        'submit_bot_duel',
+        params: {
+          'p_opponent_elo': opponentElo,
+          'p_player_rounds_won': playerRoundsWon,
+          'p_opponent_rounds_won': opponentRoundsWon,
+          'p_rounds': [
+            for (final round in rounds)
+              {
+                'roundNumber': round.roundNumber,
+                'playerCorrect': round.playerCorrect,
+                'playerAnswerSeconds': round.playerAnswerSeconds,
+              },
+          ],
+        },
+      );
+      return BotDuelRecord(
+        eloBefore: response['eloBefore'] as int,
+        eloAfter: response['eloAfter'] as int,
+        coinsEarned: response['coinsEarned'] as int,
+      );
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  static Question _questionFromRow(Map<String, dynamic> row) {
+    final i18n = (row['question_i18n'] as List).first as Map<String, dynamic>;
+    return Question(
+      id: row['id'] as String,
+      subcategoryId: row['subcategory_id'] as String,
+      difficulty: row['difficulty'] as int,
+      text: i18n['prompt'] as String,
+      options: (i18n['options'] as List).cast<String>(),
+      correctIndex: i18n['correct_index'] as int,
+      explanation: i18n['explanation'] as String,
+      hasImage: row['kind'] == 'image',
+      imageAsset: row['media_url'] as String?,
+    );
+  }
+}
+
+/// What the server settled a bot duel to — authoritative ELO/coins, per
+/// `submit_bot_duel`'s response.
+class BotDuelRecord {
+  const BotDuelRecord({
+    required this.eloBefore,
+    required this.eloAfter,
+    required this.coinsEarned,
   });
+
+  final int eloBefore;
+  final int eloAfter;
+  final int coinsEarned;
 }

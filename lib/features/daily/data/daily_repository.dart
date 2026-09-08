@@ -13,23 +13,25 @@ class DailyRepository {
 
   Future<StreakStatus> fetchStreak() => _api.fetchStreak();
 
-  /// Plays today's challenge and turns the raw outcome into the [DailyResult]
-  /// S-28 renders — bucket highlight, "better than X%" and the new streak all
-  /// derived from the score rather than re-typed as separate mock numbers.
+  /// Plays today's challenge and turns the outcome into the [DailyResult]
+  /// S-28 renders. `play_daily_challenge` (functions migration) is the
+  /// authoritative source for coins/streak/distribution now — this no longer
+  /// recomputes them client-side the way the mock's fixed `coinReward`/
+  /// `mockDistributionPercents` did.
   Future<DailyResult> playToday() async {
     final outcome = await _api.play();
-    final streak = await _api.fetchStreak();
 
     return DailyResult(
       correctCount: outcome.correctCount,
       totalCount: outcome.answerPattern.length,
-      betterThanPercent: DailyResult.betterThanPercentFor(outcome.correctCount),
-      distributionPercents: DailyResult.mockDistributionPercents,
+      betterThanPercent: DailyResult.betterThanPercentFor(
+        outcome.correctCount,
+        outcome.distributionPercents,
+      ),
+      distributionPercents: outcome.distributionPercents,
       highlightedBucketIndex: DailyResult.bucketIndexFor(outcome.correctCount),
-      coinsEarned: outcome.correctCount > 0 ? 300 : 0,
-      streakNow: outcome.correctCount > 0
-          ? streak.currentStreak + 1
-          : streak.currentStreak,
+      coinsEarned: outcome.coinsEarned,
+      streakNow: outcome.streakNow,
       answerPattern: outcome.answerPattern,
     );
   }

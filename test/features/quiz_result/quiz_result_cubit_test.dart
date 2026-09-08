@@ -11,8 +11,42 @@ import 'package:quizoo/features/quiz_play/domain/scoring.dart';
 import 'package:quizoo/features/quiz_result/data/quiz_result_api.dart';
 import 'package:quizoo/features/quiz_result/data/quiz_result_repository.dart';
 import 'package:quizoo/features/quiz_result/presentation/bloc/quiz_result_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockQuizResultApi extends Mock implements QuizResultApi {}
+
+class _MockAuthApi extends Mock implements AuthApi {}
+
+/// A `RunRecord` computed the same way `submit_level_attempt` would, from
+/// the run being submitted — a real server double, not a fixed fixture, so
+/// assertions on `stars`/`finalScore` stay meaningful now that
+/// `QuizResultRepository` trusts the server's numbers rather than
+/// recomputing them.
+RunRecord recordFor(QuizRun run, {bool isFirstClear = false}) {
+  final stars = run.isComplete ? Scoring.stars(run.correctCount) : 0;
+  return RunRecord(
+    isFirstClear: isFirstClear,
+    finalScore: run.isComplete ? Scoring.total(run) : run.score,
+    stars: stars,
+    coinsEarned: run.isComplete
+        ? Scoring.coinsEarned(
+            levelNumber: run.levelNumber,
+            stars: stars,
+            isBoss: run.isBoss,
+          )
+        : 0,
+    xpEarned: run.isComplete
+        ? Scoring.xpEarned(
+            levelNumber: run.levelNumber,
+            stars: stars,
+            isFirstClear: isFirstClear,
+          )
+        : 0,
+    playerLevel: 12,
+    totalXp: 1240,
+    newlyEarnedBadgeIds: const [],
+  );
+}
 
 /// A run of [correct] right answers out of twenty, ended as [ending].
 QuizRun buildRun({
@@ -43,6 +77,7 @@ QuizRun buildRun({
   ];
 
   return QuizRun(
+    attemptId: 'attempt_test',
     levelId: MockCatalog.levelId(MockCatalog.footballId, levelNumber),
     subcategoryId: MockCatalog.footballId,
     subcategoryName: 'Football',
@@ -67,13 +102,20 @@ void main() {
 
   setUpAll(() => registerFallbackValue(buildRun(correct: 0, answered: 0)));
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     api = _MockQuizResultApi();
-    authRepository = AuthRepository(AuthApi());
+    authRepository = AuthRepository(
+      _MockAuthApi(),
+      await SharedPreferences.getInstance(),
+    );
     repository = QuizResultRepository(api, authRepository);
 
     when(() => api.submit(any())).thenAnswer(
-      (_) async => const RunRecord(isFirstClear: true, newlyEarnedBadgeIds: []),
+      (invocation) async => recordFor(
+        invocation.positionalArguments.first as QuizRun,
+        isFirstClear: true,
+      ),
     );
   });
 
@@ -159,10 +201,13 @@ void main() {
       for (final ending in [RunEnding.outOfHearts, RunEnding.quit]) {
         final api = _MockQuizResultApi();
         when(() => api.submit(any())).thenAnswer(
-          (_) async =>
-              const RunRecord(isFirstClear: false, newlyEarnedBadgeIds: []),
+          (invocation) async =>
+              recordFor(invocation.positionalArguments.first as QuizRun),
         );
-        final auth = AuthRepository(AuthApi())..markLevelCompleted();
+        final auth = AuthRepository(
+          _MockAuthApi(),
+          await SharedPreferences.getInstance(),
+        )..markLevelCompleted();
         final repository = QuizResultRepository(api, auth);
 
         final result = await repository.submit(

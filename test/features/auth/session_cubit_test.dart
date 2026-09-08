@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -6,11 +8,31 @@ import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/domain/auth_user.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthChangeEvent, AuthState, Session, User;
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
+class _MockAuthApi extends Mock implements AuthApi {}
+
+/// A signed-in (non-anonymous) session — what a real OAuth deep link hands
+/// `authStateChanges` once it lands.
+Session _fakeSession() => Session(
+  accessToken: 'token',
+  tokenType: 'bearer',
+  user: User(
+    id: 'user_google',
+    appMetadata: const {'provider': 'google'},
+    userMetadata: const {},
+    aud: 'authenticated',
+    createdAt: DateTime(2026).toIso8601String(),
+  ),
+);
+
 void main() {
   late _MockAuthRepository repository;
+  late StreamController<AuthState> authStateController;
 
   const user = AuthUser(
     id: 'user_google',
@@ -21,7 +43,15 @@ void main() {
   setUp(() {
     repository = _MockAuthRepository();
     registerFallbackValue(AuthProvider.google);
+    // `SessionCubit`'s constructor subscribes to this immediately, to react
+    // to a vendor OAuth deep link landing back in the app.
+    authStateController = StreamController<AuthState>.broadcast();
+    when(
+      () => repository.authStateChanges,
+    ).thenAnswer((_) => authStateController.stream);
   });
+
+  tearDown(() => authStateController.close());
 
   group('SessionCubit', () {
     test('starts as a guest, which is a fully playable state', () {
@@ -31,14 +61,22 @@ void main() {
     });
 
     blocTest<SessionCubit, SessionState>(
-      'success path: a vendor sign-in ends signed in',
+      'success path: a vendor sign-in ends signed in once the OAuth deep '
+      'link lands',
       setUp: () {
+        when(() => repository.signInWithVendor(any())).thenAnswer((_) async {});
         when(
-          () => repository.signInWithVendor(any()),
+          () => repository.restoreSignedInUser(),
         ).thenAnswer((_) async => user);
       },
       build: () => SessionCubit(repository),
-      act: (cubit) => cubit.signInWithVendor(AuthProvider.google),
+      act: (cubit) async {
+        await cubit.signInWithVendor(AuthProvider.google);
+        authStateController.add(
+          AuthState(AuthChangeEvent.signedIn, _fakeSession()),
+        );
+        await Future<void>.delayed(Duration.zero);
+      },
       expect: () => [
         isA<SessionAuthenticating>(),
         isA<SessionSignedIn>().having(
@@ -95,22 +133,29 @@ void main() {
   });
 
   group('AuthRepository save-progress rules', () {
-    test('offers the sheet only after a completed level, and only once', () {
-      // The flags are pure in-memory bookkeeping, so a real API instance is
-      // fine here — nothing below is ever called.
-      final repository = AuthRepository(AuthApi());
+    test(
+      'offers the sheet only after a completed level, and only once',
+      () async {
+        // The flags are backed by shared_preferences now, not a network
+        // call — nothing on `AuthApi` is ever called here.
+        SharedPreferences.setMockInitialValues({});
+        final repository = AuthRepository(
+          _MockAuthApi(),
+          await SharedPreferences.getInstance(),
+        );
 
-      // Nothing completed yet: never offered, guest or not.
-      expect(repository.shouldOfferSaveProgress(isGuest: true), isFalse);
+        // Nothing completed yet: never offered, guest or not.
+        expect(repository.shouldOfferSaveProgress(isGuest: true), isFalse);
 
-      repository.markLevelCompleted();
-      expect(repository.shouldOfferSaveProgress(isGuest: true), isTrue);
+        repository.markLevelCompleted();
+        expect(repository.shouldOfferSaveProgress(isGuest: true), isTrue);
 
-      // Never to a signed-in player — there is nothing to convert.
-      expect(repository.shouldOfferSaveProgress(isGuest: false), isFalse);
+        // Never to a signed-in player — there is nothing to convert.
+        expect(repository.shouldOfferSaveProgress(isGuest: false), isFalse);
 
-      repository.markSaveProgressPromptShown();
-      expect(repository.shouldOfferSaveProgress(isGuest: true), isFalse);
-    });
+        repository.markSaveProgressPromptShown();
+        expect(repository.shouldOfferSaveProgress(isGuest: true), isFalse);
+      },
+    );
   });
 }

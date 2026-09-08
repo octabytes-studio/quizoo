@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
@@ -25,7 +26,7 @@ class FriendsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<FriendsCubit>(
       create: (_) =>
-          FriendsCubit(LeaderboardRepository(LeaderboardApi()))..load(),
+          FriendsCubit(LeaderboardRepository(LeaderboardApi(supabase)))..load(),
       child: const _FriendsView(),
     );
   }

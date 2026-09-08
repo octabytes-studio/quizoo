@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
@@ -29,7 +30,8 @@ class DailyResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<DailyResultCubit>(
-      create: (_) => DailyResultCubit(DailyRepository(DailyApi()))..play(),
+      create: (_) =>
+          DailyResultCubit(DailyRepository(DailyApi(supabase)))..play(),
       child: BlocBuilder<DailyResultCubit, DailyResultState>(
         builder: (context, state) => switch (state) {
           DailyResultLoading() => const _DailyResultSpinner(),

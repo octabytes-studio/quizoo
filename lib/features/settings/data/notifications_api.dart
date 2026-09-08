@@ -1,78 +1,100 @@
-import 'package:quizoo/core/mock/mock_api.dart';
+import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/settings/domain/app_notification.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// The mocked notifications endpoint.
+/// The real notifications endpoint, over `app_notifications` joined
+/// `profiles` (for a duel-challenge row's `challenger_id`).
 ///
-/// A fixed list of five rows matching the bible's own S-44 examples (plan
-/// 004, Research findings) — held as mutable instance state so
-/// [markAllRead]/[acceptChallenge] can mutate it in place, exactly like
-/// `AuthRepository`'s in-memory flags.
-class NotificationsApi extends MockApi {
-  NotificationsApi({
-    super.minLatency,
-    super.maxLatency,
-    super.failureRate,
-    super.random,
-  });
+/// [markAllRead]/[acceptChallenge] are `Future`-returning now — a real
+/// signature change from the mock's synchronous mutation of an in-memory
+/// list, since both are genuine network calls against a real backend (plan
+/// 006, Assumption #6).
+class NotificationsApi {
+  NotificationsApi(this._client);
 
-  final List<AppNotification> _rows = [
-    const AppNotification(
-      id: 'notif_duel_challenge',
-      kind: NotificationKind.duelChallenge,
-      title: 'Danish M. challenged you to a duel',
-      body: 'Best of 5 · winner takes 200 🪙',
-      timeLabel: '2m ago',
-      challengerName: 'Danish M.',
-      challengerAvatarEmoji: '🦁',
-      challengerElo: 1310,
-    ),
-    const AppNotification(
-      id: 'notif_streak_ending',
-      kind: NotificationKind.streakEnding,
-      title: 'Your 12-day streak ends in 3 hours',
-      body: 'Play one level to keep it alive.',
-      timeLabel: '1h ago',
-    ),
-    const AppNotification(
-      id: 'notif_league_drop',
-      kind: NotificationKind.leagueRankDrop,
-      title: "You've dropped to 8th in Gold League",
-      body: 'The top 5 get promoted this week.',
-      timeLabel: '5h ago',
-      isRead: true,
-    ),
-    const AppNotification(
-      id: 'notif_new_content',
-      kind: NotificationKind.newContent,
-      title: 'Basketball is now live',
-      body: '20 new levels just landed in Sports.',
-      timeLabel: 'Yesterday',
-      isRead: true,
-    ),
-    const AppNotification(
-      id: 'notif_reward_claimed',
-      kind: NotificationKind.rewardClaimed,
-      title: 'Reward claimed: 14-day streak',
-      body: "You earned 1,000 🪙 — they're in your wallet.",
-      timeLabel: '2 days ago',
-      isRead: true,
-    ),
-  ];
+  final SupabaseClient _client;
 
-  Future<List<AppNotification>> fetchAll() =>
-      respond(() => List.unmodifiable(_rows));
-
-  List<AppNotification> markAllRead() {
-    for (var index = 0; index < _rows.length; index++) {
-      _rows[index] = _rows[index].copyWith(isRead: true);
+  Future<List<AppNotification>> fetchAll() async {
+    try {
+      final userId = _requireUserId();
+      final rows = await _client
+          .from('app_notifications')
+          .select('*, profiles!challenger_id(username, avatar_key, elo)')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      return [for (final row in rows) _fromRow(row)];
+    } catch (error) {
+      if (error is ApiException) rethrow;
+      throw ApiException.fromSupabase(error);
     }
-    return List.unmodifiable(_rows);
   }
 
-  /// Accepting resolves the challenge — it leaves the list rather than
-  /// lingering as an already-actioned row.
-  List<AppNotification> acceptChallenge(String id) {
-    _rows.removeWhere((notification) => notification.id == id);
-    return List.unmodifiable(_rows);
+  Future<List<AppNotification>> markAllRead() async {
+    try {
+      final userId = _requireUserId();
+      await _client
+          .from('app_notifications')
+          .update({'is_read': true})
+          .eq('user_id', userId);
+      return fetchAll();
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  /// Dismisses the notification. Actually starting the duel it challenged to
+  /// is a separate call into `features/duel`'s own flow — this only clears
+  /// the notification row, matching the mock's own scope (plan 006, Design
+  /// overview).
+  Future<List<AppNotification>> acceptChallenge(String id) async {
+    try {
+      final userId = _requireUserId();
+      await _client
+          .from('app_notifications')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', userId);
+      return fetchAll();
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  String _requireUserId() {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw const ApiException(
+        'Not signed in',
+        kind: ApiErrorKind.unauthorized,
+      );
+    }
+    return userId;
+  }
+
+  static AppNotification _fromRow(Map<String, dynamic> row) {
+    final challenger = row['profiles'] as Map<String, dynamic>?;
+    return AppNotification(
+      id: row['id'] as String,
+      kind: NotificationKind.values.firstWhere(
+        (value) => value.name == row['kind'],
+        orElse: () => NotificationKind.newContent,
+      ),
+      title: row['title'] as String,
+      body: row['body'] as String,
+      timeLabel: _relativeTime(DateTime.parse(row['created_at'] as String)),
+      isRead: row['is_read'] as bool? ?? false,
+      challengerName: challenger?['username'] as String?,
+      challengerAvatarEmoji: challenger?['avatar_key'] as String?,
+      challengerElo: challenger?['elo'] as int?,
+    );
+  }
+
+  static String _relativeTime(DateTime createdAt) {
+    final diff = DateTime.now().toUtc().difference(createdAt.toUtc());
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays == 1) return 'Yesterday';
+    return '${diff.inDays} days ago';
   }
 }

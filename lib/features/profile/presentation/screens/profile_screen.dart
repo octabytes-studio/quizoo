@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -38,7 +39,8 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ProfileCubit>(
-      create: (_) => ProfileCubit(ProfileRepository(ProfileApi()))..load(),
+      create: (_) =>
+          ProfileCubit(ProfileRepository(ProfileApi(supabase)))..load(),
       child: _ProfileView(isOwnProfile: isOwnProfile),
     );
   }

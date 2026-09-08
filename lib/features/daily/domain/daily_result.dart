@@ -53,18 +53,18 @@ abstract class DailyResult with _$DailyResult {
     _ => 4,
   };
 
-  /// The bible's own hardcoded-but-plausible global spread.
-  static const List<int> mockDistributionPercents = [14, 34, 72, 100, 41];
-
-  /// How many players this score plausibly beats, derived from
-  /// [mockDistributionPercents] rather than a second hardcoded number, so it
-  /// always agrees with which bucket is highlighted.
-  static int betterThanPercentFor(int correctCount) {
+  /// How many players this score plausibly beats, derived from the real
+  /// (server-computed) [distributionPercents] rather than a second
+  /// hardcoded spread, so it always agrees with which bucket is highlighted.
+  static int betterThanPercentFor(
+    int correctCount,
+    List<int> distributionPercents,
+  ) {
     final bucket = bucketIndexFor(correctCount);
-    final below = mockDistributionPercents
+    final below = distributionPercents
         .sublist(0, bucket)
         .fold<int>(0, (sum, value) => sum + value);
-    final total = mockDistributionPercents.fold<int>(
+    final total = distributionPercents.fold<int>(
       0,
       (sum, value) => sum + value,
     );

@@ -1,82 +1,353 @@
-import 'package:quizoo/core/mock/mock_api.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
-import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/category.dart';
 import 'package:quizoo/core/models/level.dart';
 import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/catalog/domain/category_detail.dart';
 import 'package:quizoo/features/catalog/domain/level_map.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Browse's mocked endpoints.
-class CatalogApi extends MockApi {
-  CatalogApi({
-    super.minLatency,
-    super.maxLatency,
-    super.failureRate,
-    super.random,
-  });
+/// Browse's real endpoints, over Postgrest.
+///
+/// `MockCatalog.levelId`/`parseLevelId`/`bandFor`/`secondsFor` are kept —
+/// they are pure functions of a level number, not fixture data, and the
+/// schema deliberately has no `levels` table because of it (see
+/// `_difficulty_band_for_level`/`_seconds_for_level` in the functions
+/// migration, transcribed from these same functions).
+class CatalogApi {
+  CatalogApi(this._client);
 
-  /// A missing id is a 404, not a generic failure — S-48 shows the code.
-  @override
-  ApiException get simulatedFailure => const ApiException.network();
+  final SupabaseClient _client;
 
-  Future<CategoryDetail> fetchCategory(String categoryId) => respond(() {
-    final category = _categoryOrThrow(categoryId);
-    return CategoryDetail(
-      category: category,
-      topics: MockCatalog.forCategory(categoryId),
-      playerCount: MockCatalog.categoryPlayerCounts[categoryId] ?? 0,
-    );
-  });
+  /// English until locale is threaded from `LocaleCubit` through the
+  /// catalog Cubits — a known simplification (plan 005, Design overview);
+  /// taxonomy renders in English regardless of the active locale for now.
+  static const String _defaultLocale = 'en';
+
+  Future<CategoryDetail> fetchCategory(
+    String categoryId, {
+    String locale = _defaultLocale,
+  }) async {
+    try {
+      final categoryRow = await _client
+          .from('categories')
+          .select()
+          .eq('id', categoryId)
+          .maybeSingle();
+      if (categoryRow == null) throw _contentNotFound('No such category');
+
+      final subcategoryRows = await _client
+          .from('subcategories')
+          .select()
+          .eq('category_id', categoryId)
+          .order('sort_order');
+
+      final subcategoryIds = [
+        for (final row in subcategoryRows) row['id'] as String,
+      ];
+      final names = await _taxonomyNames(
+        entityType: 'category',
+        entityIds: [categoryId, ...subcategoryIds],
+        locale: locale,
+      );
+      final progressByTopic = await _levelProgressBySubcategory(subcategoryIds);
+
+      final category = _categoryFromRow(
+        categoryRow,
+        name: names[categoryId] ?? categoryRow['slug'] as String,
+      );
+      final topics = [
+        for (final row in subcategoryRows)
+          _subcategoryFromRow(
+            row,
+            name: names[row['id']] ?? row['slug'] as String,
+            progress: progressByTopic[row['id']] ?? const _TopicProgress(),
+          ),
+      ];
+
+      return CategoryDetail(
+        category: category,
+        topics: topics,
+        playerCount: categoryRow['player_count'] as int? ?? 0,
+      );
+    } catch (error) {
+      if (error is ApiException) rethrow;
+      throw ApiException.fromSupabase(error);
+    }
+  }
 
   Future<LevelMap> fetchLevelMap({
     required String categoryId,
     required String subcategoryId,
-  }) => respond(() {
-    final category = _categoryOrThrow(categoryId);
-    final subcategory = _subcategoryOrThrow(subcategoryId);
-    return LevelMap(
-      category: category,
-      subcategory: subcategory,
-      levels: MockCatalog.levelsFor(subcategory),
-      rank: subcategory.levelsCleared == 0 ? 0 : MockPlayer.subcategoryRank,
-    );
-  });
+    String locale = _defaultLocale,
+  }) async {
+    try {
+      final categoryRow = await _client
+          .from('categories')
+          .select()
+          .eq('id', categoryId)
+          .maybeSingle();
+      final subcategoryRow = await _client
+          .from('subcategories')
+          .select()
+          .eq('id', subcategoryId)
+          .maybeSingle();
+      if (categoryRow == null || subcategoryRow == null) {
+        throw _contentNotFound('No such topic');
+      }
 
-  /// S-09's data. The level itself comes from the map; this is the wallet and
-  /// power-up half of the contract.
+      final names = await _taxonomyNames(
+        entityType: 'category',
+        entityIds: [categoryId, subcategoryId],
+        locale: locale,
+      );
+      final progress = await _levelProgressBySubcategory([subcategoryId]);
+      final category = _categoryFromRow(
+        categoryRow,
+        name: names[categoryId] ?? categoryRow['slug'] as String,
+      );
+      final subcategory = _subcategoryFromRow(
+        subcategoryRow,
+        name: names[subcategoryId] ?? subcategoryRow['slug'] as String,
+        progress: progress[subcategoryId] ?? const _TopicProgress(),
+      );
+
+      final rank = await _rankFor(subcategoryId);
+
+      return LevelMap(
+        category: category,
+        subcategory: subcategory,
+        levels: _levelsFor(subcategory, progress[subcategoryId]?.perLevel),
+        rank: rank,
+      );
+    } catch (error) {
+      if (error is ApiException) rethrow;
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
   Future<Level> fetchLevel({
     required String subcategoryId,
     required int levelNumber,
-  }) => respond(() {
-    final subcategory = _subcategoryOrThrow(subcategoryId);
-    return MockCatalog.levelsFor(
-      subcategory,
-    ).firstWhere((level) => level.number == levelNumber);
+  }) async {
+    try {
+      final subcategoryRow = await _client
+          .from('subcategories')
+          .select()
+          .eq('id', subcategoryId)
+          .maybeSingle();
+      if (subcategoryRow == null) throw _contentNotFound('No such topic');
+
+      final progress = await _levelProgressBySubcategory([subcategoryId]);
+      final subcategory = _subcategoryFromRow(
+        subcategoryRow,
+        name: subcategoryRow['slug'] as String,
+        progress: progress[subcategoryId] ?? const _TopicProgress(),
+      );
+      return _levelsFor(
+        subcategory,
+        progress[subcategoryId]?.perLevel,
+      ).firstWhere((level) => level.number == levelNumber);
+    } catch (error) {
+      if (error is ApiException) rethrow;
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  // ------------------------------------------------------------- internals
+
+  static ApiException _contentNotFound(String message) => ApiException(
+    message,
+    kind: ApiErrorKind.notFound,
+    code: 'ERR_CONTENT_404',
+  );
+
+  Future<Map<String, String>> _taxonomyNames({
+    required String entityType,
+    required List<String> entityIds,
+    required String locale,
+  }) async {
+    if (entityIds.isEmpty) return const {};
+    final rows = await _client
+        .from('taxonomy_i18n')
+        .select('entity_id, locale, name')
+        .inFilter('entity_id', entityIds)
+        .inFilter('locale', {locale, _defaultLocale}.toList());
+
+    final byEntity = <String, Map<String, String>>{};
+    for (final row in rows) {
+      final id = row['entity_id'] as String;
+      byEntity.putIfAbsent(id, () => {})[row['locale'] as String] =
+          row['name'] as String;
+    }
+    return {
+      for (final id in entityIds)
+        if (byEntity[id] != null)
+          id: byEntity[id]![locale] ?? byEntity[id]![_defaultLocale] ?? id,
+    };
+  }
+
+  /// One row per player per level in [subcategoryIds] — small enough (at
+  /// most 20 rows per topic for the one player asking) to aggregate in Dart
+  /// rather than a second round trip per topic.
+  Future<Map<String, _TopicProgress>> _levelProgressBySubcategory(
+    List<String> subcategoryIds,
+  ) async {
+    if (subcategoryIds.isEmpty) return const {};
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return const {};
+
+    final rows = await _client
+        .from('level_progress')
+        .select('subcategory_id, level, best_score, stars, completed_at')
+        .eq('user_id', userId)
+        .inFilter('subcategory_id', subcategoryIds);
+
+    final byTopic = <String, List<Map<String, dynamic>>>{};
+    for (final row in rows) {
+      (byTopic[row['subcategory_id'] as String] ??= []).add(row);
+    }
+
+    return {
+      for (final entry in byTopic.entries)
+        entry.key: _TopicProgress.from(entry.value),
+    };
+  }
+
+  /// `count(*) + 1` of players whose best single-level score in this topic
+  /// beats the caller's own — 0 for a guest/player with nothing cleared yet
+  /// (matching the mock's `levelsCleared == 0 ? 0 : ...`).
+  Future<int> _rankFor(String subcategoryId) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return 0;
+
+    final rows = await _client
+        .from('level_progress')
+        .select('user_id, best_score')
+        .eq('subcategory_id', subcategoryId);
+
+    final bestByUser = <String, int>{};
+    for (final row in rows) {
+      final uid = row['user_id'] as String;
+      final score = row['best_score'] as int;
+      bestByUser[uid] = score > (bestByUser[uid] ?? 0)
+          ? score
+          : bestByUser[uid] ?? 0;
+    }
+    final myBest = bestByUser[userId] ?? 0;
+    if (myBest == 0) return 0;
+
+    final ahead = bestByUser.values.where((score) => score > myBest).length;
+    return ahead + 1;
+  }
+
+  static Category _categoryFromRow(
+    Map<String, dynamic> row, {
+    required String name,
+  }) => Category(
+    id: row['id'] as String,
+    name: name,
+    emoji: row['emoji'] as String,
+    colorFrom: row['color_from'] as String,
+    colorTo: row['color_to'] as String,
+    order: row['sort_order'] as int,
+    subcategoryCount: row['subcategory_count'] as int? ?? 0,
+    questionCount: row['question_count'] as int? ?? 0,
+  );
+
+  static Subcategory _subcategoryFromRow(
+    Map<String, dynamic> row, {
+    required String name,
+    required _TopicProgress progress,
+  }) => Subcategory(
+    id: row['id'] as String,
+    categoryId: row['category_id'] as String,
+    name: name,
+    emoji: row['emoji'] as String,
+    groupName: row['group_name'] as String? ?? '',
+    plateColor: row['plate_color'] as String,
+    questionCount: row['question_count'] as int? ?? 0,
+    levelsCleared: progress.levelsCleared,
+    bestScore: progress.bestScore,
+    starsEarned: progress.starsEarned,
+    isNew: row['is_new'] as bool? ?? false,
+    isLocked: row['is_locked'] as bool? ?? false,
+  );
+
+  static List<Level> _levelsFor(
+    Subcategory subcategory,
+    Map<int, ({int bestScore, int stars})>? perLevel,
+  ) => [
+    for (var number = 1; number <= subcategory.levelCount; number++)
+      _levelFor(subcategory, number, perLevel?[number]),
+  ];
+
+  static Level _levelFor(
+    Subcategory subcategory,
+    int number,
+    ({int bestScore, int stars})? cleared,
+  ) {
+    final isCleared = cleared != null;
+    final isCurrent = !isCleared && number == subcategory.levelsCleared + 1;
+    return Level(
+      id: MockCatalog.levelId(subcategory.id, number),
+      subcategoryId: subcategory.id,
+      number: number,
+      difficultyBand: MockCatalog.bandFor(number),
+      secondsPerQuestion: MockCatalog.secondsFor(number),
+      status: isCleared
+          ? LevelStatus.done
+          : isCurrent
+          ? LevelStatus.current
+          : LevelStatus.locked,
+      isBoss: number % 5 == 0,
+      starsEarned: cleared?.stars ?? 0,
+      bestScore: cleared?.bestScore ?? 0,
+    );
+  }
+}
+
+/// One topic's aggregated `level_progress` — how many levels are cleared, the
+/// best single-level score, total stars, and per-level detail for the level
+/// map.
+class _TopicProgress {
+  const _TopicProgress({
+    this.levelsCleared = 0,
+    this.bestScore = 0,
+    this.starsEarned = 0,
+    this.perLevel = const {},
   });
 
-  static Category _categoryOrThrow(String id) {
-    try {
-      return MockCatalog.categoryById(id);
-    } on StateError {
-      throw const ApiException(
-        'No such category',
-        kind: ApiErrorKind.notFound,
-        code: 'ERR_CONTENT_404',
-      );
+  factory _TopicProgress.from(List<Map<String, dynamic>> rows) {
+    var cleared = 0;
+    var bestScore = 0;
+    var stars = 0;
+    final perLevel = <int, ({int bestScore, int stars})>{};
+
+    for (final row in rows) {
+      final level = row['level'] as int;
+      final rowBestScore = row['best_score'] as int? ?? 0;
+      final rowStars = row['stars'] as int? ?? 0;
+      final isComplete = row['completed_at'] != null;
+
+      if (isComplete) {
+        cleared++;
+        perLevel[level] = (bestScore: rowBestScore, stars: rowStars);
+      }
+      if (rowBestScore > bestScore) bestScore = rowBestScore;
+      stars += rowStars;
     }
+
+    return _TopicProgress(
+      levelsCleared: cleared,
+      bestScore: bestScore,
+      starsEarned: stars,
+      perLevel: perLevel,
+    );
   }
 
-  static Subcategory _subcategoryOrThrow(String id) {
-    try {
-      return MockCatalog.subcategoryById(id);
-    } on StateError {
-      throw const ApiException(
-        'No such topic',
-        kind: ApiErrorKind.notFound,
-        code: 'ERR_CONTENT_404',
-      );
-    }
-  }
+  final int levelsCleared;
+  final int bestScore;
+  final int starsEarned;
+  final Map<int, ({int bestScore, int stars})> perLevel;
 }

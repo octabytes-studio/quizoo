@@ -1,30 +1,31 @@
+import 'dart:async';
+
 import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/domain/auth_user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthState;
 
 /// Turns [AuthApi]'s responses into domain models, and holds the two
-/// session-lifetime flags that decide whether the app is allowed to ask for
-/// an account.
-///
-/// **Why the flags live here rather than in a Cubit's state**: they outlive
-/// any single screen's Cubit — the result screen writes them and the
-/// save-progress sheet reads them, on different routes. They are deliberately
-/// in-memory only. `shared_preferences` is not part of this phase (plan 002,
-/// Assumption 3 and §21 of plan 001), so a cold start forgets that the prompt
-/// was ever shown. That is a known, accepted gap against the bible's real
-/// "at most once per 24 h" rule, not an oversight.
+/// save-progress-prompt flags in `shared_preferences` (plan 005, Assumption
+/// #6) — per-device UX state, not player data, so it lives on the device
+/// rather than in a `profiles` column.
 class AuthRepository {
-  AuthRepository(this._api);
+  AuthRepository(this._api, this._preferences);
 
   final AuthApi _api;
+  final SharedPreferences _preferences;
 
-  bool _hasCompletedALevel = false;
-  bool _hasShownSaveProgressPrompt = false;
+  static const _hasCompletedALevelKey = 'auth.hasCompletedALevel';
+  static const _hasShownSaveProgressPromptKey =
+      'auth.hasShownSaveProgressPrompt';
 
   /// True once the player has finished any level successfully.
-  bool get hasCompletedALevel => _hasCompletedALevel;
+  bool get hasCompletedALevel =>
+      _preferences.getBool(_hasCompletedALevelKey) ?? false;
 
-  /// True once S-24 has been shown in this session.
-  bool get hasShownSaveProgressPrompt => _hasShownSaveProgressPrompt;
+  /// True once S-24 has been shown on this device.
+  bool get hasShownSaveProgressPrompt =>
+      _preferences.getBool(_hasShownSaveProgressPromptKey) ?? false;
 
   /// Whether S-24 is allowed to appear right now.
   ///
@@ -33,13 +34,23 @@ class AuthRepository {
   /// once. The "never after a failure" half is enforced by the caller — the
   /// failed-result branch never asks.
   bool shouldOfferSaveProgress({required bool isGuest}) =>
-      isGuest && _hasCompletedALevel && !_hasShownSaveProgressPrompt;
+      isGuest && hasCompletedALevel && !hasShownSaveProgressPrompt;
 
-  void markLevelCompleted() => _hasCompletedALevel = true;
+  void markLevelCompleted() =>
+      unawaited(_preferences.setBool(_hasCompletedALevelKey, true));
 
-  void markSaveProgressPromptShown() => _hasShownSaveProgressPrompt = true;
+  void markSaveProgressPromptShown() =>
+      unawaited(_preferences.setBool(_hasShownSaveProgressPromptKey, true));
 
-  Future<AuthUser> signInWithVendor(AuthProvider provider) =>
+  /// So [SessionCubit] can react once a vendor OAuth deep link lands back in
+  /// the app — the moment a real sign-in actually completes.
+  Stream<AuthState> get authStateChanges => _api.authStateChanges;
+
+  /// Restores `SessionSignedIn` across a cold start, since a real Supabase
+  /// session persists where the mock's never did.
+  Future<AuthUser?> restoreSignedInUser() => _api.restoreSignedInUser();
+
+  Future<void> signInWithVendor(AuthProvider provider) =>
       _api.signInWithVendor(provider);
 
   Future<AuthUser> startEmailSignIn() => _api.startEmailSignIn();

@@ -30,7 +30,10 @@ void main() {
         levelNumber: any(named: 'levelNumber'),
         languageCode: any(named: 'languageCode'),
       ),
-    ).thenAnswer((_) async => questions);
+    ).thenAnswer(
+      (_) async =>
+          PreparedLevel(attemptId: 'attempt_test', questions: questions),
+    );
   }
 
   Future<void> prepare() => repository.prepareLevel(
