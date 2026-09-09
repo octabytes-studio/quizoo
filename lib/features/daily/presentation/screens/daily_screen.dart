@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:quizoo/core/format/app_format.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -32,7 +33,7 @@ class DailyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<DailyCubit>(
-      create: (_) => DailyCubit(DailyRepository(DailyApi()))..load(),
+      create: (_) => DailyCubit(DailyRepository(DailyApi(supabase)))..load(),
       child: const _DailyView(),
     );
   }

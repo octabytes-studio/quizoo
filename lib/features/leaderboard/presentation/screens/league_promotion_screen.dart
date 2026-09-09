@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -31,7 +32,7 @@ class LeaguePromotionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<LeagueCubit>(
       create: (_) =>
-          LeagueCubit(LeaderboardRepository(LeaderboardApi()))..load(),
+          LeagueCubit(LeaderboardRepository(LeaderboardApi(supabase)))..load(),
       child: const _LeaguePromotionView(),
     );
   }

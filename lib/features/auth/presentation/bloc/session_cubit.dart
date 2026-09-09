@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/domain/auth_user.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthChangeEvent, AuthState;
 
 part 'session_state.dart';
 
@@ -14,19 +18,61 @@ part 'session_state.dart';
 /// chain asks it whether to offer an account, and plans 003 and 004 read it
 /// for the profile tab and the leaderboard's own row.
 ///
-/// Sign-in is mocked: no token, no network account, no vendor SDK. Tapping a
-/// button flips this Cubit and nothing else (plan 002, Scope).
+/// **A real backend makes vendor sign-in inherently asynchronous** in a way
+/// the mock never was: `signInWithVendor` only launches the OAuth browser —
+/// the actual sign-in completes later, out of process, via a deep link. This
+/// Cubit listens for that completion on [AuthRepository.authStateChanges]
+/// rather than awaiting a return value, which is the one real behavioral
+/// addition plan 005 makes here (its Research findings call this Cubit a
+/// "zero changes" case for the general shape; the OAuth completion path is
+/// the exception that shape didn't have to account for in the mock).
 class SessionCubit extends Cubit<SessionState> {
-  SessionCubit(this._repository) : super(const SessionGuest());
+  SessionCubit(this._repository) : super(const SessionGuest()) {
+    _authStateSubscription = _repository.authStateChanges.listen(
+      _onAuthStateChange,
+    );
+  }
 
   final AuthRepository _repository;
+  StreamSubscription<AuthState>? _authStateSubscription;
 
   bool get isGuest => state is SessionGuest;
 
+  /// Restores `SessionSignedIn` across a cold start, since a real Supabase
+  /// session persists where the mock's never did. Call once from the app
+  /// root at startup.
+  Future<void> restore() async {
+    try {
+      final user = await _repository.restoreSignedInUser();
+      if (user != null && !isClosed) emit(SessionSignedIn(user));
+    } on ApiException {
+      // No restorable session is not an error — stay a guest.
+    }
+  }
+
+  void _onAuthStateChange(AuthState data) {
+    if (isClosed || state is! SessionAuthenticating) return;
+    if (data.event != AuthChangeEvent.signedIn) return;
+    final user = data.session?.user;
+    if (user == null || user.isAnonymous) return;
+    unawaited(_completeVendorSignIn());
+  }
+
+  Future<void> _completeVendorSignIn() async {
+    try {
+      final user = await _repository.restoreSignedInUser();
+      if (user != null && !isClosed) emit(SessionSignedIn(user));
+    } on ApiException catch (error) {
+      if (!isClosed) emit(SessionFailure(error));
+    }
+  }
+
+  /// Launches a vendor's OAuth flow. Resolution of the actual sign-in arrives
+  /// later, through [_onAuthStateChange] once the deep link lands.
   Future<void> signInWithVendor(AuthProvider provider) async {
     emit(const SessionAuthenticating());
     try {
-      emit(SessionSignedIn(await _repository.signInWithVendor(provider)));
+      await _repository.signInWithVendor(provider);
     } on ApiException catch (error) {
       emit(SessionFailure(error));
     }
@@ -71,4 +117,10 @@ class SessionCubit extends Cubit<SessionState> {
   /// Drops back to guest. A failed sign-in ends here too, because the bible
   /// is explicit that nothing about play is ever gated on an account.
   void continueAsGuest() => emit(const SessionGuest());
+
+  @override
+  Future<void> close() {
+    unawaited(_authStateSubscription?.cancel());
+    return super.close();
+  }
 }

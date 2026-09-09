@@ -451,7 +451,7 @@ as $$
 declare
   v_user_id uuid := auth.uid();
   v_attempt_id uuid;
-  v_seed text := encode(gen_random_bytes(16), 'hex');
+  v_seed text := encode(extensions.gen_random_bytes(16), 'hex');
   v_range smallint[] := public._question_difficulty_range(p_level);
   v_questions jsonb;
 begin
@@ -661,7 +661,7 @@ begin
     perform public._grant_currency(v_user_id, 'coins', v_coins, 'level_reward', p_attempt_id);
     update public.profiles set xp = xp + v_xp where id = v_user_id;
 
-    select level, xp_into_level, xp_to_next_level into v_level_row.level, v_level_row.stars, v_level_row.attempts
+    select player_level, xp_into_level, xp_to_next_level into v_level_row.level, v_level_row.stars, v_level_row.attempts
       from public._player_level_from_xp((select xp from public.profiles where id = v_user_id));
     update public.profiles set player_level = v_level_row.level where id = v_user_id;
 

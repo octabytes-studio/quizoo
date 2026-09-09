@@ -21,15 +21,23 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     }
   }
 
-  void markAllRead() {
+  Future<void> markAllRead() async {
     if (state is! NotificationsLoaded) return;
-    emit(NotificationsLoaded(_repository.markAllRead()));
+    try {
+      emit(NotificationsLoaded(await _repository.markAllRead()));
+    } on ApiException catch (error) {
+      emit(NotificationsError(error));
+    }
   }
 
   /// Resolves the challenge row. Navigating into the duel itself is the
   /// screen's job — this only updates the list underneath it.
-  void acceptChallenge(String id) {
+  Future<void> acceptChallenge(String id) async {
     if (state is! NotificationsLoaded) return;
-    emit(NotificationsLoaded(_repository.acceptChallenge(id)));
+    try {
+      emit(NotificationsLoaded(await _repository.acceptChallenge(id)));
+    } on ApiException catch (error) {
+      emit(NotificationsError(error));
+    }
   }
 }

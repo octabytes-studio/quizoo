@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
@@ -33,7 +34,8 @@ class AchievementsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<AchievementsCubit>(
       create: (_) =>
-          AchievementsCubit(AchievementsRepository(AchievementsApi()))..load(),
+          AchievementsCubit(AchievementsRepository(AchievementsApi(supabase)))
+            ..load(),
       child: _AchievementsView(initialBadgeId: initialBadgeId),
     );
   }

@@ -32,6 +32,7 @@ const _$AnswerOutcomeEnumMap = {
 };
 
 _QuizRun _$QuizRunFromJson(Map<String, dynamic> json) => _QuizRun(
+  attemptId: json['attemptId'] as String,
   levelId: json['levelId'] as String,
   subcategoryId: json['subcategoryId'] as String,
   subcategoryName: json['subcategoryName'] as String,
@@ -60,6 +61,7 @@ _QuizRun _$QuizRunFromJson(Map<String, dynamic> json) => _QuizRun(
 );
 
 Map<String, dynamic> _$QuizRunToJson(_QuizRun instance) => <String, dynamic>{
+  'attemptId': instance.attemptId,
   'levelId': instance.levelId,
   'subcategoryId': instance.subcategoryId,
   'subcategoryName': instance.subcategoryName,

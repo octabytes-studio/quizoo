@@ -37,12 +37,12 @@ void main() {
       expect(repository.fetchAll, throwsA(isA<ApiException>()));
     });
 
-    test('delegates markAllRead and acceptChallenge to the API', () {
-      when(() => api.markAllRead()).thenReturn([row]);
-      when(() => api.acceptChallenge('n1')).thenReturn(const []);
+    test('delegates markAllRead and acceptChallenge to the API', () async {
+      when(() => api.markAllRead()).thenAnswer((_) async => [row]);
+      when(() => api.acceptChallenge('n1')).thenAnswer((_) async => const []);
 
-      expect(repository.markAllRead(), [row]);
-      expect(repository.acceptChallenge('n1'), isEmpty);
+      expect(await repository.markAllRead(), [row]);
+      expect(await repository.acceptChallenge('n1'), isEmpty);
     });
   });
 }

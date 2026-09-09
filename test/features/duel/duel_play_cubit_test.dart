@@ -43,6 +43,17 @@ void main() {
     when(
       () => repository.fetchRoundQuestions(),
     ).thenAnswer((_) async => questions);
+    // `_finish()` calls this for real now (plan 006 Phase 5); unstubbed here
+    // since these tests assert on the client-computed elo/coins fallback,
+    // not a specific server response.
+    when(
+      () => repository.submitBotDuel(
+        opponentElo: any(named: 'opponentElo'),
+        playerRoundsWon: any(named: 'playerRoundsWon'),
+        opponentRoundsWon: any(named: 'opponentRoundsWon'),
+        rounds: any(named: 'rounds'),
+      ),
+    ).thenThrow(const ApiException.network());
   }
 
   group('DuelPlayCubit', () {

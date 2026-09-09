@@ -1,106 +1,274 @@
-import 'package:quizoo/core/mock/mock_api.dart';
-import 'package:quizoo/core/mock/mock_catalog.dart';
-import 'package:quizoo/core/mock/mock_player.dart';
+import 'package:quizoo/core/models/category.dart';
+import 'package:quizoo/core/models/player_currency.dart';
+import 'package:quizoo/core/models/subcategory.dart';
+import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/home/domain/home_content.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Home's mocked endpoints.
-///
-/// Split in two on purpose, because §01's timing contract is a two-stage
-/// paint: *"Splash → Home ≤ 1.2 s — home renders from cache; network fills the
-/// popular rail after."* [fetchCachedHome] is the local read, effectively
-/// instant; [fetchPopularRail] is the network leg that lands afterwards.
-class HomeApi extends MockApi {
-  HomeApi({
-    super.minLatency,
-    super.maxLatency,
-    super.failureRate,
-    super.random,
-  });
+/// Home's real endpoints, over Postgrest.
+class HomeApi {
+  HomeApi(this._client);
 
-  /// What a real client would have in local storage already.
-  static const Duration cacheLatency = Duration(milliseconds: 40);
+  final SupabaseClient _client;
 
-  /// The taxonomy, wallet and in-progress level, served from cache.
+  /// English until locale is threaded from `LocaleCubit` — see
+  /// `CatalogApi`'s matching note.
+  static const String _defaultLocale = 'en';
+
+  /// The taxonomy, wallet and in-progress level.
   ///
-  /// [isSignedIn] decides the two things that actually differ between S-04 and
-  /// S-05: whether there is a wallet and a level in progress at all. It is a
-  /// parameter rather than a second endpoint because a real backend would
-  /// answer the same route differently for an anonymous caller.
-  Future<HomeContent> fetchCachedHome({required bool isSignedIn}) => respond(
-    latency: cacheLatency,
-    () => HomeContent(
-      categories: MockCatalog.categories,
-      subcategories: isSignedIn
-          ? MockCatalog.subcategories
-          : MockCatalog.asGuest(MockCatalog.subcategories),
-      currency: isSignedIn ? MockPlayer.currency : null,
-      daily: isSignedIn
-          ? const DailyChallengePreview(minutesRemaining: 252)
-          : null,
-      continueEntry: isSignedIn ? _continueEntry : null,
-    ),
-  );
+  /// [isSignedIn] decides the two things that actually differ between S-04
+  /// and S-05: whether the wallet/daily/continue slots are populated at all
+  /// — kept exactly as `HomeCubit` already passes it (`session is
+  /// SessionSignedIn`), so a guest's real anonymous wallet stays hidden the
+  /// same way the mock's did, and Home's layout does not change.
+  Future<HomeContent> fetchCachedHome({required bool isSignedIn}) async {
+    try {
+      final categoryRows = await _client
+          .from('categories')
+          .select()
+          .eq('is_active', true)
+          .order('sort_order');
+      final subcategoryRows = await _client
+          .from('subcategories')
+          .select()
+          .eq('is_active', true)
+          .order('sort_order');
 
-  /// The merchandised rail, which arrives after the first paint.
-  Future<List<PopularQuiz>> fetchPopularRail() => respond(() => _popular);
+      final categoryIds = [for (final row in categoryRows) row['id'] as String];
+      final subcategoryIds = [
+        for (final row in subcategoryRows) row['id'] as String,
+      ];
 
-  static ContinueEntry get _continueEntry {
-    final football = MockCatalog.subcategoryById(MockCatalog.footballId);
-    return ContinueEntry(
-      subcategoryId: football.id,
-      subcategoryName: football.name,
-      emoji: football.emoji,
-      plateColor: football.plateColor,
-      levelNumber: football.levelsCleared + 1,
-      points: 2140,
-      livesLeft: 3,
-    );
+      final categoryNames = await _taxonomyNames(
+        entityType: 'category',
+        entityIds: categoryIds,
+      );
+      final subcategoryNames = await _taxonomyNames(
+        entityType: 'subcategory',
+        entityIds: subcategoryIds,
+      );
+
+      final progress = isSignedIn
+          ? await _levelsClearedBySubcategory(subcategoryIds)
+          : const <String, int>{};
+
+      final categories = [
+        for (final row in categoryRows)
+          _categoryFromRow(
+            row,
+            name: categoryNames[row['id']] ?? row['slug'] as String,
+          ),
+      ];
+      final subcategories = [
+        for (final row in subcategoryRows)
+          _subcategoryFromRow(
+            row,
+            name: subcategoryNames[row['id']] ?? row['slug'] as String,
+            levelsCleared: progress[row['id']] ?? 0,
+          ),
+      ];
+
+      PlayerCurrency? currency;
+      DailyChallengePreview? daily;
+      ContinueEntry? continueEntry;
+
+      if (isSignedIn) {
+        final userId = _client.auth.currentUser!.id;
+
+        final profileRow = await _client
+            .from('profiles')
+            .select('coins, gems, hearts, max_hearts, hearts_updated_at')
+            .eq('id', userId)
+            .single();
+        currency = _currencyFromRow(profileRow);
+
+        final today = DateTime.now().toUtc();
+        final todayDate =
+            '${today.year.toString().padLeft(4, '0')}-'
+            '${today.month.toString().padLeft(2, '0')}-'
+            '${today.day.toString().padLeft(2, '0')}';
+        final dailyRow = await _client
+            .from('daily_challenges')
+            .select('question_ids')
+            .eq('challenge_date', todayDate)
+            .maybeSingle();
+        if (dailyRow != null) {
+          final tomorrow = DateTime.utc(today.year, today.month, today.day + 1);
+          daily = DailyChallengePreview(
+            questionCount: (dailyRow['question_ids'] as List).length,
+            minutesRemaining: tomorrow.difference(today).inMinutes,
+          );
+        }
+
+        final continueRow = await _client
+            .from('level_progress')
+            .select('subcategory_id, level, best_score')
+            .eq('user_id', userId)
+            .filter('completed_at', 'is', null)
+            .order('last_played_at', ascending: false)
+            .limit(1)
+            .maybeSingle();
+        if (continueRow != null) {
+          final subcategory = subcategories
+              .where((s) => s.id == continueRow['subcategory_id'])
+              .firstOrNull;
+          if (subcategory != null) {
+            continueEntry = ContinueEntry(
+              subcategoryId: subcategory.id,
+              subcategoryName: subcategory.name,
+              emoji: subcategory.emoji,
+              plateColor: subcategory.plateColor,
+              levelNumber: continueRow['level'] as int,
+              points: continueRow['best_score'] as int? ?? 0,
+            );
+          }
+        }
+      }
+
+      return HomeContent(
+        categories: categories,
+        subcategories: subcategories,
+        currency: currency,
+        daily: daily,
+        continueEntry: continueEntry,
+      );
+    } catch (error) {
+      if (error is ApiException) rethrow;
+      throw ApiException.fromSupabase(error);
+    }
   }
 
-  static const List<PopularQuiz> _popular = [
-    PopularQuiz(
-      id: 'pq_football',
-      subcategoryId: MockCatalog.footballId,
-      title: 'Football Legends',
-      emoji: '⚽',
-      colorFrom: '#FF8A24',
-      colorTo: '#FF3D6E',
-      playedCount: 84200,
-      isHot: true,
-    ),
-    PopularQuiz(
-      id: 'pq_pattern_logic',
-      subcategoryId: 'sub_pattern_logic',
-      title: 'IQ: Pattern Logic',
-      emoji: '🧠',
-      colorFrom: '#7B4DFF',
-      colorTo: '#2BB3FF',
-      playedCount: 61700,
-    ),
-    PopularQuiz(
-      id: 'pq_flags',
-      subcategoryId: 'sub_flags',
-      title: 'Flags of the World',
-      emoji: '🌍',
-      colorFrom: '#12C79B',
-      colorTo: '#7BE495',
-      playedCount: 52400,
-    ),
-    PopularQuiz(
-      id: 'pq_solar_system',
-      subcategoryId: MockCatalog.solarSystemId,
-      title: 'Solar System',
-      emoji: '🪐',
-      colorFrom: '#2BB3FF',
-      colorTo: '#7B4DFF',
-      playedCount: 38100,
-    ),
-  ];
+  /// The merchandised rail, which arrives after the first paint.
+  Future<List<PopularQuiz>> fetchPopularRail() async {
+    try {
+      final rows = await _client
+          .from('featured_quizzes')
+          .select()
+          .eq('is_active', true)
+          .order('sort_order');
+      final now = DateTime.now().toUtc();
+      return [
+        for (final row in rows)
+          if (row['ends_at'] == null ||
+              DateTime.parse(row['ends_at'] as String).isAfter(now))
+            PopularQuiz(
+              id: row['id'] as String,
+              subcategoryId: row['subcategory_id'] as String,
+              title: row['title'] as String,
+              emoji: row['emoji'] as String,
+              colorFrom: row['color_from'] as String,
+              colorTo: row['color_to'] as String,
+              playedCount: row['played_count'] as int? ?? 0,
+              isHot: row['is_hot'] as bool? ?? false,
+            ),
+      ];
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
 
-  /// Everything Search filters over — the taxonomy, not a server query.
-  ///
-  /// The bible specifies search as "local-first from the cached taxonomy so it
-  /// works offline", so this reads the same fixture Home does.
-  Future<List<PopularQuiz>> fetchTrendingSearches() =>
-      respond(latency: cacheLatency, () => _popular);
+  /// Everything Search filters over — the taxonomy, not a server query. The
+  /// mock literally reuses the popular rail for this; kept identical.
+  Future<List<PopularQuiz>> fetchTrendingSearches() => fetchPopularRail();
+
+  // ------------------------------------------------------------- internals
+
+  Future<Map<String, String>> _taxonomyNames({
+    required String entityType,
+    required List<String> entityIds,
+    String locale = _defaultLocale,
+  }) async {
+    if (entityIds.isEmpty) return const {};
+    final rows = await _client
+        .from('taxonomy_i18n')
+        .select('entity_id, locale, name')
+        .eq('entity_type', entityType)
+        .inFilter('entity_id', entityIds)
+        .inFilter('locale', {locale, _defaultLocale}.toList());
+
+    final byEntity = <String, Map<String, String>>{};
+    for (final row in rows) {
+      final id = row['entity_id'] as String;
+      byEntity.putIfAbsent(id, () => {})[row['locale'] as String] =
+          row['name'] as String;
+    }
+    return {
+      for (final id in entityIds)
+        if (byEntity[id] != null)
+          id: byEntity[id]![locale] ?? byEntity[id]![_defaultLocale] ?? id,
+    };
+  }
+
+  Future<Map<String, int>> _levelsClearedBySubcategory(
+    List<String> subcategoryIds,
+  ) async {
+    if (subcategoryIds.isEmpty) return const {};
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return const {};
+
+    final rows = await _client
+        .from('level_progress')
+        .select('subcategory_id')
+        .eq('user_id', userId)
+        .not('completed_at', 'is', null)
+        .inFilter('subcategory_id', subcategoryIds);
+
+    final counts = <String, int>{};
+    for (final row in rows) {
+      final id = row['subcategory_id'] as String;
+      counts[id] = (counts[id] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  static Category _categoryFromRow(
+    Map<String, dynamic> row, {
+    required String name,
+  }) => Category(
+    id: row['id'] as String,
+    name: name,
+    emoji: row['emoji'] as String,
+    colorFrom: row['color_from'] as String,
+    colorTo: row['color_to'] as String,
+    order: row['sort_order'] as int,
+    subcategoryCount: row['subcategory_count'] as int? ?? 0,
+    questionCount: row['question_count'] as int? ?? 0,
+    isNew: false,
+    isLocked: false,
+  );
+
+  static Subcategory _subcategoryFromRow(
+    Map<String, dynamic> row, {
+    required String name,
+    required int levelsCleared,
+  }) => Subcategory(
+    id: row['id'] as String,
+    categoryId: row['category_id'] as String,
+    name: name,
+    emoji: row['emoji'] as String,
+    groupName: row['group_name'] as String? ?? '',
+    plateColor: row['plate_color'] as String,
+    questionCount: row['question_count'] as int? ?? 0,
+    levelsCleared: levelsCleared,
+    isNew: row['is_new'] as bool? ?? false,
+    isLocked: row['is_locked'] as bool? ?? false,
+  );
+
+  static PlayerCurrency _currencyFromRow(Map<String, dynamic> row) {
+    final heartsUpdatedAt = DateTime.parse(row['hearts_updated_at'] as String);
+    final hearts = row['hearts'] as int;
+    final maxHearts = row['max_hearts'] as int;
+    return PlayerCurrency(
+      coins: row['coins'] as int,
+      gems: row['gems'] as int,
+      hearts: hearts,
+      maxHearts: maxHearts,
+      // Lazily-settled server value: the next heart arrives 20 minutes after
+      // the last spend, per `_settle_hearts` in the functions migration.
+      heartRefillAt: hearts >= maxHearts
+          ? null
+          : heartsUpdatedAt.add(const Duration(minutes: 20)),
+    );
+  }
 }

@@ -8,6 +8,12 @@ import 'package:quizoo/features/quiz_play/domain/question.dart';
 /// play starts. Both are the same requirement, and this is where it lives:
 /// [prepareLevel] fetches and caches, [questionsFor] reads the cache.
 ///
+/// Caches a [PreparedLevel] (questions **and** the server-issued attempt id
+/// `submit_level_attempt` needs back) rather than a bare question list — the
+/// one place plan 005 changes this class's shape rather than just its
+/// `*_api.dart` body, since a real backend also hands back an id a mock
+/// single-player run never needed.
+///
 /// **Why this instance is provided at the app root** rather than scoped to a
 /// screen: the sheet that warms the cache (S-09) and the screen that reads it
 /// (S-11) are different routes. A repository scoped to either one would be
@@ -19,7 +25,7 @@ class QuizPlayRepository {
 
   final QuizPlayApi _api;
 
-  final Map<String, List<Question>> _prefetched = {};
+  final Map<String, PreparedLevel> _prefetched = {};
 
   /// True once [prepareLevel] has resolved for this level and language.
   bool isPrepared(String levelId, {String languageCode = 'en'}) =>
@@ -60,8 +66,13 @@ class QuizPlayRepository {
       levelNumber: levelNumber,
       languageCode: languageCode,
     );
-    return _prefetched[_key(levelId, languageCode)] ?? const [];
+    return _prefetched[_key(levelId, languageCode)]?.questions ?? const [];
   }
+
+  /// The attempt id `submit_level_attempt` needs back, for the same prepared
+  /// level [questionsFor] just resolved.
+  String? attemptIdFor(String levelId, {String languageCode = 'en'}) =>
+      _prefetched[_key(levelId, languageCode)]?.attemptId;
 
   /// Drops a level's cache so a replay re-deals it. Called when a run ends.
   void forget(String levelId) =>

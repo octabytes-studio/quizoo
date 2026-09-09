@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/models/level.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_elevation.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
@@ -48,7 +49,7 @@ class LevelMapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<LevelMapCubit>(
       create: (_) =>
-          LevelMapCubit(CatalogRepository(CatalogApi()))
+          LevelMapCubit(CatalogRepository(CatalogApi(supabase)))
             ..load(categoryId: categoryId, subcategoryId: subcategoryId),
       child: _LevelMapView(initialBriefLevelNumber: initialBriefLevelNumber),
     );

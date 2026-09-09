@@ -7,6 +7,7 @@ import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/subcategory.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -60,7 +61,7 @@ class HomeScreen extends StatelessWidget {
           // Cubit rather than leaving a guest's content on screen.
           key: ValueKey(isSignedIn),
           create: (_) =>
-              HomeCubit(HomeRepository(HomeApi()))
+              HomeCubit(HomeRepository(HomeApi(supabase)))
                 ..load(isSignedIn: isSignedIn),
           child: _HomeView(session: session, forceOffline: forceOffline),
         );

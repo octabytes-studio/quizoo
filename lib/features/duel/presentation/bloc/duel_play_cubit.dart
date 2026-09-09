@@ -256,13 +256,18 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
   void _advance(int finishedRound) {
     if (isClosed) return;
     if (finishedRound >= totalRounds) {
-      _finish();
+      unawaited(_finish());
       return;
     }
     _beginRound(finishedRound + 1);
   }
 
-  void _finish() {
+  /// Persists the result via `submit_bot_duel` (plan 006 Phase 5 — the only
+  /// change this Cubit makes to the duel flow) and uses the server's
+  /// authoritative ELO/coins rather than the client-computed guess. Falls
+  /// back to that same guess if the call fails, so a network hiccup does not
+  /// strand the player on a frozen play surface.
+  Future<void> _finish() async {
     final playerWon = _history
         .where((round) => round.outcome == RoundOutcome.playerWon)
         .length;
@@ -270,6 +275,26 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
         .where((round) => round.outcome == RoundOutcome.opponentWon)
         .length;
     final isVictory = playerWon > opponentWon;
+
+    var eloBefore = _playerBaseElo;
+    var eloAfter = _playerBaseElo + (isVictory ? 18 : -12);
+    var coinsEarned = isVictory ? rewardCoinsVictory : rewardCoinsDefeat;
+
+    try {
+      final record = await _repository.submitBotDuel(
+        opponentElo: _opponent!.elo,
+        playerRoundsWon: playerWon,
+        opponentRoundsWon: opponentWon,
+        rounds: _history,
+      );
+      eloBefore = record.eloBefore;
+      eloAfter = record.eloAfter;
+      coinsEarned = record.coinsEarned;
+    } on ApiException {
+      // Keep the client-computed estimate above — the play surface still
+      // needs to end on something.
+    }
+    if (isClosed) return;
 
     final result = DuelResult(
       opponent: _opponent!,
@@ -281,9 +306,9 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
       opponentAverageAnswerSeconds: _average(
         _history.map((round) => round.opponentAnswerSeconds),
       ),
-      eloBefore: _playerBaseElo,
-      eloAfter: _playerBaseElo + (isVictory ? 18 : -12),
-      rewardCoins: isVictory ? rewardCoinsVictory : rewardCoinsDefeat,
+      eloBefore: eloBefore,
+      eloAfter: eloAfter,
+      rewardCoins: coinsEarned,
     );
     emit(DuelPlayEnded(result));
   }

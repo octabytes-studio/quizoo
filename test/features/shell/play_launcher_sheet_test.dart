@@ -31,7 +31,9 @@ void main() {
 
   Future<GoRouter> pumpShell(WidgetTester tester) async {
     final router = AppRouter.create()..go(AppRoutes.home);
-    await tester.pumpWidget(QuizooApp(router: router));
+    await tester.pumpWidget(
+      QuizooApp(router: router, preferences: await testPreferences()),
+    );
     await tester.pumpAndSettle();
     return router;
   }

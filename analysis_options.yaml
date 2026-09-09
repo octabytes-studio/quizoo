@@ -9,6 +9,14 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # Xcode/CocoaPods vendors whole example/ source trees for some Swift
+    # Package Manager-resolved pods (e.g. firebase_analytics) under here —
+    # not this project's code, and not always self-contained enough to
+    # analyze on its own.
+    - build/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

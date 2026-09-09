@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/arena_colors.dart';
@@ -29,9 +30,10 @@ class MatchmakingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<MatchmakingCubit>(
-      create: (_) =>
-          MatchmakingCubit(DuelRepository(DuelApi()), playerElo: _playerElo)
-            ..start(),
+      create: (_) => MatchmakingCubit(
+        DuelRepository(DuelApi(supabase)),
+        playerElo: _playerElo,
+      )..start(),
       child: const _MatchmakingView(),
     );
   }

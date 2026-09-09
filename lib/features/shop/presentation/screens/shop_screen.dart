@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/models/power_up.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -71,7 +72,7 @@ class _ShopScreenState extends State<ShopScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ShopCubit>(
-      create: (_) => ShopCubit(ShopRepository(ShopApi()))..load(),
+      create: (_) => ShopCubit(ShopRepository(ShopApi(supabase)))..load(),
       child: Builder(
         builder: (context) {
           final quizoo = context.quizoo;

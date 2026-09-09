@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -35,7 +36,7 @@ class BadgeUnlockedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<BadgeUnlockedCubit>(
       create: (_) =>
-          BadgeUnlockedCubit(AchievementsRepository(AchievementsApi()))
+          BadgeUnlockedCubit(AchievementsRepository(AchievementsApi(supabase)))
             ..load(badgeId),
       child: const _BadgeUnlockedView(),
     );

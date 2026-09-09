@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/subcategory.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -29,7 +30,8 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SearchCubit>(
-      create: (_) => SearchCubit(HomeRepository(HomeApi()))..loadTrending(),
+      create: (_) =>
+          SearchCubit(HomeRepository(HomeApi(supabase)))..loadTrending(),
       child: const _SearchView(),
     );
   }

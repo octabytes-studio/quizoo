@@ -27,7 +27,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SettingsCubit>(
-      create: (_) => SettingsCubit(SettingsRepository()),
+      create: (context) => SettingsCubit(context.read<SettingsRepository>()),
       child: const _SettingsView(),
     );
   }

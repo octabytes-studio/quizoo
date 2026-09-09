@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/models/category.dart';
 import 'package:quizoo/core/models/subcategory.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -36,7 +37,7 @@ class CategoryDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<CategoryDetailCubit>(
       create: (_) =>
-          CategoryDetailCubit(CatalogRepository(CatalogApi()))
+          CategoryDetailCubit(CatalogRepository(CatalogApi(supabase)))
             ..load(categoryId),
       child: const _CategoryDetailView(),
     );

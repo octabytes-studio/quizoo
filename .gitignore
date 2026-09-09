@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Per-environment Supabase URL/anon key (docs/backend/04-flutter-app-configuration.md §3)
+dart_define*.json

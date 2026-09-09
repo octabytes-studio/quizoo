@@ -1,3 +1,8 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 /// Why a request failed, in terms the presentation layer can act on.
 enum ApiErrorKind {
   /// No usable connection. Drives the offline state (S-46).
@@ -65,4 +70,49 @@ class ApiException implements Exception {
   @override
   String toString() =>
       'ApiException(${kind.name}${code == null ? '' : ', $code'}): $message';
+
+  /// Maps anything a Supabase call can throw to the one exception type the
+  /// rest of the app understands (CLAUDE.md §9's "mapped to a single typed
+  /// exception at the boundary", per plan 005's Design overview).
+  ///
+  /// Every rewritten `*_api.dart` method wraps its body in
+  /// `try { ... } catch (e) { throw ApiException.fromSupabase(e); }`.
+  factory ApiException.fromSupabase(Object error) {
+    if (error is ApiException) return error;
+
+    if (error is AuthException) {
+      return ApiException(
+        error.message,
+        kind: ApiErrorKind.unauthorized,
+        code: error.code,
+      );
+    }
+
+    if (error is PostgrestException) {
+      // PGRST116: "no rows" from a .single()/.maybeSingle() that found none —
+      // the shape every feature's "content not found" path expects.
+      if (error.code == 'PGRST116') {
+        return ApiException(
+          error.message,
+          kind: ApiErrorKind.notFound,
+          code: 'ERR_CONTENT_404',
+        );
+      }
+      // A raised exception from an RPC (`raise exception ... using errcode`)
+      // surfaces its own `code`/`message` here unchanged, so a Cubit can
+      // switch on e.g. `code == 'out_of_hearts'` without this factory
+      // inventing a new kind for every RPC-specific error.
+      return ApiException(
+        error.message,
+        kind: ApiErrorKind.server,
+        code: error.code,
+      );
+    }
+
+    if (error is SocketException || error is TimeoutException) {
+      return ApiException.network();
+    }
+
+    return ApiException(error.toString());
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
@@ -19,6 +20,34 @@ import 'package:quizoo/l10n/app_localizations.dart';
 
 import '../../support/pump_app.dart';
 import '../../support/pump_screen.dart';
+
+class _MockQuizPlayApi extends Mock implements QuizPlayApi {}
+
+/// A [QuizPlayRepository] backed by [MockQuestions] rather than a real
+/// network fetch — `QuizPlayApi` now calls `start_level_attempt`, so a
+/// deterministic screen test stubs the `*_api.dart` boundary instead
+/// (CLAUDE.md §11).
+QuizPlayRepository fakeQuizPlayRepository() {
+  final api = _MockQuizPlayApi();
+  when(
+    () => api.fetchLevelQuestions(
+      subcategoryId: any(named: 'subcategoryId'),
+      levelNumber: any(named: 'levelNumber'),
+      languageCode: any(named: 'languageCode'),
+    ),
+  ).thenAnswer(
+    (invocation) async => PreparedLevel(
+      attemptId: 'attempt_test',
+      questions: MockQuestions.forLevel(
+        subcategoryId: invocation.namedArguments[#subcategoryId] as String,
+        levelNumber: invocation.namedArguments[#levelNumber] as int,
+        languageCode:
+            invocation.namedArguments[#languageCode] as String? ?? 'en',
+      ),
+    ),
+  );
+  return QuizPlayRepository(api);
+}
 
 void main() {
   useMockApiFailureRate();
@@ -40,7 +69,7 @@ void main() {
       QuizPlayScreen(levelId: id ?? levelId),
       locale: locale,
       brightness: brightness,
-      quizPlayRepository: QuizPlayRepository(QuizPlayApi()),
+      quizPlayRepository: fakeQuizPlayRepository(),
     );
     // Load the level, then run the 3 · 2 · 1 · GO countdown out.
     await tester.pump(const Duration(seconds: 1));
@@ -274,7 +303,7 @@ void main() {
     ) async {
       await tester.pumpScreen(
         QuizPlayScreen(levelId: levelId, entry: QuizPlayEntry.outOfLives),
-        quizPlayRepository: QuizPlayRepository(QuizPlayApi()),
+        quizPlayRepository: fakeQuizPlayRepository(),
       );
       await tester.pump(const Duration(seconds: 1));
       await tester.pump();

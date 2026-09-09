@@ -2,7 +2,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/network/api_exception.dart';
-import 'package:quizoo/features/daily/data/daily_api.dart';
 import 'package:quizoo/features/daily/data/daily_repository.dart';
 import 'package:quizoo/features/daily/domain/daily_challenge.dart';
 import 'package:quizoo/features/daily/domain/daily_result.dart';
@@ -132,20 +131,10 @@ void main() {
     );
   });
 
-  group('DailyApi + DailyRepository', () {
-    test('playToday derives the bucket highlight from the score', () async {
-      final repository = DailyRepository(DailyApi(failureRate: 0));
-      final result = await repository.playToday();
-
-      expect(result.totalCount, 10);
-      expect(
-        result.highlightedBucketIndex,
-        DailyResult.bucketIndexFor(result.correctCount),
-      );
-      expect(
-        result.answerPattern.where((correct) => correct).length,
-        result.correctCount,
-      );
-    });
-  });
+  // The 'DailyApi + DailyRepository' end-to-end group is gone: `DailyApi` now
+  // talks to a real Supabase project (`fetchToday`/`play_daily_challenge`),
+  // so there is no more pure-Dart `DailyApi()` to construct and exercise
+  // directly the way the mock's deterministic `Random`-seeded fixture
+  // allowed. `DailyResult.bucketIndexFor`'s own logic is still covered above
+  // via the mocked-repository `DailyResultCubit` tests.
 }

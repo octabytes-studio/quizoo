@@ -6,6 +6,15 @@ import 'package:quizoo/core/breakpoints.dart';
 import 'package:quizoo/core/mock/mock_api.dart';
 import 'package:quizoo/core/theme/app_theme.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// A ready [SharedPreferences] instance backing `QuizooApp`'s
+/// `OnboardingRepository`/`AuthRepository` in a test — nothing is persisted
+/// beyond the current test's in-memory mock store.
+Future<SharedPreferences> testPreferences() async {
+  SharedPreferences.setMockInitialValues({});
+  return SharedPreferences.getInstance();
+}
 
 /// Pumps [child] inside the same theme, sizing and localization scaffolding
 /// the real app gives it, so a widget test exercises the widget as shipped

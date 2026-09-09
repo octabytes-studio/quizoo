@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/format/app_format.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
@@ -31,7 +32,8 @@ class LeaderboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<LeaderboardCubit>(
       create: (_) =>
-          LeaderboardCubit(LeaderboardRepository(LeaderboardApi()))..load(),
+          LeaderboardCubit(LeaderboardRepository(LeaderboardApi(supabase)))
+            ..load(),
       child: const _LeaderboardView(),
     );
   }

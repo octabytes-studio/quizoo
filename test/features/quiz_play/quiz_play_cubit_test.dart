@@ -39,6 +39,12 @@ void main() {
         languageCode: any(named: 'languageCode'),
       ),
     ).thenAnswer((_) async => override ?? questions);
+    when(
+      () => repository.attemptIdFor(
+        any(),
+        languageCode: any(named: 'languageCode'),
+      ),
+    ).thenReturn('attempt_test');
   }
 
   Future<void> start(QuizPlayCubit cubit) => cubit.startLevel(
