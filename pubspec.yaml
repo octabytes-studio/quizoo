@@ -60,6 +60,11 @@ dev_dependencies:
   bloc_test: ^10.0.0
   mocktail: ^1.0.4
 
+  # Native splash generation from assets/splash — dev-time codegen only, not
+  # a runtime dependency. (App icons are pre-rendered per-platform assets,
+  # placed directly under android/, ios/, web/ — no codegen step for those.)
+  flutter_native_splash: ^2.4.3
+
   # Deterministic control of the play surface's clock in Cubit tests, so a
   # 20-second question costs no wall-clock time. Test-only; it ships with
   # nothing.
@@ -68,6 +73,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+
+  assets:
+    - assets/branding/quizoo-mark-color.png
+    - assets/branding/quizoo-mark-white.png
 
   fonts:
     # Display / headings / buttons / scores
@@ -110,3 +119,14 @@ flutter:
           weight: 400
         - asset: assets/fonts/NotoNastaliqUrdu-700.ttf
           weight: 700
+
+# Native (pre-Flutter-frame) splash — owl mark on the solid Grape brand
+# color, matching SplashScreen's gradient wash so the handoff to the
+# animated S-01 screen (lib/features/onboarding/.../splash_screen.dart) is
+# seamless.
+flutter_native_splash:
+  color: "#7B4DFF"
+  image: assets/splash/splash_icon.png
+  android_12:
+    color: "#7B4DFF"
+    image: assets/splash/splash_icon.png
