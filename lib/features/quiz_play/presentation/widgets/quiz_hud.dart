@@ -17,12 +17,18 @@ import 'package:quizoo/l10n/app_localizations.dart';
 class QuizHud extends StatelessWidget {
   const QuizHud({
     required this.run,
+    required this.isAudioOn,
     required this.onQuitPressed,
     required this.onReportPressed,
+    required this.onToggleAudioPressed,
     super.key,
   });
 
   final QuizRun run;
+
+  /// Backs the speaker icon — persisted via `AppSettings.soundOn` (plan 007,
+  /// §4.2), unlike `PauseSheet`'s separate, still-inert sound toggle.
+  final bool isAudioOn;
 
   /// Opens S-18. There is deliberately **no pause button here**: the bible's
   /// HUD does not have one, and inventing chrome the design does not show
@@ -32,6 +38,10 @@ class QuizHud extends StatelessWidget {
 
   /// Opens S-51 (plan 004) — the "⋯" overflow next to the streak badge.
   final VoidCallback onReportPressed;
+
+  /// Toggles TTS read-aloud for future questions, and — mid-speech — stops
+  /// the current one and reveals immediately.
+  final VoidCallback onToggleAudioPressed;
 
   /// `.play .hud .x` — 34×34.
   static const double closeButtonSize = 34;
@@ -58,6 +68,14 @@ class QuizHud extends StatelessWidget {
               Expanded(child: _ProgressDots(run: run)),
               SizedBox(width: 10.w),
               _StreakBadge(streak: run.currentStreak),
+              SizedBox(width: 10.w),
+              _ChromeButton(
+                glyph: isAudioOn ? '🔊' : '🔇',
+                semanticLabel: isAudioOn
+                    ? l10n.quizAudioOnLabel
+                    : l10n.quizAudioOffLabel,
+                onTap: onToggleAudioPressed,
+              ),
               SizedBox(width: 10.w),
               _ChromeButton(
                 glyph: '⋯',

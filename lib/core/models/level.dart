@@ -7,9 +7,9 @@ part 'level.g.dart';
 /// states from §06.
 enum LevelStatus { locked, current, done }
 
-/// The bible's escalating difficulty bands, which set the clock: 30s → 25s →
-/// 20s → 15s per question as the player climbs.
-enum DifficultyBand { warmUp, steady, sharp, brutal }
+/// The escalating difficulty bands, which set the clock: 30s → 25s → 20s →
+/// 15s → 10s per question as the player climbs the 50-level ladder.
+enum DifficultyBand { warmUp, steady, sharp, brutal, master }
 
 /// One of the twenty levels inside a [Subcategory].
 @freezed

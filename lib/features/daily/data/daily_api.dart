@@ -23,13 +23,14 @@ class DailyApi {
     'M', 'T', 'W', 'T', 'F', 'S', 'S', //
   ];
 
-  Future<DailyChallenge> fetchToday() async {
+  Future<DailyChallenge> fetchToday({required String languageCode}) async {
     try {
       final today = _todayUtc();
       final row = await _client
           .from('daily_challenges')
           .select()
           .eq('challenge_date', today)
+          .eq('language_code', languageCode)
           .maybeSingle();
       if (row == null) {
         throw const ApiException(
@@ -42,7 +43,8 @@ class DailyApi {
       final attempts = await _client
           .from('daily_attempts')
           .select('correct_count, total_count')
-          .eq('challenge_date', today);
+          .eq('challenge_date', today)
+          .eq('language_code', languageCode);
 
       final playedTodayCount = attempts.length;
       final averageCorrect = playedTodayCount == 0
@@ -149,9 +151,9 @@ class DailyApi {
     }
   }
 
-  Future<DailyPlayOutcome> play() async {
+  Future<DailyPlayOutcome> play({required String languageCode}) async {
     try {
-      final today = await fetchToday();
+      final today = await fetchToday(languageCode: languageCode);
       final random = Random();
       // A plausible "did fine" spread rather than a uniform 0..10 — the
       // bible's own S-28 frame lands on 8/10 (plan 006, Assumption #1(b): no
@@ -165,7 +167,7 @@ class DailyApi {
 
       final response = await _client.rpc<Map<String, dynamic>>(
         'play_daily_challenge',
-        params: {'p_answer_pattern': pattern},
+        params: {'p_answer_pattern': pattern, 'p_language_code': languageCode},
       );
 
       final distribution = response['distribution'] as Map<String, dynamic>?;

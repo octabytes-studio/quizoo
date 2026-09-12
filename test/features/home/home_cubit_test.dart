@@ -39,15 +39,17 @@ void main() {
       'success path: paints from cache first, then fills the popular rail',
       setUp: () {
         when(
-          () =>
-              repository.fetchCachedHome(isSignedIn: any(named: 'isSignedIn')),
+          () => repository.fetchCachedHome(
+            isSignedIn: any(named: 'isSignedIn'),
+            languageCode: any(named: 'languageCode'),
+          ),
         ).thenAnswer((_) async => cached);
         when(
           () => repository.fetchPopularRail(),
         ).thenAnswer((_) async => popular);
       },
       build: () => HomeCubit(repository),
-      act: (cubit) => cubit.load(isSignedIn: false),
+      act: (cubit) => cubit.load(isSignedIn: false, languageCode: 'en'),
       expect: () => [
         isA<HomeLoading>(),
         // §01's two-stage paint: Home is already usable while the rail loads.
@@ -72,12 +74,14 @@ void main() {
       'failure path: a failed cached read is the only way Home has nothing',
       setUp: () {
         when(
-          () =>
-              repository.fetchCachedHome(isSignedIn: any(named: 'isSignedIn')),
+          () => repository.fetchCachedHome(
+            isSignedIn: any(named: 'isSignedIn'),
+            languageCode: any(named: 'languageCode'),
+          ),
         ).thenThrow(const ApiException.network());
       },
       build: () => HomeCubit(repository),
-      act: (cubit) => cubit.load(isSignedIn: false),
+      act: (cubit) => cubit.load(isSignedIn: false, languageCode: 'en'),
       expect: () => [isA<HomeLoading>(), isA<HomeError>()],
     );
 
@@ -85,15 +89,17 @@ void main() {
       'losing the popular rail leaves the rest of Home intact',
       setUp: () {
         when(
-          () =>
-              repository.fetchCachedHome(isSignedIn: any(named: 'isSignedIn')),
+          () => repository.fetchCachedHome(
+            isSignedIn: any(named: 'isSignedIn'),
+            languageCode: any(named: 'languageCode'),
+          ),
         ).thenAnswer((_) async => cached);
         when(
           () => repository.fetchPopularRail(),
         ).thenThrow(const ApiException.network());
       },
       build: () => HomeCubit(repository),
-      act: (cubit) => cubit.load(isSignedIn: false),
+      act: (cubit) => cubit.load(isSignedIn: false, languageCode: 'en'),
       expect: () => [
         isA<HomeLoading>(),
         isA<HomeLoaded>(),
@@ -115,8 +121,10 @@ void main() {
       'the category filter narrows the grid, and re-tapping clears it',
       setUp: () {
         when(
-          () =>
-              repository.fetchCachedHome(isSignedIn: any(named: 'isSignedIn')),
+          () => repository.fetchCachedHome(
+            isSignedIn: any(named: 'isSignedIn'),
+            languageCode: any(named: 'languageCode'),
+          ),
         ).thenAnswer(
           (_) async => const HomeContent(
             categories: MockCatalog.categories,
@@ -127,7 +135,7 @@ void main() {
       },
       build: () => HomeCubit(repository),
       act: (cubit) async {
-        await cubit.load(isSignedIn: false);
+        await cubit.load(isSignedIn: false, languageCode: 'en');
         cubit.selectCategory(MockCatalog.sportsId);
 
         final filtered = cubit.state as HomeLoaded;
@@ -228,7 +236,10 @@ void main() {
 
     test('search matches a topic by name, sub-path or category', () async {
       when(
-        () => api.fetchCachedHome(isSignedIn: any(named: 'isSignedIn')),
+        () => api.fetchCachedHome(
+          isSignedIn: any(named: 'isSignedIn'),
+          languageCode: any(named: 'languageCode'),
+        ),
       ).thenAnswer(
         (_) async => const HomeContent(
           categories: MockCatalog.categories,
@@ -250,11 +261,14 @@ void main() {
 
     test('error-mapping path: the API exception reaches the caller', () async {
       when(
-        () => api.fetchCachedHome(isSignedIn: any(named: 'isSignedIn')),
+        () => api.fetchCachedHome(
+          isSignedIn: any(named: 'isSignedIn'),
+          languageCode: any(named: 'languageCode'),
+        ),
       ).thenThrow(const ApiException.network());
 
       expect(
-        () => repository.fetchCachedHome(isSignedIn: false),
+        () => repository.fetchCachedHome(isSignedIn: false, languageCode: 'en'),
         throwsA(isA<ApiException>()),
       );
       expect(() => repository.search('foot'), throwsA(isA<ApiException>()));

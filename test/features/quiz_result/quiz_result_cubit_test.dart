@@ -23,7 +23,9 @@ class _MockAuthApi extends Mock implements AuthApi {}
 /// `QuizResultRepository` trusts the server's numbers rather than
 /// recomputing them.
 RunRecord recordFor(QuizRun run, {bool isFirstClear = false}) {
-  final stars = run.isComplete ? Scoring.stars(run.correctCount) : 0;
+  final stars = run.isComplete
+      ? Scoring.stars(run.correctCount, run.questionCount)
+      : 0;
   return RunRecord(
     isFirstClear: isFirstClear,
     finalScore: run.isComplete ? Scoring.total(run) : run.score,
@@ -289,13 +291,20 @@ void main() {
       );
     });
 
-    test('stars follow the 12 / 16 / 20 thresholds', () {
-      expect(Scoring.stars(11), 0);
-      expect(Scoring.stars(12), 1);
-      expect(Scoring.stars(15), 1);
-      expect(Scoring.stars(16), 2);
-      expect(Scoring.stars(19), 2);
-      expect(Scoring.stars(20), 3);
+    test('stars follow the 60% / 80% / 100% thresholds of 20', () {
+      expect(Scoring.stars(11, 20), 0);
+      expect(Scoring.stars(12, 20), 1);
+      expect(Scoring.stars(15, 20), 1);
+      expect(Scoring.stars(16, 20), 2);
+      expect(Scoring.stars(19, 20), 2);
+      expect(Scoring.stars(20, 20), 3);
+    });
+
+    test('stars stay reachable at a different questionsPerLevel', () {
+      expect(Scoring.stars(5, 10), 0);
+      expect(Scoring.stars(6, 10), 1);
+      expect(Scoring.stars(8, 10), 2);
+      expect(Scoring.stars(10, 10), 3);
     });
 
     test('a boss level doubles the total', () {

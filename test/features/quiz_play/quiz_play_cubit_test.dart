@@ -9,15 +9,51 @@ import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
+import 'package:quizoo/features/quiz_play/data/tts_service.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/domain/scoring.dart';
 import 'package:quizoo/features/quiz_play/presentation/bloc/quiz_play_cubit.dart';
+import 'package:quizoo/features/settings/data/settings_repository.dart';
+import 'package:quizoo/features/settings/domain/app_settings.dart';
 
 class _MockQuizPlayRepository extends Mock implements QuizPlayRepository {}
 
+class _MockSettingsRepository extends Mock implements SettingsRepository {}
+
+/// A fake rather than a mocktail `Mock`: the Cubit's phase machine drives
+/// this through real completion-callback timing (`complete()`), which a
+/// stubbed `Mock` can't express.
+class _FakeTtsService implements TtsService {
+  bool languageAvailable = true;
+  void Function()? _onComplete;
+  final List<String> spoken = [];
+  int stopCount = 0;
+
+  @override
+  Future<bool> setLanguage(String languageCode) async => languageAvailable;
+
+  @override
+  Future<void> speak(String text) async => spoken.add(text);
+
+  @override
+  Future<void> stop() async => stopCount++;
+
+  @override
+  void onComplete(void Function() callback) => _onComplete = callback;
+
+  /// Test hook: simulates the plugin firing its completion handler.
+  void complete() => _onComplete?.call();
+}
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue(const AppSettings());
+  });
+
   late _MockQuizPlayRepository repository;
+  late _MockSettingsRepository settingsRepository;
+  late _FakeTtsService ttsService;
 
   final levelId = MockCatalog.levelId(MockCatalog.footballId, 12);
   final questions = MockQuestions.forLevel(
@@ -28,9 +64,29 @@ void main() {
   setUp(() {
     repository = _MockQuizPlayRepository();
     when(() => repository.forget(any())).thenReturn(null);
+
+    // Audio off by default — every existing test below exercises exactly
+    // today's instant-reveal behavior (plan 007's own regression guard).
+    // Tests of the TTS phase machine itself opt into audio explicitly.
+    settingsRepository = _MockSettingsRepository();
+    when(
+      () => settingsRepository.current,
+    ).thenReturn(const AppSettings(soundOn: false));
+    when(() => settingsRepository.update(any())).thenAnswer(
+      (invocation) => invocation.positionalArguments.first as AppSettings,
+    );
+
+    ttsService = _FakeTtsService();
   });
 
-  void stubQuestions([List<Question>? override]) {
+  QuizPlayCubit buildCubit() =>
+      QuizPlayCubit(repository, settingsRepository, ttsService);
+
+  void stubQuestions([
+    List<Question>? override,
+    int secondsPerQuestion = 20,
+    bool isBoss = false,
+  ]) {
     when(
       () => repository.questionsFor(
         levelId: any(named: 'levelId'),
@@ -45,6 +101,16 @@ void main() {
         languageCode: any(named: 'languageCode'),
       ),
     ).thenReturn('attempt_test');
+    when(
+      () => repository.secondsPerQuestionFor(
+        any(),
+        languageCode: any(named: 'languageCode'),
+      ),
+    ).thenReturn(secondsPerQuestion);
+    when(
+      () =>
+          repository.isBossFor(any(), languageCode: any(named: 'languageCode')),
+    ).thenReturn(isBoss);
   }
 
   Future<void> start(QuizPlayCubit cubit) => cubit.startLevel(
@@ -55,13 +121,13 @@ void main() {
 
   group('QuizPlayCubit', () {
     test('starts in the preparing state', () {
-      expect(QuizPlayCubit(repository).state, isA<QuizPlayPreparing>());
+      expect(buildCubit().state, isA<QuizPlayPreparing>());
     });
 
     blocTest<QuizPlayCubit, QuizPlayState>(
       'success path: loads a level and opens the countdown at 3',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: start,
       expect: () => [
         isA<QuizPlayPreparing>(),
@@ -70,6 +136,142 @@ void main() {
             .having((state) => state.run.levelNumber, 'level', 12)
             .having((state) => state.run.secondsPerQuestion, 'seconds', 20),
       ],
+    );
+
+    blocTest<QuizPlayCubit, QuizPlayState>(
+      'uses the server-authoritative seconds/isBoss from the prepared '
+      'level, never a hardcoded ladder',
+      setUp: () => stubQuestions(null, 7, true),
+      build: () => buildCubit(),
+      act: start,
+      expect: () => [
+        isA<QuizPlayPreparing>(),
+        isA<QuizPlayCountdown>()
+            .having((state) => state.run.secondsPerQuestion, 'seconds', 7)
+            .having((state) => state.run.isBoss, 'isBoss', isTrue),
+      ],
+    );
+
+    test('audio on: speaking -> revealing -> answering, clock starts only '
+        'once answering', () {
+      stubQuestions();
+      when(
+        () => settingsRepository.current,
+      ).thenReturn(const AppSettings(soundOn: true));
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+
+        var state = cubit.state as QuizPlayInProgress;
+        expect(state.phase, QuestionPhase.speaking);
+        expect(state.secondsRemaining, 20);
+        expect(ttsService.spoken, [state.question.text]);
+
+        // Nothing moves while still speaking, however long it takes.
+        async.elapse(const Duration(seconds: 5));
+        state = cubit.state as QuizPlayInProgress;
+        expect(state.phase, QuestionPhase.speaking);
+        expect(state.secondsRemaining, 20);
+
+        ttsService.complete();
+        state = cubit.state as QuizPlayInProgress;
+        expect(state.phase, QuestionPhase.revealing);
+        expect(state.secondsRemaining, 20, reason: 'clock still not running');
+
+        async.elapse(QuizPlayCubit.revealDuration);
+        state = cubit.state as QuizPlayInProgress;
+        expect(state.phase, QuestionPhase.answering);
+
+        async.elapse(const Duration(seconds: 3));
+        expect((cubit.state as QuizPlayInProgress).secondsRemaining, 17);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
+
+    test('toggling audio off mid-speech stops TTS and reveals immediately', () {
+      stubQuestions();
+      when(
+        () => settingsRepository.current,
+      ).thenReturn(const AppSettings(soundOn: true));
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+
+        expect(
+          (cubit.state as QuizPlayInProgress).phase,
+          QuestionPhase.speaking,
+        );
+
+        cubit.toggleQuestionAudio();
+
+        final state = cubit.state as QuizPlayInProgress;
+        expect(state.phase, QuestionPhase.answering);
+        expect(state.isAudioOn, isFalse);
+        expect(ttsService.stopCount, 1);
+
+        // The clock is now actually running, straight from the toggle.
+        async.elapse(const Duration(seconds: 2));
+        expect((cubit.state as QuizPlayInProgress).secondsRemaining, 18);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
+
+    test(
+      'a ttsExcluded question skips straight to answering, audio or not',
+      () {
+        stubQuestions([
+          questions.first.copyWith(ttsExcluded: true),
+          ...questions.skip(1),
+        ]);
+        when(
+          () => settingsRepository.current,
+        ).thenReturn(const AppSettings(soundOn: true));
+        fakeAsync((async) {
+          final cubit = buildCubit();
+          unawaited(start(cubit));
+          async.flushMicrotasks();
+          cubit.skipCountdown();
+
+          final state = cubit.state as QuizPlayInProgress;
+          expect(state.phase, QuestionPhase.answering);
+          expect(ttsService.spoken, isEmpty);
+
+          unawaited(cubit.close());
+          async.flushMicrotasks();
+        });
+      },
+    );
+
+    test(
+      'falls back to silent mode when the active language has no voice pack',
+      () {
+        stubQuestions();
+        ttsService.languageAvailable = false;
+        when(
+          () => settingsRepository.current,
+        ).thenReturn(const AppSettings(soundOn: true));
+        fakeAsync((async) {
+          final cubit = buildCubit();
+          unawaited(start(cubit));
+          async.flushMicrotasks();
+          cubit.skipCountdown();
+
+          final state = cubit.state as QuizPlayInProgress;
+          expect(state.phase, QuestionPhase.answering);
+          expect(ttsService.spoken, isEmpty);
+
+          unawaited(cubit.close());
+          async.flushMicrotasks();
+        });
+      },
     );
 
     blocTest<QuizPlayCubit, QuizPlayState>(
@@ -84,7 +286,7 @@ void main() {
           ),
         ).thenThrow(const ApiException.network());
       },
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: start,
       expect: () => [isA<QuizPlayPreparing>(), isA<QuizPlayFailed>()],
     );
@@ -92,7 +294,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       'a topic with no questions behind it fails rather than opening empty',
       setUp: () => stubQuestions(const []),
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: start,
       expect: () => [
         isA<QuizPlayPreparing>(),
@@ -107,7 +309,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       'the clock does not start until the countdown has finished',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: (cubit) async {
         await start(cubit);
         cubit.skipCountdown();
@@ -127,7 +329,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       'a correct answer scores by §19 and extends the streak',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: (cubit) async {
         await start(cubit);
         cubit.skipCountdown();
@@ -155,7 +357,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       'a wrong answer costs a heart, resets the streak and reveals the answer',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: (cubit) async {
         await start(cubit);
         cubit.skipCountdown();
@@ -179,7 +381,7 @@ void main() {
     test('a timeout costs the question but never a heart (§19)', () {
       stubQuestions();
       fakeAsync((async) {
-        final cubit = QuizPlayCubit(repository);
+        final cubit = buildCubit();
         unawaited(start(cubit));
         async.flushMicrotasks();
         cubit.skipCountdown();
@@ -202,7 +404,7 @@ void main() {
     test('the clock counts down while a question is live', () {
       stubQuestions();
       fakeAsync((async) {
-        final cubit = QuizPlayCubit(repository);
+        final cubit = buildCubit();
         unawaited(start(cubit));
         async.flushMicrotasks();
         cubit.skipCountdown();
@@ -219,7 +421,7 @@ void main() {
     test('the arena enters its danger state in the last five seconds', () {
       stubQuestions();
       fakeAsync((async) {
-        final cubit = QuizPlayCubit(repository);
+        final cubit = buildCubit();
         unawaited(start(cubit));
         async.flushMicrotasks();
         cubit.skipCountdown();
@@ -238,7 +440,7 @@ void main() {
     test('+15s extends the clock rather than restarting it', () {
       stubQuestions();
       fakeAsync((async) {
-        final cubit = QuizPlayCubit(repository);
+        final cubit = buildCubit();
         unawaited(start(cubit));
         async.flushMicrotasks();
         cubit.skipCountdown();
@@ -260,7 +462,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       'losing the last heart opens S-19 rather than ending the run',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: (cubit) async {
         await start(cubit);
         cubit.skipCountdown();
@@ -282,7 +484,7 @@ void main() {
     test('pausing freezes the clock and resuming continues from there', () {
       stubQuestions();
       fakeAsync((async) {
-        final cubit = QuizPlayCubit(repository);
+        final cubit = buildCubit();
         unawaited(start(cubit));
         async.flushMicrotasks();
         cubit.skipCountdown();
@@ -310,7 +512,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       '50:50 removes exactly two wrong options and forfeits the clean run',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: (cubit) async {
         await start(cubit);
         cubit.skipCountdown();
@@ -333,7 +535,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       'leaving from S-19 is recorded as a heart loss, not a quit',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: (cubit) async {
         await start(cubit);
         cubit.skipCountdown();
@@ -357,7 +559,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       'quitting is recorded distinctly from running out of hearts',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: (cubit) async {
         await start(cubit);
         cubit.skipCountdown();
@@ -375,7 +577,7 @@ void main() {
     blocTest<QuizPlayCubit, QuizPlayState>(
       'answering all twenty correctly ends the run finished and flawless',
       setUp: stubQuestions,
-      build: () => QuizPlayCubit(repository),
+      build: () => buildCubit(),
       act: (cubit) async {
         await start(cubit);
         cubit.skipCountdown();
@@ -391,7 +593,10 @@ void main() {
         expect(state.run.ending, RunEnding.finished);
         expect(state.run.correctCount, MockQuestions.questionsPerLevel);
         expect(state.run.isFlawless, isTrue);
-        expect(Scoring.stars(state.run.correctCount), 3);
+        expect(
+          Scoring.stars(state.run.correctCount, state.run.questionCount),
+          3,
+        );
         // The breakdown is the only source of the total, so it always sums.
         expect(
           Scoring.breakdown(state.run).fold<int>(0, (a, b) => a + b.value),

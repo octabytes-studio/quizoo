@@ -9,7 +9,8 @@ class DailyRepository {
 
   final DailyApi _api;
 
-  Future<DailyChallenge> fetchToday() => _api.fetchToday();
+  Future<DailyChallenge> fetchToday({required String languageCode}) =>
+      _api.fetchToday(languageCode: languageCode);
 
   Future<StreakStatus> fetchStreak() => _api.fetchStreak();
 
@@ -18,8 +19,8 @@ class DailyRepository {
   /// authoritative source for coins/streak/distribution now — this no longer
   /// recomputes them client-side the way the mock's fixed `coinReward`/
   /// `mockDistributionPercents` did.
-  Future<DailyResult> playToday() async {
-    final outcome = await _api.play();
+  Future<DailyResult> playToday({required String languageCode}) async {
+    final outcome = await _api.play(languageCode: languageCode);
 
     return DailyResult(
       correctCount: outcome.correctCount,

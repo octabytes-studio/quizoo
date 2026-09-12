@@ -50,13 +50,19 @@ class DuelApi {
   /// Five live questions for the duel — the same content pool
   /// `start_level_attempt` draws from, reused rather than duplicated. Only
   /// Football has seeded content today, so this pulls from there directly
-  /// until more topics exist (plan 006, Design overview).
-  Future<List<Question>> fetchRoundQuestions() async {
+  /// until more topics exist (plan 006, Design overview); Football only
+  /// exists under the English category today, so a non-English duel
+  /// currently finds no subcategory and deals nothing, same as any other
+  /// as-yet-unauthored topic.
+  Future<List<Question>> fetchRoundQuestions({
+    required String languageCode,
+  }) async {
     try {
       final subcategoryRow = await _client
           .from('subcategories')
-          .select('id')
+          .select('id, categories!inner(language_code)')
           .eq('slug', 'football')
+          .eq('categories.language_code', languageCode)
           .maybeSingle();
       if (subcategoryRow == null) return const [];
 
@@ -64,11 +70,11 @@ class DuelApi {
           .from('questions')
           .select(
             'id, subcategory_id, difficulty, kind, media_url, '
-            'question_i18n!inner(prompt, options, correct_index, explanation, locale)',
+            'prompt, options, correct_index, explanation',
           )
           .eq('subcategory_id', subcategoryRow['id'] as String)
           .eq('status', 'live')
-          .eq('question_i18n.locale', 'en');
+          .eq('language_code', languageCode);
 
       final questions = [for (final row in rows) _questionFromRow(row)]
         ..shuffle(Random());
@@ -114,20 +120,17 @@ class DuelApi {
     }
   }
 
-  static Question _questionFromRow(Map<String, dynamic> row) {
-    final i18n = (row['question_i18n'] as List).first as Map<String, dynamic>;
-    return Question(
-      id: row['id'] as String,
-      subcategoryId: row['subcategory_id'] as String,
-      difficulty: row['difficulty'] as int,
-      text: i18n['prompt'] as String,
-      options: (i18n['options'] as List).cast<String>(),
-      correctIndex: i18n['correct_index'] as int,
-      explanation: i18n['explanation'] as String,
-      hasImage: row['kind'] == 'image',
-      imageAsset: row['media_url'] as String?,
-    );
-  }
+  static Question _questionFromRow(Map<String, dynamic> row) => Question(
+    id: row['id'] as String,
+    subcategoryId: row['subcategory_id'] as String,
+    difficulty: row['difficulty'] as int,
+    text: row['prompt'] as String,
+    options: (row['options'] as List).cast<String>(),
+    correctIndex: row['correct_index'] as int,
+    explanation: row['explanation'] as String,
+    hasImage: row['kind'] == 'image',
+    imageAsset: row['media_url'] as String?,
+  );
 }
 
 /// What the server settled a bot duel to — authoritative ELO/coins, per

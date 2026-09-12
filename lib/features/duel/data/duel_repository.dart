@@ -12,7 +12,8 @@ class DuelRepository {
   Future<DuelOpponent> fetchBotOpponent({required int playerElo}) =>
       _api.fetchBotOpponent(playerElo: playerElo);
 
-  Future<List<Question>> fetchRoundQuestions() => _api.fetchRoundQuestions();
+  Future<List<Question>> fetchRoundQuestions({required String languageCode}) =>
+      _api.fetchRoundQuestions(languageCode: languageCode);
 
   Future<BotDuelRecord> submitBotDuel({
     required int opponentElo,

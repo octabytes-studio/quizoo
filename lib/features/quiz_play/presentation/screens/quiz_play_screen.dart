@@ -16,6 +16,7 @@ import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/report_question_sheet.dart';
+import 'package:quizoo/features/quiz_play/data/flutter_tts_service.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
@@ -29,6 +30,7 @@ import 'package:quizoo/features/quiz_play/presentation/widgets/question_media_pl
 import 'package:quizoo/features/quiz_play/presentation/widgets/quiz_hud.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/quit_confirmation_dialog.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/timer_ring.dart';
+import 'package:quizoo/features/settings/data/settings_repository.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// Which overlay a deep link should open on arrival.
@@ -67,7 +69,11 @@ class QuizPlayScreen extends StatelessWidget {
 
     return BlocProvider<QuizPlayCubit>(
       create: (_) =>
-          QuizPlayCubit(context.read<QuizPlayRepository>())..startLevel(
+          QuizPlayCubit(
+            context.read<QuizPlayRepository>(),
+            context.read<SettingsRepository>(),
+            FlutterTtsService(),
+          )..startLevel(
             levelId: levelId,
             categoryId: subcategory?.categoryId ?? '',
             subcategoryName: subcategory?.name ?? '',
@@ -367,8 +373,10 @@ class _QuestionView extends StatelessWidget {
       children: [
         QuizHud(
           run: state.run,
+          isAudioOn: state.isAudioOn,
           onQuitPressed: cubit.requestQuit,
           onReportPressed: () => _openReportSheet(context),
+          onToggleAudioPressed: cubit.toggleQuestionAudio,
         ),
         Padding(
           padding: EdgeInsets.only(bottom: hasImage ? 10.h : 12.h),
@@ -413,34 +421,49 @@ class _QuestionView extends StatelessWidget {
         // The options take whatever room the header leaves and scroll inside
         // it, so a long question or a long answer can never push the power-up
         // dock off the bottom of the arena — `.pups` is `margin-top:auto`.
-        Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 0),
-            child: Column(
-              children: [
-                for (
-                  var index = 0;
-                  index < state.question.options.length;
-                  index++
-                )
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 10.h),
-                    child: AnswerOption(
-                      label: state.question.options[index],
-                      optionKey: keys[index % keys.length],
-                      state: _optionState(index),
-                      onPressed: state.isAwaitingAnswer
-                          ? () => cubit.answer(index)
-                          : null,
+        //
+        // Hidden entirely during `speaking` (TTS is still reading the
+        // question), staggered in during `revealing`, plain once `answering`
+        // — audio off/`ttsExcluded` skips straight to `answering`, so this
+        // renders exactly as it always did (CLAUDE.md-flagged regression
+        // guard, plan 007 Acceptance criteria).
+        if (state.phase != QuestionPhase.speaking)
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 0),
+              child: Column(
+                children: [
+                  for (
+                    var index = 0;
+                    index < state.question.options.length;
+                    index++
+                  )
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 10.h),
+                      child: _RevealingOption(
+                        index: index,
+                        isRevealing: state.phase == QuestionPhase.revealing,
+                        child: AnswerOption(
+                          label: state.question.options[index],
+                          optionKey: keys[index % keys.length],
+                          state: _optionState(index),
+                          onPressed:
+                              state.isAwaitingAnswer &&
+                                  state.phase == QuestionPhase.answering
+                              ? () => cubit.answer(index)
+                              : null,
+                        ),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
+          )
+        else
+          const Spacer(),
         // The dock is hidden while a verdict banner is up, which is what the
         // bible's S-12 and S-13 frames show.
-        if (state.isAwaitingAnswer)
+        if (state.isAwaitingAnswer && state.phase == QuestionPhase.answering)
           PowerUpDock(
             inventory: state.powerUps,
             isDanger: state.isDanger,
@@ -569,5 +592,35 @@ class _ArenaError extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// One option's staggered fade+slide entrance during [QuestionPhase.revealing]
+/// (spec §4.2: ~70-90ms per option). Renders [child] plain once the reveal
+/// has finished, so a later rebuild (e.g. every clock tick in `answering`)
+/// never replays the entrance.
+class _RevealingOption extends StatelessWidget {
+  const _RevealingOption({
+    required this.index,
+    required this.isRevealing,
+    required this.child,
+  });
+
+  final int index;
+  final bool isRevealing;
+  final Widget child;
+
+  static const Duration _staggerStep = Duration(milliseconds: 80);
+  static const Duration _entranceDuration = Duration(milliseconds: 220);
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isRevealing) return child;
+
+    final duration = AppMotion.durationOf(context, _entranceDuration);
+    return child
+        .animate(delay: _staggerStep * index)
+        .fadeIn(duration: duration)
+        .slideY(begin: 0.15, end: 0, duration: duration, curve: Curves.easeOut);
   }
 }

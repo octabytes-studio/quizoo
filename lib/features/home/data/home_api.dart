@@ -22,7 +22,17 @@ class HomeApi {
   /// — kept exactly as `HomeCubit` already passes it (`session is
   /// SessionSignedIn`), so a guest's real anonymous wallet stays hidden the
   /// same way the mock's did, and Home's layout does not change.
-  Future<HomeContent> fetchCachedHome({required bool isSignedIn}) async {
+  ///
+  /// [languageCode] only matters inside the `isSignedIn` branch, to pick the
+  /// caller's own language's row out of `daily_challenges` — since that
+  /// table now carries one row per (date, language) rather than one global
+  /// row per date (plan 007's daily-rollover fix), an unfiltered lookup by
+  /// date alone would match more than one row. [search] calls this with
+  /// `isSignedIn: false`, so its `languageCode` is never actually read.
+  Future<HomeContent> fetchCachedHome({
+    required bool isSignedIn,
+    required String languageCode,
+  }) async {
     try {
       final categoryRows = await _client
           .from('categories')
@@ -92,6 +102,7 @@ class HomeApi {
             .from('daily_challenges')
             .select('question_ids')
             .eq('challenge_date', todayDate)
+            .eq('language_code', languageCode)
             .maybeSingle();
         if (dailyRow != null) {
           final tomorrow = DateTime.utc(today.year, today.month, today.day + 1);

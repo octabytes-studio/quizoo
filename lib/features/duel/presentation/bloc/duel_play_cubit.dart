@@ -67,11 +67,16 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
   int _pendingOpponentAnswerSeconds = 0;
   int _playerAnswerSecondsLeft = 0;
 
-  Future<void> start(DuelOpponent opponent) async {
+  Future<void> start(
+    DuelOpponent opponent, {
+    required String languageCode,
+  }) async {
     _opponent = opponent;
     emit(const DuelPlayLoading());
     try {
-      _questions = await _repository.fetchRoundQuestions();
+      _questions = await _repository.fetchRoundQuestions(
+        languageCode: languageCode,
+      );
     } on ApiException catch (error) {
       if (!isClosed) emit(DuelPlayFailed(error));
       return;

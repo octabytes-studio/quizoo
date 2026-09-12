@@ -44,11 +44,13 @@ void main() {
     blocTest<DailyCubit, DailyState>(
       'success path: loads the challenge and the streak together',
       setUp: () {
-        when(() => repository.fetchToday()).thenAnswer((_) async => challenge);
+        when(
+          () => repository.fetchToday(languageCode: any(named: 'languageCode')),
+        ).thenAnswer((_) async => challenge);
         when(() => repository.fetchStreak()).thenAnswer((_) async => streak);
       },
       build: () => DailyCubit(repository),
-      act: (cubit) => cubit.load(),
+      act: (cubit) => cubit.load(languageCode: 'en'),
       expect: () => [
         isA<DailyLoading>(),
         isA<DailyLoaded>()
@@ -61,11 +63,11 @@ void main() {
       'failure path: a failed fetch surfaces as an error',
       setUp: () {
         when(
-          () => repository.fetchToday(),
+          () => repository.fetchToday(languageCode: any(named: 'languageCode')),
         ).thenThrow(const ApiException.network());
       },
       build: () => DailyCubit(repository),
-      act: (cubit) => cubit.load(),
+      act: (cubit) => cubit.load(languageCode: 'en'),
       expect: () => [isA<DailyLoading>(), isA<DailyError>()],
     );
   });
@@ -104,10 +106,12 @@ void main() {
     blocTest<DailyResultCubit, DailyResultState>(
       'success path: playing today lands on a loaded result',
       setUp: () {
-        when(() => repository.playToday()).thenAnswer((_) async => result);
+        when(
+          () => repository.playToday(languageCode: any(named: 'languageCode')),
+        ).thenAnswer((_) async => result);
       },
       build: () => DailyResultCubit(repository),
-      act: (cubit) => cubit.play(),
+      act: (cubit) => cubit.play(languageCode: 'en'),
       expect: () => [
         isA<DailyResultLoading>(),
         isA<DailyResultLoaded>().having(
@@ -122,11 +126,11 @@ void main() {
       'failure path: a failed play surfaces as an error',
       setUp: () {
         when(
-          () => repository.playToday(),
+          () => repository.playToday(languageCode: any(named: 'languageCode')),
         ).thenThrow(const ApiException.network());
       },
       build: () => DailyResultCubit(repository),
-      act: (cubit) => cubit.play(),
+      act: (cubit) => cubit.play(languageCode: 'en'),
       expect: () => [isA<DailyResultLoading>(), isA<DailyResultError>()],
     );
   });

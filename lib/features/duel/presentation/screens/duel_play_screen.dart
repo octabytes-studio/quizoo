@@ -44,6 +44,7 @@ class DuelPlayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
     return BlocProvider<DuelPlayCubit>(
       create: (_) {
         final cubit = DuelPlayCubit(DuelRepository(DuelApi(supabase)));
@@ -55,7 +56,7 @@ class DuelPlayScreen extends StatelessWidget {
               avatarEmoji: '🦊',
               elo: _playerElo,
             );
-        cubit.start(resolvedOpponent);
+        cubit.start(resolvedOpponent, languageCode: languageCode);
         return cubit;
       },
       child: _DuelPlayView(duelId: duelId),

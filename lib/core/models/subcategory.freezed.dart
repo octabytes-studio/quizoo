@@ -227,7 +227,7 @@ return $default(_that.id,_that.categoryId,_that.name,_that.emoji,_that.groupName
 @JsonSerializable()
 
 class _Subcategory extends Subcategory {
-  const _Subcategory({required this.id, required this.categoryId, required this.name, required this.emoji, this.groupName = '', required this.plateColor, this.questionCount = 0, this.levelsCleared = 0, this.levelCount = 20, this.bestScore = 0, this.starsEarned = 0, this.isNew = false, this.isLocked = false}): super._();
+  const _Subcategory({required this.id, required this.categoryId, required this.name, required this.emoji, this.groupName = '', required this.plateColor, this.questionCount = 0, this.levelsCleared = 0, this.levelCount = 50, this.bestScore = 0, this.starsEarned = 0, this.isNew = false, this.isLocked = false}): super._();
   factory _Subcategory.fromJson(Map<String, dynamic> json) => _$SubcategoryFromJson(json);
 
 @override final  String id;

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/format/app_format.dart';
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/models/level.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -47,10 +48,18 @@ class LevelMapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
     return BlocProvider<LevelMapCubit>(
       create: (_) =>
-          LevelMapCubit(CatalogRepository(CatalogApi(supabase)))
-            ..load(categoryId: categoryId, subcategoryId: subcategoryId),
+          LevelMapCubit(
+            CatalogRepository(
+              CatalogApi(supabase, context.read<LadderConfigRepository>()),
+            ),
+          )..load(
+            categoryId: categoryId,
+            subcategoryId: subcategoryId,
+            locale: locale,
+          ),
       child: _LevelMapView(initialBriefLevelNumber: initialBriefLevelNumber),
     );
   }

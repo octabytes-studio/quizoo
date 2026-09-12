@@ -44,6 +44,8 @@ QuizPlayRepository fakeQuizPlayRepository() {
         languageCode:
             invocation.namedArguments[#languageCode] as String? ?? 'en',
       ),
+      secondsPerQuestion: 20,
+      isBoss: false,
     ),
   );
   return QuizPlayRepository(api);

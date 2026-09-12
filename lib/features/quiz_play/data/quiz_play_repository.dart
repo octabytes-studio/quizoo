@@ -74,6 +74,17 @@ class QuizPlayRepository {
   String? attemptIdFor(String levelId, {String languageCode = 'en'}) =>
       _prefetched[_key(levelId, languageCode)]?.attemptId;
 
+  /// The server-authoritative clock for this level, from the same
+  /// `start_level_attempt` response [questionsFor] resolved — replaces
+  /// `MockCatalog.secondsFor(levelNumber)`.
+  int? secondsPerQuestionFor(String levelId, {String languageCode = 'en'}) =>
+      _prefetched[_key(levelId, languageCode)]?.secondsPerQuestion;
+
+  /// Whether this level is a boss level, from the same server response —
+  /// replaces `levelNumber % 5 == 0`.
+  bool? isBossFor(String levelId, {String languageCode = 'en'}) =>
+      _prefetched[_key(levelId, languageCode)]?.isBoss;
+
   /// Drops a level's cache so a replay re-deals it. Called when a run ends.
   void forget(String levelId) =>
       _prefetched.removeWhere((key, _) => key.startsWith('$levelId@'));

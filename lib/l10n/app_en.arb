@@ -305,6 +305,8 @@
   "@difficultyHard": { "description": "Levels 11–15 difficulty band." },
   "difficultyExpert": "Expert",
   "@difficultyExpert": { "description": "Levels 16–20 difficulty band." },
+  "difficultyMaster": "Master",
+  "@difficultyMaster": { "description": "Levels 41–50 difficulty band." },
 
   "levelMapSubtitle": "{questions} questions · {levels} levels",
   "@levelMapSubtitle": {
@@ -1270,6 +1272,11 @@
 
   "quizReportLabel": "Report this question",
   "@quizReportLabel": { "description": "S-11 HUD '⋯' semantic label, opening S-51 (plan 004)." },
+
+  "quizAudioOnLabel": "Turn off question read-aloud",
+  "@quizAudioOnLabel": { "description": "S-11 HUD speaker icon's semantic label when TTS read-aloud is on (plan 007, §4.2)." },
+  "quizAudioOffLabel": "Turn on question read-aloud",
+  "@quizAudioOffLabel": { "description": "S-11 HUD speaker icon's semantic label when TTS read-aloud is off." },
 
   "homeOfflineMode": "Offline mode",
   "@homeOfflineMode": { "description": "S-46 top-of-screen label replacing Home's usual top bar subtitle." },

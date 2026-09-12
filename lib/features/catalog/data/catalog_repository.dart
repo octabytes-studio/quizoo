@@ -9,16 +9,22 @@ class CatalogRepository {
 
   final CatalogApi _api;
 
-  Future<CategoryDetail> fetchCategory(String categoryId) =>
-      _api.fetchCategory(categoryId);
+  Future<CategoryDetail> fetchCategory(
+    String categoryId, {
+    required String locale,
+  }) => _api.fetchCategory(categoryId, locale: locale);
 
   /// S-08's data, with the topic grid already sorted the way the header's
   /// control claims.
   Future<LevelMap> fetchLevelMap({
     required String categoryId,
     required String subcategoryId,
-  }) =>
-      _api.fetchLevelMap(categoryId: categoryId, subcategoryId: subcategoryId);
+    required String locale,
+  }) => _api.fetchLevelMap(
+    categoryId: categoryId,
+    subcategoryId: subcategoryId,
+    locale: locale,
+  );
 
   Future<Level> fetchLevel({
     required String subcategoryId,

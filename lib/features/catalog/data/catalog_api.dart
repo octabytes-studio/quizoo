@@ -1,3 +1,4 @@
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/category.dart';
 import 'package:quizoo/core/models/level.dart';
@@ -9,30 +10,27 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Browse's real endpoints, over Postgrest.
 ///
-/// `MockCatalog.levelId`/`parseLevelId`/`bandFor`/`secondsFor` are kept —
-/// they are pure functions of a level number, not fixture data, and the
-/// schema deliberately has no `levels` table because of it (see
-/// `_difficulty_band_for_level`/`_seconds_for_level` in the functions
-/// migration, transcribed from these same functions).
+/// `MockCatalog.levelId`/`parseLevelId` are kept — they are pure functions of
+/// a level number, not fixture data, and the schema deliberately has no
+/// `levels` table because of it. Band/seconds/boss come from the injected
+/// [LadderConfigRepository] (fetched from `difficulty_tiers`/`app_settings`)
+/// rather than a hardcoded mirror of the old SQL ladder functions.
 class CatalogApi {
-  CatalogApi(this._client);
+  CatalogApi(this._client, this._ladderConfig);
 
   final SupabaseClient _client;
-
-  /// English until locale is threaded from `LocaleCubit` through the
-  /// catalog Cubits — a known simplification (plan 005, Design overview);
-  /// taxonomy renders in English regardless of the active locale for now.
-  static const String _defaultLocale = 'en';
+  final LadderConfigRepository _ladderConfig;
 
   Future<CategoryDetail> fetchCategory(
     String categoryId, {
-    String locale = _defaultLocale,
+    required String locale,
   }) async {
     try {
       final categoryRow = await _client
           .from('categories')
           .select()
           .eq('id', categoryId)
+          .eq('language_code', locale)
           .maybeSingle();
       if (categoryRow == null) throw _contentNotFound('No such category');
 
@@ -79,13 +77,15 @@ class CatalogApi {
   Future<LevelMap> fetchLevelMap({
     required String categoryId,
     required String subcategoryId,
-    String locale = _defaultLocale,
+    required String locale,
   }) async {
     try {
+      await _ladderConfig.ensureLoaded();
       final categoryRow = await _client
           .from('categories')
           .select()
           .eq('id', categoryId)
+          .eq('language_code', locale)
           .maybeSingle();
       final subcategoryRow = await _client
           .from('subcategories')
@@ -131,6 +131,7 @@ class CatalogApi {
     required int levelNumber,
   }) async {
     try {
+      await _ladderConfig.ensureLoaded();
       final subcategoryRow = await _client
           .from('subcategories')
           .select()
@@ -162,6 +163,9 @@ class CatalogApi {
     code: 'ERR_CONTENT_404',
   );
 
+  /// A single-locale lookup: a category or subcategory never has a
+  /// `taxonomy_i18n` row in a locale other than its own `language_code`, now
+  /// that each entity belongs to exactly one language.
   Future<Map<String, String>> _taxonomyNames({
     required String entityType,
     required List<String> entityIds,
@@ -170,20 +174,12 @@ class CatalogApi {
     if (entityIds.isEmpty) return const {};
     final rows = await _client
         .from('taxonomy_i18n')
-        .select('entity_id, locale, name')
+        .select('entity_id, name')
         .inFilter('entity_id', entityIds)
-        .inFilter('locale', {locale, _defaultLocale}.toList());
+        .eq('locale', locale);
 
-    final byEntity = <String, Map<String, String>>{};
-    for (final row in rows) {
-      final id = row['entity_id'] as String;
-      byEntity.putIfAbsent(id, () => {})[row['locale'] as String] =
-          row['name'] as String;
-    }
     return {
-      for (final id in entityIds)
-        if (byEntity[id] != null)
-          id: byEntity[id]![locale] ?? byEntity[id]![_defaultLocale] ?? id,
+      for (final row in rows) row['entity_id'] as String: row['name'] as String,
     };
   }
 
@@ -274,7 +270,7 @@ class CatalogApi {
     isLocked: row['is_locked'] as bool? ?? false,
   );
 
-  static List<Level> _levelsFor(
+  List<Level> _levelsFor(
     Subcategory subcategory,
     Map<int, ({int bestScore, int stars})>? perLevel,
   ) => [
@@ -282,7 +278,7 @@ class CatalogApi {
       _levelFor(subcategory, number, perLevel?[number]),
   ];
 
-  static Level _levelFor(
+  Level _levelFor(
     Subcategory subcategory,
     int number,
     ({int bestScore, int stars})? cleared,
@@ -293,18 +289,26 @@ class CatalogApi {
       id: MockCatalog.levelId(subcategory.id, number),
       subcategoryId: subcategory.id,
       number: number,
-      difficultyBand: MockCatalog.bandFor(number),
-      secondsPerQuestion: MockCatalog.secondsFor(number),
+      difficultyBand: _bandForTierCode(_ladderConfig.tierFor(number).code),
+      secondsPerQuestion: _ladderConfig.secondsFor(number),
       status: isCleared
           ? LevelStatus.done
           : isCurrent
           ? LevelStatus.current
           : LevelStatus.locked,
-      isBoss: number % 5 == 0,
+      isBoss: _ladderConfig.isBoss(number),
       starsEarned: cleared?.stars ?? 0,
       bestScore: cleared?.bestScore ?? 0,
     );
   }
+
+  static DifficultyBand _bandForTierCode(String code) => switch (code) {
+    'easy' => DifficultyBand.warmUp,
+    'medium' => DifficultyBand.steady,
+    'hard' => DifficultyBand.sharp,
+    'expert' => DifficultyBand.brutal,
+    _ => DifficultyBand.master,
+  };
 }
 
 /// One topic's aggregated `level_progress` — how many levels are cleared, the

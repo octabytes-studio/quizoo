@@ -46,6 +46,9 @@ dependencies:
   google_mobile_ads: ^9.1.0
   in_app_purchase: ^3.3.0
 
+  # Countdown/TTS read-aloud (plan 007, §4)
+  flutter_tts: ^4.2.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
