@@ -333,6 +333,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get difficultyExpert => 'Expert';
 
   @override
+  String get difficultyMaster => 'Master';
+
+  @override
   String levelMapSubtitle(int questions, int levels) {
     return '$questions questions · $levels levels';
   }
@@ -1423,6 +1426,12 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get quizReportLabel => 'Report this question';
+
+  @override
+  String get quizAudioOnLabel => 'Turn off question read-aloud';
+
+  @override
+  String get quizAudioOffLabel => 'Turn on question read-aloud';
 
   @override
   String get homeOfflineMode => 'Offline mode';

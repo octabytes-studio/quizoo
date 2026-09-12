@@ -37,6 +37,7 @@ const _$DifficultyBandEnumMap = {
   DifficultyBand.steady: 'steady',
   DifficultyBand.sharp: 'sharp',
   DifficultyBand.brutal: 'brutal',
+  DifficultyBand.master: 'master',
 };
 
 const _$LevelStatusEnumMap = {

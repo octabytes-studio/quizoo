@@ -13,10 +13,12 @@ class DailyCubit extends Cubit<DailyState> {
 
   final DailyRepository _repository;
 
-  Future<void> load() async {
+  Future<void> load({required String languageCode}) async {
     emit(const DailyLoading());
     try {
-      final challenge = await _repository.fetchToday();
+      final challenge = await _repository.fetchToday(
+        languageCode: languageCode,
+      );
       final streak = await _repository.fetchStreak();
       if (isClosed) return;
       emit(DailyLoaded(challenge: challenge, streak: streak));

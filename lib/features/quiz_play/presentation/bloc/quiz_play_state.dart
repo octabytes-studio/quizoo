@@ -1,5 +1,25 @@
 part of 'quiz_play_cubit.dart';
 
+/// Where a question sits in the 3-2-1/TTS/reveal sequence (plan 007, §4).
+///
+/// A deliberate 3-value simplification of the source spec's 4-value
+/// `speaking → revealing → answering → answered` list: "answered" is already
+/// fully represented by [QuestionFeedback] once `feedback is! NoFeedback`, so
+/// a 4th phase value would be redundant state.
+enum QuestionPhase {
+  /// TTS is reading the question aloud (or about to). The clock has not
+  /// started and options are not yet shown.
+  speaking,
+
+  /// TTS has finished (or was skipped); the staggered fade+slide reveal is
+  /// animating the options in. The clock still has not started.
+  revealing,
+
+  /// The reveal has finished. The clock is running and every option is
+  /// tappable — today's original instant behavior when audio is off.
+  answering,
+}
+
 /// The verdict banner's contents, sealed so the screen switches over it
 /// exhaustively instead of juggling booleans (CLAUDE.md §3).
 sealed class QuestionFeedback extends Equatable {
@@ -157,6 +177,8 @@ final class QuizPlayInProgress extends QuizPlayState {
     this.feedback = const NoFeedback(),
     this.eliminatedIndexes = const {},
     this.selectedIndex,
+    this.phase = QuestionPhase.answering,
+    this.isAudioOn = true,
   });
 
   @override
@@ -175,6 +197,14 @@ final class QuizPlayInProgress extends QuizPlayState {
 
   /// Tapped and awaiting the verdict — the lemon ring on S-11's option.
   final int? selectedIndex;
+
+  /// Where this question sits in the speak/reveal/answer sequence. Defaults
+  /// to [QuestionPhase.answering] — today's behavior — when audio is off or
+  /// [Question.ttsExcluded].
+  final QuestionPhase phase;
+
+  /// The HUD speaker icon's own state, backed by `AppSettings.soundOn`.
+  final bool isAudioOn;
 
   /// True while no verdict has landed, which is the only time an option is
   /// tappable.
@@ -199,6 +229,8 @@ final class QuizPlayInProgress extends QuizPlayState {
     QuestionFeedback? feedback,
     Set<int>? eliminatedIndexes,
     int? selectedIndex,
+    QuestionPhase? phase,
+    bool? isAudioOn,
   }) => QuizPlayInProgress(
     run: run ?? this.run,
     question: question ?? this.question,
@@ -207,6 +239,8 @@ final class QuizPlayInProgress extends QuizPlayState {
     feedback: feedback ?? this.feedback,
     eliminatedIndexes: eliminatedIndexes ?? this.eliminatedIndexes,
     selectedIndex: selectedIndex ?? this.selectedIndex,
+    phase: phase ?? this.phase,
+    isAudioOn: isAudioOn ?? this.isAudioOn,
   );
 
   @override
@@ -218,6 +252,8 @@ final class QuizPlayInProgress extends QuizPlayState {
     feedback,
     eliminatedIndexes,
     selectedIndex,
+    phase,
+    isAudioOn,
   ];
 }
 

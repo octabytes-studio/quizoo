@@ -11,6 +11,8 @@ import 'package:quizoo/app/locale_cubit.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/app/theme_cubit.dart';
 import 'package:quizoo/core/breakpoints.dart';
+import 'package:quizoo/core/ladder/ladder_config_api.dart';
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_theme.dart';
 import 'package:quizoo/features/auth/data/auth_api.dart';
@@ -75,6 +77,8 @@ class _QuizooAppState extends State<QuizooApp> {
   late final SettingsRepository _settingsRepository = SettingsRepository(
     widget.preferences,
   );
+  late final LadderConfigRepository _ladderConfigRepository =
+      LadderConfigRepository(LadderConfigApi(supabase));
   late final SessionCubit _sessionCubit = SessionCubit(_authRepository);
 
   @override
@@ -95,6 +99,12 @@ class _QuizooAppState extends State<QuizooApp> {
     // signed-in player — a real Supabase session persists where the mock's
     // never did (plan 005, Design overview).
     unawaited(_sessionCubit.restore());
+    // Fetched once for the process lifetime, same shape as the ladder's own
+    // "select for everyone" reference tables (plan 007, Design overview).
+    // Best-effort: a failure here isn't fatal — whichever catalog screen
+    // needs it next calls `ensureLoaded()` again and surfaces its own error
+    // state, the same way every other content fetch already does.
+    unawaited(_ladderConfigRepository.ensureLoaded().catchError((_) {}));
   }
 
   @override
@@ -116,6 +126,9 @@ class _QuizooAppState extends State<QuizooApp> {
         ),
         RepositoryProvider<SettingsRepository>.value(
           value: _settingsRepository,
+        ),
+        RepositoryProvider<LadderConfigRepository>.value(
+          value: _ladderConfigRepository,
         ),
       ],
       child: MultiBlocProvider(

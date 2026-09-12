@@ -29,7 +29,10 @@ mixin _$Question {
 /// into, and the plate falls back to the text-only layout when it is
 /// missing or fails to decode.
  String? get imageEmoji; String? get imageAsset;/// Start of the media plate's gradient, as `#RRGGBB`.
- String get imageColorFrom; String get imageColorTo;
+ String get imageColorFrom; String get imageColorTo;/// True when this question should skip TTS read-aloud (e.g. it leans on
+/// a figure/image the voice can't describe). Sourced from
+/// `questions.tts_excluded`.
+ bool get ttsExcluded;
 /// Create a copy of Question
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -42,16 +45,16 @@ $QuestionCopyWith<Question> get copyWith => _$QuestionCopyWithImpl<Question>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Question&&(identical(other.id, id) || other.id == id)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation)&&(identical(other.hasImage, hasImage) || other.hasImage == hasImage)&&(identical(other.imageEmoji, imageEmoji) || other.imageEmoji == imageEmoji)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.imageColorFrom, imageColorFrom) || other.imageColorFrom == imageColorFrom)&&(identical(other.imageColorTo, imageColorTo) || other.imageColorTo == imageColorTo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Question&&(identical(other.id, id) || other.id == id)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation)&&(identical(other.hasImage, hasImage) || other.hasImage == hasImage)&&(identical(other.imageEmoji, imageEmoji) || other.imageEmoji == imageEmoji)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.imageColorFrom, imageColorFrom) || other.imageColorFrom == imageColorFrom)&&(identical(other.imageColorTo, imageColorTo) || other.imageColorTo == imageColorTo)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,subcategoryId,difficulty,text,const DeepCollectionEquality().hash(options),correctIndex,explanation,hasImage,imageEmoji,imageAsset,imageColorFrom,imageColorTo);
+int get hashCode => Object.hash(runtimeType,id,subcategoryId,difficulty,text,const DeepCollectionEquality().hash(options),correctIndex,explanation,hasImage,imageEmoji,imageAsset,imageColorFrom,imageColorTo,ttsExcluded);
 
 @override
 String toString() {
-  return 'Question(id: $id, subcategoryId: $subcategoryId, difficulty: $difficulty, text: $text, options: $options, correctIndex: $correctIndex, explanation: $explanation, hasImage: $hasImage, imageEmoji: $imageEmoji, imageAsset: $imageAsset, imageColorFrom: $imageColorFrom, imageColorTo: $imageColorTo)';
+  return 'Question(id: $id, subcategoryId: $subcategoryId, difficulty: $difficulty, text: $text, options: $options, correctIndex: $correctIndex, explanation: $explanation, hasImage: $hasImage, imageEmoji: $imageEmoji, imageAsset: $imageAsset, imageColorFrom: $imageColorFrom, imageColorTo: $imageColorTo, ttsExcluded: $ttsExcluded)';
 }
 
 
@@ -62,7 +65,7 @@ abstract mixin class $QuestionCopyWith<$Res>  {
   factory $QuestionCopyWith(Question value, $Res Function(Question) _then) = _$QuestionCopyWithImpl;
 @useResult
 $Res call({
- String id, String subcategoryId, int difficulty, String text, List<String> options, int correctIndex, String explanation, bool hasImage, String? imageEmoji, String? imageAsset, String imageColorFrom, String imageColorTo
+ String id, String subcategoryId, int difficulty, String text, List<String> options, int correctIndex, String explanation, bool hasImage, String? imageEmoji, String? imageAsset, String imageColorFrom, String imageColorTo, bool ttsExcluded
 });
 
 
@@ -79,7 +82,7 @@ class _$QuestionCopyWithImpl<$Res>
 
 /// Create a copy of Question
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? subcategoryId = null,Object? difficulty = null,Object? text = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,Object? hasImage = null,Object? imageEmoji = freezed,Object? imageAsset = freezed,Object? imageColorFrom = null,Object? imageColorTo = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? subcategoryId = null,Object? difficulty = null,Object? text = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,Object? hasImage = null,Object? imageEmoji = freezed,Object? imageAsset = freezed,Object? imageColorFrom = null,Object? imageColorTo = null,Object? ttsExcluded = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,subcategoryId: null == subcategoryId ? _self.subcategoryId : subcategoryId // ignore: cast_nullable_to_non_nullable
@@ -93,7 +96,8 @@ as bool,imageEmoji: freezed == imageEmoji ? _self.imageEmoji : imageEmoji // ign
 as String?,imageAsset: freezed == imageAsset ? _self.imageAsset : imageAsset // ignore: cast_nullable_to_non_nullable
 as String?,imageColorFrom: null == imageColorFrom ? _self.imageColorFrom : imageColorFrom // ignore: cast_nullable_to_non_nullable
 as String,imageColorTo: null == imageColorTo ? _self.imageColorTo : imageColorTo // ignore: cast_nullable_to_non_nullable
-as String,
+as String,ttsExcluded: null == ttsExcluded ? _self.ttsExcluded : ttsExcluded // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -178,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Question() when $default != null:
-return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo);case _:
+return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded);case _:
   return orElse();
 
 }
@@ -199,10 +203,10 @@ return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.o
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded)  $default,) {final _that = this;
 switch (_that) {
 case _Question():
-return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo);case _:
+return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -219,10 +223,10 @@ return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.o
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded)?  $default,) {final _that = this;
 switch (_that) {
 case _Question() when $default != null:
-return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo);case _:
+return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded);case _:
   return null;
 
 }
@@ -234,7 +238,7 @@ return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.o
 @JsonSerializable()
 
 class _Question extends Question {
-  const _Question({required this.id, required this.subcategoryId, required this.difficulty, required this.text, required final  List<String> options, required this.correctIndex, required this.explanation, this.hasImage = false, this.imageEmoji, this.imageAsset, this.imageColorFrom = '#2BB3FF', this.imageColorTo = '#7B4DFF'}): _options = options,super._();
+  const _Question({required this.id, required this.subcategoryId, required this.difficulty, required this.text, required final  List<String> options, required this.correctIndex, required this.explanation, this.hasImage = false, this.imageEmoji, this.imageAsset, this.imageColorFrom = '#2BB3FF', this.imageColorTo = '#7B4DFF', this.ttsExcluded = false}): _options = options,super._();
   factory _Question.fromJson(Map<String, dynamic> json) => _$QuestionFromJson(json);
 
 @override final  String id;
@@ -271,6 +275,10 @@ class _Question extends Question {
 /// Start of the media plate's gradient, as `#RRGGBB`.
 @override@JsonKey() final  String imageColorFrom;
 @override@JsonKey() final  String imageColorTo;
+/// True when this question should skip TTS read-aloud (e.g. it leans on
+/// a figure/image the voice can't describe). Sourced from
+/// `questions.tts_excluded`.
+@override@JsonKey() final  bool ttsExcluded;
 
 /// Create a copy of Question
 /// with the given fields replaced by the non-null parameter values.
@@ -285,16 +293,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Question&&(identical(other.id, id) || other.id == id)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation)&&(identical(other.hasImage, hasImage) || other.hasImage == hasImage)&&(identical(other.imageEmoji, imageEmoji) || other.imageEmoji == imageEmoji)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.imageColorFrom, imageColorFrom) || other.imageColorFrom == imageColorFrom)&&(identical(other.imageColorTo, imageColorTo) || other.imageColorTo == imageColorTo));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Question&&(identical(other.id, id) || other.id == id)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation)&&(identical(other.hasImage, hasImage) || other.hasImage == hasImage)&&(identical(other.imageEmoji, imageEmoji) || other.imageEmoji == imageEmoji)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.imageColorFrom, imageColorFrom) || other.imageColorFrom == imageColorFrom)&&(identical(other.imageColorTo, imageColorTo) || other.imageColorTo == imageColorTo)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,subcategoryId,difficulty,text,const DeepCollectionEquality().hash(_options),correctIndex,explanation,hasImage,imageEmoji,imageAsset,imageColorFrom,imageColorTo);
+int get hashCode => Object.hash(runtimeType,id,subcategoryId,difficulty,text,const DeepCollectionEquality().hash(_options),correctIndex,explanation,hasImage,imageEmoji,imageAsset,imageColorFrom,imageColorTo,ttsExcluded);
 
 @override
 String toString() {
-  return 'Question(id: $id, subcategoryId: $subcategoryId, difficulty: $difficulty, text: $text, options: $options, correctIndex: $correctIndex, explanation: $explanation, hasImage: $hasImage, imageEmoji: $imageEmoji, imageAsset: $imageAsset, imageColorFrom: $imageColorFrom, imageColorTo: $imageColorTo)';
+  return 'Question(id: $id, subcategoryId: $subcategoryId, difficulty: $difficulty, text: $text, options: $options, correctIndex: $correctIndex, explanation: $explanation, hasImage: $hasImage, imageEmoji: $imageEmoji, imageAsset: $imageAsset, imageColorFrom: $imageColorFrom, imageColorTo: $imageColorTo, ttsExcluded: $ttsExcluded)';
 }
 
 
@@ -305,7 +313,7 @@ abstract mixin class _$QuestionCopyWith<$Res> implements $QuestionCopyWith<$Res>
   factory _$QuestionCopyWith(_Question value, $Res Function(_Question) _then) = __$QuestionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String subcategoryId, int difficulty, String text, List<String> options, int correctIndex, String explanation, bool hasImage, String? imageEmoji, String? imageAsset, String imageColorFrom, String imageColorTo
+ String id, String subcategoryId, int difficulty, String text, List<String> options, int correctIndex, String explanation, bool hasImage, String? imageEmoji, String? imageAsset, String imageColorFrom, String imageColorTo, bool ttsExcluded
 });
 
 
@@ -322,7 +330,7 @@ class __$QuestionCopyWithImpl<$Res>
 
 /// Create a copy of Question
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? subcategoryId = null,Object? difficulty = null,Object? text = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,Object? hasImage = null,Object? imageEmoji = freezed,Object? imageAsset = freezed,Object? imageColorFrom = null,Object? imageColorTo = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? subcategoryId = null,Object? difficulty = null,Object? text = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,Object? hasImage = null,Object? imageEmoji = freezed,Object? imageAsset = freezed,Object? imageColorFrom = null,Object? imageColorTo = null,Object? ttsExcluded = null,}) {
   return _then(_Question(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,subcategoryId: null == subcategoryId ? _self.subcategoryId : subcategoryId // ignore: cast_nullable_to_non_nullable
@@ -336,7 +344,8 @@ as bool,imageEmoji: freezed == imageEmoji ? _self.imageEmoji : imageEmoji // ign
 as String?,imageAsset: freezed == imageAsset ? _self.imageAsset : imageAsset // ignore: cast_nullable_to_non_nullable
 as String?,imageColorFrom: null == imageColorFrom ? _self.imageColorFrom : imageColorFrom // ignore: cast_nullable_to_non_nullable
 as String,imageColorTo: null == imageColorTo ? _self.imageColorTo : imageColorTo // ignore: cast_nullable_to_non_nullable
-as String,
+as String,ttsExcluded: null == ttsExcluded ? _self.ttsExcluded : ttsExcluded // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

@@ -20,11 +20,17 @@ class HomeCubit extends Cubit<HomeState> {
 
   final HomeRepository _repository;
 
-  Future<void> load({required bool isSignedIn}) async {
+  Future<void> load({
+    required bool isSignedIn,
+    required String languageCode,
+  }) async {
     emit(const HomeLoading());
     final HomeContent cached;
     try {
-      cached = await _repository.fetchCachedHome(isSignedIn: isSignedIn);
+      cached = await _repository.fetchCachedHome(
+        isSignedIn: isSignedIn,
+        languageCode: languageCode,
+      );
     } on ApiException catch (error) {
       emit(HomeError(error));
       return;

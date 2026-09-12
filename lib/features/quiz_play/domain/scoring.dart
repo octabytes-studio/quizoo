@@ -68,21 +68,26 @@ abstract final class Scoring {
     return score.round();
   }
 
-  /// Stars from correct answers: 12–15 → ⭐, 16–19 → ⭐⭐, 20 → ⭐⭐⭐.
-  static int stars(int correctCount) => switch (correctCount) {
-    >= 20 => 3,
-    >= 16 => 2,
-    >= 12 => 1,
-    _ => 0,
-  };
+  /// Stars from a percentage of [totalCount]: ≥60% → ⭐, ≥80% → ⭐⭐, 100% →
+  /// ⭐⭐⭐ — reproduces the exact 12/16/20-of-20 breakpoints at the default
+  /// `questionsPerLevel` of 20, and stays reachable at any other level size
+  /// (`app_settings.questions_per_level`/a tier override; plan 007,
+  /// Assumption #5), matching `_stars_for` server-side.
+  static int stars(int correctCount, int totalCount) {
+    if (totalCount <= 0) return 0;
+    if (correctCount >= totalCount) return 3;
+    if (correctCount / totalCount >= 0.8) return 2;
+    if (correctCount / totalCount >= 0.6) return 1;
+    return 0;
+  }
 
   /// How many more correct answers the next star needs, or zero at three.
-  static int correctForNextStar(int correctCount) =>
-      switch (stars(correctCount)) {
+  static int correctForNextStar(int correctCount, int totalCount) =>
+      switch (stars(correctCount, totalCount)) {
         3 => 0,
-        2 => 20 - correctCount,
-        1 => 16 - correctCount,
-        _ => 12 - correctCount,
+        2 => totalCount - correctCount,
+        1 => (0.8 * totalCount).ceil() - correctCount,
+        _ => (0.6 * totalCount).ceil() - correctCount,
       };
 
   /// `xpToNext(n) = 300 + 100 × n`.

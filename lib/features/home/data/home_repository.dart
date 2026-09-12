@@ -10,8 +10,11 @@ class HomeRepository {
   final HomeApi _api;
 
   /// Home's first paint, from cache.
-  Future<HomeContent> fetchCachedHome({required bool isSignedIn}) =>
-      _api.fetchCachedHome(isSignedIn: isSignedIn);
+  Future<HomeContent> fetchCachedHome({
+    required bool isSignedIn,
+    required String languageCode,
+  }) =>
+      _api.fetchCachedHome(isSignedIn: isSignedIn, languageCode: languageCode);
 
   /// The popular rail, which lands after the first paint.
   Future<List<PopularQuiz>> fetchPopularRail() => _api.fetchPopularRail();
@@ -26,7 +29,12 @@ class HomeRepository {
     final trimmed = query.trim().toLowerCase();
     if (trimmed.isEmpty) return const [];
 
-    final content = await _api.fetchCachedHome(isSignedIn: false);
+    // languageCode is never read on this branch (isSignedIn: false skips the
+    // daily-challenge lookup entirely) — a fixed value is fine here.
+    final content = await _api.fetchCachedHome(
+      isSignedIn: false,
+      languageCode: 'en',
+    );
     final categoriesById = {
       for (final category in content.categories) category.id: category,
     };

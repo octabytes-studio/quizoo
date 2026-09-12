@@ -48,9 +48,11 @@ void main() {
 
     test('fetches the duel\'s round questions', () async {
       final questions = MockQuestions.football.take(5).toList();
-      when(() => api.fetchRoundQuestions()).thenAnswer((_) async => questions);
+      when(
+        () => api.fetchRoundQuestions(languageCode: any(named: 'languageCode')),
+      ).thenAnswer((_) async => questions);
 
-      final result = await repository.fetchRoundQuestions();
+      final result = await repository.fetchRoundQuestions(languageCode: 'en');
 
       expect(result, questions);
     });

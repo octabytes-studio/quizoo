@@ -15,12 +15,14 @@ class LevelMapCubit extends Cubit<LevelMapState> {
   Future<void> load({
     required String categoryId,
     required String subcategoryId,
+    required String locale,
   }) async {
     emit(const LevelMapLoading());
     try {
       final map = await _repository.fetchLevelMap(
         categoryId: categoryId,
         subcategoryId: subcategoryId,
+        locale: locale,
       );
       if (isClosed) return;
       emit(

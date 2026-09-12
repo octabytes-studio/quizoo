@@ -330,4 +330,5 @@ String difficultyLabel(AppLocalizations l10n, DifficultyBand band) =>
       DifficultyBand.steady => l10n.difficultyMedium,
       DifficultyBand.sharp => l10n.difficultyHard,
       DifficultyBand.brutal => l10n.difficultyExpert,
+      DifficultyBand.master => l10n.difficultyMaster,
     };

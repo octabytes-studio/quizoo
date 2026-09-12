@@ -29,9 +29,11 @@ class DailyResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
     return BlocProvider<DailyResultCubit>(
       create: (_) =>
-          DailyResultCubit(DailyRepository(DailyApi(supabase)))..play(),
+          DailyResultCubit(DailyRepository(DailyApi(supabase)))
+            ..play(languageCode: languageCode),
       child: BlocBuilder<DailyResultCubit, DailyResultState>(
         builder: (context, state) => switch (state) {
           DailyResultLoading() => const _DailyResultSpinner(),

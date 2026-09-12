@@ -32,8 +32,11 @@ class DailyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
     return BlocProvider<DailyCubit>(
-      create: (_) => DailyCubit(DailyRepository(DailyApi(supabase)))..load(),
+      create: (_) =>
+          DailyCubit(DailyRepository(DailyApi(supabase)))
+            ..load(languageCode: languageCode),
       child: const _DailyView(),
     );
   }
@@ -409,7 +412,9 @@ class _DailyError extends StatelessWidget {
         message: l10n.contentErrorBody,
         action: ChunkyButton(
           label: l10n.commonRetry,
-          onPressed: () => context.read<DailyCubit>().load(),
+          onPressed: () => context.read<DailyCubit>().load(
+            languageCode: Localizations.localeOf(context).languageCode,
+          ),
         ),
       ),
     );

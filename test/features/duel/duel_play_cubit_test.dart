@@ -41,7 +41,9 @@ void main() {
 
   void stubQuestions() {
     when(
-      () => repository.fetchRoundQuestions(),
+      () => repository.fetchRoundQuestions(
+        languageCode: any(named: 'languageCode'),
+      ),
     ).thenAnswer((_) async => questions);
     // `_finish()` calls this for real now (plan 006 Phase 5); unstubbed here
     // since these tests assert on the client-computed elo/coins fallback,
@@ -64,10 +66,12 @@ void main() {
     blocTest<DuelPlayCubit, DuelPlayState>(
       'failure path: a failed fetch ends in DuelPlayFailed',
       setUp: () => when(
-        () => repository.fetchRoundQuestions(),
+        () => repository.fetchRoundQuestions(
+          languageCode: any(named: 'languageCode'),
+        ),
       ).thenThrow(const ApiException.network()),
       build: () => DuelPlayCubit(repository),
-      act: (cubit) => cubit.start(slowBot),
+      act: (cubit) => cubit.start(slowBot, languageCode: 'en'),
       expect: () => [isA<DuelPlayLoading>(), isA<DuelPlayFailed>()],
     );
 
@@ -88,7 +92,7 @@ void main() {
           }
         });
 
-        unawaited(cubit.start(slowBot));
+        unawaited(cubit.start(slowBot, languageCode: 'en'));
         async.flushMicrotasks();
 
         // The player locks in an answer almost immediately.
@@ -131,7 +135,7 @@ void main() {
         // Platinum answers fast, so it very likely answers before a player
         // who never taps until well into the round.
         final cubit = DuelPlayCubit(repository, random: Random(2));
-        unawaited(cubit.start(fastBot));
+        unawaited(cubit.start(fastBot, languageCode: 'en'));
         async.flushMicrotasks();
 
         async.elapse(const Duration(seconds: 4));
@@ -152,7 +156,7 @@ void main() {
       stubQuestions();
       fakeAsync((async) {
         final cubit = DuelPlayCubit(repository, random: Random(3));
-        unawaited(cubit.start(fastBot));
+        unawaited(cubit.start(fastBot, languageCode: 'en'));
         async.flushMicrotasks();
 
         // Never taps an option — the full round clock runs out.
@@ -172,7 +176,7 @@ void main() {
       stubQuestions();
       fakeAsync((async) {
         final cubit = DuelPlayCubit(repository, random: Random(4));
-        unawaited(cubit.start(fastBot));
+        unawaited(cubit.start(fastBot, languageCode: 'en'));
         async.flushMicrotasks();
 
         // Every round's 15s clock runs out, plus the ~1.8s reveal pause,
@@ -200,7 +204,7 @@ void main() {
       stubQuestions();
       fakeAsync((async) {
         final cubit = DuelPlayCubit(repository, random: Random(5));
-        unawaited(cubit.start(slowBot));
+        unawaited(cubit.start(slowBot, languageCode: 'en'));
         async.flushMicrotasks();
 
         cubit.answer(0);

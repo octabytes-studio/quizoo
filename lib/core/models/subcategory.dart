@@ -26,7 +26,7 @@ abstract class Subcategory with _$Subcategory {
 
     /// Levels the player has finished, of [levelCount].
     @Default(0) int levelsCleared,
-    @Default(20) int levelCount,
+    @Default(50) int levelCount,
     @Default(0) int bestScore,
 
     /// Stars earned across every level, of `levelCount * 3`.

@@ -15,7 +15,7 @@ _Subcategory _$SubcategoryFromJson(Map<String, dynamic> json) => _Subcategory(
   plateColor: json['plateColor'] as String,
   questionCount: (json['questionCount'] as num?)?.toInt() ?? 0,
   levelsCleared: (json['levelsCleared'] as num?)?.toInt() ?? 0,
-  levelCount: (json['levelCount'] as num?)?.toInt() ?? 20,
+  levelCount: (json['levelCount'] as num?)?.toInt() ?? 50,
   bestScore: (json['bestScore'] as num?)?.toInt() ?? 0,
   starsEarned: (json['starsEarned'] as num?)?.toInt() ?? 0,
   isNew: json['isNew'] as bool? ?? false,

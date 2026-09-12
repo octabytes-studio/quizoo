@@ -3,12 +3,21 @@ import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// The server's hand-dealt copy of a level: the attempt id
-/// `submit_level_attempt` needs back, alongside the questions themselves.
+/// `submit_level_attempt` needs back, the questions themselves, and the
+/// server-authoritative ladder values for this level — so the play surface
+/// never re-derives them from a hardcoded client-side ladder.
 class PreparedLevel {
-  const PreparedLevel({required this.attemptId, required this.questions});
+  const PreparedLevel({
+    required this.attemptId,
+    required this.questions,
+    required this.secondsPerQuestion,
+    required this.isBoss,
+  });
 
   final String attemptId;
   final List<Question> questions;
+  final int secondsPerQuestion;
+  final bool isBoss;
 }
 
 /// The play surface's real endpoint.
@@ -48,6 +57,8 @@ class QuizPlayApi {
       return PreparedLevel(
         attemptId: response['attemptId'] as String,
         questions: questions,
+        secondsPerQuestion: response['secondsPerQuestion'] as int,
+        isBoss: response['isBoss'] as bool,
       );
     } catch (error) {
       throw ApiException.fromSupabase(error);
@@ -64,5 +75,6 @@ class QuizPlayApi {
     explanation: row['explanation'] as String,
     hasImage: row['hasImage'] as bool? ?? false,
     imageAsset: row['imageAsset'] as String?,
+    ttsExcluded: row['ttsExcluded'] as bool? ?? false,
   );
 }

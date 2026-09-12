@@ -31,8 +31,12 @@ void main() {
         languageCode: any(named: 'languageCode'),
       ),
     ).thenAnswer(
-      (_) async =>
-          PreparedLevel(attemptId: 'attempt_test', questions: questions),
+      (_) async => PreparedLevel(
+        attemptId: 'attempt_test',
+        questions: questions,
+        secondsPerQuestion: 20,
+        isBoss: false,
+      ),
     );
   }
 

@@ -14,10 +14,10 @@ class DailyResultCubit extends Cubit<DailyResultState> {
 
   final DailyRepository _repository;
 
-  Future<void> play() async {
+  Future<void> play({required String languageCode}) async {
     emit(const DailyResultLoading());
     try {
-      final result = await _repository.playToday();
+      final result = await _repository.playToday(languageCode: languageCode);
       if (isClosed) return;
       emit(DailyResultLoaded(result));
     } on ApiException catch (error) {

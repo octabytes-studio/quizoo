@@ -650,6 +650,12 @@ abstract class AppLocalizations {
   /// **'Expert'**
   String get difficultyExpert;
 
+  /// Levels 41–50 difficulty band.
+  ///
+  /// In en, this message translates to:
+  /// **'Master'**
+  String get difficultyMaster;
+
   /// S-08 subcategory header card caption.
   ///
   /// In en, this message translates to:
@@ -2491,6 +2497,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Report this question'**
   String get quizReportLabel;
+
+  /// S-11 HUD speaker icon's semantic label when TTS read-aloud is on (plan 007, §4.2).
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off question read-aloud'**
+  String get quizAudioOnLabel;
+
+  /// S-11 HUD speaker icon's semantic label when TTS read-aloud is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on question read-aloud'**
+  String get quizAudioOffLabel;
 
   /// S-46 top-of-screen label replacing Home's usual top bar subtitle.
   ///

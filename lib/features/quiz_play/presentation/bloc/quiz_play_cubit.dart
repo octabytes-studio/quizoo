@@ -7,9 +7,11 @@ import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
+import 'package:quizoo/features/quiz_play/data/tts_service.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/domain/scoring.dart';
+import 'package:quizoo/features/settings/data/settings_repository.dart';
 
 part 'quiz_play_state.dart';
 
@@ -50,9 +52,12 @@ part 'quiz_play_state.dart';
 /// The spirit of the rule — one owner, survives rebuilds, pauses exactly — is
 /// kept in full.
 class QuizPlayCubit extends Cubit<QuizPlayState> {
-  QuizPlayCubit(this._repository) : super(const QuizPlayPreparing());
+  QuizPlayCubit(this._repository, this._settingsRepository, this._ttsService)
+    : super(const QuizPlayPreparing());
 
   final QuizPlayRepository _repository;
+  final SettingsRepository _settingsRepository;
+  final TtsService _ttsService;
 
   /// How long a verdict banner stays up before advancing on its own (S-12).
   static const Duration autoAdvance = Duration(milliseconds: 2500);
@@ -67,13 +72,27 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   /// never missed, coarse enough to cost nothing.
   static const Duration clockResolution = Duration(milliseconds: 100);
 
+  /// The staggered fade+slide reveal's total window (§4.2: ~70-90ms per
+  /// option) before the clock starts.
+  static const Duration revealDuration = Duration(milliseconds: 450);
+
   Timer? _clockTimer;
   Timer? _autoAdvanceTimer;
   Timer? _countdownTimer;
   Timer? _adTimer;
+  Timer? _revealTimer;
 
   List<Question> _questions = const [];
   int _questionIndex = 0;
+
+  /// Read from `AppSettings.soundOn` at [startLevel] and kept in sync by
+  /// [toggleQuestionAudio] — the HUD speaker icon's persisted preference.
+  bool _audioOn = true;
+
+  /// False when [startLevel] found no voice pack for the active language —
+  /// falls back to silent mode for the whole run rather than retrying every
+  /// question (spec §4.1).
+  bool _ttsAvailable = true;
 
   /// The current question's full allowance, which grows when +15s is spent.
   Duration _questionBudget = Duration.zero;
@@ -143,6 +162,12 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       return;
     }
 
+    _audioOn = _settingsRepository.current.soundOn;
+    _ttsAvailable = _audioOn
+        ? await _ttsService.setLanguage(languageCode)
+        : false;
+    if (isClosed) return;
+
     _questionIndex = 0;
     final run = QuizRun(
       attemptId: attemptId,
@@ -151,10 +176,19 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       subcategoryName: subcategoryName,
       categoryId: categoryId,
       levelNumber: levelNumber,
-      secondsPerQuestion: MockCatalog.secondsFor(levelNumber),
+      // Server-authoritative, from the same start_level_attempt response
+      // that dealt these questions — never re-derived from a client-side
+      // ladder (plan 007, Design overview).
+      secondsPerQuestion:
+          _repository.secondsPerQuestionFor(
+            levelId,
+            languageCode: languageCode,
+          ) ??
+          0,
       questionCount: _questions.length,
       heartsRemaining: MockPlayer.livesPerLevel,
-      isBoss: levelNumber % 5 == 0,
+      isBoss:
+          _repository.isBossFor(levelId, languageCode: languageCode) ?? false,
       startedAt: DateTime.now(),
     );
 
@@ -191,22 +225,90 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
   void _beginQuestion(QuizRun run) {
     _stopClock();
+    _revealTimer?.cancel();
     _elapsed = Duration.zero;
     _questionBudget = Duration(seconds: run.secondsPerQuestion);
+
+    final question = _questions[_questionIndex];
+    final speaksThisQuestion =
+        _audioOn && _ttsAvailable && !question.ttsExcluded;
+    final beganAt = _questionIndex;
 
     emit(
       QuizPlayInProgress(
         run: run,
-        question: _questions[_questionIndex],
+        question: question,
         secondsRemaining: run.secondsPerQuestion,
         powerUps: const PowerUpInventory(
           fiftyFifty: MockPlayer.fiftyFiftyCount,
           addTime: MockPlayer.addTimeCount,
           skip: MockPlayer.skipCount,
         ),
+        phase: speaksThisQuestion
+            ? QuestionPhase.speaking
+            : QuestionPhase.answering,
+        isAudioOn: _audioOn,
       ),
     );
-    _startClock();
+
+    if (speaksThisQuestion) {
+      _ttsService.onComplete(() => _onSpeechComplete(beganAt));
+      unawaited(_ttsService.speak(question.text));
+    } else {
+      _startClock();
+    }
+  }
+
+  /// TTS finished (or was cancelled). [questionIndex] guards against a stale
+  /// callback firing after `next()`/`skipCountdown()`/`_finish()` already
+  /// moved on to a different question — the same defensive pattern
+  /// [_countdownTimer]'s own callback already uses.
+  void _onSpeechComplete(int questionIndex) {
+    if (isClosed || questionIndex != _questionIndex) return;
+    final current = state;
+    if (current is! QuizPlayInProgress ||
+        current.phase != QuestionPhase.speaking) {
+      return;
+    }
+    emit(current.copyWith(phase: QuestionPhase.revealing));
+
+    _revealTimer?.cancel();
+    _revealTimer = Timer(revealDuration, () {
+      if (isClosed || questionIndex != _questionIndex) return;
+      final revealing = state;
+      if (revealing is! QuizPlayInProgress ||
+          revealing.phase != QuestionPhase.revealing) {
+        return;
+      }
+      emit(revealing.copyWith(phase: QuestionPhase.answering));
+      _startClock();
+    });
+  }
+
+  /// The HUD speaker icon: toggles and persists `AppSettings.soundOn` for
+  /// future levels, and — if the current question is still being read aloud
+  /// — stops it and reveals immediately rather than waiting for a
+  /// completion callback that will never fire (spec §4.2, point 4).
+  void toggleQuestionAudio() {
+    final current = state;
+    if (current is! QuizPlayInProgress) return;
+
+    final audioOn = !_audioOn;
+    _settingsRepository.update(
+      _settingsRepository.current.copyWith(soundOn: audioOn),
+    );
+    _audioOn = audioOn;
+
+    if (current.phase == QuestionPhase.speaking && !audioOn) {
+      _revealTimer?.cancel();
+      unawaited(_ttsService.stop());
+      emit(
+        current.copyWith(isAudioOn: audioOn, phase: QuestionPhase.answering),
+      );
+      _startClock();
+    } else {
+      emit(current.copyWith(isAudioOn: audioOn));
+    }
   }
 
   /// Resumes the clock from wherever [_elapsed] currently stands.
@@ -253,6 +355,9 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   void answer(int optionIndex) {
     final current = state;
     if (current is! QuizPlayInProgress || !current.isAwaitingAnswer) return;
+    // Not tappable until the reveal has finished — the clock hasn't even
+    // started yet during `speaking`/`revealing`.
+    if (current.phase != QuestionPhase.answering) return;
     if (current.eliminatedIndexes.contains(optionIndex)) return;
 
     _stopClock();
@@ -408,6 +513,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   void usePowerUp(PowerUp powerUp) {
     final current = state;
     if (current is! QuizPlayInProgress || !current.isAwaitingAnswer) return;
+    if (current.phase != QuestionPhase.answering) return;
     if (!current.powerUps.has(powerUp)) return;
 
     final spent = current.powerUps.spend(powerUp);
@@ -482,7 +588,20 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     if (current is! QuizPlayInProgress) return;
     _stopClock();
     _autoAdvanceTimer?.cancel();
-    emit(QuizPlayPaused(underlying: current));
+    emit(QuizPlayPaused(underlying: _forceAnswering(current)));
+  }
+
+  /// If a question is still speaking/revealing when the player pauses or
+  /// requests to quit, jumps it straight to `answering` — resuming a
+  /// half-spoken TTS utterance isn't worth the complexity, and this keeps
+  /// [resume]/[cancelQuit]'s existing "start the clock if awaiting an
+  /// answer" logic correct for every underlying state, not just the ones
+  /// that happened to already be answering.
+  QuizPlayInProgress _forceAnswering(QuizPlayInProgress current) {
+    if (current.phase == QuestionPhase.answering) return current;
+    _revealTimer?.cancel();
+    unawaited(_ttsService.stop());
+    return current.copyWith(phase: QuestionPhase.answering);
   }
 
   void resume() {
@@ -529,7 +648,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     if (playing == null || current is QuizPlayQuitting) return;
     _stopClock();
     _autoAdvanceTimer?.cancel();
-    emit(QuizPlayQuitting(playing));
+    emit(QuizPlayQuitting(_forceAnswering(playing)));
   }
 
   /// S-18's "Keep playing" — the dominant, first-listed action.
@@ -622,6 +741,8 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _autoAdvanceTimer?.cancel();
     _countdownTimer?.cancel();
     _adTimer?.cancel();
+    _revealTimer?.cancel();
+    unawaited(_ttsService.stop());
     // A replay should re-deal the level rather than reuse this run's cache.
     _repository.forget(run.levelId);
     emit(
@@ -635,6 +756,8 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _autoAdvanceTimer?.cancel();
     _countdownTimer?.cancel();
     _adTimer?.cancel();
+    _revealTimer?.cancel();
+    unawaited(_ttsService.stop());
     return super.close();
   }
 }

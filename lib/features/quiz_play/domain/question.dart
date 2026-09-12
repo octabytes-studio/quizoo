@@ -43,6 +43,11 @@ abstract class Question with _$Question {
     /// Start of the media plate's gradient, as `#RRGGBB`.
     @Default('#2BB3FF') String imageColorFrom,
     @Default('#7B4DFF') String imageColorTo,
+
+    /// True when this question should skip TTS read-aloud (e.g. it leans on
+    /// a figure/image the voice can't describe). Sourced from
+    /// `questions.tts_excluded`.
+    @Default(false) bool ttsExcluded,
   }) = _Question;
 
   const Question._();

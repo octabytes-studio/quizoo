@@ -12,10 +12,13 @@ class CategoryDetailCubit extends Cubit<CategoryDetailState> {
 
   final CatalogRepository _repository;
 
-  Future<void> load(String categoryId) async {
+  Future<void> load(String categoryId, {required String locale}) async {
     emit(const CategoryDetailLoading());
     try {
-      final detail = await _repository.fetchCategory(categoryId);
+      final detail = await _repository.fetchCategory(
+        categoryId,
+        locale: locale,
+      );
       if (isClosed) return;
       emit(
         CategoryDetailLoaded(

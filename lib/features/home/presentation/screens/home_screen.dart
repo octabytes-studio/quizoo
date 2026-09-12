@@ -56,13 +56,14 @@ class HomeScreen extends StatelessWidget {
           (previous is SessionSignedIn) != (current is SessionSignedIn),
       builder: (context, session) {
         final isSignedIn = session is SessionSignedIn;
+        final languageCode = Localizations.localeOf(context).languageCode;
         return BlocProvider<HomeCubit>(
           // Keyed on the session so signing in rebuilds Home against a fresh
           // Cubit rather than leaving a guest's content on screen.
           key: ValueKey(isSignedIn),
           create: (_) =>
               HomeCubit(HomeRepository(HomeApi(supabase)))
-                ..load(isSignedIn: isSignedIn),
+                ..load(isSignedIn: isSignedIn, languageCode: languageCode),
           child: _HomeView(session: session, forceOffline: forceOffline),
         );
       },
@@ -562,6 +563,7 @@ class _HomeError extends StatelessWidget {
           label: l10n.commonRetry,
           onPressed: () => context.read<HomeCubit>().load(
             isSignedIn: session.state is SessionSignedIn,
+            languageCode: Localizations.localeOf(context).languageCode,
           ),
         ),
       ),

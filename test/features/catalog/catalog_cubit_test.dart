@@ -48,11 +48,11 @@ void main() {
       'success path: loads a category and its topics',
       setUp: () {
         when(
-          () => repository.fetchCategory(any()),
+          () => repository.fetchCategory(any(), locale: any(named: 'locale')),
         ).thenAnswer((_) async => detail);
       },
       build: () => CategoryDetailCubit(repository),
-      act: (cubit) => cubit.load(MockCatalog.sportsId),
+      act: (cubit) => cubit.load(MockCatalog.sportsId, locale: 'en'),
       expect: () => [
         isA<CategoryDetailLoading>(),
         isA<CategoryDetailLoaded>()
@@ -64,7 +64,9 @@ void main() {
     blocTest<CategoryDetailCubit, CategoryDetailState>(
       'failure path: a missing category surfaces as an error',
       setUp: () {
-        when(() => repository.fetchCategory(any())).thenThrow(
+        when(
+          () => repository.fetchCategory(any(), locale: any(named: 'locale')),
+        ).thenThrow(
           const ApiException(
             'No such category',
             kind: ApiErrorKind.notFound,
@@ -73,7 +75,7 @@ void main() {
         );
       },
       build: () => CategoryDetailCubit(repository),
-      act: (cubit) => cubit.load('nope'),
+      act: (cubit) => cubit.load('nope', locale: 'en'),
       expect: () => [
         isA<CategoryDetailLoading>(),
         isA<CategoryDetailError>().having(
@@ -95,12 +97,13 @@ void main() {
     });
 
     blocTest<LevelMapCubit, LevelMapState>(
-      'success path: loads twenty levels with one marked current',
+      'success path: loads fifty levels with one marked current',
       setUp: () {
         when(
           () => repository.fetchLevelMap(
             categoryId: any(named: 'categoryId'),
             subcategoryId: any(named: 'subcategoryId'),
+            locale: any(named: 'locale'),
           ),
         ).thenAnswer((_) async => map);
       },
@@ -108,11 +111,12 @@ void main() {
       act: (cubit) => cubit.load(
         categoryId: MockCatalog.sportsId,
         subcategoryId: MockCatalog.footballId,
+        locale: 'en',
       ),
       expect: () => [
         isA<LevelMapLoading>(),
         isA<LevelMapLoaded>()
-            .having((state) => state.map.levels, 'levels', hasLength(20))
+            .having((state) => state.map.levels, 'levels', hasLength(50))
             .having(
               (state) => state.map.currentLevel.number,
               'current',
@@ -128,6 +132,7 @@ void main() {
           () => repository.fetchLevelMap(
             categoryId: any(named: 'categoryId'),
             subcategoryId: any(named: 'subcategoryId'),
+            locale: any(named: 'locale'),
           ),
         ).thenAnswer((_) async => map.copyWith(levels: const []));
       },
@@ -135,6 +140,7 @@ void main() {
       act: (cubit) => cubit.load(
         categoryId: MockCatalog.sportsId,
         subcategoryId: MockCatalog.footballId,
+        locale: 'en',
       ),
       expect: () => [isA<LevelMapLoading>(), isA<LevelMapEmpty>()],
     );
@@ -146,6 +152,7 @@ void main() {
           () => repository.fetchLevelMap(
             categoryId: any(named: 'categoryId'),
             subcategoryId: any(named: 'subcategoryId'),
+            locale: any(named: 'locale'),
           ),
         ).thenThrow(const ApiException.network());
       },
@@ -153,6 +160,7 @@ void main() {
       act: (cubit) => cubit.load(
         categoryId: MockCatalog.sportsId,
         subcategoryId: MockCatalog.footballId,
+        locale: 'en',
       ),
       expect: () => [isA<LevelMapLoading>(), isA<LevelMapError>()],
     );
@@ -168,19 +176,24 @@ void main() {
     });
 
     test('success path: passes the API response through', () async {
-      when(() => api.fetchCategory(any())).thenAnswer((_) async => detail);
+      when(
+        () => api.fetchCategory(any(), locale: any(named: 'locale')),
+      ).thenAnswer((_) async => detail);
       expect(
-        (await repository.fetchCategory(MockCatalog.sportsId)).topics,
+        (await repository.fetchCategory(
+          MockCatalog.sportsId,
+          locale: 'en',
+        )).topics,
         isNotEmpty,
       );
     });
 
     test('error-mapping path: the typed exception reaches the caller', () {
       when(
-        () => api.fetchCategory(any()),
+        () => api.fetchCategory(any(), locale: any(named: 'locale')),
       ).thenThrow(const ApiException.network());
       expect(
-        () => repository.fetchCategory(MockCatalog.sportsId),
+        () => repository.fetchCategory(MockCatalog.sportsId, locale: 'en'),
         throwsA(isA<ApiException>()),
       );
     });
@@ -196,22 +209,25 @@ void main() {
   });
 
   group('MockCatalog level generation', () {
-    test('follows §19: bands, clocks and every fifth level a boss', () {
+    test('follows the 50-level ladder: bands, clocks and every '
+        'tenth level a boss', () {
       final levels = MockCatalog.levelsFor(football);
 
-      expect(levels, hasLength(20));
+      expect(levels, hasLength(50));
       expect(levels[0].difficultyBand, DifficultyBand.warmUp);
       expect(levels[0].secondsPerQuestion, 30);
-      expect(levels[7].difficultyBand, DifficultyBand.steady);
-      expect(levels[7].secondsPerQuestion, 25);
-      expect(levels[12].difficultyBand, DifficultyBand.sharp);
-      expect(levels[12].secondsPerQuestion, 20);
-      expect(levels[19].difficultyBand, DifficultyBand.brutal);
-      expect(levels[19].secondsPerQuestion, 15);
+      expect(levels[15].difficultyBand, DifficultyBand.steady);
+      expect(levels[15].secondsPerQuestion, 25);
+      expect(levels[25].difficultyBand, DifficultyBand.sharp);
+      expect(levels[25].secondsPerQuestion, 20);
+      expect(levels[35].difficultyBand, DifficultyBand.brutal);
+      expect(levels[35].secondsPerQuestion, 15);
+      expect(levels[45].difficultyBand, DifficultyBand.master);
+      expect(levels[45].secondsPerQuestion, 10);
 
       expect(
         levels.where((level) => level.isBoss).map((level) => level.number),
-        [5, 10, 15, 20],
+        [10, 20, 30, 40, 50],
       );
 
       // Exactly one node is "you are here".
