@@ -168,17 +168,25 @@ void main() {
     setUp(() => repository = _MockHomeRepository());
 
     test('starts with nothing typed', () {
-      expect(SearchCubit(repository).state, isA<SearchInitial>());
+      expect(
+        SearchCubit(repository, languageCode: 'en').state,
+        isA<SearchInitial>(),
+      );
     });
 
     blocTest<SearchCubit, SearchState>(
       'success path: a query resolves to results after the debounce',
       setUp: () {
-        when(() => repository.search(any())).thenAnswer(
+        when(
+          () => repository.search(
+            any(),
+            languageCode: any(named: 'languageCode'),
+          ),
+        ).thenAnswer(
           (_) async => [MockCatalog.subcategoryById(MockCatalog.footballId)],
         );
       },
-      build: () => SearchCubit(repository),
+      build: () => SearchCubit(repository, languageCode: 'en'),
       act: (cubit) => cubit.searchNow('foot'),
       expect: () => [
         isA<SearchSearching>(),
@@ -191,9 +199,14 @@ void main() {
     blocTest<SearchCubit, SearchState>(
       'no matches is an empty state, not a failure',
       setUp: () {
-        when(() => repository.search(any())).thenAnswer((_) async => []);
+        when(
+          () => repository.search(
+            any(),
+            languageCode: any(named: 'languageCode'),
+          ),
+        ).thenAnswer((_) async => []);
       },
-      build: () => SearchCubit(repository),
+      build: () => SearchCubit(repository, languageCode: 'en'),
       act: (cubit) => cubit.searchNow('zzzz'),
       expect: () => [
         isA<SearchSearching>(),
@@ -209,17 +222,20 @@ void main() {
       'failure path: a failed lookup surfaces as an error',
       setUp: () {
         when(
-          () => repository.search(any()),
+          () => repository.search(
+            any(),
+            languageCode: any(named: 'languageCode'),
+          ),
         ).thenThrow(const ApiException.network());
       },
-      build: () => SearchCubit(repository),
+      build: () => SearchCubit(repository, languageCode: 'en'),
       act: (cubit) => cubit.searchNow('foot'),
       expect: () => [isA<SearchSearching>(), isA<SearchFailure>()],
     );
 
     blocTest<SearchCubit, SearchState>(
       'clearing the field returns to the trending cloud',
-      build: () => SearchCubit(repository),
+      build: () => SearchCubit(repository, languageCode: 'en'),
       act: (cubit) => cubit.queryChanged('   '),
       expect: () => [isA<SearchInitial>()],
     );
@@ -248,15 +264,18 @@ void main() {
       );
 
       // By its own name.
-      expect(await repository.search('football'), hasLength(1));
+      expect(
+        await repository.search('football', languageCode: 'en'),
+        hasLength(1),
+      );
       // By the sub-path the breadcrumb prints — "Science › Astronomy".
-      final byPath = await repository.search('astronomy');
+      final byPath = await repository.search('astronomy', languageCode: 'en');
       expect(byPath, isNotEmpty);
       expect(byPath.every((topic) => topic.groupName == 'Astronomy'), isTrue);
       // By parent category.
-      expect(await repository.search('sports'), isNotEmpty);
+      expect(await repository.search('sports', languageCode: 'en'), isNotEmpty);
       // An empty query never searches at all.
-      expect(await repository.search('  '), isEmpty);
+      expect(await repository.search('  ', languageCode: 'en'), isEmpty);
     });
 
     test('error-mapping path: the API exception reaches the caller', () async {
@@ -271,7 +290,10 @@ void main() {
         () => repository.fetchCachedHome(isSignedIn: false, languageCode: 'en'),
         throwsA(isA<ApiException>()),
       );
-      expect(() => repository.search('foot'), throwsA(isA<ApiException>()));
+      expect(
+        () => repository.search('foot', languageCode: 'en'),
+        throwsA(isA<ApiException>()),
+      );
     });
   });
 }

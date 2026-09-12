@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
@@ -56,11 +57,12 @@ class HomeScreen extends StatelessWidget {
           (previous is SessionSignedIn) != (current is SessionSignedIn),
       builder: (context, session) {
         final isSignedIn = session is SessionSignedIn;
-        final languageCode = Localizations.localeOf(context).languageCode;
+        final languageCode = context.watch<ContentLanguageCubit>().state.code;
         return BlocProvider<HomeCubit>(
-          // Keyed on the session so signing in rebuilds Home against a fresh
-          // Cubit rather than leaving a guest's content on screen.
-          key: ValueKey(isSignedIn),
+          // Keyed on the session and content language so either one changing
+          // rebuilds Home against a fresh Cubit rather than leaving stale
+          // content on screen (plan 008, Design overview).
+          key: ValueKey((isSignedIn, languageCode)),
           create: (_) =>
               HomeCubit(HomeRepository(HomeApi(supabase)))
                 ..load(isSignedIn: isSignedIn, languageCode: languageCode),
@@ -563,7 +565,7 @@ class _HomeError extends StatelessWidget {
           label: l10n.commonRetry,
           onPressed: () => context.read<HomeCubit>().load(
             isSignedIn: session.state is SessionSignedIn,
-            languageCode: Localizations.localeOf(context).languageCode,
+            languageCode: context.read<ContentLanguageCubit>().state.code,
           ),
         ),
       ),

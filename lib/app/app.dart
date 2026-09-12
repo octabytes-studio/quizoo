@@ -7,10 +7,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/app/locale_cubit.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/app/theme_cubit.dart';
 import 'package:quizoo/core/breakpoints.dart';
+import 'package:quizoo/core/content_language/content_language_api.dart';
+import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/ladder/ladder_config_api.dart';
 import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
@@ -79,6 +82,14 @@ class _QuizooAppState extends State<QuizooApp> {
   );
   late final LadderConfigRepository _ladderConfigRepository =
       LadderConfigRepository(LadderConfigApi(supabase));
+  late final ContentLanguageRepository _contentLanguageRepository =
+      ContentLanguageRepository(
+        ContentLanguageApi(supabase),
+        widget.preferences,
+      );
+  late final ContentLanguageCubit _contentLanguageCubit = ContentLanguageCubit(
+    _contentLanguageRepository,
+  );
   late final SessionCubit _sessionCubit = SessionCubit(_authRepository);
 
   @override
@@ -137,50 +148,66 @@ class _QuizooAppState extends State<QuizooApp> {
           BlocProvider<LocaleCubit>(create: (_) => LocaleCubit()),
           BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()),
           BlocProvider<SessionCubit>.value(value: _sessionCubit),
-        ],
-        child: ScreenUtilInit(
-          designSize: const Size(
-            Breakpoints.designWidth,
-            Breakpoints.designHeight,
+          BlocProvider<ContentLanguageCubit>.value(
+            value: _contentLanguageCubit,
           ),
-          minTextAdapt: true,
-          child: BlocBuilder<ThemeCubit, ThemeState>(
-            builder: (context, themeState) {
-              return BlocBuilder<LocaleCubit, LocaleState>(
-                builder: (context, localeState) {
-                  return MaterialApp.router(
-                    onGenerateTitle: (context) =>
-                        AppLocalizations.of(context).appTitle,
-                    debugShowCheckedModeBanner: false,
-                    routerConfig: _router,
-                    theme: AppTheme.light,
-                    darkTheme: AppTheme.dark,
-                    themeMode: themeState.mode.toThemeMode(),
-                    // Null follows the device. A language this build does not
-                    // translate resolves back to English by Flutter's own
-                    // rules, which is exactly what S-03 warns about on screen.
-                    locale: localeState.locale,
-                    localizationsDelegates: const [
-                      AppLocalizations.delegate,
-                      GlobalMaterialLocalizations.delegate,
-                      GlobalWidgetsLocalizations.delegate,
-                      GlobalCupertinoLocalizations.delegate,
-                    ],
-                    supportedLocales: AppLocalizations.supportedLocales,
-                    // The locale-dependent half of the type system — Nastaliq
-                    // families and their taller line-height — can only be
-                    // applied below `Localizations`, which is here.
-                    builder: (context, child) => Theme(
-                      data: AppTheme.localize(
-                        Theme.of(context),
-                        Localizations.localeOf(context),
+        ],
+        child: BlocListener<SessionCubit, SessionState>(
+          // Reconciles a *returning* signed-in identity's own
+          // `profiles.locale` against this device's local cache — gated on
+          // an actual sign-in completion so it can never race the mandatory
+          // first-launch picker on a genuinely fresh install (plan 008,
+          // Assumption 2).
+          listenWhen: (previous, current) =>
+              current is SessionSignedIn && previous is! SessionSignedIn,
+          listener: (context, state) => unawaited(
+            context.read<ContentLanguageCubit>().adoptFromBackend(),
+          ),
+          child: ScreenUtilInit(
+            designSize: const Size(
+              Breakpoints.designWidth,
+              Breakpoints.designHeight,
+            ),
+            minTextAdapt: true,
+            child: BlocBuilder<ThemeCubit, ThemeState>(
+              builder: (context, themeState) {
+                return BlocBuilder<LocaleCubit, LocaleState>(
+                  builder: (context, localeState) {
+                    return MaterialApp.router(
+                      onGenerateTitle: (context) =>
+                          AppLocalizations.of(context).appTitle,
+                      debugShowCheckedModeBanner: false,
+                      routerConfig: _router,
+                      theme: AppTheme.light,
+                      darkTheme: AppTheme.dark,
+                      themeMode: themeState.mode.toThemeMode(),
+                      // Null follows the device. A language this build does
+                      // not translate resolves back to English by Flutter's
+                      // own rules, which is exactly what S-03 warns about on
+                      // screen.
+                      locale: localeState.locale,
+                      localizationsDelegates: const [
+                        AppLocalizations.delegate,
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate,
+                      ],
+                      supportedLocales: AppLocalizations.supportedLocales,
+                      // The locale-dependent half of the type system —
+                      // Nastaliq families and their taller line-height — can
+                      // only be applied below `Localizations`, which is here.
+                      builder: (context, child) => Theme(
+                        data: AppTheme.localize(
+                          Theme.of(context),
+                          Localizations.localeOf(context),
+                        ),
+                        child: child ?? const SizedBox.shrink(),
                       ),
-                      child: child ?? const SizedBox.shrink(),
-                    ),
-                  );
-                },
-              );
-            },
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ),
       ),

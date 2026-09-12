@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
@@ -77,7 +78,7 @@ class QuizPlayScreen extends StatelessWidget {
             levelId: levelId,
             categoryId: subcategory?.categoryId ?? '',
             subcategoryName: subcategory?.name ?? '',
-            languageCode: Localizations.localeOf(context).languageCode,
+            languageCode: context.read<ContentLanguageCubit>().state.code,
           ),
       child: _QuizPlayView(entry: entry),
     );

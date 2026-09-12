@@ -11,10 +11,6 @@ class HomeApi {
 
   final SupabaseClient _client;
 
-  /// English until locale is threaded from `LocaleCubit` — see
-  /// `CatalogApi`'s matching note.
-  static const String _defaultLocale = 'en';
-
   /// The taxonomy, wallet and in-progress level.
   ///
   /// [isSignedIn] decides the two things that actually differ between S-04
@@ -38,25 +34,34 @@ class HomeApi {
           .from('categories')
           .select()
           .eq('is_active', true)
-          .order('sort_order');
-      final subcategoryRows = await _client
-          .from('subcategories')
-          .select()
-          .eq('is_active', true)
+          .eq('language_code', languageCode)
           .order('sort_order');
 
       final categoryIds = [for (final row in categoryRows) row['id'] as String];
+
+      // Subcategories have no language column of their own — they inherit it
+      // purely via `category_id → categories.language_code` — so constraining
+      // by the already-filtered parent categories is the only correct filter
+      // (plan 008, Design overview). An empty `categoryIds` trivially has zero
+      // subcategories, and `inFilter` with an empty list behaves
+      // inconsistently across Postgrest versions, so that case skips the
+      // query entirely rather than relying on it.
+      final subcategoryRows = categoryIds.isEmpty
+          ? <Map<String, dynamic>>[]
+          : await _client
+                .from('subcategories')
+                .select()
+                .eq('is_active', true)
+                .inFilter('category_id', categoryIds)
+                .order('sort_order');
+
       final subcategoryIds = [
         for (final row in subcategoryRows) row['id'] as String,
       ];
 
-      final categoryNames = await _taxonomyNames(
-        entityType: 'category',
-        entityIds: categoryIds,
-      );
-      final subcategoryNames = await _taxonomyNames(
-        entityType: 'subcategory',
-        entityIds: subcategoryIds,
+      final names = await _taxonomyNames(
+        entityIds: [...categoryIds, ...subcategoryIds],
+        locale: languageCode,
       );
 
       final progress = isSignedIn
@@ -67,14 +72,14 @@ class HomeApi {
         for (final row in categoryRows)
           _categoryFromRow(
             row,
-            name: categoryNames[row['id']] ?? row['slug'] as String,
+            name: names[row['id']] ?? row['slug'] as String,
           ),
       ];
       final subcategories = [
         for (final row in subcategoryRows)
           _subcategoryFromRow(
             row,
-            name: subcategoryNames[row['id']] ?? row['slug'] as String,
+            name: names[row['id']] ?? row['slug'] as String,
             levelsCleared: progress[row['id']] ?? 0,
           ),
       ];
@@ -185,29 +190,23 @@ class HomeApi {
 
   // ------------------------------------------------------------- internals
 
+  /// A single-locale lookup: a category or subcategory never has a
+  /// `taxonomy_i18n` row in a locale other than its own `language_code`, now
+  /// that each entity belongs to exactly one language (matches
+  /// `CatalogApi._taxonomyNames`).
   Future<Map<String, String>> _taxonomyNames({
-    required String entityType,
     required List<String> entityIds,
-    String locale = _defaultLocale,
+    required String locale,
   }) async {
     if (entityIds.isEmpty) return const {};
     final rows = await _client
         .from('taxonomy_i18n')
-        .select('entity_id, locale, name')
-        .eq('entity_type', entityType)
+        .select('entity_id, name')
         .inFilter('entity_id', entityIds)
-        .inFilter('locale', {locale, _defaultLocale}.toList());
+        .eq('locale', locale);
 
-    final byEntity = <String, Map<String, String>>{};
-    for (final row in rows) {
-      final id = row['entity_id'] as String;
-      byEntity.putIfAbsent(id, () => {})[row['locale'] as String] =
-          row['name'] as String;
-    }
     return {
-      for (final id in entityIds)
-        if (byEntity[id] != null)
-          id: byEntity[id]![locale] ?? byEntity[id]![_defaultLocale] ?? id,
+      for (final row in rows) row['entity_id'] as String: row['name'] as String,
     };
   }
 

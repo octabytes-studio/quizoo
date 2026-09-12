@@ -25,15 +25,16 @@ class HomeRepository {
   /// match" is a data-shape decision — it searches a topic's own name, the
   /// sub-path the breadcrumb prints, and its category — and the presentation
   /// layer has no business knowing that.
-  Future<List<Subcategory>> search(String query) async {
+  Future<List<Subcategory>> search(
+    String query, {
+    required String languageCode,
+  }) async {
     final trimmed = query.trim().toLowerCase();
     if (trimmed.isEmpty) return const [];
 
-    // languageCode is never read on this branch (isSignedIn: false skips the
-    // daily-challenge lookup entirely) — a fixed value is fine here.
     final content = await _api.fetchCachedHome(
       isSignedIn: false,
-      languageCode: 'en',
+      languageCode: languageCode,
     );
     final categoriesById = {
       for (final category in content.categories) category.id: category,

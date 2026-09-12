@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/level.dart';
 import 'package:quizoo/core/models/subcategory.dart';
@@ -48,7 +50,7 @@ class LevelBriefSheet extends StatefulWidget {
     required Level level,
     required QuizPlayRepository repository,
   }) async {
-    final languageCode = Localizations.localeOf(context).languageCode;
+    final languageCode = context.read<ContentLanguageCubit>().state.code;
     final started = await AppBottomSheet.show<bool>(
       context,
       builder: (_) => LevelBriefSheet(

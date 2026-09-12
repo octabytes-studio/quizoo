@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -44,7 +45,7 @@ class DuelPlayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final languageCode = Localizations.localeOf(context).languageCode;
+    final languageCode = context.read<ContentLanguageCubit>().state.code;
     return BlocProvider<DuelPlayCubit>(
       create: (_) {
         final cubit = DuelPlayCubit(DuelRepository(DuelApi(supabase)));
