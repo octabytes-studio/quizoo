@@ -15,9 +15,15 @@ part 'search_state.dart';
 /// makes search work offline. The debounce lives here rather than in the
 /// screen because "how often do we search" is behaviour, not layout.
 class SearchCubit extends Cubit<SearchState> {
-  SearchCubit(this._repository) : super(const SearchInitial());
+  SearchCubit(this._repository, {required this.languageCode})
+    : super(const SearchInitial());
 
   final HomeRepository _repository;
+
+  /// Fixed for this Cubit's lifetime (plan 008, Assumption 6) — Search is a
+  /// pushed route, not part of the persistent tab shell, so it does not need
+  /// to react live to a language change the way Home does.
+  final String languageCode;
 
   /// §07: "Debounced at 250 ms".
   static const Duration debounce = Duration(milliseconds: 250);
@@ -60,7 +66,10 @@ class SearchCubit extends Cubit<SearchState> {
   Future<void> _search(String query) async {
     final requestId = ++_requestId;
     try {
-      final results = await _repository.search(query);
+      final results = await _repository.search(
+        query,
+        languageCode: languageCode,
+      );
       if (isClosed || requestId != _requestId) return;
       emit(
         SearchSuccess(query: query, results: results, trending: state.trending),

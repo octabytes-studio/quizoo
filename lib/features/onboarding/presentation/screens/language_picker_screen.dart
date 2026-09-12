@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quizoo/app/locale_cubit.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -81,24 +81,30 @@ class _LanguagePickerView extends StatefulWidget {
 class _LanguagePickerViewState extends State<_LanguagePickerView> {
   String? _selectedCode;
 
-  /// Pre-selects the device's language, falling back to the first offered
-  /// language when the device speaks something not yet active.
+  /// Pre-selects the current content language, falling back to the first
+  /// offered language when that language is not yet active (plan 008,
+  /// Assumption 3 — no longer the device's own locale, now that content
+  /// language is decoupled from UI l10n).
   String _resolveSelected(
     BuildContext context,
     List<LanguageOption> languages,
   ) {
-    final code = _selectedCode ?? Localizations.localeOf(context).languageCode;
+    final code =
+        _selectedCode ?? context.read<ContentLanguageCubit>().state.code;
     return languages.any((language) => language.code == code)
         ? code
         : languages.first.code;
   }
 
-  void _continue(BuildContext context, String code) {
-    context.read<LocaleCubit>().select(Locale(code));
+  Future<void> _continue(BuildContext context, String code) async {
+    // Awaited so the local cache is guaranteed correct before Home is
+    // reached — the backend leg stays fire-and-forget inside the repository
+    // (plan 008, Assumption 1).
+    await context.read<ContentLanguageCubit>().select(code);
     widget.repository
       ..markLanguageChosen()
       ..markOnboardingSeen();
-    context.go(AppRoutes.home);
+    if (context.mounted) context.go(AppRoutes.home);
   }
 
   @override

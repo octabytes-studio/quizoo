@@ -4,6 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/content_language/content_language_api.dart';
+import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
@@ -14,14 +17,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'pump_app.dart';
 
-/// A no-op stand-in for the real `AuthApi`/`QuizPlayApi`, per CLAUDE.md §11's
-/// convention: tests mock the `*_api.dart` boundary, never a raw
-/// `SupabaseClient`. Nothing in `pumpScreen`'s default wiring ever calls a
-/// network method on these — they exist only so `AuthRepository`/
-/// `QuizPlayRepository` have something to hold.
+/// A no-op stand-in for the real `AuthApi`/`QuizPlayApi`/`ContentLanguageApi`,
+/// per CLAUDE.md §11's convention: tests mock the `*_api.dart` boundary,
+/// never a raw `SupabaseClient`. Nothing in `pumpScreen`'s default wiring ever
+/// calls a network method on these — they exist only so `AuthRepository`/
+/// `QuizPlayRepository`/`ContentLanguageRepository` have something to hold.
 class FakeAuthApi extends Mock implements AuthApi {}
 
 class FakeQuizPlayApi extends Mock implements QuizPlayApi {}
+
+class FakeContentLanguageApi extends Mock implements ContentLanguageApi {}
 
 /// Pumps a screen with the same app-root providers the real app gives it.
 ///
@@ -44,6 +49,7 @@ extension PumpScreen on WidgetTester {
     QuizPlayRepository? quizPlayRepository,
     SettingsRepository? settingsRepository,
     ConnectivityCubit? connectivity,
+    ContentLanguageCubit? contentLanguage,
   }) async {
     final auth = authRepository ?? await _fakeAuthRepository();
     // `QuizPlayScreen` builds a real `FlutterTtsService` inline (it isn't
@@ -54,6 +60,10 @@ extension PumpScreen on WidgetTester {
     // pre-TTS behavior in tests — the phase machine itself is covered by
     // `QuizPlayCubit`'s own unit tests with a fake `TtsService`.
     SharedPreferences.setMockInitialValues({'settings.soundOn': false});
+
+    final contentLanguageCubit =
+        contentLanguage ??
+        ContentLanguageCubit(await _fakeContentLanguageRepository());
 
     return pumpApp(
       MultiRepositoryProvider(
@@ -76,6 +86,9 @@ extension PumpScreen on WidgetTester {
             BlocProvider<ConnectivityCubit>.value(
               value: connectivity ?? ConnectivityCubit(),
             ),
+            BlocProvider<ContentLanguageCubit>.value(
+              value: contentLanguageCubit,
+            ),
           ],
           child: _RouterHost(child: screen),
         ),
@@ -92,6 +105,15 @@ Future<AuthRepository> _fakeAuthRepository() async {
   final api = FakeAuthApi();
   when(() => api.authStateChanges).thenAnswer((_) => const Stream.empty());
   return AuthRepository(api, await SharedPreferences.getInstance());
+}
+
+/// Reads an empty `content_language.code` key, so `ContentLanguageCubit`
+/// defaults to `'en'` — matching `pumpApp`'s own default `locale: Locale('en')`.
+Future<ContentLanguageRepository> _fakeContentLanguageRepository() async {
+  return ContentLanguageRepository(
+    FakeContentLanguageApi(),
+    await SharedPreferences.getInstance(),
+  );
 }
 
 /// A minimal router so the screen under test can navigate without a real one.

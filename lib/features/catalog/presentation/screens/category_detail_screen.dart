@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/models/category.dart';
@@ -36,7 +37,7 @@ class CategoryDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locale = Localizations.localeOf(context).languageCode;
+    final locale = context.read<ContentLanguageCubit>().state.code;
     return BlocProvider<CategoryDetailCubit>(
       create: (_) => CategoryDetailCubit(
         CatalogRepository(

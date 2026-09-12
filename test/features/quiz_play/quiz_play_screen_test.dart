@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
@@ -17,6 +19,7 @@ import 'package:quizoo/features/quiz_play/presentation/widgets/question_media_pl
 import 'package:quizoo/features/quiz_play/presentation/widgets/quit_confirmation_dialog.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/timer_ring.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/pump_app.dart';
 import '../../support/pump_screen.dart';
@@ -67,11 +70,25 @@ void main() {
     Locale locale = const Locale('en'),
     Brightness brightness = Brightness.light,
   }) async {
+    // `QuizPlayScreen` now sources its question language from
+    // `ContentLanguageCubit`, not the UI `locale` (plan 008) — seeded here to
+    // match `locale` so this suite's Urdu case still fetches Urdu content.
+    SharedPreferences.setMockInitialValues({
+      'content_language.code': locale.languageCode,
+    });
+    final contentLanguage = ContentLanguageCubit(
+      ContentLanguageRepository(
+        FakeContentLanguageApi(),
+        await SharedPreferences.getInstance(),
+      ),
+    );
+
     await tester.pumpScreen(
       QuizPlayScreen(levelId: id ?? levelId),
       locale: locale,
       brightness: brightness,
       quizPlayRepository: fakeQuizPlayRepository(),
+      contentLanguage: contentLanguage,
     );
     // Load the level, then run the 3 · 2 · 1 · GO countdown out.
     await tester.pump(const Duration(seconds: 1));

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -32,7 +33,7 @@ class DailyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final languageCode = Localizations.localeOf(context).languageCode;
+    final languageCode = context.read<ContentLanguageCubit>().state.code;
     return BlocProvider<DailyCubit>(
       create: (_) =>
           DailyCubit(DailyRepository(DailyApi(supabase)))
@@ -413,7 +414,7 @@ class _DailyError extends StatelessWidget {
         action: ChunkyButton(
           label: l10n.commonRetry,
           onPressed: () => context.read<DailyCubit>().load(
-            languageCode: Localizations.localeOf(context).languageCode,
+            languageCode: context.read<ContentLanguageCubit>().state.code,
           ),
         ),
       ),
