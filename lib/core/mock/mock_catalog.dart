@@ -187,7 +187,6 @@ abstract final class MockCatalog {
       emoji: '🥊',
       plateColor: '#DDF1FF',
       questionCount: 280,
-      isLocked: true,
     ),
 
     // --------------------------------------------------------- Science
@@ -241,7 +240,6 @@ abstract final class MockCatalog {
       groupName: 'Physical sciences',
       plateColor: '#FFE4EC',
       questionCount: 380,
-      isLocked: true,
     ),
 
     // --------------------------------------------------------- General
@@ -308,7 +306,6 @@ abstract final class MockCatalog {
       emoji: '🧠',
       plateColor: '#DDF1FF',
       questionCount: 280,
-      isLocked: true,
     ),
 
     // ----------------------------------------------------------- Maths
@@ -337,7 +334,6 @@ abstract final class MockCatalog {
       emoji: '➗',
       plateColor: '#FFE9D6',
       questionCount: 260,
-      isLocked: true,
     ),
 
     // ----------------------------------------------------------- Islam
@@ -366,7 +362,6 @@ abstract final class MockCatalog {
       emoji: '🏛️',
       plateColor: '#FFF4D6',
       questionCount: 180,
-      isLocked: true,
     ),
   ];
 
