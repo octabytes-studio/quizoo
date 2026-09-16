@@ -9,6 +9,7 @@ import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
+import 'package:quizoo/features/quiz_play/data/sound_effects_service.dart';
 import 'package:quizoo/features/quiz_play/data/tts_service.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
@@ -46,6 +47,35 @@ class _FakeTtsService implements TtsService {
   void complete() => _onComplete?.call();
 }
 
+/// A fake rather than a mocktail `Mock` — plain call counters are simpler
+/// than stubbing five void-returning `Future<void>` methods for a service
+/// with no meaningful return value to script.
+class _FakeSoundEffectsService implements SoundEffectsService {
+  int tickStartCount = 0;
+  int tickStopCount = 0;
+  int correctCount = 0;
+  int wrongCount = 0;
+  int nextCount = 0;
+
+  @override
+  Future<void> startTicking() async => tickStartCount++;
+
+  @override
+  Future<void> stopTicking() async => tickStopCount++;
+
+  @override
+  Future<void> playCorrect() async => correctCount++;
+
+  @override
+  Future<void> playWrong() async => wrongCount++;
+
+  @override
+  Future<void> playNextQuestion() async => nextCount++;
+
+  @override
+  Future<void> dispose() async {}
+}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(const AppSettings());
@@ -54,6 +84,7 @@ void main() {
   late _MockQuizPlayRepository repository;
   late _MockSettingsRepository settingsRepository;
   late _FakeTtsService ttsService;
+  late _FakeSoundEffectsService soundEffects;
 
   final levelId = MockCatalog.levelId(MockCatalog.footballId, 12);
   final questions = MockQuestions.forLevel(
@@ -77,10 +108,11 @@ void main() {
     );
 
     ttsService = _FakeTtsService();
+    soundEffects = _FakeSoundEffectsService();
   });
 
   QuizPlayCubit buildCubit() =>
-      QuizPlayCubit(repository, settingsRepository, ttsService);
+      QuizPlayCubit(repository, settingsRepository, ttsService, soundEffects);
 
   void stubQuestions([
     List<Question>? override,
@@ -377,6 +409,92 @@ void main() {
         expect(state.question.correctIndex, isNot(feedback.chosenIndex));
       },
     );
+
+    test('sound off (default): no sound effect plays through a full '
+        'answer + advance cycle', () {
+      stubQuestions();
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+
+        final question = (cubit.state as QuizPlayInProgress).question;
+        cubit.answer(question.correctIndex);
+        async.elapse(QuizPlayCubit.autoAdvance);
+
+        expect(soundEffects.tickStartCount, 0);
+        expect(soundEffects.tickStopCount, 0);
+        expect(soundEffects.correctCount, 0);
+        expect(soundEffects.nextCount, 0);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
+
+    test('sound on: the tick starts once answering begins, stops on '
+        'answer, the right chime plays, and next() plays the advance '
+        'chime', () {
+      stubQuestions();
+      when(
+        () => settingsRepository.current,
+      ).thenReturn(const AppSettings(soundOn: true));
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+
+        // Still speaking — the clock (and so the tick) has not started.
+        expect(soundEffects.tickStartCount, 0);
+        ttsService.complete();
+        async.elapse(QuizPlayCubit.revealDuration);
+        expect(soundEffects.tickStartCount, 1);
+
+        final question = (cubit.state as QuizPlayInProgress).question;
+        cubit.answer(question.correctIndex);
+        expect(soundEffects.tickStopCount, 1);
+        expect(soundEffects.correctCount, 1);
+        expect(soundEffects.wrongCount, 0);
+
+        async.elapse(QuizPlayCubit.autoAdvance);
+        expect(soundEffects.nextCount, 1);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
+
+    test('sound on: a wrong answer plays the wrong chime and stops the '
+        'tick', () {
+      stubQuestions([
+        questions.first.copyWith(ttsExcluded: true),
+        ...questions.skip(1),
+      ]);
+      when(
+        () => settingsRepository.current,
+      ).thenReturn(const AppSettings(soundOn: true));
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+        // ttsExcluded skips straight to answering, so the tick is already
+        // running.
+        expect(soundEffects.tickStartCount, 1);
+
+        final question = (cubit.state as QuizPlayInProgress).question;
+        cubit.answer((question.correctIndex + 1) % question.options.length);
+
+        expect(soundEffects.tickStopCount, 1);
+        expect(soundEffects.wrongCount, 1);
+        expect(soundEffects.correctCount, 0);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
 
     test('a timeout costs the question but never a heart (§19)', () {
       stubQuestions();

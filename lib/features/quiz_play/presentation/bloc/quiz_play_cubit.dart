@@ -7,6 +7,7 @@ import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
+import 'package:quizoo/features/quiz_play/data/sound_effects_service.dart';
 import 'package:quizoo/features/quiz_play/data/tts_service.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
@@ -52,12 +53,17 @@ part 'quiz_play_state.dart';
 /// The spirit of the rule — one owner, survives rebuilds, pauses exactly — is
 /// kept in full.
 class QuizPlayCubit extends Cubit<QuizPlayState> {
-  QuizPlayCubit(this._repository, this._settingsRepository, this._ttsService)
-    : super(const QuizPlayPreparing());
+  QuizPlayCubit(
+    this._repository,
+    this._settingsRepository,
+    this._ttsService,
+    this._soundEffects,
+  ) : super(const QuizPlayPreparing());
 
   final QuizPlayRepository _repository;
   final SettingsRepository _settingsRepository;
   final TtsService _ttsService;
+  final SoundEffectsService _soundEffects;
 
   /// How long a verdict banner stays up before advancing on its own (S-12).
   static const Duration autoAdvance = Duration(milliseconds: 2500);
@@ -82,11 +88,22 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   Timer? _adTimer;
   Timer? _revealTimer;
 
+  /// Whether [_soundEffects] currently has the tick loop playing — tracked
+  /// separately from [_clockTimer] so [_stopClock] only calls
+  /// `stopTicking()` when there is actually something to stop, and so
+  /// [toggleQuestionAudio] can bring the tick in or out of sync with a mute
+  /// mid-question without touching the clock itself.
+  bool _isTicking = false;
+
   List<Question> _questions = const [];
   int _questionIndex = 0;
 
   /// Read from `AppSettings.soundOn` at [startLevel] and kept in sync by
   /// [toggleQuestionAudio] — the HUD speaker icon's persisted preference.
+  ///
+  /// Settings screen labels this same preference "Sound effects" (S-42), so
+  /// it gates [_soundEffects] too, not just question narration: one flag,
+  /// one meaning, rather than a second toggle nobody asked for.
   bool _audioOn = true;
 
   /// False when [startLevel] found no voice pack for the active language —
@@ -306,14 +323,32 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
         current.copyWith(isAudioOn: audioOn, phase: QuestionPhase.answering),
       );
       _startClock();
-    } else {
-      emit(current.copyWith(isAudioOn: audioOn));
+      return;
+    }
+
+    emit(current.copyWith(isAudioOn: audioOn));
+    // The clock may already be answering-and-ticking; bring the tick in or
+    // out of sync with the toggle immediately rather than leaving it to
+    // whatever it was doing until the next question — muting mid-question
+    // should actually mute, not just paint the speaker icon.
+    if (current.isAwaitingAnswer && current.phase == QuestionPhase.answering) {
+      if (audioOn && !_isTicking) {
+        unawaited(_soundEffects.startTicking());
+        _isTicking = true;
+      } else if (!audioOn && _isTicking) {
+        unawaited(_soundEffects.stopTicking());
+        _isTicking = false;
+      }
     }
   }
 
   /// Resumes the clock from wherever [_elapsed] currently stands.
   void _startClock() {
     _stopClock();
+    if (_audioOn) {
+      unawaited(_soundEffects.startTicking());
+      _isTicking = true;
+    }
     _clockTimer = Timer.periodic(clockResolution, (_) {
       _elapsed += clockResolution;
       _onTick();
@@ -322,9 +357,18 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
   /// Freezes the clock. [_elapsed] is left where it is, which is what makes
   /// resuming continue rather than restart.
+  ///
+  /// Stops the tick only if [_isTicking] says one is actually playing —
+  /// this runs on every defensive "cancel whatever's running" call site, not
+  /// just the ones that end a live question, so a raw call count would be
+  /// meaningless otherwise.
   void _stopClock() {
     _clockTimer?.cancel();
     _clockTimer = null;
+    if (_isTicking) {
+      unawaited(_soundEffects.stopTicking());
+      _isTicking = false;
+    }
   }
 
   /// Sampled ten times a second, but only *emits* when the displayed second
@@ -398,6 +442,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       longestStreak: streak > run.longestStreak ? streak : run.longestStreak,
     );
 
+    if (_audioOn) unawaited(_soundEffects.playCorrect());
     emit(
       current.copyWith(
         run: next,
@@ -443,6 +488,8 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
         brokeStreak: run.currentStreak > 0,
       ),
     );
+
+    if (_audioOn) unawaited(_soundEffects.playWrong());
 
     if (hearts <= 0) {
       // Hearts hit zero: S-19 offers a way back rather than ending the run.
@@ -503,6 +550,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       return;
     }
     _questionIndex++;
+    if (_audioOn) unawaited(_soundEffects.playNextQuestion());
     _beginQuestion(current.run);
   }
 
@@ -758,6 +806,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _adTimer?.cancel();
     _revealTimer?.cancel();
     unawaited(_ttsService.stop());
+    unawaited(_soundEffects.dispose());
     return super.close();
   }
 }
