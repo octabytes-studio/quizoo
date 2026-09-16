@@ -745,11 +745,6 @@
   "contentErrorBody": "Check your connection and give it another go.",
   "@contentErrorBody": { "description": "Generic content-error body." },
 
-  "startBlockedOutOfHeartsTitle": "Out of hearts",
-  "@startBlockedOutOfHeartsTitle": { "description": "Arena error heading when start_level_attempt rejects with out_of_hearts before the level even loads — distinct from contentErrorTitle, which would wrongly tell the player to check their connection." },
-  "startBlockedOutOfHeartsBody": "Hearts refill automatically over time. Come back soon to keep playing.",
-  "@startBlockedOutOfHeartsBody": { "description": "Arena error body paired with startBlockedOutOfHeartsTitle." },
-
   "commonMockFeature": "Mock — no real sharing wired yet",
   "@commonMockFeature": { "description": "Snackbar for a plan-003 tap that has no real backend behind it (search, invite, duel, add-friend)." },
   "commonSharedMock": "Shared! (mock — no real sharing wired yet)",

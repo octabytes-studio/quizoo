@@ -810,13 +810,6 @@ class AppLocalizationsUr extends AppLocalizations {
   String get contentErrorBody => 'اپنا کنکشن دیکھ کر دوبارہ کوشش کریں۔';
 
   @override
-  String get startBlockedOutOfHeartsTitle => 'Out of hearts';
-
-  @override
-  String get startBlockedOutOfHeartsBody =>
-      'Hearts refill automatically over time. Come back soon to keep playing.';
-
-  @override
   String get commonMockFeature => 'Mock — no real sharing wired yet';
 
   @override

@@ -75,14 +75,6 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
 
   bool get _failed => _error != null;
 
-  /// `start_level_attempt` (functions migration) raises this — and spends
-  /// nothing — when the account has no hearts left to start a level. Distinct
-  /// copy here, same as the deep-link arena's `_ArenaError`, because this is
-  /// by far the more common way a player hits it: this sheet's prefetch
-  /// *is* the call that spends the level's heart, so it fails before "Start
-  /// Level" is ever tappable.
-  bool get _isOutOfHearts => _error?.code == 'out_of_hearts';
-
   @override
   void initState() {
     super.initState();
@@ -219,17 +211,13 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
           SizedBox(height: 18.h),
           if (_failed) ...[
             Text(
-              _isOutOfHearts
-                  ? '💔 ${l10n.startBlockedOutOfHeartsTitle}'
-                  : l10n.contentErrorTitle,
+              l10n.contentErrorTitle,
               textAlign: TextAlign.center,
               style: textTheme.titleMedium,
             ),
             SizedBox(height: AppSpacing.xs.h),
             Text(
-              _isOutOfHearts
-                  ? l10n.startBlockedOutOfHeartsBody
-                  : l10n.contentErrorBody,
+              l10n.contentErrorBody,
               textAlign: TextAlign.center,
               style: textTheme.bodySmall,
             ),
