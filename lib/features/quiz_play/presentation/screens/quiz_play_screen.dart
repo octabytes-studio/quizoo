@@ -613,16 +613,26 @@ class _ArenaError extends StatelessWidget {
 
   final String? errorCode;
 
+  /// `start_level_attempt` raises this when the account has no hearts left
+  /// to spend on starting the level — not a broken connection or missing
+  /// content, so it gets its own copy instead of [AppLocalizations.contentErrorTitle]'s
+  /// "check your connection".
+  bool get _isOutOfHearts => errorCode == 'out_of_hearts';
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
     return Center(
       child: ErrorStateView(
-        title: l10n.contentErrorTitle,
-        emoji: '🛰️',
-        message: l10n.contentErrorBody,
-        errorCode: errorCode,
+        title: _isOutOfHearts
+            ? l10n.startBlockedOutOfHeartsTitle
+            : l10n.contentErrorTitle,
+        emoji: _isOutOfHearts ? '💔' : '🛰️',
+        message: _isOutOfHearts
+            ? l10n.startBlockedOutOfHeartsBody
+            : l10n.contentErrorBody,
+        errorCode: _isOutOfHearts ? null : errorCode,
         action: ChunkyButton.ghost(
           label: l10n.commonBack,
           onPressed: context.pop,

@@ -98,14 +98,17 @@ class ApiException implements Exception {
           code: 'ERR_CONTENT_404',
         );
       }
-      // A raised exception from an RPC (`raise exception ... using errcode`)
-      // surfaces its own `code`/`message` here unchanged, so a Cubit can
-      // switch on e.g. `code == 'out_of_hearts'` without this factory
-      // inventing a new kind for every RPC-specific error.
+      // A plain `raise exception '<identifier>'` in a function always comes
+      // back with SQLSTATE P0001 — Postgres's one generic code for every
+      // user-raised exception, regardless of which function raised it or
+      // why. The identifier a Cubit actually wants to switch on (e.g.
+      // 'out_of_hearts') is the *message*, not that shared code. Only a
+      // real Postgres error code (a unique-violation, an RLS denial, ...)
+      // is distinctive enough to use as-is.
       return ApiException(
         error.message,
         kind: ApiErrorKind.server,
-        code: error.code,
+        code: error.code == 'P0001' ? error.message : error.code,
       );
     }
 

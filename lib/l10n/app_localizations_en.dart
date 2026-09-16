@@ -812,6 +812,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check your connection and give it another go.';
 
   @override
+  String get startBlockedOutOfHeartsTitle => 'Out of hearts';
+
+  @override
+  String get startBlockedOutOfHeartsBody =>
+      'Hearts refill automatically over time. Come back soon to keep playing.';
+
+  @override
   String get commonMockFeature => 'Mock — no real sharing wired yet';
 
   @override
