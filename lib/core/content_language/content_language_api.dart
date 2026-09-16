@@ -33,4 +33,19 @@ class ContentLanguageApi {
       throw ApiException.fromSupabase(error);
     }
   }
+
+  /// The ElevenLabs voice configured for [code] in the `languages` table,
+  /// or `null` when none has been set yet (plan 010).
+  Future<String?> fetchVoiceId(String code) async {
+    try {
+      final row = await _client
+          .from('languages')
+          .select('voice_id')
+          .eq('code', code)
+          .maybeSingle();
+      return row?['voice_id'] as String?;
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
 }

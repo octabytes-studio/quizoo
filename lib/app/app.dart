@@ -141,6 +141,9 @@ class _QuizooAppState extends State<QuizooApp> {
         RepositoryProvider<LadderConfigRepository>.value(
           value: _ladderConfigRepository,
         ),
+        RepositoryProvider<ContentLanguageRepository>.value(
+          value: _contentLanguageRepository,
+        ),
       ],
       child: MultiBlocProvider(
         providers: [

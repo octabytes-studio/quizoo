@@ -52,18 +52,18 @@ extension PumpScreen on WidgetTester {
     ContentLanguageCubit? contentLanguage,
   }) async {
     final auth = authRepository ?? await _fakeAuthRepository();
-    // `QuizPlayScreen` builds a real `FlutterTtsService` inline (it isn't
+    // `QuizPlayScreen` builds a real `ElevenLabsTtsService` inline (it isn't
     // injected via context), so a pumped screen would otherwise reach an
-    // actual platform channel with no plugin registered. Defaulting audio
-    // off here keeps `QuizPlayCubit` from ever calling into it, the same way
-    // the app's own default sound-on preference never touches this screen's
+    // actual network endpoint with no key configured. Defaulting audio off
+    // here keeps `QuizPlayCubit` from ever calling into it, the same way the
+    // app's own default sound-on preference never touches this screen's
     // pre-TTS behavior in tests — the phase machine itself is covered by
     // `QuizPlayCubit`'s own unit tests with a fake `TtsService`.
     SharedPreferences.setMockInitialValues({'settings.soundOn': false});
 
+    final contentLanguageRepository = await _fakeContentLanguageRepository();
     final contentLanguageCubit =
-        contentLanguage ??
-        ContentLanguageCubit(await _fakeContentLanguageRepository());
+        contentLanguage ?? ContentLanguageCubit(contentLanguageRepository);
 
     return pumpApp(
       MultiRepositoryProvider(
@@ -76,6 +76,9 @@ extension PumpScreen on WidgetTester {
             value:
                 settingsRepository ??
                 SettingsRepository(await SharedPreferences.getInstance()),
+          ),
+          RepositoryProvider<ContentLanguageRepository>.value(
+            value: contentLanguageRepository,
           ),
         ],
         child: MultiBlocProvider(

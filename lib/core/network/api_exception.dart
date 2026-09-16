@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Why a request failed, in terms the presentation layer can act on.
@@ -117,5 +118,64 @@ class ApiException implements Exception {
     }
 
     return ApiException(error.toString());
+  }
+
+  /// Maps anything a Dio call can throw to the one exception type the rest
+  /// of the app understands — the `fromSupabase` of this project's first
+  /// external (non-Supabase) REST API, ElevenLabs (plan 010, Research
+  /// finding #1).
+  factory ApiException.fromDio(Object error) {
+    if (error is ApiException) return error;
+    if (error is! DioException) return ApiException(error.toString());
+
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.transformTimeout:
+        return const ApiException(
+          'Request timed out',
+          kind: ApiErrorKind.timeout,
+        );
+      case DioExceptionType.connectionError:
+      case DioExceptionType.badCertificate:
+        return ApiException.network();
+      case DioExceptionType.cancel:
+        return const ApiException('Cancelled', code: 'ERR_TTS_CANCELLED');
+      case DioExceptionType.badResponse:
+        final status = error.response?.statusCode;
+        return switch (status) {
+          401 || 403 => ApiException(
+            'Unauthorized',
+            kind: ApiErrorKind.unauthorized,
+            statusCode: status,
+          ),
+          404 => ApiException(
+            'Not found',
+            kind: ApiErrorKind.notFound,
+            statusCode: status,
+          ),
+          429 => ApiException(
+            'Rate limited',
+            kind: ApiErrorKind.server,
+            statusCode: status,
+            code: 'ERR_TTS_RATE_LIMITED',
+          ),
+          _ when status != null && status >= 500 => ApiException(
+            'Server error',
+            kind: ApiErrorKind.server,
+            statusCode: status,
+          ),
+          _ => ApiException(
+            'Request rejected',
+            statusCode: status,
+            code: 'ERR_TTS_INVALID_REQUEST',
+          ),
+        };
+      case DioExceptionType.unknown:
+        return error.error is SocketException
+            ? ApiException.network()
+            : ApiException(error.message ?? error.toString());
+    }
   }
 }

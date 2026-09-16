@@ -4,6 +4,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
@@ -22,6 +23,9 @@ class _MockQuizPlayRepository extends Mock implements QuizPlayRepository {}
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
+class _MockContentLanguageRepository extends Mock
+    implements ContentLanguageRepository {}
+
 /// A fake rather than a mocktail `Mock`: the Cubit's phase machine drives
 /// this through real completion-callback timing (`complete()`), which a
 /// stubbed `Mock` can't express.
@@ -32,7 +36,8 @@ class _FakeTtsService implements TtsService {
   int stopCount = 0;
 
   @override
-  Future<bool> setLanguage(String languageCode) async => languageAvailable;
+  Future<bool> setLanguage(String languageCode, {String? voiceId}) async =>
+      voiceId != null && languageAvailable;
 
   @override
   Future<void> speak(String text) async => spoken.add(text);
@@ -42,6 +47,9 @@ class _FakeTtsService implements TtsService {
 
   @override
   void onComplete(void Function() callback) => _onComplete = callback;
+
+  @override
+  Future<void> dispose() async {}
 
   /// Test hook: simulates the plugin firing its completion handler.
   void complete() => _onComplete?.call();
@@ -83,6 +91,7 @@ void main() {
 
   late _MockQuizPlayRepository repository;
   late _MockSettingsRepository settingsRepository;
+  late _MockContentLanguageRepository contentLanguageRepository;
   late _FakeTtsService ttsService;
   late _FakeSoundEffectsService soundEffects;
 
@@ -107,12 +116,22 @@ void main() {
       (invocation) => invocation.positionalArguments.first as AppSettings,
     );
 
+    contentLanguageRepository = _MockContentLanguageRepository();
+    when(
+      () => contentLanguageRepository.voiceIdFor(any()),
+    ).thenAnswer((_) async => 'voice-placeholder');
+
     ttsService = _FakeTtsService();
     soundEffects = _FakeSoundEffectsService();
   });
 
-  QuizPlayCubit buildCubit() =>
-      QuizPlayCubit(repository, settingsRepository, ttsService, soundEffects);
+  QuizPlayCubit buildCubit() => QuizPlayCubit(
+    repository,
+    settingsRepository,
+    contentLanguageRepository,
+    ttsService,
+    soundEffects,
+  );
 
   void stubQuestions([
     List<Question>? override,
@@ -305,6 +324,30 @@ void main() {
         });
       },
     );
+
+    test('falls back to silent mode when no voice_id is configured for the '
+        'active language', () {
+      stubQuestions();
+      when(
+        () => contentLanguageRepository.voiceIdFor(any()),
+      ).thenAnswer((_) async => null);
+      when(
+        () => settingsRepository.current,
+      ).thenReturn(const AppSettings(soundOn: true));
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+
+        final state = cubit.state as QuizPlayInProgress;
+        expect(state.phase, QuestionPhase.answering);
+        expect(ttsService.spoken, isEmpty);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
 
     blocTest<QuizPlayCubit, QuizPlayState>(
       'failure path: a failed fetch ends in QuizPlayFailed',

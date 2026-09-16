@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
@@ -19,7 +20,8 @@ import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/report_question_sheet.dart';
 import 'package:quizoo/features/quiz_play/data/audioplayers_sound_effects_service.dart';
-import 'package:quizoo/features/quiz_play/data/flutter_tts_service.dart';
+import 'package:quizoo/features/quiz_play/data/elevenlabs_tts_api.dart';
+import 'package:quizoo/features/quiz_play/data/elevenlabs_tts_service.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
@@ -75,7 +77,8 @@ class QuizPlayScreen extends StatelessWidget {
           QuizPlayCubit(
             context.read<QuizPlayRepository>(),
             context.read<SettingsRepository>(),
-            FlutterTtsService(),
+            context.read<ContentLanguageRepository>(),
+            ElevenLabsTtsService(ElevenLabsTtsApi()),
             AudioplayersSoundEffectsService(),
           )..startLevel(
             levelId: levelId,
