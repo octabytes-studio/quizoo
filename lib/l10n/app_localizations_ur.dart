@@ -25,9 +25,6 @@ class AppLocalizationsUr extends AppLocalizations {
   String get homePopularThisWeek => '🔥 اس ہفتے مقبول';
 
   @override
-  String get homeCategories => 'زمرے';
-
-  @override
   String get homeDailyChallenge => '🎯 روزانہ کا چیلنج';
 
   @override
@@ -249,11 +246,6 @@ class AppLocalizationsUr extends AppLocalizations {
   String get homeDailyPlay => 'Play';
 
   @override
-  String homeAllCategories(int count) {
-    return 'All $count';
-  }
-
-  @override
   String homePlayedCount(String count) {
     return '👥 $count played';
   }
@@ -278,7 +270,32 @@ class AppLocalizationsUr extends AppLocalizations {
   String get homeLocked => 'Locked';
 
   @override
-  String get homeFilterAll => '✨ All';
+  String homeTopicCount(int count) {
+    return '$count موضوعات';
+  }
+
+  @override
+  String homeSeeAllCount(int count) {
+    return 'سب دیکھیں $count';
+  }
+
+  @override
+  String homeQuestionCount(int count) {
+    return '$count سوالات';
+  }
+
+  @override
+  String homeLevelShort(int level) {
+    return 'لیول $level';
+  }
+
+  @override
+  String get homeComplete => 'مکمل';
+
+  @override
+  String homeCategorySectionLabel(String name, int count) {
+    return '$name، $count موضوعات';
+  }
 
   @override
   String get searchHint => 'Search topics';
@@ -319,6 +336,19 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get categoryMore => 'More';
+
+  @override
+  String categoryStatsStars(int count) {
+    return '⭐ $count ستارے';
+  }
+
+  @override
+  String categoryStatsLevels(int count) {
+    return '🏁 $count لیول';
+  }
+
+  @override
+  String get categoryResumeEyebrow => 'جہاں سے چھوڑا تھا وہیں سے شروع کریں';
 
   @override
   String get difficultyEasy => 'Easy';

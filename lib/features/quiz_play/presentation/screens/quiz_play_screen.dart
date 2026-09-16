@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -17,6 +18,7 @@ import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/report_question_sheet.dart';
+import 'package:quizoo/features/quiz_play/data/audioplayers_sound_effects_service.dart';
 import 'package:quizoo/features/quiz_play/data/flutter_tts_service.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
@@ -74,6 +76,7 @@ class QuizPlayScreen extends StatelessWidget {
             context.read<QuizPlayRepository>(),
             context.read<SettingsRepository>(),
             FlutterTtsService(),
+            AudioplayersSoundEffectsService(),
           )..startLevel(
             levelId: levelId,
             categoryId: subcategory?.categoryId ?? '',
@@ -379,89 +382,122 @@ class _QuestionView extends StatelessWidget {
           onReportPressed: () => _openReportSheet(context),
           onToggleAudioPressed: cubit.toggleQuestionAudio,
         ),
-        Padding(
-          padding: EdgeInsets.only(bottom: hasImage ? 10.h : 12.h),
-          child: Center(
-            child: TimerRing(
-              secondsRemaining: state.secondsRemaining,
-              secondsTotal: state.run.secondsPerQuestion,
-              color: ringColor,
-              // The plate takes the room the full-size ring would need.
-              diameter: hasImage
-                  ? TimerRing.imageDiameter
-                  : TimerRing.defaultDiameter,
-              isPulsing: state.isDanger,
-            ),
-          ),
-        ),
-        QuestionMediaPlate(question: state.question),
-        Padding(
-          padding: EdgeInsets.fromLTRB(18.w, hasImage ? 12.h : 0, 18.w, 0),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 18.h),
-            decoration: BoxDecoration(
-              color: arena.questionCard,
-              border: Border.all(
-                color: state.isDanger
-                    ? quizoo.bad.withValues(alpha: 0.5)
-                    : arena.questionCardBorder,
-              ),
-              borderRadius: BorderRadius.circular(22.r),
-            ),
-            child: Text(
-              state.question.text,
-              // Up to three lines, then it truncates rather than pushing the
-              // options off the screen.
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: textTheme.headlineSmall!.copyWith(color: arena.onArena),
-            ),
-          ),
-        ),
-        // The options take whatever room the header leaves and scroll inside
-        // it, so a long question or a long answer can never push the power-up
-        // dock off the bottom of the arena — `.pups` is `margin-top:auto`.
-        //
-        // Hidden entirely during `speaking` (TTS is still reading the
-        // question), staggered in during `revealing`, plain once `answering`
-        // — audio off/`ttsExcluded` skips straight to `answering`, so this
-        // renders exactly as it always did (CLAUDE.md-flagged regression
-        // guard, plan 007 Acceptance criteria).
-        if (state.phase != QuestionPhase.speaking)
-          Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 0),
-              child: Column(
-                children: [
-                  for (
-                    var index = 0;
-                    index < state.question.options.length;
-                    index++
-                  )
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 10.h),
-                      child: _RevealingOption(
-                        index: index,
-                        isRevealing: state.phase == QuestionPhase.revealing,
-                        child: AnswerOption(
-                          label: state.question.options[index],
-                          optionKey: keys[index % keys.length],
-                          state: _optionState(index),
-                          onPressed:
-                              state.isAwaitingAnswer &&
-                                  state.phase == QuestionPhase.answering
-                              ? () => cubit.answer(index)
-                              : null,
-                        ),
+        // §05's `slide` token: "Question card exits left / next enters
+        // right." Keyed on the question's id, so a tick-driven rebuild
+        // (same question, new `secondsRemaining`) never replays it — only an
+        // actual advance does.
+        Expanded(
+          child: PageTransitionSwitcher(
+            duration: AppMotion.durationOf(context, AppMotion.slide),
+            transitionBuilder: (child, primaryAnimation, secondaryAnimation) =>
+                SharedAxisTransition(
+                  animation: primaryAnimation,
+                  secondaryAnimation: secondaryAnimation,
+                  transitionType: SharedAxisTransitionType.horizontal,
+                  fillColor: Colors.transparent,
+                  child: child,
+                ),
+            child: Column(
+              key: ValueKey(state.question.id),
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(bottom: hasImage ? 10.h : 12.h),
+                  child: Center(
+                    child: TimerRing(
+                      secondsRemaining: state.secondsRemaining,
+                      secondsTotal: state.run.secondsPerQuestion,
+                      color: ringColor,
+                      // The plate takes the room the full-size ring would
+                      // need.
+                      diameter: hasImage
+                          ? TimerRing.imageDiameter
+                          : TimerRing.defaultDiameter,
+                      isPulsing: state.isDanger,
+                    ),
+                  ),
+                ),
+                QuestionMediaPlate(question: state.question),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    18.w,
+                    hasImage ? 12.h : 0,
+                    18.w,
+                    0,
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 18.h),
+                    decoration: BoxDecoration(
+                      color: arena.questionCard,
+                      border: Border.all(
+                        color: state.isDanger
+                            ? quizoo.bad.withValues(alpha: 0.5)
+                            : arena.questionCardBorder,
+                      ),
+                      borderRadius: BorderRadius.circular(22.r),
+                    ),
+                    child: Text(
+                      state.question.text,
+                      // Up to three lines, then it truncates rather than
+                      // pushing the options off the screen.
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.headlineSmall!.copyWith(
+                        color: arena.onArena,
                       ),
                     ),
-                ],
-              ),
+                  ),
+                ),
+                // The options take whatever room the header leaves and
+                // scroll inside it, so a long question or a long answer can
+                // never push the power-up dock off the bottom of the arena —
+                // `.pups` is `margin-top:auto`.
+                //
+                // Hidden entirely during `speaking` (TTS is still reading
+                // the question), staggered in during `revealing`, plain once
+                // `answering` — audio off/`ttsExcluded` skips straight to
+                // `answering`, so this renders exactly as it always did
+                // (CLAUDE.md-flagged regression guard, plan 007 Acceptance
+                // criteria).
+                if (state.phase != QuestionPhase.speaking)
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 0),
+                      child: Column(
+                        children: [
+                          for (
+                            var index = 0;
+                            index < state.question.options.length;
+                            index++
+                          )
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 10.h),
+                              child: _RevealingOption(
+                                index: index,
+                                isRevealing:
+                                    state.phase == QuestionPhase.revealing,
+                                child: AnswerOption(
+                                  label: state.question.options[index],
+                                  optionKey: keys[index % keys.length],
+                                  state: _optionState(index),
+                                  onPressed:
+                                      state.isAwaitingAnswer &&
+                                          state.phase == QuestionPhase.answering
+                                      ? () => cubit.answer(index)
+                                      : null,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  const Spacer(),
+              ],
             ),
-          )
-        else
-          const Spacer(),
+          ),
+        ),
         // The dock is hidden while a verdict banner is up, which is what the
         // bible's S-12 and S-13 frames show.
         if (state.isAwaitingAnswer && state.phase == QuestionPhase.answering)

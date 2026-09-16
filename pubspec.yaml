@@ -49,6 +49,12 @@ dependencies:
   # Countdown/TTS read-aloud (plan 007, §4)
   flutter_tts: ^4.2.5
 
+  # Play-mode sound effects (tick/correct/wrong/next-question)
+  audioplayers: ^6.8.1
+
+  # Material "shared axis" transition — the next-question slide (§05 `slide`)
+  animations: ^2.0.11
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -77,9 +83,21 @@ flutter:
   uses-material-design: true
   generate: true
 
+  # Firebase's SPM packages now require iOS 15, but Flutter's generated
+  # FlutterGeneratedPluginSwiftPackage hardcodes a 13.0 minimum regardless of
+  # the Runner target's deployment target, so Xcode rejects the mismatch.
+  # Falling back to CocoaPods (already used alongside SPM in this project)
+  # avoids that fixed 13.0 floor.
+  config:
+    enable-swift-package-manager: false
+
   assets:
     - assets/branding/quizoo-mark-color.png
     - assets/branding/quizoo-mark-white.png
+    - assets/audio/clock_ticking.mp3
+    - assets/audio/right_answer.mp3
+    - assets/audio/wrong_answer.mp3
+    - assets/audio/next_question.mp3
 
   fonts:
     # Display / headings / buttons / scores

@@ -26,8 +26,6 @@
   },
   "homePopularThisWeek": "🔥 Popular this week",
   "@homePopularThisWeek": { "description": "S-04 Home popular rail heading." },
-  "homeCategories": "Categories",
-  "@homeCategories": { "description": "S-04 Home category chip row heading." },
   "homeDailyChallenge": "🎯 Daily challenge",
   "@homeDailyChallenge": { "description": "S-04 Home daily banner heading." },
   "homeSeeAll": "See all",
@@ -224,11 +222,6 @@
   },
   "homeDailyPlay": "Play",
   "@homeDailyPlay": { "description": "S-05 Home daily banner action." },
-  "homeAllCategories": "All {count}",
-  "@homeAllCategories": {
-    "description": "S-05 Home categories section trailing link.",
-    "placeholders": { "count": { "type": "int", "example": "14" } }
-  },
   "homePlayedCount": "👥 {count} played",
   "@homePlayedCount": {
     "description": "S-04 popular card play count.",
@@ -253,8 +246,37 @@
   },
   "homeLocked": "Locked",
   "@homeLocked": { "description": "Caption on a subcategory tile that is not open yet." },
-  "homeFilterAll": "✨ All",
-  "@homeFilterAll": { "description": "S-04 category filter chip that clears the filter." },
+
+  "homeTopicCount": "{count} topics",
+  "@homeTopicCount": {
+    "description": "S-05 category section header topic count, shown when a category has ten or fewer topics.",
+    "placeholders": { "count": { "type": "int", "example": "6" } }
+  },
+  "homeSeeAllCount": "See all {count}",
+  "@homeSeeAllCount": {
+    "description": "S-05 category section header See-all pill, shown once a category passes ten topics.",
+    "placeholders": { "count": { "type": "int", "example": "12" } }
+  },
+  "homeQuestionCount": "{count} questions",
+  "@homeQuestionCount": {
+    "description": "Subcategory card status line before any of its levels are cleared.",
+    "placeholders": { "count": { "type": "int", "example": "400" } }
+  },
+  "homeLevelShort": "Lv {level}",
+  "@homeLevelShort": {
+    "description": "Subcategory card status line once at least one level is cleared but not all.",
+    "placeholders": { "level": { "type": "int", "example": "12" } }
+  },
+  "homeComplete": "Complete",
+  "@homeComplete": { "description": "Subcategory card status line once every level is cleared." },
+  "homeCategorySectionLabel": "{name}, {count} topics",
+  "@homeCategorySectionLabel": {
+    "description": "Semantic label read for a whole tappable category section header row.",
+    "placeholders": {
+      "name": { "type": "String", "example": "Sports" },
+      "count": { "type": "int", "example": "8" }
+    }
+  },
 
   "searchHint": "Search topics",
   "@searchHint": { "description": "S-06 search field placeholder." },
@@ -296,6 +318,18 @@
   "@categorySortPopular": { "description": "S-07 sort control, currently display-only." },
   "categoryMore": "More",
   "@categoryMore": { "description": "Semantic label for S-07's overflow button." },
+  "categoryStatsStars": "⭐ {count} stars",
+  "@categoryStatsStars": {
+    "description": "S-07 header stat chip — total stars earned across the category's topics.",
+    "placeholders": { "count": { "type": "int", "example": "18" } }
+  },
+  "categoryStatsLevels": "🏁 {count} levels",
+  "@categoryStatsLevels": {
+    "description": "S-07 header stat chip — total levels cleared across the category's topics.",
+    "placeholders": { "count": { "type": "int", "example": "43" } }
+  },
+  "categoryResumeEyebrow": "PICK UP WHERE YOU LEFT",
+  "@categoryResumeEyebrow": { "description": "S-07 resume card eyebrow label." },
 
   "difficultyEasy": "Easy",
   "@difficultyEasy": { "description": "Levels 1–5 difficulty band (§19)." },

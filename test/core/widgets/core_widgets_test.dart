@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quizoo/core/models/level.dart';
+import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
 import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/app_dialog.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
+import 'package:quizoo/core/widgets/category_section_header.dart';
 import 'package:quizoo/core/widgets/category_tile.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/currency_pill.dart';
@@ -19,6 +21,8 @@ import 'package:quizoo/core/widgets/report_question_sheet.dart';
 import 'package:quizoo/core/widgets/segmented_tabs.dart';
 import 'package:quizoo/core/widgets/share_sheet.dart';
 import 'package:quizoo/core/widgets/skeleton_box.dart';
+import 'package:quizoo/core/widgets/subcategory_card.dart';
+import 'package:quizoo/l10n/app_localizations.dart';
 
 import '../../support/pump_app.dart';
 
@@ -324,6 +328,157 @@ void main() {
           expect(tester.takeException(), isNull);
         },
       );
+    });
+  });
+
+  group('SubcategoryCard', () {
+    Subcategory topicWith({
+      String name = 'Football',
+      int levelsCleared = 0,
+      int levelCount = 50,
+      int starsEarned = 0,
+      bool isLocked = false,
+    }) => Subcategory(
+      id: 'sub_x',
+      categoryId: 'cat_x',
+      name: name,
+      emoji: '⚽',
+      plateColor: '#FFE9D6',
+      questionCount: 400,
+      levelsCleared: levelsCleared,
+      levelCount: levelCount,
+      starsEarned: starsEarned,
+      isLocked: isLocked,
+    );
+
+    testWidgets('renders every content state from the table in both themes', (
+      tester,
+    ) async {
+      await tester.pumpInBothThemes(
+        () => Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            return Row(
+              children: [
+                Expanded(
+                  child: SubcategoryCard.forTopic(
+                    topicWith(isLocked: true),
+                    l10n,
+                  ),
+                ),
+                Expanded(child: SubcategoryCard.forTopic(topicWith(), l10n)),
+                Expanded(
+                  child: SubcategoryCard.forTopic(
+                    topicWith(
+                      levelsCleared: 50,
+                      levelCount: 50,
+                      starsEarned: 150,
+                    ),
+                    l10n,
+                  ),
+                ),
+                Expanded(
+                  child: SubcategoryCard.forTopic(
+                    topicWith(levelsCleared: 12, starsEarned: 24),
+                    l10n,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        body: () async {
+          // Locked, never-played, complete and in-progress — one of each.
+          expect(find.text('Locked'), findsOneWidget);
+          expect(find.text('400 questions'), findsOneWidget);
+          expect(find.text('New'), findsOneWidget);
+          expect(find.text('Complete'), findsOneWidget);
+          expect(find.text('⭐⭐⭐'), findsOneWidget);
+          expect(find.text('Lv 12'), findsOneWidget);
+          expect(find.text('⭐⭐'), findsOneWidget);
+          // The lock scrim renders on top of the locked card only.
+          expect(find.text('🔒'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    });
+
+    testWidgets('a wrapped two-line name does not change the card height', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context);
+            return Column(
+              children: [
+                SubcategoryCard.forTopic(
+                  topicWith(name: 'Football'),
+                  l10n,
+                  width: SubcategoryCard.railWidth,
+                ),
+                SubcategoryCard.forTopic(
+                  topicWith(name: 'A very long topic name that wraps twice'),
+                  l10n,
+                  width: SubcategoryCard.railWidth,
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
+      final heights = tester
+          .widgetList<SubcategoryCard>(find.byType(SubcategoryCard))
+          .map((card) => tester.getSize(find.byWidget(card)).height)
+          .toSet();
+
+      expect(heights, hasLength(1));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('CategorySectionHeader', () {
+    testWidgets('shows a plain count at ten topics, the pill past it', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const Column(
+          children: [
+            CategorySectionHeader(name: 'Sports', emoji: '⚽', topicCount: 10),
+            CategorySectionHeader(
+              name: 'General',
+              emoji: '🌍',
+              topicCount: 11,
+              showSeeAll: true,
+            ),
+          ],
+        ),
+      );
+
+      expect(find.text('10 topics'), findsOneWidget);
+      expect(find.text('See all 11'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the whole row is one tap target, not just the pill', (
+      tester,
+    ) async {
+      var taps = 0;
+      await tester.pumpApp(
+        CategorySectionHeader(
+          name: 'Sports',
+          emoji: '⚽',
+          topicCount: 8,
+          onTap: () => taps++,
+        ),
+      );
+
+      // Tapping the category name, not a dedicated button, still fires it.
+      await tester.tap(find.text('Sports'));
+      await tester.pumpAndSettle();
+
+      expect(taps, 1);
     });
   });
 

@@ -37,7 +37,13 @@ class SearchCubit extends Cubit<SearchState> {
   /// Loads the trending chip cloud, which is what an empty search shows.
   Future<void> loadTrending() async {
     try {
-      emit(SearchInitial(trending: await _repository.fetchTrendingSearches()));
+      emit(
+        SearchInitial(
+          trending: await _repository.fetchTrendingSearches(
+            languageCode: languageCode,
+          ),
+        ),
+      );
     } on ApiException {
       // The chip cloud is a convenience. Losing it leaves an empty field,
       // which is still a usable screen.

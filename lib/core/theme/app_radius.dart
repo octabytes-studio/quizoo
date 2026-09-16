@@ -57,6 +57,13 @@ abstract final class AppRadius {
   static const double emojiPlate = 16;
   static const double shareTarget = 18;
 
+  /// Subcategory card emoji plate (`.sub2 .av`) — 13, distinct from the
+  /// larger 3-up tile's [emojiPlate].
+  static const double subcategoryPlate = 13;
+
+  /// Category section header medallion (`.catline .med`) — 10.
+  static const double medallion = 10;
+
   /// Dialog icon plate (`.dlg .ico`) — 22.
   static const double dialogIcon = 22;
 

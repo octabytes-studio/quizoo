@@ -1,13 +1,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/home/data/home_repository.dart';
 import 'package:quizoo/features/home/domain/home_content.dart';
 
 part 'home_state.dart';
 
-/// Owns Home's content and its category filter.
+/// Owns Home's content.
 ///
 /// The load is deliberately two-stage, because §01's cold-open budget is a
 /// two-stage paint rather than one slow one: [load] emits a [HomeLoaded] from
@@ -39,35 +38,16 @@ class HomeCubit extends Cubit<HomeState> {
     emit(HomeLoaded(content: cached, isPopularRailLoading: true));
 
     try {
-      final popular = await _repository.fetchPopularRail();
+      final popular = await _repository.fetchPopularRail([
+        for (final subcategory in cached.subcategories) subcategory.id,
+      ]);
       if (isClosed) return;
-      emit(
-        HomeLoaded(
-          content: cached.copyWith(popular: popular),
-          selectedCategoryId: _selectedCategoryId,
-        ),
-      );
+      emit(HomeLoaded(content: cached.copyWith(popular: popular)));
     } on ApiException {
       // The rail is merchandising, not content: losing it must not take the
       // rest of Home down with it.
       if (isClosed) return;
-      emit(
-        HomeLoaded(content: cached, selectedCategoryId: _selectedCategoryId),
-      );
+      emit(HomeLoaded(content: cached));
     }
-  }
-
-  String? _selectedCategoryId;
-
-  /// Filters the tile grid. Passing null — or the already-selected id —
-  /// clears the filter, which is what makes the "✨ All" chip and a second tap
-  /// on the active chip behave the same.
-  void selectCategory(String? categoryId) {
-    final current = state;
-    if (current is! HomeLoaded) return;
-    _selectedCategoryId = categoryId == current.selectedCategoryId
-        ? null
-        : categoryId;
-    emit(current.copyWith(selectedCategoryId: _selectedCategoryId));
   }
 }

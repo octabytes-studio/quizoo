@@ -10,17 +10,16 @@ import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
-import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
-import 'package:quizoo/core/widgets/app_chip.dart';
-import 'package:quizoo/core/widgets/category_tile.dart';
+import 'package:quizoo/core/widgets/category_section_header.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/section_header.dart';
 import 'package:quizoo/core/widgets/skeleton_box.dart';
+import 'package:quizoo/core/widgets/subcategory_card.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
 import 'package:quizoo/features/home/data/home_api.dart';
 import 'package:quizoo/features/home/data/home_repository.dart';
@@ -187,18 +186,17 @@ class _HomeOfflineView extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 11.w,
-            mainAxisSpacing: 11.h,
-            mainAxisExtent: 140.h,
+            crossAxisCount: 2,
+            crossAxisSpacing: AppSpacing.md.w,
+            mainAxisSpacing: AppSpacing.md.h,
+            mainAxisExtent: SubcategoryCard.railHeight.h,
           ),
           itemCount: available.length,
           itemBuilder: (context, index) {
             final subcategory = available[index];
-            return CategoryTile(
-              name: subcategory.name,
-              emoji: subcategory.emoji,
-              plateColor: AppGradients.hex(subcategory.plateColor),
+            return SubcategoryCard.forTopic(
+              subcategory,
+              l10n,
               onTap: () => context.push(
                 AppRoutes.levelMapPath(subcategory.categoryId, subcategory.id),
               ),
@@ -259,6 +257,43 @@ class _HomeContentView extends StatelessWidget {
     final content = state.content;
     final user = session.user;
     final currency = content.currency;
+    final sections = content.sections;
+
+    // Order is state-dependent (S-05): daily banner → Continue → Popular →
+    // category sections. A guest gets the informational save-progress card
+    // in the banner slot instead, and has nothing in the Continue slot.
+    final leading = <Widget>[
+      if (content.daily case final daily?)
+        DailyChallengeBanner(
+          daily: daily,
+          remainingLabel: AppFormat.remaining(daily.remaining, localeName),
+          onTap: () => context.go(AppRoutes.daily),
+        )
+      else
+        const SaveProgressCard(),
+      if (content.continueEntry case final entry?) ...[
+        SizedBox(height: AppSpacing.lg.h - 2.h),
+        SectionHeader(title: l10n.homeContinueHeading),
+        SizedBox(height: AppSpacing.md.h),
+        ContinueRow(
+          entry: entry,
+          onTap: () => context.push(
+            AppRoutes.levelMapPath(
+              _categoryIdOf(content, entry.subcategoryId),
+              entry.subcategoryId,
+            ),
+          ),
+        ),
+      ],
+      SizedBox(height: AppSpacing.lg.h - 2.h),
+      SectionHeader(
+        title: l10n.homePopularThisWeek,
+        actionLabel: l10n.homeSeeAll,
+        onActionPressed: onSearchPressed,
+      ),
+      SizedBox(height: AppSpacing.md.h),
+      _PopularRail(state: state, content: content),
+    ];
 
     return Column(
       children: [
@@ -274,68 +309,24 @@ class _HomeContentView extends StatelessWidget {
         else
           GuestTopBar(onSearchPressed: onSearchPressed),
         Expanded(
-          child: ListView(
+          // A builder, not a literal children list: fourteen sections each
+          // holding their own horizontal rail is Home's real performance
+          // risk, so off-screen sections must not be built at all.
+          child: ListView.builder(
             padding: EdgeInsets.only(bottom: AppSpacing.xl.h),
-            children: [
-              // Order is state-dependent (S-05): daily banner → Continue →
-              // Popular → Categories. A guest gets the informational
-              // save-progress card in the banner slot instead.
-              if (content.daily case final daily?)
-                DailyChallengeBanner(
-                  daily: daily,
-                  remainingLabel: AppFormat.remaining(
-                    daily.remaining,
-                    localeName,
-                  ),
-                  onTap: () => context.go(AppRoutes.daily),
-                )
-              else
-                const SaveProgressCard(),
-              if (content.continueEntry case final entry?) ...[
-                SizedBox(height: AppSpacing.lg.h - 2.h),
-                SectionHeader(title: l10n.homeContinueHeading),
-                SizedBox(height: AppSpacing.md.h),
-                ContinueRow(
-                  entry: entry,
-                  onTap: () => context.push(
-                    AppRoutes.levelMapPath(
-                      _categoryIdOf(content, entry.subcategoryId),
-                      entry.subcategoryId,
-                    ),
-                  ),
+            itemCount: leading.length + sections.length,
+            itemBuilder: (context, index) {
+              if (index < leading.length) return leading[index];
+              final section = sections[index - leading.length];
+              return _CategorySection(
+                section: section,
+                isFirst: index == leading.length,
+                onHeaderTap: () => context.push(
+                  AppRoutes.categoryDetailPath(section.category.id),
                 ),
-              ],
-              SizedBox(height: AppSpacing.lg.h - 2.h),
-              SectionHeader(
-                title: l10n.homePopularThisWeek,
-                actionLabel: l10n.homeSeeAll,
-                onActionPressed: onSearchPressed,
-              ),
-              SizedBox(height: AppSpacing.md.h),
-              _PopularRail(state: state, content: content),
-              SizedBox(height: AppSpacing.lg.h - 2.h),
-              SectionHeader(
-                title: l10n.homeCategories,
-                actionLabel: l10n.homeAllCategories(content.categories.length),
-                // The chips filter the grid, exactly as S-04 draws them, so
-                // this link is the one affordance that opens a category's own
-                // screen (S-07). Tapping a topic tile still reaches the level
-                // map in a single tap, which is what keeps §01's
-                // "Home → level map in at most two taps" true.
-                onActionPressed: () => context.push(
-                  AppRoutes.categoryDetailPath(
-                    state.selectedCategoryId ?? content.categories.first.id,
-                  ),
-                ),
-              ),
-              SizedBox(height: AppSpacing.md.h),
-              _CategoryChips(state: state),
-              SizedBox(height: AppSpacing.lg.h - 2.h),
-              _SubcategoryGrid(
-                subcategories: state.visibleSubcategories,
-                onTap: onSubcategoryTap,
-              ),
-            ],
+                onTopicTap: onSubcategoryTap,
+              );
+            },
           ),
         ),
       ],
@@ -396,97 +387,86 @@ class _PopularRail extends StatelessWidget {
   }
 }
 
-/// `.cats` — the filter chip row.
-class _CategoryChips extends StatelessWidget {
-  const _CategoryChips({required this.state});
+/// `.catline` + `.rail-h` — one category section: a tappable header over a
+/// horizontal rail of the same [SubcategoryCard] S-07 uses.
+///
+/// [isFirst] suppresses the hairline divider the bible draws between
+/// sections (`.hr`) — there is none between the popular rail and the first
+/// section, only between one section and the next.
+class _CategorySection extends StatelessWidget {
+  const _CategorySection({
+    required this.section,
+    required this.isFirst,
+    required this.onHeaderTap,
+    required this.onTopicTap,
+  });
 
-  final HomeLoaded state;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final cubit = context.read<HomeCubit>();
-
-    return SizedBox(
-      height: AppChip.categoryHeight.h,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
-        itemCount: state.content.categories.length + 1,
-        separatorBuilder: (_, _) => SizedBox(width: AppSpacing.sm.w),
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return AppChip(
-              label: l10n.homeFilterAll,
-              isSelected: state.selectedCategoryId == null,
-              onTap: () => cubit.selectCategory(null),
-            );
-          }
-          final category = state.content.categories[index - 1];
-          return AppChip(
-            label: category.name,
-            leading: category.emoji,
-            isSelected: state.selectedCategoryId == category.id,
-            onTap: () => cubit.selectCategory(category.id),
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// `.tiles` — the 3-up topic grid.
-class _SubcategoryGrid extends StatelessWidget {
-  const _SubcategoryGrid({required this.subcategories, required this.onTap});
-
-  final List<Subcategory> subcategories;
-  final ValueChanged<Subcategory> onTap;
+  final HomeCategorySection section;
+  final bool isFirst;
+  final VoidCallback onHeaderTap;
+  final ValueChanged<Subcategory> onTopicTap;
 
   @override
   Widget build(BuildContext context) {
+    final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
+    final category = section.category;
+    final topics = section.topics;
+    final showSeeAll = topics.length > CategorySectionHeader.seeAllThreshold;
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 11.w,
-        mainAxisSpacing: 11.h,
-        // A fixed height rather than an aspect ratio. The tile's content is
-        // a fixed stack — 52px plate, name, caption, 4px bar — that does not
-        // scale with the column's width, so tying its height to that width
-        // leaves a tile carrying a progress bar a couple of pixels short.
-        mainAxisExtent: 140.h,
-      ),
-      itemCount: subcategories.length,
-      itemBuilder: (context, index) {
-        final subcategory = subcategories[index];
-        return CategoryTile(
-          name: subcategory.name,
-          emoji: subcategory.emoji,
-          plateColor: AppGradients.hex(subcategory.plateColor),
-          // A never-played topic has no bar to draw, which is the difference
-          // between S-04's grid and S-07's.
-          progress: subcategory.levelsCleared == 0
-              ? null
-              : subcategory.progress,
-          caption: switch (subcategory) {
-            Subcategory(isLocked: true) => l10n.homeLocked,
-            Subcategory(levelsCleared: 0) =>
-              subcategory.isNew
-                  ? l10n.homeNew
-                  : l10n.homeLevelsAvailable(subcategory.levelCount),
-            _ => l10n.homeLevelProgress(
-              subcategory.levelsCleared,
-              subcategory.levelCount,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: isFirst ? AppSpacing.lg.h - 2.h : AppSpacing.md.h),
+        if (!isFirst) ...[
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenMargin.w,
             ),
-          },
-          isLocked: subcategory.isLocked,
-          onTap: () => onTap(subcategory),
-        );
-      },
+            child: ColoredBox(
+              color: quizoo.ln,
+              child: SizedBox(height: 1.h),
+            ),
+          ),
+          SizedBox(height: AppSpacing.md.h),
+        ],
+        CategorySectionHeader(
+          name: category.name,
+          emoji: category.emoji,
+          plateColor: category.colorFrom,
+          topicCount: topics.length,
+          showSeeAll: showSeeAll,
+          onTap: onHeaderTap,
+        ),
+        SizedBox(height: AppSpacing.md.h),
+        SizedBox(
+          height: SubcategoryCard.railHeight.h,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenMargin.w,
+            ),
+            itemCount: topics.length + (showSeeAll ? 1 : 0),
+            separatorBuilder: (_, _) => SizedBox(width: AppSpacing.md.w),
+            itemBuilder: (context, index) {
+              if (index == topics.length) {
+                return SubcategorySeeAllCard(
+                  width: SubcategoryCard.railWidth,
+                  label: l10n.homeSeeAllCount(topics.length),
+                  onTap: onHeaderTap,
+                );
+              }
+              final topic = topics[index];
+              return SubcategoryCard.forTopic(
+                topic,
+                l10n,
+                width: SubcategoryCard.railWidth,
+                onTap: () => onTopicTap(topic),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -536,7 +516,11 @@ class _HomeSkeleton extends StatelessWidget {
               SizedBox(height: AppSpacing.xl.h),
               SkeletonBox(width: 120.w, height: 20.h),
               SizedBox(height: AppSpacing.md.h),
-              SkeletonBox(height: 96.h),
+              SkeletonBox(height: SubcategoryCard.railHeight.h),
+              SizedBox(height: AppSpacing.xl.h),
+              SkeletonBox(width: 140.w, height: 20.h),
+              SizedBox(height: AppSpacing.md.h),
+              SkeletonBox(height: SubcategoryCard.railHeight.h),
             ],
           ),
         ),

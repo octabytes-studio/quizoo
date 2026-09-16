@@ -1,4 +1,11 @@
-<!doctype html><html><head><!-- frame-runtime --><script>window.__FRAME_PREAMBLE={"v":1,"capabilities":{"artifact":"artifact.DfA2To-s.js","assets":"assets.8Gk803W0.js","comments":"comments.hEoja5zd.js","db":"db.h-3sndFg.js","downloads":"downloads.th1YuAIk.js","embed":"embed.eqL6deQM.js","endpoints":"endpoints.CfzSv5nM.js","mcp":"mcp.Bvma3qD7.js","network":"network.B5UA9Su4.js","permissions":"permissions.BNySkLV5.js","room":"room.VSdFwTE9.js","sample":"sample.BW2Uysoh.js","self":"artifact.DfA2To-s.js","user":"user.BpKav-Rf.js"},"transforms":"_transforms.-IAc0qoT.js","comments":"_comments.C-AkolIB.js","translate":"_translate.5HCW4BJh.js","ldx":"_ldx.f0k6Z2Dd.js"}</script><script>(function(){"use strict";var le=["light","dark","system"],ue=/^[A-Za-z0-9_-]{1,64}$/,J=/^[a-zA-Z_:][a-zA-Z0-9_:.-]{0,127}$/,fe=new Set(["class","hidden","value","checked","style","title","alt","placeholder","lang","dir","role","tabindex","disabled","readonly","contenteditable","open","colspan","rowspan"]);function de(e){const t=e.toLowerCase();return t.startsWith("data-")||t.startsWith("aria-")||fe.has(t)}var We="http://www.w3.org/1999/xhtml",pe="http://www.w3.org/2000/svg",me=new Set(["script","style","iframe","noscript","noframes","noembed","xmp","plaintext","template","title","textarea","object","embed"]),he=new Set(["script","style"]);function _e(e){const t=e.localName.toLowerCase();return e.namespaceURI==="http://www.w3.org/1999/xhtml"?!me.has(t):e.namespaceURI===pe?!he.has(t):!1}function I(e,t){return e===t||(e===160||e===32)&&(t===160||t===32)}function ve(e,t){const r=e.length,n=t.length;let a=0;for(;a<r&&a<n&&I(e.charCodeAt(a),t.charCodeAt(a));)a++;let s=0;for(;s<r-a&&s<n-a&&I(e.charCodeAt(r-1-s),t.charCodeAt(n-1-s));)s++;return{p:a,s}}function ye(e,t){const r=e.firstChild;if(e.childNodes.length!==1||r===null||r.nodeType!==Node.TEXT_NODE){e.textContent=t;return}const n=r.data,a=n.length,s=t.length,{p:c,s:i}=ve(n,t);c===a&&i===0&&a===s||r.replaceData(c,a-c-i,t.slice(c,s-i));const p=r.data,f=e.ownerDocument.getSelection?.()??null,v=f!==null&&f.rangeCount>0&&(f.anchorNode===r||f.focusNode===r)?{anchor:f.anchorNode,anchorOffset:f.anchorOffset,focus:f.focusNode,focusOffset:f.focusOffset}:null;let d=-1,y=-1;for(let _=0;_<p.length&&_<t.length;_++){const E=p.charCodeAt(_),T=t.charCodeAt(_);E!==T&&I(E,T)&&(d<0&&(d=_),y=_)}const w=d>=0;if(w&&r.replaceData(d,y-d+1,t.slice(d,y+1)),w&&v!==null&&v.anchor!==null&&v.focus!==null)try{f.setBaseAndExtent(v.anchor,v.anchorOffset,v.focus,v.focusOffset)}catch{}}var we=new Set(["html","head","body","frameset"]);function be(e){return e.namespaceURI==="http://www.w3.org/1999/xhtml"&&we.has(e.localName)}function Ee(e){if(e===null||typeof e!="object")return!1;const t=e;if(typeof t.target!="string"||!ue.test(t.target)||t.text!==void 0&&typeof t.text!="string")return!1;if(t.attrsSet!==void 0){if(t.attrsSet===null||typeof t.attrsSet!="object")return!1;for(const[r,n]of Object.entries(t.attrsSet))if(!J.test(r)||typeof n!="string")return!1}if(t.attrsRemoved!==void 0){if(!Array.isArray(t.attrsRemoved))return!1;for(const r of t.attrsRemoved)if(typeof r!="string"||!J.test(r))return!1}return!0}function ge(e,t){if(e===null||typeof e!="object")return!1;const{seq:r,elements:n}=e;if(typeof r!="number"||!Number.isSafeInteger(r)||!Array.isArray(n)||n.length===0||n.length>64)return!1;for(let a=0;a<n.length;a++)if(!t(n[a]))return!1;return!0}function Ae(e){return e===null||typeof e!="object"?!1:ge(e.__frame_patch,Ee)}function Te(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_init;return t!==null&&typeof t=="object"}function Re(e){return e!==null&&typeof e=="object"&&e.__frame_size_poke===!0}function Le(e){if(e===null||typeof e!="object")return!1;const t=e.__frame_theme;if(t===null||typeof t!="object")return!1;const r=t.theme;return typeof r=="string"&&le.includes(r)}var L=/^[\w.-]+\.js$/;function Se(e,t,r){return r?"inert":typeof t=="string"&&L.test(t)?e?[t]:"inert":e?"inert":"framed"}var Ke="frame_ldx_runtime",$e="script#an-form";function ke(){return{post(e,t){parent.postMessage(e,t)},on(e){const t=r=>{r.source===parent&&e(r.data,r.origin,r.isTrusted)};return addEventListener("message",t),()=>removeEventListener("message",t)}}}function Pe(){return{post:()=>{},on:()=>()=>{}}}var U="__frame_scroll",Oe=150,Ce=310,Me=160,je=3e4;function Ne(){let e=0,t=!1,r=!1,n=!1,a=0,s=null;const c=u=>{try{sessionStorage.setItem(U,JSON.stringify({y:u}))}catch{}},i=()=>{if(clearTimeout(e),s===null)return;const u=s;s=null,c(u)},p=()=>{if(t){t=!1;return}r=!0,s=scrollY,clearTimeout(e),e=setTimeout(i,Oe)};try{addEventListener("scroll",p,{passive:!0}),addEventListener("pagehide",i)}catch{}const f=()=>{let u;try{u=sessionStorage.getItem(U)}catch{return null}if(u===null)return null;let b;try{b=JSON.parse(u)}catch{b=null}const o=b?.y;if(!(typeof o=="number"&&Number.isFinite(o)&&o>=0)){try{sessionStorage.removeItem(U)}catch{}return null}return o};let v=!1;const d=u=>{try{const b=scrollY;scrollTo({top:u,left:0,behavior:"instant"}),a=u,n=!0,clearTimeout(e),s=null,c(u);const o=scrollY;o!==b&&(t=!0),o!==u&&!v&&(v=!0,addEventListener("load",()=>{try{if(scrollY===o){const m=f();d(m!==null?m:a)}}catch{}},{once:!0}))}catch{}},y=()=>{try{return!!location.hash}catch{return!0}};let w=!1;const _=()=>{try{if(w||innerWidth>Ce||innerHeight>Me)return;w=!0;const u=Date.now(),b=()=>{try{removeEventListener("resize",b)}catch{}if(Date.now()-u>je||r||y())return;const o=f();d(o!==null?o:a)};addEventListener("resize",b)}catch{}};let E=!1,T=!1;return{restore(){if(E||(E=!0,y()))return;const u=f();u!==null&&(d(u),_())},promoted(){if(T||(T=!0,y()))return;const u=f();u!==null?(d(u),_()):n&&d(a)}}}function Be(e,t,r,n){let a=null;try{a=window.trustedTypes?.createPolicy("frame-runtime",{createScriptURL:p=>p})??null}catch{}const s=window.Worker,c=s?.prototype,i=Object.freeze({Worker:s,workerOn:c?.addEventListener,workerPost:c?.postMessage,workerTerminate:c?.terminate,fetch:window.fetch.bind(window),preventDefault:Event.prototype.preventDefault,policy:a,origins:t});r(e).then(p=>p?.bootTopLevel?p.bootTopLevel(i,n):n.settle()).catch(()=>n.settle())}var qe="modulepreload",Xe=function(e){return"/"+e},Ye={},De=function(t,r,n){let a=Promise.resolve();function s(c){const i=new Event("vite:preloadError",{cancelable:!0});if(i.payload=c,window.dispatchEvent(i),!i.defaultPrevented)throw c}return a.then(c=>{for(const i of c||[])i.status==="rejected"&&s(i.reason);return t().catch(s)})},Ie=window===top,Q=Object.getOwnPropertyDescriptor(window,"claude"),C=Se(Ie,window.__FRAME_PREAMBLE?.topLevel,Q?.writable===!1),x=typeof C=="object"&&C[0],h=x?Pe():ke();(function(){const e=Object.defineProperty,t=globalThis,r=["RTCPeerConnection","webkitRTCPeerConnection","RTCDataChannel","RTCIceCandidate","RTCSessionDescription","RTCRtpSender","RTCRtpReceiver"];let n=0;for(let a=0;a<r.length;a++){const s=r[a];try{e(t,s,{value:void 0,writable:!1,configurable:!1})}catch{try{delete t[s]}catch{}try{e(t,s,{value:void 0,writable:!1,configurable:!0})}catch{}}typeof t[s]=="function"&&n++}if(n&&C==="framed")try{h.post({__frame_rtc_lockdown_failed:n},"*")}catch{}})();var Ue=1e4,xe=2e3,ee=Object.freeze([...window.__FRAME_PREAMBLE?.origins??["https://claude.ai","https://preview.claude.ai"]]);function te(e){for(const t of ee)if(t.endsWith(":*"))try{const r=new URL(e);if(`${r.protocol}//${r.hostname}:*`===t)return!0}catch{}else if(e===t)return!0;return!1}var M=Object.freeze({...window.__FRAME_PREAMBLE?.capabilities}),F=window.__FRAME_PREAMBLE?.transforms,z=window.__FRAME_PREAMBLE?.comments,H=window.__FRAME_PREAMBLE?.translate,W=window.__FRAME_PREAMBLE?.ldx;function S(e){return De(()=>import("/_runtime/"+e),void 0)}function re(e,t){return{contract:e.contract,changes:new Set(e.changes??[]),flags:new Set(e.flags??[]),capabilities:e.capabilities??{},capBudgets:e.capBudgets??{},transforms:new Map,shellOrigin:t,mount:q,hooks:N,pipe:()=>({wrap:(r,n)=>(...a)=>{try{return n(...a)}catch(s){return Promise.reject(s)}}})}}var j=null,A=null;function ne(e,t,r){try{Object.defineProperty(e,t,{value:r,writable:!1,configurable:!1,enumerable:!0})}catch{try{Object.defineProperty(e,t,{value:r,writable:!1,configurable:!0,enumerable:!0})}catch{}}}var K=!1,N={editBefore:null,edit:null};function Fe(e,t,r=!1){const n=[];let a;if(r)try{N.editBefore?.(e)}catch{}for(const s of e.elements){const c=document.querySelector(`[data-id="${s.target}"]`);if(!c){a=s.target;break}if([...Object.keys(s.attrsSet??{}),...s.attrsRemoved??[]].some(i=>!de(i))){a=s.target;break}if(s.text!==void 0&&(!_e(c)||be(c))){a=s.target;break}for(const[i,p]of Object.entries(s.attrsSet??{}))if(!se(c,i)){try{c.setAttribute(i,p)}catch{}oe(c,i,p)}for(const i of s.attrsRemoved??[])se(c,i)||(c.removeAttribute(i),oe(c,i,null));typeof s.text=="string"&&ye(c,s.text),n.push(s.target)}if(r)try{N.edit?.(e.seq,n,a)}catch{}if(a!==void 0){h.post({__frame_patch_miss:{seq:e.seq}},t);return}try{document.dispatchEvent(new CustomEvent("claude:edit",{detail:{seq:e.seq,targets:n}}))}catch{}}function oe(e,t,r){if(!(e instanceof HTMLInputElement))return;const n=t.toLowerCase();n==="checked"?e.checked=r!==null:n==="value"&&e.type!=="file"&&(e.value=r??"")}function se(e,t){const r=t.toLowerCase(),n=e;return r==="data-id"||(r==="value"||r==="checked")&&(n.__artifactSecret===!0||/^(password|hidden|file)$/.test(n.type??"")||/(^|\s)(cc-|one-time-code|current-password|new-password)/i.test(`${e.getAttribute("autocomplete")??""} ${n.autocomplete??""}`))}function ae(e){const t=document.documentElement;e==="light"||e==="dark"?(t.dataset.theme=e,t.style.colorScheme=e,K=!0):K&&(delete t.dataset.theme,t.style.colorScheme="",K=!1)}var B=new Map;function ze(){let e;const t={u:new Promise(r=>{e=r}),r:r=>{t.done=!0,e(r)},done:!1,nulled:!1};return t}function $(){for(const e of B.values())e.done||(e.nulled=!0,e.r(null))}var He=Object.freeze(Object.assign(Object.create(null),{call:Function.prototype.call,apply:Function.prototype.apply,bind:Function.prototype.bind})),q=(e,t)=>{const r=B.get(e);if(!r||r.done){r?.nulled&&A&&h.post({__frame_cap_telemetry:{kind:"cap-load-error",cap:e}},A);return}const n=typeof t=="function"?Object.setPrototypeOf(t,He):Object.assign(Object.create(null),t);typeof n.then=="function"&&delete n.then,r.r(Object.freeze(n))};function ie(){const e=Q?.value??{};ne(window,"claude",e);for(const t of Object.keys(M)){if(e[t]!==void 0){ne(e,t,e[t]);continue}B.set(t,ze())}if(e.use===void 0){const t=r=>{if(typeof r!="string"||!Object.hasOwn(M,r))return Promise.resolve(null);const n=B.get(r);return n?n.u:Promise.resolve(e[r]??null)};try{Object.defineProperty(e,"use",{value:t,writable:!0,configurable:!0,enumerable:!1})}catch{}}}if(C==="framed"){const e=F&&L.test(F)?S(F).catch(()=>{}):Promise.resolve(void 0),t=o=>{if(o.type==="auxclick"&&o.button!==1)return;const m=o.target,k=m&&m.closest?m.closest("a[href],area[href]"):null;if(!k)return;const O=k.getAttribute("href");if(!O)return;let R;try{R=new URL(O,document.baseURI)}catch{return}if((R.protocol==="http:"||R.protocol==="https:")&&R.origin!==location.origin){o.preventDefault();const P=(k.getAttribute("target")??"").toLowerCase(),g=o.type==="auxclick"||o.metaKey||o.ctrlKey||o.shiftKey||o.altKey||!["","_self","_top","_parent"].includes(P);h.post({__frame_nav:!0,url:R.href,newTab:g},"*")}};addEventListener("click",t,!0),addEventListener("auxclick",t,!0);const r={},n=o=>{o.isTrusted&&(r.pointer=!0)},a=o=>{o.isTrusted&&(r.click=!0)};addEventListener("pointermove",n,{capture:!0,passive:!0}),addEventListener("click",a,{capture:!0,passive:!0});const s={cb:null};addEventListener("keydown",o=>s.cb?.(o),!0),e.then(o=>o?.installEscapeForward?.(s,m=>{A&&h.post(m,A)})),e.then(o=>{o?.wireNav&&(o.wireNav(),removeEventListener("click",t,!0),removeEventListener("auxclick",t,!0),removeEventListener("pointermove",n,!0),removeEventListener("click",a,!0),o.wireEngagement?.(r))});let c=null;try{c=Ne()}catch{}ie();let i=null,p=null,f=0;const v=h.on((o,m)=>{te(m)&&Te(o)&&(i=o.__frame_init,A=m,v(),clearTimeout(f),p?.())});h.post({__frame_connect:!0},"*");const d=setTimeout,y=clearTimeout;let w=0;const _=()=>{try{h.post({__frame_alive:!0},"*")}catch{}w=d(_,xe)},E=()=>y(w);_(),addEventListener("load",E,{once:!0});const T=new Promise(o=>{p=o,f=setTimeout(()=>{v(),o()},Ue)}),u=document.readyState==="loading"?new Promise(o=>document.addEventListener("DOMContentLoaded",()=>o(),{once:!0})):Promise.resolve();u.then(()=>{try{c?.restore()}catch{}});const b={cb:null};h.on((o,m)=>{if(te(m)&&Re(o)){try{c?.promoted()}catch{}b.cb?.()}}),T.then(async()=>{if(!i||!A){$();return}ae(i.theme);const o=A;let m=!1,k=!1;h.on((l,Y,D)=>{if(Y!==o)return;Le(l)&&ae(l.__frame_theme.theme),Ae(l)&&Fe(l.__frame_patch,o,D);const G=l?.__fc_mode;G&&typeof G=="object"&&!m&&z&&L.test(z)&&(m=!0,S(z).then(Z=>Z.install?.(o,G.on===!0)).catch(()=>{}));const V=l?.__ft_cmd;V&&typeof V=="object"&&!k&&H&&L.test(H)&&(k=!0,S(H).then(Z=>Z.install?.(o,V)).catch(()=>{}))});const O=Object.keys(i.capabilities??{}).filter(l=>Object.hasOwn(M,l)).map(l=>[l,M[l]]).filter(l=>typeof l[1]=="string"&&L.test(l[1])),R=await Promise.allSettled(O.map(([,l])=>S(l))),P=await e,g=A;if(P?.buildBoot||h.post({__frame_cap_telemetry:{kind:"cap-load-error",cap:"_transforms"}},g),P?.buildBoot)try{j=P.buildBoot(i,P.TRANSFORMS??{},{shellOrigin:g,mount:q,hooks:N},l=>h.post({__frame_cap_telemetry:l},g))}catch{h.post({__frame_cap_telemetry:{kind:"cap-load-error",cap:"_transforms"}},g),j=re(i,g)}else j=re(i,g);const X=l=>h.post({__frame_cap_telemetry:{kind:"cap-load-error",cap:l}},g),ce=j;R.forEach((l,Y)=>{const D=O[Y][0];if(l.status!=="fulfilled"){X(D);return}try{l.value?.install?.(ce)}catch{X(D)}}),$(),await u,E(),h.post({__frame_ready:!0},A),e.then(l=>l?.installSizeReporter?.(g,b)),ce.flags.has("frame_ldx_runtime")&&W&&L.test(W)&&document.querySelector("script#an-form")&&S(W).then(l=>l?.boot?.()).catch(()=>!1).then(l=>{l!==!0&&X("_ldx")})})}else x&&(ie(),Be(x,ee,S,{settle:$,mount:q}))})();</script><!-- /frame-runtime --><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>:root{color-scheme:light dark}html,body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
 <title>Quizoo Design Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -299,7 +306,12 @@ html[data-app="dark"] .app:not([data-app]){
 /* a coloured header that must run up behind the status bar */
 .bleed{margin-top:-47px; padding-top:53px !important}
 .pad{padding:0 20px}
-.scroll{flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; gap:18px; padding-bottom:8px}
+.scroll{flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; gap:18px; padding-bottom:8px; scrollbar-width:none; -ms-overflow-style:none}
+.scroll::-webkit-scrollbar{display:none}
+/* A screen's sections keep their natural height. Without this, flex's default
+   shrink squashes every section to fit 844px and the cards inside get clipped —
+   the frame must overflow and scroll, exactly as the real screen does. */
+.scroll > *{flex-shrink:0}
 
 /* top bar */
 .tb{flex:none; display:flex; align-items:center; gap:12px; padding:4px 20px 12px; min-height:52px}
@@ -342,7 +354,8 @@ html[data-app="dark"] .app:not([data-app]){
 .sec-t .em{font-size:16px}
 
 /* horizontal rails */
-.rail-h{display:flex; gap:12px; padding:0 20px; overflow:hidden}
+.rail-h{display:flex; gap:12px; padding:0 20px; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; -ms-overflow-style:none}
+.rail-h::-webkit-scrollbar{display:none}
 .rail-h > *{flex:none}
 
 /* popular quiz card */
@@ -572,6 +585,29 @@ html[data-app="dark"] .app:not([data-app]){
 .gap{flex:1}
 .dw{width:100%}
 .chipf{display:inline-flex; align-items:center; gap:5px; background:var(--s3); border-radius:999px; padding:4px 10px; font-size:10.5px; font-weight:800; color:var(--tx2)}
+
+/* home category sections (rev. 12 Sep) */
+.catline{display:flex; align-items:center; gap:8px; padding:0 20px}
+.catline .med{width:30px; height:30px; border-radius:10px; flex:none; display:flex; align-items:center; justify-content:center; font-size:16px}
+.catline h2{font-family:var(--f-display); font-size:17px; font-weight:800; margin:0; flex:1; letter-spacing:-.01em}
+.catline .n{font-size:10.5px; font-weight:800; color:var(--tx3); font-variant-numeric:tabular-nums; flex:none}
+.seeall{display:inline-flex; align-items:center; gap:4px; flex:none; height:26px; padding:0 10px; border-radius:999px; background:var(--s1); border:1px solid var(--ln); font-size:10.5px; font-weight:800; color:var(--tx2); box-shadow:var(--sh)}
+.seeall b{font-weight:800; color:var(--tx3); font-variant-numeric:tabular-nums}
+
+/* subcategory card — ONE component, two placements:
+   .inrail on a home section rail, .duocard cell on the category screen */
+.duocard{display:grid; grid-template-columns:repeat(2,1fr); gap:11px; padding:0 20px}
+.sub2{background:var(--s1); border:1px solid var(--ln); border-radius:18px; padding:12px; box-shadow:var(--sh); display:flex; flex-direction:column; gap:7px}
+.sub2 .hd{display:flex; align-items:center; gap:9px}
+.sub2 .av{width:38px; height:38px; border-radius:13px; flex:none; display:flex; align-items:center; justify-content:center; font-size:19px}
+.sub2 b{font-size:12.5px; font-weight:800; line-height:1.15; letter-spacing:-.01em}
+.sub2 .meta{display:flex; align-items:center; justify-content:space-between; font-size:9.5px; font-weight:800; color:var(--tx3)}
+.sub2 .meta .st{letter-spacing:-1px; font-size:10px}
+.sub2.inrail{width:164px; flex:none}
+.sub2.more{background:var(--s2); border-style:dashed; box-shadow:none; align-items:center; justify-content:center; text-align:center; gap:6px}
+.sub2.more .av{background:var(--s3); color:var(--tx2); font-size:20px}
+.sub2.more b{color:var(--tx2)}
+.sub2.more .meta{color:var(--tx3); gap:5px}
 .ann{position:absolute; z-index:9; background:var(--g); color:#fff; font-family:var(--f-mono); font-size:9px; font-weight:700; padding:2px 6px; border-radius:5px; letter-spacing:.04em}
 </style>
 <div class="shell">
@@ -719,11 +755,13 @@ html[data-app="dark"] .app:not([data-app]){
 <b>Root (guest or signed-in — identical shell)</b>
 │
 ├── <u>Tab 1 · Home</u>
+│   ├── Daily challenge banner        → Daily challenge
+│   ├── Continue playing row          → Level map (resumes)
 │   ├── Popular quizzes rail          → Level map
-│   ├── Continue playing rail         → Level map (resumes)
-│   ├── Category chips (horizontal)   → filters grid below
-│   ├── Subcategory grid              → Category detail → Level map
-│   └── Daily challenge banner        → Daily challenge
+│   └── One section per category      (all 14, state-ordered)
+│       ├── Section header (tappable) → Category screen
+│       ├── Subcategory rail          → Level map
+│       └── See all  (&gt; 10 topics)     → Category screen
 │
 ├── <u>Tab 2 · Ranks</u>
 │   ├── Global · Country · Friends    (segmented)
@@ -872,6 +910,7 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
 
   <h4 class="mini">Edge-to-edge &amp; safe areas</h4>
   <div class="callout rec"><b>Every screen draws behind the status bar.</b> A screen's own background — the splash gradient, the category header, the dark play arena, a result screen's colour wash — must run to the physical top of the display, never stop at the status-bar line. In Flutter: <code>SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.transparent, …))</code>, <code>SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge)</code>, and no <code>SafeArea</code> wrapping the <em>background</em> layer — only the content layer takes <code>MediaQuery.padding.top</code> as its top inset. The status-bar icon brightness is a per-route property: set <code>statusBarIconBrightness</code> from the colour underneath it, which is why the coloured screens in this document render white status text and the neutral ones render dark.</div>
+  <div class="callout warn" style="margin-top:14px"><b>A screen's sections must never shrink to fit.</b> The scrolling body is a column, and a column's children shrink by default — so once a screen's content is taller than the viewport, every section gets squashed and the cards inside are clipped mid-content. Pin them: <code>flex-shrink: 0</code> on each child of the scroll body in these frames, and in Flutter a <code>ListView</code>/<code>CustomScrollView</code> whose children size themselves, never a <code>Column</code> inside an <code>Expanded</code> that has to distribute a fixed height. Content taller than the screen is supposed to overflow and scroll; it is not supposed to compress.</div>
   <p class="note" style="margin-top:10px">Same rule at the bottom: the tab bar and any bottom CTA sit above <code>MediaQuery.padding.bottom</code>, and the bar is <b>always pinned to the bottom of the viewport</b> — never pushed up by short content. In the frames below it is <code>margin-top: auto</code>; in Flutter it is the <code>bottomNavigationBar</code> slot of <code>Scaffold</code>, not the last child of a Column.</p>
 
   <h4 class="mini">Motion tokens</h4>
@@ -1024,6 +1063,22 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
       </div></div>
       <figcaption><b>Power-up dock</b>Always on the play surface, 56×52 tiles. Count badge in mango; zero-count tiles drop to 40% and open the shop on tap.</figcaption>
     </figure>
+
+    <figure>
+      <div class="app appbox"><div class="stack">
+        <div class="catline" style="padding:0"><span class="med" style="background:#FFE9D6">⚽</span><h2>Sports</h2><span class="seeall">See all <b>12</b> ›</span></div>
+        <div class="flow" style="gap:11px">
+          <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFE9D6">⚽</span><b>Football</b></div><span class="bar thin"><i style="width:24%"></i></span><span class="meta"><span>Lv 12</span><span class="st" style="color:var(--gold)">⭐⭐</span></span></div>
+          <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#DDF1FF">🏏</span><b>Cricket</b></div><span class="bar thin"><i style="width:100%"></i></span><span class="meta"><span>Complete</span><span class="st" style="color:var(--gold)">⭐⭐⭐</span></span></div>
+          <div class="sub2 inrail more"><div class="hd"><span class="av">＋</span><b>See all</b></div><span class="meta"><span>12 topics ›</span></span></div>
+        </div>
+        <div class="duocard" style="padding:0">
+          <div class="sub2"><div class="hd"><span class="av" style="background:#E4F7F1">🏒</span><b>Hockey</b></div><span class="bar thin"><i style="width:10%"></i></span><span class="meta"><span>Lv 2</span><span class="st mut">—</span></span></div>
+          <div class="sub2"><div class="hd"><span class="av" style="background:#FFE4EC">🏀</span><b>Basketball</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+        </div>
+      </div></div>
+      <figcaption><b>Category section header &amp; subcategory card</b>One card, two placements: <code>.sub2.inrail</code> at 164px on a home section rail (top, with the dashed end-cap that appears past ten topics), and the same card as a <code>.duocard</code> cell on the category screen (bottom). Identical anatomy in both — avatar plate, name, progress bar, state line — so a topic looks the same wherever the player meets it.</figcaption>
+    </figure>
   </div>
 </section>
 <section id="s-entry">
@@ -1090,7 +1145,7 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
           <div style="flex:1"><h1>Welcome 👋</h1><div class="sm">Playing as Guest</div></div>
           <div class="ib">🔍</div>
         </div>
-        <div class="scroll">
+        <div class="scroll" style="gap:16px">
           <div class="pad"><div class="c" style="padding:14px 16px; display:flex; align-items:center; gap:12px; background:linear-gradient(120deg,#7B4DFF,#5B2FD6); border:0; color:#fff">
             <span style="font-size:30px">🎁</span>
             <span style="flex:1"><b style="display:block; font-family:var(--f-display); font-size:15px">Save your progress</b><span style="font-size:11.5px; opacity:.88">Sign in later — play first, we'll remember</span></span>
@@ -1099,17 +1154,30 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
           <div class="rail-h">
             <div class="pq" style="background:linear-gradient(150deg,#FF8A24,#FF3D6E)"><span class="hot">HOT</span><span class="emo">⚽</span><b>Football Legends</b><span>👥 84.2k played</span></div>
             <div class="pq" style="background:linear-gradient(150deg,#7B4DFF,#2BB3FF)"><span class="emo">🧠</span><b>IQ: Pattern Logic</b><span>👥 61.7k played</span></div>
-            <div class="pq" style="background:linear-gradient(150deg,#12C79B,#7BE495)"><span class="emo">🌍</span><b>Flags</b><span>👥 52k</span></div>
+            <div class="pq" style="background:linear-gradient(150deg,#12C79B,#7BE495)"><span class="emo">🚩</span><b>Flags</b><span>👥 52k</span></div>
           </div>
-          <div class="sec-t"><h2>Categories</h2></div>
-          <div class="cats"><span class="cat on">✨ All</span><span class="cat">🌍 General</span><span class="cat">🧠 IQ</span><span class="cat">🔢 Maths</span><span class="cat">🔬 Science</span></div>
-          <div class="tiles">
-            <div class="tile"><div class="av" style="background:#FFE9D6">🌍</div><b>World Facts</b><span>20 levels</span></div>
-            <div class="tile"><div class="av" style="background:#E4F7F1">🧬</div><b>Biology</b><span>20 levels</span></div>
-            <div class="tile"><div class="av" style="background:#EDE8FA">🕌</div><b>Islam</b><span>20 levels</span></div>
-            <div class="tile"><div class="av" style="background:#DDF1FF">🏏</div><b>Cricket</b><span>20 levels</span></div>
-            <div class="tile"><div class="av" style="background:#FFE4EC">🎬</div><b>Movies</b><span>20 levels</span></div>
-            <div class="tile"><div class="av" style="background:#FFF4D6">🧩</div><b>Puzzles</b><span>20 levels</span></div>
+          <div class="catline"><span class="med" style="background:#EDE8FA">🌍</span><h2>General Knowledge</h2><span class="n">6 topics ›</span></div>
+          <div class="rail-h">
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFE9D6">🌍</span><b>World Facts</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#E4F7F1">🎲</span><b>Trivia Mix</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#EDE8FA">💡</span><b>Did You Know</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#DDF1FF">🏆</span><b>Records &amp; Firsts</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+          </div>
+          <div class="hr"></div>
+          <div class="catline"><span class="med" style="background:#DDF1FF">🧠</span><h2>IQ &amp; Logic</h2><span class="n">7 topics ›</span></div>
+          <div class="rail-h">
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFF4D6">🧩</span><b>Pattern Logic</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFE4EC">🔢</span><b>Number Series</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#E4F7F1">🎯</span><b>Odd One Out</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#EDE8FA">📐</span><b>Spatial</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+          </div>
+          <div class="hr"></div>
+          <div class="catline"><span class="med" style="background:#FFE9D6">⚽</span><h2>Sports</h2><span class="n">8 topics ›</span></div>
+          <div class="rail-h">
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFE9D6">⚽</span><b>Football</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#DDF1FF">🏏</span><b>Cricket</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFE4EC">🏀</span><b>Basketball</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFF4D6">🎾</span><b>Tennis</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
           </div>
         </div>
         <div class="tabs">
@@ -1119,7 +1187,7 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
         <div class="hi"></div>
       </div>
     </div></div></div>
-    <div class="cap"><b><span class="id">S-04</span>Home — guest, first launch</b><p>No wallet pills yet (nothing earned), no "continue" rail (nothing started). The save-progress card is <em>informational, not modal</em> — it never blocks a tap.</p></div></div>
+    <div class="cap"><b><span class="id">S-04</span>Home — guest, first launch</b><p>No wallet pills yet (nothing earned), no <em>Continue</em> row (nothing started). Categories are <em>sections</em>, not a filter — two full sections and the head of a third are readable before the first scroll, where the old chip row showed one category. Every header row is tappable and opens the category screen. The rail carries the <em>same subcategory card</em> the category screen uses, at 164px.</p></div></div>
 
     <div class="fw"><div class="ph-outer"><div class="ph"><div class="app">
       <div class="sb"><span>9:41</span><span class="ic"><u></u><i></i></span></div>
@@ -1129,21 +1197,35 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
           <div style="flex:1"><h1 style="font-size:19px">Hey, Waleed</h1><div class="sm">🔥 12-day streak · Level 12</div></div>
           <div class="wal"><span class="pill coin"><span class="o">🪙</span>1,240</span><span class="pill life"><span class="o">❤️</span>4</span></div>
         </div>
-        <div class="scroll">
+        <div class="scroll" style="gap:16px">
           <div class="pad"><div class="c" style="padding:13px 15px; display:flex; align-items:center; gap:12px; background:linear-gradient(120deg,#FF8A24,#FF3D6E); border:0; color:#fff">
             <span style="font-size:28px">🎯</span>
             <span style="flex:1"><b style="display:block; font-family:var(--f-display); font-size:15px">Daily Challenge</b><span style="font-size:11.5px; opacity:.9">10 questions · ends in 4h 12m</span></span>
             <span style="background:rgba(255,255,255,.24); border-radius:12px; padding:8px 13px; font-weight:800; font-size:13px">Play</span>
           </div></div>
           <div class="sec-t"><h2>▶︎ Continue</h2></div>
-          <div class="rows"><div class="row"><span class="av" style="background:#FFE9D6">⚽</span><span class="t"><b>Football Legends · Level 12</b><span>2,140 pts · 3 lives left</span></span><span class="r"><b style="color:var(--p); font-size:13px">Resume</b></span></div></div>
+          <div class="rows"><div class="row"><span class="av" style="background:#FFE9D6">⚽</span><span class="t"><b>Football · Level 12</b><span>2,140 pts · 3 lives left</span></span><span class="r"><b style="color:var(--p); font-size:13px">Resume</b></span></div></div>
           <div class="sec-t"><h2>🔥 Popular this week</h2><a>See all</a></div>
           <div class="rail-h">
             <div class="pq" style="background:linear-gradient(150deg,#7B4DFF,#2BB3FF)"><span class="hot">HOT</span><span class="emo">🧠</span><b>IQ: Pattern Logic</b><span>👥 61.7k played</span></div>
-            <div class="pq" style="background:linear-gradient(150deg,#12C79B,#7BE495)"><span class="emo">🌍</span><b>Flags of the World</b><span>👥 52.4k played</span></div>
+            <div class="pq" style="background:linear-gradient(150deg,#12C79B,#7BE495)"><span class="emo">🚩</span><b>Flags of the World</b><span>👥 52.4k played</span></div>
           </div>
-          <div class="sec-t"><h2>Categories</h2><a>All 14</a></div>
-          <div class="cats"><span class="cat on">✨ All</span><span class="cat">🌍 General</span><span class="cat">🧠 IQ</span><span class="cat">⚽ Sports</span></div>
+          <div class="catline"><span class="med" style="background:#FFE9D6">⚽</span><h2>Sports</h2><span class="seeall">See all <b>12</b> ›</span></div>
+          <div class="rail-h">
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFE9D6">⚽</span><b>Football</b></div><span class="bar thin"><i style="width:24%"></i></span><span class="meta"><span>Lv 12</span><span class="st" style="color:var(--gold)">⭐⭐</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#DDF1FF">🏏</span><b>Cricket</b></div><span class="bar thin"><i style="width:100%"></i></span><span class="meta"><span>Complete</span><span class="st" style="color:var(--gold)">⭐⭐⭐</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#E4F7F1">🏒</span><b>Hockey</b></div><span class="bar thin"><i style="width:4%"></i></span><span class="meta"><span>Lv 2</span><span class="st mut">—</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFE4EC">🏀</span><b>Basketball</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail more"><div class="hd"><span class="av">＋</span><b>See all</b></div><span class="meta"><span>12 topics ›</span></span></div>
+          </div>
+          <div class="hr"></div>
+          <div class="catline"><span class="med" style="background:#EDE8FA">🌍</span><h2>General Knowledge</h2><span class="n">6 topics ›</span></div>
+          <div class="rail-h">
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#FFE9D6">🌍</span><b>World Facts</b></div><span class="bar thin"><i style="width:14%"></i></span><span class="meta"><span>Lv 7</span><span class="st" style="color:var(--gold)">⭐</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#E4F7F1">🎲</span><b>Trivia Mix</b></div><span class="bar thin"><i style="width:44%"></i></span><span class="meta"><span>Lv 22</span><span class="st" style="color:var(--gold)">⭐⭐</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#EDE8FA">💡</span><b>Did You Know</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2 inrail"><div class="hd"><span class="av" style="background:#DDF1FF">🏆</span><b>Records &amp; Firsts</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+          </div>
         </div>
         <div class="tabs">
           <a class="on"><span class="e">🏠</span>Home</a><a><span class="e">🏆</span>Ranks</a>
@@ -1152,7 +1234,7 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
         <div class="hi"></div>
       </div>
     </div></div></div>
-    <div class="cap"><b><span class="id">S-05</span>Home — signed in</b><p>Order changes with state: daily banner → continue → popular → categories. <em>Continue</em> only appears with an unfinished level; it is the highest-converting row on the screen.</p></div></div>
+    <div class="cap"><b><span class="id">S-05</span>Home — signed in</b><p>Order is state-driven: daily → continue → popular → your most-played category → the rest. Cards swap their state line for level and stars once started, so a rail doubles as a progress read. <em>Sports is drawn here at twelve topics to show the See-all state</em> — see the threshold note below.</p></div></div>
 
     <div class="fw"><div class="ph-outer"><div class="ph"><div class="app">
       <div class="sb"><span>9:41</span><span class="ic"><u></u><i></i></span></div>
@@ -1178,6 +1260,16 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
     <div class="cap"><b><span class="id">S-06</span>Search</b><p>Searches subcategories and question tags. Debounced at 250 ms, results are local-first from the cached taxonomy so it works offline. Breadcrumb shows the parent category.</p></div></div>
 
   </div>
+
+  <div class="callout rec" style="margin-top:26px"><b>Home is a stack of category sections (rev. 12 Sep).</b> The category chip row is gone. Filtering to one category hid the other thirteen, and a first-launch guest could not see how much was in the app. Instead <b>every category renders as its own section</b> — medallion, name, topic count — with its subcategories on a horizontal rail of <code>.sub2</code> cards beneath it and a hairline between sections. All 14 render, in the order the taxonomy endpoint returns, with the player's most-played category promoted to the top.
+  <ul class="tick yes" style="margin-top:10px">
+    <li><b>The section header is always tappable</b> and opens that category's screen (S-07). It is the guaranteed route in, which is why it is a row and not a label.</li>
+    <li><b>More than ten subcategories</b> additionally shows a <code>.seeall</code> pill in the header and a dashed <code>.sub2.more</code> end-cap at the end of the rail. Ten or fewer shows a plain <code>N topics ›</code> count — the rail already holds them all. The backend computes this flag; the client never counts.</li>
+    <li>Section order is state-driven, as S-05 already was: daily → continue → popular → categories.</li>
+    <li><b>One subcategory card everywhere.</b> The same <code>.sub2</code> renders at 164px on a home rail and as a two-up cell on the category screen — never a separate smaller tile. Its state line is <code>400 questions · New</code> when untouched and <code>Lv 12 · ⭐⭐</code> over a filled bar once started; the card never changes height between the two.</li>
+    <li>The chip row survives inside Search (S-06) only, where filtering is the actual job.</li>
+  </ul></div>
+  <div class="callout warn" style="margin-top:14px"><b>On the ten-topic threshold.</b> No category in the taxonomy at §21 has more than eight subcategories, so on today's content the <em>See all</em> pill never appears — S-05 draws Sports at twelve purely to specify that state. Until a category grows past ten the header row is the only route to S-07, which is why it must be tappable rather than decorative. If you would rather the pill always showed, that is a one-line change to the flag, not to the layout.</div>
 </section>
 
 <section id="s-browse">
@@ -1187,29 +1279,37 @@ Exiting play always returns to the screen that launched it, never to Home.</i>
     <div class="fw"><div class="ph-outer"><div class="ph"><div class="app">
       <div class="sb" style="color:#fff"><span>9:41</span><span class="ic"><u></u><i></i></span></div>
       <div class="scr">
-        <div class="bleed" style="background:linear-gradient(150deg,#FF8A24,#FF3D6E); padding:6px 20px 18px; color:#fff; position:relative; flex:none">
-          <div style="display:flex; align-items:center; gap:10px"><span style="font-size:19px">←</span><span class="gap"></span><span style="font-size:17px">⋯</span></div>
-          <div style="font-size:44px; position:absolute; right:18px; top:26px; opacity:.85">⚽</div>
-          <div class="dsp" style="font-size:26px; margin-top:14px">Sports</div>
-          <div style="font-size:12px; font-weight:700; opacity:.9">8 topics · 3,200 questions · 128k players</div>
+        <div class="bleed" style="background:linear-gradient(155deg,#FF8A24 0%,#FF3D6E 78%); padding:6px 0 20px; color:#fff; position:relative; flex:none">
+          <div style="display:flex; align-items:center; gap:10px; padding:0 20px"><span style="font-size:19px">←</span><span class="gap"></span><span style="font-size:17px">🔍</span></div>
+          <div style="font-size:78px; position:absolute; right:-6px; top:44px; opacity:.24">⚽</div>
+          <div class="dsp" style="font-size:30px; margin:14px 20px 2px">Sports</div>
+          <div style="font-size:11.5px; font-weight:700; opacity:.92; padding:0 20px 14px">8 topics · 3,200 questions · 128k players</div>
+          <div class="pad"><div style="display:flex; gap:7px">
+            <span class="chipf" style="background:rgba(255,255,255,.2); color:#fff">⭐ 18 stars</span>
+            <span class="chipf" style="background:rgba(255,255,255,.2); color:#fff">🏁 43 levels</span>
+            <span class="chipf" style="background:rgba(255,255,255,.2); color:#fff">🥇 #214</span>
+          </div></div>
         </div>
-        <div class="scroll" style="padding-top:16px">
-          <div class="sec-t"><h2>Topics</h2><a>Sort: Popular</a></div>
-          <div class="tiles">
-            <div class="tile"><div class="av" style="background:#FFE9D6">⚽</div><b>Football</b><span>Lv 12/20</span><div class="prog"><i style="width:60%"></i></div></div>
-            <div class="tile"><div class="av" style="background:#DDF1FF">🏏</div><b>Cricket</b><span>Lv 20/20</span><div class="prog"><i style="width:100%"></i></div></div>
-            <div class="tile"><div class="av" style="background:#E4F7F1">🏒</div><b>Hockey</b><span>Lv 2/20</span><div class="prog"><i style="width:10%"></i></div></div>
-            <div class="tile"><div class="av" style="background:#FFE4EC">🏀</div><b>Basketball</b><span>New</span></div>
-            <div class="tile"><div class="av" style="background:#FFF4D6">🎾</div><b>Tennis</b><span>New</span></div>
-            <div class="tile"><div class="av" style="background:#EDE8FA">🏅</div><b>Olympics</b><span>New</span></div>
-            <div class="tile"><div class="av" style="background:#E4F7F1">🏎️</div><b>Formula 1</b><span>New</span></div>
-            <div class="tile"><div class="av" style="background:#DDF1FF">🥊</div><b>Boxing &amp; MMA</b><span>New</span></div>
+        <div class="scroll" style="padding-top:16px; gap:14px">
+          <div class="pad"><div class="c" style="padding:12px 14px; display:flex; align-items:center; gap:11px">
+            <span style="font-size:30px">⚽</span>
+            <span style="flex:1"><span class="tiny mut">PICK UP WHERE YOU LEFT</span><b style="display:block; font-family:var(--f-display); font-size:15px; margin-top:1px">Football · Level 12</b><span style="font-size:11px; color:var(--tx3); font-weight:700">20 questions · pick up at question 1</span></span>
+            <span class="btn sm" style="width:auto; padding:0 16px">Resume</span>
+          </div></div>
+          <div class="tabsel"><span class="on">Your progress</span><span>Popular</span><span>A–Z</span></div>
+          <div class="duocard">
+            <div class="sub2"><div class="hd"><span class="av" style="background:#DDF1FF">🏏</span><b>Cricket</b></div><span class="bar thin"><i style="width:100%"></i></span><span class="meta"><span>Complete</span><span class="st" style="color:var(--gold)">⭐⭐⭐</span></span></div>
+            <div class="sub2"><div class="hd"><span class="av" style="background:#E4F7F1">🏒</span><b>Hockey</b></div><span class="bar thin"><i style="width:10%"></i></span><span class="meta"><span>Lv 2</span><span class="st mut">—</span></span></div>
+            <div class="sub2"><div class="hd"><span class="av" style="background:#FFE4EC">🏀</span><b>Basketball</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2"><div class="hd"><span class="av" style="background:#FFF4D6">🎾</span><b>Tennis</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2"><div class="hd"><span class="av" style="background:#EDE8FA">🏅</span><b>Olympics</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
+            <div class="sub2"><div class="hd"><span class="av" style="background:#E4F7F1">🏎️</span><b>Formula 1</b></div><span class="bar thin"><i style="width:0%"></i></span><span class="meta"><span>400 questions</span><span class="st mut">New</span></span></div>
           </div>
         </div>
         <div class="hi"></div>
       </div>
     </div></div></div>
-    <div class="cap"><b><span class="id">S-07</span>Category detail</b><p>Header colour and emoji come from the CMS, not the client — new categories ship without an app update. Sort options: Popular, A–Z, Your progress.</p></div></div>
+    <div class="cap"><b><span class="id">S-07</span>Category screen — all subcategories</b><p>Reached by tapping a home section header, or its <em>See all</em> once a category passes ten topics. Header colour and emoji come from the CMS, so a new category ships without an app update. The two-up card is wider than a home tile on purpose — that width is what buys a progress bar and a star row. Sort: Your progress, Popular, A–Z.</p></div></div>
 
     <div class="fw"><div class="ph-outer"><div class="ph"><div class="app">
       <div class="sb"><span>9:41</span><span class="ic"><u></u><i></i></span></div>
@@ -2970,7 +3070,7 @@ xpEarned = 100
 </section>
 
 <footer>
-  <span>Quizoo Design Bible · v1.0 · 3 September 2026 · 54 screens, 26 sections</span>
+  <span>Quizoo Design Bible · v1.0 · rev. 12 September 2026 · 54 screens, 26 sections</span>
   <span>Design tokens, screen IDs and the data model in this document are the contract. Anything not specified here is the implementer's call.</span>
 </footer>
 
@@ -3017,4 +3117,6 @@ xpEarned = 100
 })();
 </script>
 
-</body></html>
+
+</body>
+</html>
