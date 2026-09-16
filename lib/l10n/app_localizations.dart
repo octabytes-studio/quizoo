@@ -1430,6 +1430,18 @@ abstract class AppLocalizations {
   /// **'Check your connection and give it another go.'**
   String get contentErrorBody;
 
+  /// Arena error heading when start_level_attempt rejects with out_of_hearts before the level even loads — distinct from contentErrorTitle, which would wrongly tell the player to check their connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of hearts'**
+  String get startBlockedOutOfHeartsTitle;
+
+  /// Arena error body paired with startBlockedOutOfHeartsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hearts refill automatically over time. Come back soon to keep playing.'**
+  String get startBlockedOutOfHeartsBody;
+
   /// Snackbar for a plan-003 tap that has no real backend behind it (search, invite, duel, add-friend).
   ///
   /// In en, this message translates to:

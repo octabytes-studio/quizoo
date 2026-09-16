@@ -71,7 +71,17 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
   /// Prefetch progress is purely local to this sheet and dies with it, so it
   /// is `setState` rather than a Cubit (CLAUDE.md §3).
   bool _isPreparing = true;
-  bool _failed = false;
+  ApiException? _error;
+
+  bool get _failed => _error != null;
+
+  /// `start_level_attempt` (functions migration) raises this — and spends
+  /// nothing — when the account has no hearts left to start a level. Distinct
+  /// copy here, same as the deep-link arena's `_ArenaError`, because this is
+  /// by far the more common way a player hits it: this sheet's prefetch
+  /// *is* the call that spends the level's heart, so it fails before "Start
+  /// Level" is ever tappable.
+  bool get _isOutOfHearts => _error?.code == 'out_of_hearts';
 
   @override
   void initState() {
@@ -82,7 +92,7 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
   Future<void> _prepare() async {
     setState(() {
       _isPreparing = true;
-      _failed = false;
+      _error = null;
     });
     try {
       await widget.repository.prepareLevel(
@@ -92,11 +102,11 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
         languageCode: widget.languageCode,
       );
       if (mounted) setState(() => _isPreparing = false);
-    } on ApiException {
+    } on ApiException catch (error) {
       if (mounted) {
         setState(() {
           _isPreparing = false;
-          _failed = true;
+          _error = error;
         });
       }
     }
@@ -207,6 +217,24 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
             ],
           ),
           SizedBox(height: 18.h),
+          if (_failed) ...[
+            Text(
+              _isOutOfHearts
+                  ? '💔 ${l10n.startBlockedOutOfHeartsTitle}'
+                  : l10n.contentErrorTitle,
+              textAlign: TextAlign.center,
+              style: textTheme.titleMedium,
+            ),
+            SizedBox(height: AppSpacing.xs.h),
+            Text(
+              _isOutOfHearts
+                  ? l10n.startBlockedOutOfHeartsBody
+                  : l10n.contentErrorBody,
+              textAlign: TextAlign.center,
+              style: textTheme.bodySmall,
+            ),
+            SizedBox(height: AppSpacing.sm.h),
+          ],
           if (_failed)
             ChunkyButton.ghost(label: l10n.commonRetry, onPressed: _prepare)
           else
