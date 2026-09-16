@@ -43,8 +43,7 @@ void main() {
 
   group('LevelBriefSheet', () {
     testWidgets(
-      'start_level_attempt out_of_hearts shows the hearts explanation, '
-      'not the generic content-error copy',
+      'a failed prefetch explains itself instead of a bare Retry button',
       (tester) async {
         when(
           () => api.fetchLevelQuestions(
@@ -52,13 +51,7 @@ void main() {
             levelNumber: any(named: 'levelNumber'),
             languageCode: any(named: 'languageCode'),
           ),
-        ).thenThrow(
-          const ApiException(
-            'out_of_hearts',
-            kind: ApiErrorKind.server,
-            code: 'out_of_hearts',
-          ),
-        );
+        ).thenThrow(const ApiException.network());
 
         await pumpSheet(tester);
         await tester.pump();
@@ -67,27 +60,28 @@ void main() {
           tester.element(find.byType(LevelBriefSheet)),
         );
 
-        expect(
-          find.text('💔 ${l10n.startBlockedOutOfHeartsTitle}'),
-          findsOneWidget,
-        );
-        expect(find.text(l10n.startBlockedOutOfHeartsBody), findsOneWidget);
-        expect(find.text(l10n.contentErrorTitle), findsNothing);
+        expect(find.text(l10n.contentErrorTitle), findsOneWidget);
+        expect(find.text(l10n.contentErrorBody), findsOneWidget);
         expect(find.text(l10n.commonRetry), findsOneWidget);
         expect(find.text(l10n.levelBriefStart(12)), findsNothing);
       },
     );
 
-    testWidgets('any other failure keeps the generic content-error copy', (
-      tester,
-    ) async {
+    testWidgets('a successful prefetch enables Start Level', (tester) async {
       when(
         () => api.fetchLevelQuestions(
           subcategoryId: any(named: 'subcategoryId'),
           levelNumber: any(named: 'levelNumber'),
           languageCode: any(named: 'languageCode'),
         ),
-      ).thenThrow(const ApiException.network());
+      ).thenAnswer(
+        (_) async => const PreparedLevel(
+          attemptId: 'attempt_test',
+          questions: [],
+          secondsPerQuestion: 20,
+          isBoss: false,
+        ),
+      );
 
       await pumpSheet(tester);
       await tester.pump();
@@ -96,8 +90,8 @@ void main() {
         tester.element(find.byType(LevelBriefSheet)),
       );
 
-      expect(find.text(l10n.contentErrorTitle), findsOneWidget);
-      expect(find.text(l10n.startBlockedOutOfHeartsTitle), findsNothing);
+      expect(find.text(l10n.levelBriefStart(12)), findsOneWidget);
+      expect(find.text(l10n.contentErrorTitle), findsNothing);
     });
   });
 }
