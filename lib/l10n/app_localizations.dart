@@ -122,12 +122,6 @@ abstract class AppLocalizations {
   /// **'🔥 Popular this week'**
   String get homePopularThisWeek;
 
-  /// S-04 Home category chip row heading.
-  ///
-  /// In en, this message translates to:
-  /// **'Categories'**
-  String get homeCategories;
-
   /// S-04 Home daily banner heading.
   ///
   /// In en, this message translates to:
@@ -512,12 +506,6 @@ abstract class AppLocalizations {
   /// **'Play'**
   String get homeDailyPlay;
 
-  /// S-05 Home categories section trailing link.
-  ///
-  /// In en, this message translates to:
-  /// **'All {count}'**
-  String homeAllCategories(int count);
-
   /// S-04 popular card play count.
   ///
   /// In en, this message translates to:
@@ -554,11 +542,41 @@ abstract class AppLocalizations {
   /// **'Locked'**
   String get homeLocked;
 
-  /// S-04 category filter chip that clears the filter.
+  /// S-05 category section header topic count, shown when a category has ten or fewer topics.
   ///
   /// In en, this message translates to:
-  /// **'✨ All'**
-  String get homeFilterAll;
+  /// **'{count} topics'**
+  String homeTopicCount(int count);
+
+  /// S-05 category section header See-all pill, shown once a category passes ten topics.
+  ///
+  /// In en, this message translates to:
+  /// **'See all {count}'**
+  String homeSeeAllCount(int count);
+
+  /// Subcategory card status line before any of its levels are cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} questions'**
+  String homeQuestionCount(int count);
+
+  /// Subcategory card status line once at least one level is cleared but not all.
+  ///
+  /// In en, this message translates to:
+  /// **'Lv {level}'**
+  String homeLevelShort(int level);
+
+  /// Subcategory card status line once every level is cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get homeComplete;
+
+  /// Semantic label read for a whole tappable category section header row.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {count} topics'**
+  String homeCategorySectionLabel(String name, int count);
 
   /// S-06 search field placeholder.
   ///
@@ -625,6 +643,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More'**
   String get categoryMore;
+
+  /// S-07 header stat chip — total stars earned across the category's topics.
+  ///
+  /// In en, this message translates to:
+  /// **'⭐ {count} stars'**
+  String categoryStatsStars(int count);
+
+  /// S-07 header stat chip — total levels cleared across the category's topics.
+  ///
+  /// In en, this message translates to:
+  /// **'🏁 {count} levels'**
+  String categoryStatsLevels(int count);
+
+  /// S-07 resume card eyebrow label.
+  ///
+  /// In en, this message translates to:
+  /// **'PICK UP WHERE YOU LEFT'**
+  String get categoryResumeEyebrow;
 
   /// Levels 1–5 difficulty band (§19).
   ///

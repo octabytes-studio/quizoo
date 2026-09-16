@@ -17,7 +17,8 @@ class HomeRepository {
       _api.fetchCachedHome(isSignedIn: isSignedIn, languageCode: languageCode);
 
   /// The popular rail, which lands after the first paint.
-  Future<List<PopularQuiz>> fetchPopularRail() => _api.fetchPopularRail();
+  Future<List<PopularQuiz>> fetchPopularRail(List<String> subcategoryIds) =>
+      _api.fetchPopularRail(subcategoryIds);
 
   /// S-06's result list.
   ///
@@ -52,8 +53,12 @@ class HomeRepository {
   }
 
   /// The chip cloud under S-06's results.
-  Future<List<String>> fetchTrendingSearches() async {
-    final popular = await _api.fetchTrendingSearches();
+  Future<List<String>> fetchTrendingSearches({
+    required String languageCode,
+  }) async {
+    final popular = await _api.fetchTrendingSearches(
+      languageCode: languageCode,
+    );
     return [for (final quiz in popular) quiz.title.toLowerCase()];
   }
 

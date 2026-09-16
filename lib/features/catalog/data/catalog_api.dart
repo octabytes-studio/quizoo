@@ -67,11 +67,36 @@ class CatalogApi {
         category: category,
         topics: topics,
         playerCount: categoryRow['player_count'] as int? ?? 0,
+        starsEarned: topics.fold(0, (sum, topic) => sum + topic.starsEarned),
+        levelsCleared: topics.fold(
+          0,
+          (sum, topic) => sum + topic.levelsCleared,
+        ),
+        resumeTopic: resumeTopic(topics),
       );
     } catch (error) {
       if (error is ApiException) rethrow;
       throw ApiException.fromSupabase(error);
     }
+  }
+
+  /// Plan 009, assumption 5: the topic with the most levels cleared among
+  /// those with at least one, ties broken by list (`sort_order`) position.
+  /// Null when nothing in the category has been started, which is what
+  /// keeps S-07's resume card absent rather than an empty shell.
+  ///
+  /// Public and static, like [CatalogRepository.sorted]: a pure function of
+  /// already-fetched topics, so it is unit-tested directly rather than
+  /// through a mocked Supabase round trip.
+  static Subcategory? resumeTopic(List<Subcategory> topics) {
+    Subcategory? resume;
+    for (final topic in topics) {
+      if (topic.levelsCleared == 0) continue;
+      if (resume == null || topic.levelsCleared > resume.levelsCleared) {
+        resume = topic;
+      }
+    }
+    return resume;
   }
 
   Future<LevelMap> fetchLevelMap({

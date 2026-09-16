@@ -21,41 +21,22 @@ final class HomeLoading extends HomeState {
 /// S-04 / S-05. Which of the two renders is the session's business, not this
 /// state's: one content model serves both layouts.
 final class HomeLoaded extends HomeState {
-  const HomeLoaded({
-    required this.content,
-    this.selectedCategoryId,
-    this.isPopularRailLoading = false,
-  });
+  const HomeLoaded({required this.content, this.isPopularRailLoading = false});
 
   final HomeContent content;
-
-  /// Null means the "✨ All" chip is active.
-  final String? selectedCategoryId;
 
   /// True between the cached first paint and the popular rail landing, so the
   /// rail can show skeletons while the rest of Home is already interactive.
   final bool isPopularRailLoading;
 
-  /// The tiles the active filter leaves visible.
-  List<Subcategory> get visibleSubcategories =>
-      content.subcategoriesIn(selectedCategoryId);
-
-  HomeLoaded copyWith({
-    HomeContent? content,
-    String? selectedCategoryId,
-    bool? isPopularRailLoading,
-  }) => HomeLoaded(
-    content: content ?? this.content,
-    selectedCategoryId: selectedCategoryId,
-    isPopularRailLoading: isPopularRailLoading ?? this.isPopularRailLoading,
-  );
+  HomeLoaded copyWith({HomeContent? content, bool? isPopularRailLoading}) =>
+      HomeLoaded(
+        content: content ?? this.content,
+        isPopularRailLoading: isPopularRailLoading ?? this.isPopularRailLoading,
+      );
 
   @override
-  List<Object?> get props => [
-    content,
-    selectedCategoryId,
-    isPopularRailLoading,
-  ];
+  List<Object?> get props => [content, isPopularRailLoading];
 }
 
 /// The cached read itself failed, which is the only way Home has nothing at

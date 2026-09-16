@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:quizoo/core/models/category.dart';
 import 'package:quizoo/core/models/player_currency.dart';
@@ -104,11 +105,54 @@ abstract class HomeContent with _$HomeContent {
   factory HomeContent.fromJson(Map<String, dynamic> json) =>
       _$HomeContentFromJson(json);
 
-  /// The topics inside [categoryId], or all of them when nothing is filtered.
-  List<Subcategory> subcategoriesIn(String? categoryId) => categoryId == null
-      ? subcategories
-      : [
-          for (final subcategory in subcategories)
-            if (subcategory.categoryId == categoryId) subcategory,
-        ];
+  /// One section per category with at least one topic (plan 009) — a
+  /// category with none is dropped entirely rather than rendered as an empty
+  /// rail. Order is state-driven (assumption 1 of that plan): the category
+  /// owning [continueEntry]'s topic is promoted first, everything else
+  /// follows [Category.order].
+  List<HomeCategorySection> get sections {
+    final topicsByCategory = <String, List<Subcategory>>{};
+    for (final subcategory in subcategories) {
+      (topicsByCategory[subcategory.categoryId] ??= []).add(subcategory);
+    }
+
+    String? promotedCategoryId;
+    if (continueEntry case final entry?) {
+      for (final subcategory in subcategories) {
+        if (subcategory.id == entry.subcategoryId) {
+          promotedCategoryId = subcategory.categoryId;
+          break;
+        }
+      }
+    }
+
+    final ordered = [...categories]
+      ..sort((a, b) {
+        if (a.id == promotedCategoryId) return -1;
+        if (b.id == promotedCategoryId) return 1;
+        return a.order.compareTo(b.order);
+      });
+
+    return [
+      for (final category in ordered)
+        if (topicsByCategory[category.id] case final topics?
+            when topics.isNotEmpty)
+          HomeCategorySection(category: category, topics: topics),
+    ];
+  }
+}
+
+/// One category and its topics, in the order [HomeContent.sections] decided.
+///
+/// Not a `@freezed` model like the rest of this file: it holds no state of
+/// its own, is never persisted or sent over the wire, and is recomputed on
+/// every read of [HomeContent.sections].
+class HomeCategorySection extends Equatable {
+  const HomeCategorySection({required this.category, required this.topics});
+
+  final Category category;
+  final List<Subcategory> topics;
+
+  @override
+  List<Object?> get props => [category, topics];
 }

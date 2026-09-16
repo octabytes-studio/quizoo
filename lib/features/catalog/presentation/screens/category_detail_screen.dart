@@ -11,14 +11,15 @@ import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
+import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
-import 'package:quizoo/core/widgets/category_tile.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/section_header.dart';
 import 'package:quizoo/core/widgets/skeleton_box.dart';
+import 'package:quizoo/core/widgets/subcategory_card.dart';
 import 'package:quizoo/features/catalog/data/catalog_api.dart';
 import 'package:quizoo/features/catalog/data/catalog_repository.dart';
 import 'package:quizoo/features/catalog/domain/category_detail.dart';
@@ -99,6 +100,18 @@ class _CategoryLoaded extends StatelessWidget {
               AppSpacing.xl.h,
             ),
             children: [
+              if (detail.resumeTopic case final topic?) ...[
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenMargin.w,
+                  ),
+                  child: _ResumeCard(
+                    topic: topic,
+                    onTap: () => _openTopic(context, topic),
+                  ),
+                ),
+                SizedBox(height: AppSpacing.base.h),
+              ],
               SectionHeader(
                 title: l10n.categoryTopics,
                 actionLabel: l10n.categorySortPopular,
@@ -111,30 +124,19 @@ class _CategoryLoaded extends StatelessWidget {
                   horizontal: AppSpacing.screenMargin.w,
                 ),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 11.w,
-                  mainAxisSpacing: 11.h,
+                  crossAxisCount: 2,
+                  crossAxisSpacing: AppSpacing.md.w,
+                  mainAxisSpacing: AppSpacing.md.h,
                   // A fixed height rather than an aspect ratio — see the
                   // matching grid on Home for why.
-                  mainAxisExtent: 140.h,
+                  mainAxisExtent: SubcategoryCard.railHeight.h,
                 ),
                 itemCount: detail.topics.length,
                 itemBuilder: (context, index) {
                   final topic = detail.topics[index];
-                  return CategoryTile(
-                    name: topic.name,
-                    emoji: topic.emoji,
-                    plateColor: AppGradients.hex(topic.plateColor),
-                    progress: topic.levelsCleared == 0 ? null : topic.progress,
-                    caption: switch (topic) {
-                      Subcategory(isLocked: true) => l10n.homeLocked,
-                      Subcategory(levelsCleared: 0) => l10n.homeNew,
-                      _ => l10n.homeLevelProgress(
-                        topic.levelsCleared,
-                        topic.levelCount,
-                      ),
-                    },
-                    isLocked: topic.isLocked,
+                  return SubcategoryCard.forTopic(
+                    topic,
+                    l10n,
                     onTap: () => _openTopic(context, topic),
                   );
                 },
@@ -143,6 +145,72 @@ class _CategoryLoaded extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// `.c` "pick up where you left" — S-07's resume card, present only when
+/// [CategoryDetail.resumeTopic] is not null (plan 009, assumption 5).
+class _ResumeCard extends StatelessWidget {
+  const _ResumeCard({required this.topic, required this.onTap});
+
+  final Subcategory topic;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final quizoo = context.quizoo;
+    final l10n = AppLocalizations.of(context);
+    final textTheme = Theme.of(context).textTheme;
+
+    return Semantics(
+      button: true,
+      label: l10n.homeContinueTitle(topic.name, topic.levelsCleared + 1),
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 14.w,
+            vertical: AppSpacing.md.h,
+          ),
+          decoration: BoxDecoration(
+            color: quizoo.s1,
+            borderRadius: AppRadius.cardAll,
+            border: Border.all(color: quizoo.ln),
+            boxShadow: quizoo.shadow,
+          ),
+          child: Row(
+            children: [
+              Text(topic.emoji, style: AppTypography.glyph(30.sp)),
+              SizedBox(width: AppSpacing.md.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.categoryResumeEyebrow,
+                      style: textTheme.labelSmall,
+                    ),
+                    Text(
+                      l10n.homeContinueTitle(
+                        topic.name,
+                        topic.levelsCleared + 1,
+                      ),
+                      style: textTheme.titleSmall,
+                    ),
+                  ],
+                ),
+              ),
+              ChunkyButton(
+                label: l10n.homeResume,
+                isSmall: true,
+                onPressed: onTap,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -236,10 +304,58 @@ class _CategoryHeader extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
+                  SizedBox(height: AppSpacing.sm.h),
+                  // Stars and levels are derivable from the topics already on
+                  // [detail]; rank needs a category-leaderboard read this
+                  // phase does not add (plan 009, open question 4), so this
+                  // row ships two chips and leaves room for a third.
+                  Row(
+                    children: [
+                      _HeaderStatChip(
+                        label: l10n.categoryStatsStars(detail.starsEarned),
+                      ),
+                      SizedBox(width: AppSpacing.xs.w + 3.w),
+                      _HeaderStatChip(
+                        label: l10n.categoryStatsLevels(detail.levelsCleared),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// `.chipf` on a translucent white fill — the header's own variant, since the
+/// shared [AppChip.status] chip is s3-only and this sits on a saturated
+/// gradient regardless of theme, exactly like the header text beside it.
+class _HeaderStatChip extends StatelessWidget {
+  const _HeaderStatChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm.w,
+        vertical: AppSpacing.xs.h,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: AppRadius.pillAll,
+      ),
+      child: Text(
+        label,
+        style: textTheme.labelSmall!.copyWith(
+          fontWeight: FontWeight.w800,
+          color: Colors.white,
         ),
       ),
     );

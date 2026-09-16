@@ -25,9 +25,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homePopularThisWeek => '🔥 Popular this week';
 
   @override
-  String get homeCategories => 'Categories';
-
-  @override
   String get homeDailyChallenge => '🎯 Daily challenge';
 
   @override
@@ -250,11 +247,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeDailyPlay => 'Play';
 
   @override
-  String homeAllCategories(int count) {
-    return 'All $count';
-  }
-
-  @override
   String homePlayedCount(String count) {
     return '👥 $count played';
   }
@@ -279,7 +271,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeLocked => 'Locked';
 
   @override
-  String get homeFilterAll => '✨ All';
+  String homeTopicCount(int count) {
+    return '$count topics';
+  }
+
+  @override
+  String homeSeeAllCount(int count) {
+    return 'See all $count';
+  }
+
+  @override
+  String homeQuestionCount(int count) {
+    return '$count questions';
+  }
+
+  @override
+  String homeLevelShort(int level) {
+    return 'Lv $level';
+  }
+
+  @override
+  String get homeComplete => 'Complete';
+
+  @override
+  String homeCategorySectionLabel(String name, int count) {
+    return '$name, $count topics';
+  }
 
   @override
   String get searchHint => 'Search topics';
@@ -320,6 +337,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryMore => 'More';
+
+  @override
+  String categoryStatsStars(int count) {
+    return '⭐ $count stars';
+  }
+
+  @override
+  String categoryStatsLevels(int count) {
+    return '🏁 $count levels';
+  }
+
+  @override
+  String get categoryResumeEyebrow => 'PICK UP WHERE YOU LEFT';
 
   @override
   String get difficultyEasy => 'Easy';

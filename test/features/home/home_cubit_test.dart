@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
+import 'package:quizoo/core/models/category.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/home/data/home_api.dart';
 import 'package:quizoo/features/home/data/home_repository.dart';
@@ -45,7 +46,7 @@ void main() {
           ),
         ).thenAnswer((_) async => cached);
         when(
-          () => repository.fetchPopularRail(),
+          () => repository.fetchPopularRail(any()),
         ).thenAnswer((_) async => popular);
       },
       build: () => HomeCubit(repository),
@@ -95,7 +96,7 @@ void main() {
           ),
         ).thenAnswer((_) async => cached);
         when(
-          () => repository.fetchPopularRail(),
+          () => repository.fetchPopularRail(any()),
         ).thenThrow(const ApiException.network());
       },
       build: () => HomeCubit(repository),
@@ -116,50 +117,68 @@ void main() {
             ),
       ],
     );
+  });
 
-    blocTest<HomeCubit, HomeState>(
-      'the category filter narrows the grid, and re-tapping clears it',
-      setUp: () {
-        when(
-          () => repository.fetchCachedHome(
-            isSignedIn: any(named: 'isSignedIn'),
-            languageCode: any(named: 'languageCode'),
-          ),
-        ).thenAnswer(
-          (_) async => const HomeContent(
-            categories: MockCatalog.categories,
-            subcategories: MockCatalog.subcategories,
-          ),
-        );
-        when(() => repository.fetchPopularRail()).thenAnswer((_) async => []);
-      },
-      build: () => HomeCubit(repository),
-      act: (cubit) async {
-        await cubit.load(isSignedIn: false, languageCode: 'en');
-        cubit.selectCategory(MockCatalog.sportsId);
+  group('HomeContent.sections', () {
+    // Pure and Cubit-free (plan 009): every category in the fixture has at
+    // least one topic, so a plain load groups and orders without promotion.
+    test('groups by category and orders by Category.order', () {
+      const content = HomeContent(
+        categories: MockCatalog.categories,
+        subcategories: MockCatalog.subcategories,
+      );
 
-        final filtered = cubit.state as HomeLoaded;
-        expect(filtered.selectedCategoryId, MockCatalog.sportsId);
-        expect(
-          filtered.visibleSubcategories.every(
-            (topic) => topic.categoryId == MockCatalog.sportsId,
-          ),
-          isTrue,
-        );
+      final sections = content.sections;
 
-        // Tapping the active chip again clears the filter, exactly as the
-        // "✨ All" chip does.
-        cubit.selectCategory(MockCatalog.sportsId);
-      },
-      verify: (cubit) {
-        final cleared = cubit.state as HomeLoaded;
-        expect(cleared.selectedCategoryId, isNull);
-        expect(
-          cleared.visibleSubcategories.length,
-          MockCatalog.subcategories.length,
-        );
-      },
-    );
+      expect(sections, hasLength(MockCatalog.categories.length));
+      expect(
+        sections.map((section) => section.category.id),
+        MockCatalog.categories.map((category) => category.id),
+      );
+      expect(
+        sections.first.topics,
+        MockCatalog.forCategory(MockCatalog.sportsId),
+      );
+    });
+
+    test('drops a category with no topics rather than an empty rail', () {
+      const emptyCategory = Category(
+        id: 'cat_empty',
+        name: 'Empty',
+        emoji: '🕳️',
+        colorFrom: '#000000',
+        colorTo: '#000000',
+        order: -1,
+      );
+      final content = HomeContent(
+        categories: [emptyCategory, ...MockCatalog.categories],
+        subcategories: MockCatalog.subcategories,
+      );
+
+      expect(
+        content.sections.map((section) => section.category.id),
+        isNot(contains('cat_empty')),
+      );
+    });
+
+    test('promotes the continue entry\'s own category to first', () {
+      // Science (order 1) would otherwise sort after Sports (order 0).
+      final content = HomeContent(
+        categories: MockCatalog.categories,
+        subcategories: MockCatalog.subcategories,
+        continueEntry: const ContinueEntry(
+          subcategoryId: MockCatalog.solarSystemId,
+          subcategoryName: 'Solar System',
+          emoji: '🪐',
+          plateColor: '#DDF1FF',
+          levelNumber: 4,
+        ),
+      );
+
+      expect(content.sections.first.category.id, MockCatalog.scienceId);
+      // Everything else still follows Category.order.
+      expect(content.sections[1].category.id, MockCatalog.sportsId);
+    });
   });
 
   group('SearchCubit', () {

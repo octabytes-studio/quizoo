@@ -17,7 +17,16 @@ mixin _$CategoryDetail {
 
  Category get category; List<Subcategory> get topics;/// The "128k players" half of the header meta line. It is not on
 /// [Category] because it is a live engagement figure, not taxonomy.
- int get playerCount;
+ int get playerCount;/// Total stars across every topic in this category — the header's ⭐
+/// stat chip (plan 009). The rank chip alongside it is a follow-up
+/// (plan 009, open question 4): a category leaderboard read this phase
+/// does not add.
+ int get starsEarned;/// Total levels cleared across every topic — the header's 🏁 stat chip.
+ int get levelsCleared;/// "Pick up where you left" — the topic in this category the player is
+/// currently on (plan 009, assumption 5). Null when nothing in the
+/// category has been started, which is when the resume card is absent
+/// entirely rather than an empty shell.
+ Subcategory? get resumeTopic;
 /// Create a copy of CategoryDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +39,16 @@ $CategoryDetailCopyWith<CategoryDetail> get copyWith => _$CategoryDetailCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryDetail&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other.topics, topics)&&(identical(other.playerCount, playerCount) || other.playerCount == playerCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryDetail&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other.topics, topics)&&(identical(other.playerCount, playerCount) || other.playerCount == playerCount)&&(identical(other.starsEarned, starsEarned) || other.starsEarned == starsEarned)&&(identical(other.levelsCleared, levelsCleared) || other.levelsCleared == levelsCleared)&&(identical(other.resumeTopic, resumeTopic) || other.resumeTopic == resumeTopic));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,category,const DeepCollectionEquality().hash(topics),playerCount);
+int get hashCode => Object.hash(runtimeType,category,const DeepCollectionEquality().hash(topics),playerCount,starsEarned,levelsCleared,resumeTopic);
 
 @override
 String toString() {
-  return 'CategoryDetail(category: $category, topics: $topics, playerCount: $playerCount)';
+  return 'CategoryDetail(category: $category, topics: $topics, playerCount: $playerCount, starsEarned: $starsEarned, levelsCleared: $levelsCleared, resumeTopic: $resumeTopic)';
 }
 
 
@@ -50,11 +59,11 @@ abstract mixin class $CategoryDetailCopyWith<$Res>  {
   factory $CategoryDetailCopyWith(CategoryDetail value, $Res Function(CategoryDetail) _then) = _$CategoryDetailCopyWithImpl;
 @useResult
 $Res call({
- Category category, List<Subcategory> topics, int playerCount
+ Category category, List<Subcategory> topics, int playerCount, int starsEarned, int levelsCleared, Subcategory? resumeTopic
 });
 
 
-$CategoryCopyWith<$Res> get category;
+$CategoryCopyWith<$Res> get category;$SubcategoryCopyWith<$Res>? get resumeTopic;
 
 }
 /// @nodoc
@@ -67,12 +76,15 @@ class _$CategoryDetailCopyWithImpl<$Res>
 
 /// Create a copy of CategoryDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? category = null,Object? topics = null,Object? playerCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? category = null,Object? topics = null,Object? playerCount = null,Object? starsEarned = null,Object? levelsCleared = null,Object? resumeTopic = freezed,}) {
   return _then(_self.copyWith(
 category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as Category,topics: null == topics ? _self.topics : topics // ignore: cast_nullable_to_non_nullable
 as List<Subcategory>,playerCount: null == playerCount ? _self.playerCount : playerCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,starsEarned: null == starsEarned ? _self.starsEarned : starsEarned // ignore: cast_nullable_to_non_nullable
+as int,levelsCleared: null == levelsCleared ? _self.levelsCleared : levelsCleared // ignore: cast_nullable_to_non_nullable
+as int,resumeTopic: freezed == resumeTopic ? _self.resumeTopic : resumeTopic // ignore: cast_nullable_to_non_nullable
+as Subcategory?,
   ));
 }
 /// Create a copy of CategoryDetail
@@ -83,6 +95,18 @@ $CategoryCopyWith<$Res> get category {
   
   return $CategoryCopyWith<$Res>(_self.category, (value) {
     return _then(_self.copyWith(category: value));
+  });
+}/// Create a copy of CategoryDetail
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SubcategoryCopyWith<$Res>? get resumeTopic {
+    if (_self.resumeTopic == null) {
+    return null;
+  }
+
+  return $SubcategoryCopyWith<$Res>(_self.resumeTopic!, (value) {
+    return _then(_self.copyWith(resumeTopic: value));
   });
 }
 }
@@ -166,10 +190,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Category category,  List<Subcategory> topics,  int playerCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Category category,  List<Subcategory> topics,  int playerCount,  int starsEarned,  int levelsCleared,  Subcategory? resumeTopic)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CategoryDetail() when $default != null:
-return $default(_that.category,_that.topics,_that.playerCount);case _:
+return $default(_that.category,_that.topics,_that.playerCount,_that.starsEarned,_that.levelsCleared,_that.resumeTopic);case _:
   return orElse();
 
 }
@@ -187,10 +211,10 @@ return $default(_that.category,_that.topics,_that.playerCount);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Category category,  List<Subcategory> topics,  int playerCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Category category,  List<Subcategory> topics,  int playerCount,  int starsEarned,  int levelsCleared,  Subcategory? resumeTopic)  $default,) {final _that = this;
 switch (_that) {
 case _CategoryDetail():
-return $default(_that.category,_that.topics,_that.playerCount);case _:
+return $default(_that.category,_that.topics,_that.playerCount,_that.starsEarned,_that.levelsCleared,_that.resumeTopic);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +231,10 @@ return $default(_that.category,_that.topics,_that.playerCount);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Category category,  List<Subcategory> topics,  int playerCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Category category,  List<Subcategory> topics,  int playerCount,  int starsEarned,  int levelsCleared,  Subcategory? resumeTopic)?  $default,) {final _that = this;
 switch (_that) {
 case _CategoryDetail() when $default != null:
-return $default(_that.category,_that.topics,_that.playerCount);case _:
+return $default(_that.category,_that.topics,_that.playerCount,_that.starsEarned,_that.levelsCleared,_that.resumeTopic);case _:
   return null;
 
 }
@@ -222,7 +246,7 @@ return $default(_that.category,_that.topics,_that.playerCount);case _:
 @JsonSerializable()
 
 class _CategoryDetail implements CategoryDetail {
-  const _CategoryDetail({required this.category, final  List<Subcategory> topics = const [], this.playerCount = 0}): _topics = topics;
+  const _CategoryDetail({required this.category, final  List<Subcategory> topics = const [], this.playerCount = 0, this.starsEarned = 0, this.levelsCleared = 0, this.resumeTopic}): _topics = topics;
   factory _CategoryDetail.fromJson(Map<String, dynamic> json) => _$CategoryDetailFromJson(json);
 
 @override final  Category category;
@@ -236,6 +260,18 @@ class _CategoryDetail implements CategoryDetail {
 /// The "128k players" half of the header meta line. It is not on
 /// [Category] because it is a live engagement figure, not taxonomy.
 @override@JsonKey() final  int playerCount;
+/// Total stars across every topic in this category — the header's ⭐
+/// stat chip (plan 009). The rank chip alongside it is a follow-up
+/// (plan 009, open question 4): a category leaderboard read this phase
+/// does not add.
+@override@JsonKey() final  int starsEarned;
+/// Total levels cleared across every topic — the header's 🏁 stat chip.
+@override@JsonKey() final  int levelsCleared;
+/// "Pick up where you left" — the topic in this category the player is
+/// currently on (plan 009, assumption 5). Null when nothing in the
+/// category has been started, which is when the resume card is absent
+/// entirely rather than an empty shell.
+@override final  Subcategory? resumeTopic;
 
 /// Create a copy of CategoryDetail
 /// with the given fields replaced by the non-null parameter values.
@@ -250,16 +286,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategoryDetail&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other._topics, _topics)&&(identical(other.playerCount, playerCount) || other.playerCount == playerCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategoryDetail&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other._topics, _topics)&&(identical(other.playerCount, playerCount) || other.playerCount == playerCount)&&(identical(other.starsEarned, starsEarned) || other.starsEarned == starsEarned)&&(identical(other.levelsCleared, levelsCleared) || other.levelsCleared == levelsCleared)&&(identical(other.resumeTopic, resumeTopic) || other.resumeTopic == resumeTopic));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,category,const DeepCollectionEquality().hash(_topics),playerCount);
+int get hashCode => Object.hash(runtimeType,category,const DeepCollectionEquality().hash(_topics),playerCount,starsEarned,levelsCleared,resumeTopic);
 
 @override
 String toString() {
-  return 'CategoryDetail(category: $category, topics: $topics, playerCount: $playerCount)';
+  return 'CategoryDetail(category: $category, topics: $topics, playerCount: $playerCount, starsEarned: $starsEarned, levelsCleared: $levelsCleared, resumeTopic: $resumeTopic)';
 }
 
 
@@ -270,11 +306,11 @@ abstract mixin class _$CategoryDetailCopyWith<$Res> implements $CategoryDetailCo
   factory _$CategoryDetailCopyWith(_CategoryDetail value, $Res Function(_CategoryDetail) _then) = __$CategoryDetailCopyWithImpl;
 @override @useResult
 $Res call({
- Category category, List<Subcategory> topics, int playerCount
+ Category category, List<Subcategory> topics, int playerCount, int starsEarned, int levelsCleared, Subcategory? resumeTopic
 });
 
 
-@override $CategoryCopyWith<$Res> get category;
+@override $CategoryCopyWith<$Res> get category;@override $SubcategoryCopyWith<$Res>? get resumeTopic;
 
 }
 /// @nodoc
@@ -287,12 +323,15 @@ class __$CategoryDetailCopyWithImpl<$Res>
 
 /// Create a copy of CategoryDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? category = null,Object? topics = null,Object? playerCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? category = null,Object? topics = null,Object? playerCount = null,Object? starsEarned = null,Object? levelsCleared = null,Object? resumeTopic = freezed,}) {
   return _then(_CategoryDetail(
 category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as Category,topics: null == topics ? _self._topics : topics // ignore: cast_nullable_to_non_nullable
 as List<Subcategory>,playerCount: null == playerCount ? _self.playerCount : playerCount // ignore: cast_nullable_to_non_nullable
-as int,
+as int,starsEarned: null == starsEarned ? _self.starsEarned : starsEarned // ignore: cast_nullable_to_non_nullable
+as int,levelsCleared: null == levelsCleared ? _self.levelsCleared : levelsCleared // ignore: cast_nullable_to_non_nullable
+as int,resumeTopic: freezed == resumeTopic ? _self.resumeTopic : resumeTopic // ignore: cast_nullable_to_non_nullable
+as Subcategory?,
   ));
 }
 
@@ -304,6 +343,18 @@ $CategoryCopyWith<$Res> get category {
   
   return $CategoryCopyWith<$Res>(_self.category, (value) {
     return _then(_self.copyWith(category: value));
+  });
+}/// Create a copy of CategoryDetail
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SubcategoryCopyWith<$Res>? get resumeTopic {
+    if (_self.resumeTopic == null) {
+    return null;
+  }
+
+  return $SubcategoryCopyWith<$Res>(_self.resumeTopic!, (value) {
+    return _then(_self.copyWith(resumeTopic: value));
   });
 }
 }

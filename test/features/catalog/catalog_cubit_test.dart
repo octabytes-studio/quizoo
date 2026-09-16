@@ -19,10 +19,14 @@ void main() {
   final football = MockCatalog.subcategoryById(MockCatalog.footballId);
   final sports = MockCatalog.categoryById(MockCatalog.sportsId);
 
+  final sportsTopics = MockCatalog.forCategory(MockCatalog.sportsId);
   final detail = CategoryDetail(
     category: sports,
-    topics: MockCatalog.forCategory(MockCatalog.sportsId),
+    topics: sportsTopics,
     playerCount: 128000,
+    starsEarned: 86,
+    levelsCleared: 33,
+    resumeTopic: CatalogApi.resumeTopic(sportsTopics),
   );
 
   final map = LevelMap(
@@ -57,7 +61,12 @@ void main() {
         isA<CategoryDetailLoading>(),
         isA<CategoryDetailLoaded>()
             .having((state) => state.detail.topics, 'topics', isNotEmpty)
-            .having((state) => state.sort, 'sort', TopicSort.popular),
+            .having((state) => state.sort, 'sort', TopicSort.popular)
+            .having(
+              (state) => state.detail.resumeTopic?.id,
+              'resumeTopic',
+              'sub_cricket',
+            ),
       ],
     );
 
@@ -205,6 +214,18 @@ void main() {
 
       final byProgress = CatalogRepository.sorted(detail, TopicSort.progress);
       expect(byProgress.topics.first.levelsCleared, 20);
+    });
+  });
+
+  group('CatalogApi.resumeTopic', () {
+    test('the topic with the most levels cleared wins', () {
+      // Cricket (20 cleared) outranks Football (11) and Hockey (2).
+      expect(CatalogApi.resumeTopic(sportsTopics)?.id, 'sub_cricket');
+    });
+
+    test('no started topic yields a null resume topic', () {
+      final untouched = MockCatalog.asGuest(sportsTopics);
+      expect(CatalogApi.resumeTopic(untouched), isNull);
     });
   });
 

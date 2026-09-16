@@ -13,11 +13,21 @@ class HomeApi {
 
   /// The taxonomy, wallet and in-progress level.
   ///
-  /// [isSignedIn] decides the two things that actually differ between S-04
-  /// and S-05: whether the wallet/daily/continue slots are populated at all
-  /// — kept exactly as `HomeCubit` already passes it (`session is
-  /// SessionSignedIn`), so a guest's real anonymous wallet stays hidden the
-  /// same way the mock's did, and Home's layout does not change.
+  /// [isSignedIn] decides whether the wallet/daily/continue slots are
+  /// populated at all — kept exactly as `HomeCubit` already passes it
+  /// (`session is SessionSignedIn`), so a guest's real anonymous wallet stays
+  /// hidden the same way the mock's did, and Home's layout does not change.
+  ///
+  /// It does **not** gate each subcategory's own level-progress lookup below.
+  /// Every player — guest included — gets a real (if anonymous) Supabase auth
+  /// session at boot (`main.dart`), and `submit_level_attempt` writes
+  /// `level_progress` under that same `auth.uid()` regardless of anonymity
+  /// (`level_progress_select_all` is a public read policy too). `isSignedIn`
+  /// only tracks whether a *non-anonymous* account exists — a guest can still
+  /// have real, playable progress — so gating the subcategory query on it
+  /// left every guest's rail permanently stuck on "New" (matches
+  /// `CatalogApi`'s own `_levelProgressBySubcategory`, which never gated on
+  /// this either).
   ///
   /// [languageCode] only matters inside the `isSignedIn` branch, to pick the
   /// caller's own language's row out of `daily_challenges` — since that
@@ -64,9 +74,7 @@ class HomeApi {
         locale: languageCode,
       );
 
-      final progress = isSignedIn
-          ? await _levelsClearedBySubcategory(subcategoryIds)
-          : const <String, int>{};
+      final progress = await _topicProgressBySubcategory(subcategoryIds);
 
       final categories = [
         for (final row in categoryRows)
@@ -80,7 +88,7 @@ class HomeApi {
           _subcategoryFromRow(
             row,
             name: names[row['id']] ?? row['slug'] as String,
-            levelsCleared: progress[row['id']] ?? 0,
+            progress: progress[row['id']] ?? const _TopicProgress(),
           ),
       ];
 
@@ -156,12 +164,25 @@ class HomeApi {
   }
 
   /// The merchandised rail, which arrives after the first paint.
-  Future<List<PopularQuiz>> fetchPopularRail() async {
+  ///
+  /// [subcategoryIds] scopes results to the caller's own content language —
+  /// `featured_quizzes` carries no `language_code` of its own (its
+  /// `subcategory_id` already pins it to exactly one language, the same way
+  /// a subcategory itself has none — see [fetchCachedHome]'s note), so an
+  /// unfiltered read would hand back a card for a subcategory the caller's
+  /// [HomeContent.subcategories] doesn't contain at all, breaking navigation
+  /// (`_PopularRail`'s `firstWhere` `orElse` falls back to an unrelated
+  /// topic rather than the one the card actually advertises).
+  Future<List<PopularQuiz>> fetchPopularRail(
+    List<String> subcategoryIds,
+  ) async {
+    if (subcategoryIds.isEmpty) return const [];
     try {
       final rows = await _client
           .from('featured_quizzes')
           .select()
           .eq('is_active', true)
+          .inFilter('subcategory_id', subcategoryIds)
           .order('sort_order');
       final now = DateTime.now().toUtc();
       return [
@@ -186,7 +207,37 @@ class HomeApi {
 
   /// Everything Search filters over — the taxonomy, not a server query. The
   /// mock literally reuses the popular rail for this; kept identical.
-  Future<List<PopularQuiz>> fetchTrendingSearches() => fetchPopularRail();
+  ///
+  /// Unlike [fetchPopularRail], Search has no already-loaded subcategory set
+  /// to scope by, so it resolves [languageCode]'s own subcategory ids first —
+  /// the same two-query shape [fetchCachedHome] uses, just id-only.
+  Future<List<PopularQuiz>> fetchTrendingSearches({
+    required String languageCode,
+  }) async {
+    final subcategoryIds = await _subcategoryIdsForLanguage(languageCode);
+    return fetchPopularRail(subcategoryIds);
+  }
+
+  Future<List<String>> _subcategoryIdsForLanguage(String languageCode) async {
+    try {
+      final categoryRows = await _client
+          .from('categories')
+          .select('id')
+          .eq('is_active', true)
+          .eq('language_code', languageCode);
+      final categoryIds = [for (final row in categoryRows) row['id'] as String];
+      if (categoryIds.isEmpty) return const [];
+
+      final subcategoryRows = await _client
+          .from('subcategories')
+          .select('id')
+          .eq('is_active', true)
+          .inFilter('category_id', categoryIds);
+      return [for (final row in subcategoryRows) row['id'] as String];
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
 
   // ------------------------------------------------------------- internals
 
@@ -210,7 +261,11 @@ class HomeApi {
     };
   }
 
-  Future<Map<String, int>> _levelsClearedBySubcategory(
+  /// One row per player per level in [subcategoryIds] — gated only on there
+  /// being an authenticated session (matches `CatalogApi`'s equivalent), so a
+  /// guest's own anonymous progress renders exactly like a signed-in
+  /// player's.
+  Future<Map<String, _TopicProgress>> _topicProgressBySubcategory(
     List<String> subcategoryIds,
   ) async {
     if (subcategoryIds.isEmpty) return const {};
@@ -219,17 +274,19 @@ class HomeApi {
 
     final rows = await _client
         .from('level_progress')
-        .select('subcategory_id')
+        .select('subcategory_id, best_score, stars, completed_at')
         .eq('user_id', userId)
-        .not('completed_at', 'is', null)
         .inFilter('subcategory_id', subcategoryIds);
 
-    final counts = <String, int>{};
+    final byTopic = <String, List<Map<String, dynamic>>>{};
     for (final row in rows) {
-      final id = row['subcategory_id'] as String;
-      counts[id] = (counts[id] ?? 0) + 1;
+      (byTopic[row['subcategory_id'] as String] ??= []).add(row);
     }
-    return counts;
+
+    return {
+      for (final entry in byTopic.entries)
+        entry.key: _TopicProgress.from(entry.value),
+    };
   }
 
   static Category _categoryFromRow(
@@ -251,7 +308,7 @@ class HomeApi {
   static Subcategory _subcategoryFromRow(
     Map<String, dynamic> row, {
     required String name,
-    required int levelsCleared,
+    required _TopicProgress progress,
   }) => Subcategory(
     id: row['id'] as String,
     categoryId: row['category_id'] as String,
@@ -260,7 +317,9 @@ class HomeApi {
     groupName: row['group_name'] as String? ?? '',
     plateColor: row['plate_color'] as String,
     questionCount: row['question_count'] as int? ?? 0,
-    levelsCleared: levelsCleared,
+    levelsCleared: progress.levelsCleared,
+    bestScore: progress.bestScore,
+    starsEarned: progress.starsEarned,
     isNew: row['is_new'] as bool? ?? false,
     isLocked: row['is_locked'] as bool? ?? false,
   );
@@ -281,4 +340,40 @@ class HomeApi {
           : heartsUpdatedAt.add(const Duration(minutes: 20)),
     );
   }
+}
+
+/// One topic's aggregated `level_progress` for Home's rail — how many levels
+/// are cleared, the best single-level score and total stars. Mirrors
+/// `CatalogApi._TopicProgress` minus the per-level detail only the level map
+/// needs.
+class _TopicProgress {
+  const _TopicProgress({
+    this.levelsCleared = 0,
+    this.bestScore = 0,
+    this.starsEarned = 0,
+  });
+
+  factory _TopicProgress.from(List<Map<String, dynamic>> rows) {
+    var cleared = 0;
+    var bestScore = 0;
+    var stars = 0;
+
+    for (final row in rows) {
+      final rowBestScore = row['best_score'] as int? ?? 0;
+      final rowStars = row['stars'] as int? ?? 0;
+      if (row['completed_at'] != null) cleared++;
+      if (rowBestScore > bestScore) bestScore = rowBestScore;
+      stars += rowStars;
+    }
+
+    return _TopicProgress(
+      levelsCleared: cleared,
+      bestScore: bestScore,
+      starsEarned: stars,
+    );
+  }
+
+  final int levelsCleared;
+  final int bestScore;
+  final int starsEarned;
 }
