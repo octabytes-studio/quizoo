@@ -1,8 +1,8 @@
-/// A small seam over the concrete TTS implementation so `QuizPlayCubit` stays
-/// pure Dart and testable without a plugin channel or a network call —
-/// `bloc_test`/`fake_async` supply a fake that completes synchronously or on
-/// a controlled delay (CLAUDE.md §11, mirroring this Cubit's own
-/// `Timer`-not-`Ticker` reasoning).
+/// A small seam over the concrete audio-playback implementation so
+/// `QuizPlayCubit` stays pure Dart and testable without a plugin channel or a
+/// network call — `bloc_test`/`fake_async` supply a fake that completes
+/// synchronously or on a controlled delay (CLAUDE.md §11, mirroring this
+/// Cubit's own `Timer`-not-`Ticker` reasoning).
 abstract class TtsService {
   /// Attempts to switch the voice to [languageCode]. [voiceId] is the
   /// ElevenLabs voice configured for this language in the `languages` table
@@ -11,9 +11,10 @@ abstract class TtsService {
   /// silent mode rather than blocking the question screen (spec §4.1).
   Future<bool> setLanguage(String languageCode, {String? voiceId});
 
-  /// Reads [text] aloud. Completion (or cancellation) fires whichever
-  /// callback was last registered via [onComplete].
-  Future<void> speak(String text);
+  /// Plays the pre-generated narration clip at [audioUrl]. Completion (or
+  /// cancellation) fires whichever callback was last registered via
+  /// [onComplete].
+  Future<void> speak(String audioUrl);
 
   /// Stops the current utterance immediately.
   Future<void> stop();

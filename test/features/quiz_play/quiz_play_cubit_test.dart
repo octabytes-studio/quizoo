@@ -32,6 +32,8 @@ class _MockContentLanguageRepository extends Mock
 class _FakeTtsService implements TtsService {
   bool languageAvailable = true;
   void Function()? _onComplete;
+
+  /// The `audioUrl`s passed to [speak], in call order.
   final List<String> spoken = [];
   int stopCount = 0;
 
@@ -40,7 +42,7 @@ class _FakeTtsService implements TtsService {
       voiceId != null && languageAvailable;
 
   @override
-  Future<void> speak(String text) async => spoken.add(text);
+  Future<void> speak(String audioUrl) async => spoken.add(audioUrl);
 
   @override
   Future<void> stop() async => stopCount++;
@@ -99,7 +101,7 @@ void main() {
   final questions = MockQuestions.forLevel(
     subcategoryId: MockCatalog.footballId,
     levelNumber: 12,
-  );
+  ).map((q) => q.copyWith(audioUrl: 'https://cdn.test/audio.mp3')).toList();
 
   setUp(() {
     repository = _MockQuizPlayRepository();
@@ -218,7 +220,7 @@ void main() {
         var state = cubit.state as QuizPlayInProgress;
         expect(state.phase, QuestionPhase.speaking);
         expect(state.secondsRemaining, 20);
-        expect(ttsService.spoken, [state.question.text]);
+        expect(ttsService.spoken, [state.question.audioUrl]);
 
         // Nothing moves while still speaking, however long it takes.
         async.elapse(const Duration(seconds: 5));
@@ -300,6 +302,30 @@ void main() {
         });
       },
     );
+
+    test('a question with no audioUrl skips straight to answering, audio or '
+        'not', () {
+      stubQuestions([
+        questions.first.copyWith(audioUrl: null),
+        ...questions.skip(1),
+      ]);
+      when(
+        () => settingsRepository.current,
+      ).thenReturn(const AppSettings(soundOn: true));
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+
+        final state = cubit.state as QuizPlayInProgress;
+        expect(state.phase, QuestionPhase.answering);
+        expect(ttsService.spoken, isEmpty);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
 
     test(
       'falls back to silent mode when the active language has no voice pack',

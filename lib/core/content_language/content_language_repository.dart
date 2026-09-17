@@ -43,8 +43,11 @@ class ContentLanguageRepository {
   }
 
   /// Best-effort, matching `reconcileWithBackend`'s own convention: a lookup
-  /// failure disables TTS for this level rather than blocking it from
-  /// starting.
+  /// failure disables narration for this level rather than blocking it from
+  /// starting. The returned value is only ever used for its non-null-ness by
+  /// the app — "is narration provisioned for this language" — since audio is
+  /// now pre-generated per question (plan 011), not synthesized live from
+  /// this voice ID.
   Future<String?> voiceIdFor(String code) async {
     try {
       return await _api.fetchVoiceId(code);

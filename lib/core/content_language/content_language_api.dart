@@ -34,8 +34,12 @@ class ContentLanguageApi {
     }
   }
 
-  /// The ElevenLabs voice configured for [code] in the `languages` table,
-  /// or `null` when none has been set yet (plan 010).
+  /// The ElevenLabs voice configured for [code] in the `languages` table, or
+  /// `null` when none has been set yet (plan 010). The app itself only ever
+  /// needs this value's non-null-ness — "has this language's narration been
+  /// provisioned" — but the literal voice ID remains meaningful to the
+  /// separate, out-of-app audio-generation skill that produces the
+  /// pre-generated clips `questions.audio_url` points at (plan 011).
   Future<String?> fetchVoiceId(String code) async {
     try {
       final row = await _client

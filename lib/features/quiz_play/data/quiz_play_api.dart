@@ -76,5 +76,6 @@ class QuizPlayApi {
     hasImage: row['hasImage'] as bool? ?? false,
     imageAsset: row['imageAsset'] as String?,
     ttsExcluded: row['ttsExcluded'] as bool? ?? false,
+    audioUrl: row['audioUrl'] as String?,
   );
 }

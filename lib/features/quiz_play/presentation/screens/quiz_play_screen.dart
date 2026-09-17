@@ -20,9 +20,8 @@ import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/report_question_sheet.dart';
 import 'package:quizoo/features/quiz_play/data/audioplayers_sound_effects_service.dart';
-import 'package:quizoo/features/quiz_play/data/elevenlabs_tts_api.dart';
-import 'package:quizoo/features/quiz_play/data/elevenlabs_tts_service.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
+import 'package:quizoo/features/quiz_play/data/stored_audio_tts_service.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/presentation/bloc/quiz_play_cubit.dart';
@@ -78,7 +77,7 @@ class QuizPlayScreen extends StatelessWidget {
             context.read<QuizPlayRepository>(),
             context.read<SettingsRepository>(),
             context.read<ContentLanguageRepository>(),
-            ElevenLabsTtsService(ElevenLabsTtsApi()),
+            StoredAudioTtsService(),
             AudioplayersSoundEffectsService(),
           )..startLevel(
             levelId: levelId,

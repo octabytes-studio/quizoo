@@ -20,6 +20,7 @@ _Question _$QuestionFromJson(Map<String, dynamic> json) => _Question(
   imageColorFrom: json['imageColorFrom'] as String? ?? '#2BB3FF',
   imageColorTo: json['imageColorTo'] as String? ?? '#7B4DFF',
   ttsExcluded: json['ttsExcluded'] as bool? ?? false,
+  audioUrl: json['audioUrl'] as String?,
 );
 
 Map<String, dynamic> _$QuestionToJson(_Question instance) => <String, dynamic>{
@@ -36,4 +37,5 @@ Map<String, dynamic> _$QuestionToJson(_Question instance) => <String, dynamic>{
   'imageColorFrom': instance.imageColorFrom,
   'imageColorTo': instance.imageColorTo,
   'ttsExcluded': instance.ttsExcluded,
+  'audioUrl': instance.audioUrl,
 };

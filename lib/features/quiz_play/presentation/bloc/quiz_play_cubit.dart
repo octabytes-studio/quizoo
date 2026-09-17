@@ -258,7 +258,10 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
     final question = _questions[_questionIndex];
     final speaksThisQuestion =
-        _audioOn && _ttsAvailable && !question.ttsExcluded;
+        _audioOn &&
+        _ttsAvailable &&
+        !question.ttsExcluded &&
+        question.audioUrl != null;
     final beganAt = _questionIndex;
 
     emit(
@@ -280,7 +283,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
     if (speaksThisQuestion) {
       _ttsService.onComplete(() => _onSpeechComplete(beganAt));
-      unawaited(_ttsService.speak(question.text));
+      unawaited(_ttsService.speak(question.audioUrl!));
     } else {
       _startClock();
     }
