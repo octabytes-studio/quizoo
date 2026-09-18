@@ -48,6 +48,10 @@ abstract class Question with _$Question {
     /// a figure/image the voice can't describe). Sourced from
     /// `questions.tts_excluded`.
     @Default(false) bool ttsExcluded,
+
+    /// The pre-generated narration clip for this question, or `null` when
+    /// none has been generated yet. Sourced from `questions.audio_url`.
+    String? audioUrl,
   }) = _Question;
 
   const Question._();

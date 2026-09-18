@@ -46,10 +46,9 @@ dependencies:
   google_mobile_ads: ^9.1.0
   in_app_purchase: ^3.3.0
 
-  # Countdown/TTS read-aloud (plan 007, §4)
-  flutter_tts: ^4.2.5
-
-  # Play-mode sound effects (tick/correct/wrong/next-question)
+  # Play-mode sound effects (tick/correct/wrong/next-question); also plays
+  # pre-generated question narration clips straight from their Supabase
+  # Storage URL (plan 011).
   audioplayers: ^6.8.1
 
   # Material "shared axis" transition — the next-question slide (§05 `slide`)

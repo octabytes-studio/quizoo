@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/power_up.dart';
@@ -56,12 +57,14 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   QuizPlayCubit(
     this._repository,
     this._settingsRepository,
+    this._contentLanguageRepository,
     this._ttsService,
     this._soundEffects,
   ) : super(const QuizPlayPreparing());
 
   final QuizPlayRepository _repository;
   final SettingsRepository _settingsRepository;
+  final ContentLanguageRepository _contentLanguageRepository;
   final TtsService _ttsService;
   final SoundEffectsService _soundEffects;
 
@@ -180,9 +183,16 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     }
 
     _audioOn = _settingsRepository.current.soundOn;
-    _ttsAvailable = _audioOn
-        ? await _ttsService.setLanguage(languageCode)
-        : false;
+    if (_audioOn) {
+      final voiceId = await _contentLanguageRepository.voiceIdFor(languageCode);
+      if (isClosed) return;
+      _ttsAvailable = await _ttsService.setLanguage(
+        languageCode,
+        voiceId: voiceId,
+      );
+    } else {
+      _ttsAvailable = false;
+    }
     if (isClosed) return;
 
     _questionIndex = 0;
@@ -248,7 +258,10 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
     final question = _questions[_questionIndex];
     final speaksThisQuestion =
-        _audioOn && _ttsAvailable && !question.ttsExcluded;
+        _audioOn &&
+        _ttsAvailable &&
+        !question.ttsExcluded &&
+        question.audioUrl != null;
     final beganAt = _questionIndex;
 
     emit(
@@ -270,7 +283,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
     if (speaksThisQuestion) {
       _ttsService.onComplete(() => _onSpeechComplete(beganAt));
-      unawaited(_ttsService.speak(question.text));
+      unawaited(_ttsService.speak(question.audioUrl!));
     } else {
       _startClock();
     }
@@ -806,6 +819,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _adTimer?.cancel();
     _revealTimer?.cancel();
     unawaited(_ttsService.stop());
+    unawaited(_ttsService.dispose());
     unawaited(_soundEffects.dispose());
     return super.close();
   }

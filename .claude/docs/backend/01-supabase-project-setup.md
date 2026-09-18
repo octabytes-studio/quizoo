@@ -121,6 +121,9 @@ whether the underlying `auth.users` row is anonymous (see
 - `avatars` — public read, authenticated write, for a future custom-avatar
   upload (not in v1's scope per the design bible's emoji-avatar system, but
   cheap to create now so the bucket name is settled).
+- `question-audio` — public read (pre-generated question narration clips
+  referenced by `questions.audio_url`). Public, for the same reason as
+  `question-media`: no signed-URL round trip needed for playback.
 
 ## 6. Confirm pg_cron is running
 

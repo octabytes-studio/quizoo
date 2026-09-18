@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:quizoo/core/content_language/content_language_api.dart';
+import 'package:quizoo/core/network/api_exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// The `shared_preferences`-backed cache behind the content-language pick,
@@ -37,6 +38,20 @@ class ContentLanguageRepository {
       await _preferences.setString(_key, backend);
       return backend;
     } catch (_) {
+      return null;
+    }
+  }
+
+  /// Best-effort, matching `reconcileWithBackend`'s own convention: a lookup
+  /// failure disables narration for this level rather than blocking it from
+  /// starting. The returned value is only ever used for its non-null-ness by
+  /// the app — "is narration provisioned for this language" — since audio is
+  /// now pre-generated per question (plan 011), not synthesized live from
+  /// this voice ID.
+  Future<String?> voiceIdFor(String code) async {
+    try {
+      return await _api.fetchVoiceId(code);
+    } on ApiException {
       return null;
     }
   }
