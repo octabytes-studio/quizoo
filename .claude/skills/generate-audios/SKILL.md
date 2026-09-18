@@ -27,6 +27,7 @@ key.
 ### ElevenLabs API keys (tried in order; rotates to the next on quota/auth failure — Hard Rule 6)
 
 1. `/Users/waleed/Documents/QuizooKeys/001_elevenlabs_key.txt`
+2. `/Users/waleed/Documents/QuizooKeys/002_elevenlabs_key.txt`
 
 Add more numbered lines as needed; at least one is required.
 
