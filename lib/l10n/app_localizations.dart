@@ -1964,6 +1964,36 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get profileSettings;
 
+  /// S-32 header username shown for a guest session.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get profileGuestUsername;
+
+  /// S-32 guest empty-state title.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to see your profile'**
+  String get profileGuestTitle;
+
+  /// S-32 guest empty-state body.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your stats, badges and progress across every device.'**
+  String get profileGuestBody;
+
+  /// S-32 guest empty-state CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in / Sign up'**
+  String get profileGuestAction;
+
+  /// S-32 guest sign-in nudge row subtitle, shown above a guest's own (real, anonymous-session) data.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save your progress'**
+  String get profileGuestBannerSubtitle;
+
   /// S-35 top bar title.
   ///
   /// In en, this message translates to:

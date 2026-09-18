@@ -1135,6 +1135,22 @@ class AppLocalizationsUr extends AppLocalizations {
   String get profileSettings => 'Settings';
 
   @override
+  String get profileGuestUsername => 'Guest';
+
+  @override
+  String get profileGuestTitle => 'Sign in to see your profile';
+
+  @override
+  String get profileGuestBody =>
+      'Track your stats, badges and progress across every device.';
+
+  @override
+  String get profileGuestAction => 'Sign in / Sign up';
+
+  @override
+  String get profileGuestBannerSubtitle => 'Sign in to save your progress';
+
+  @override
   String get statsTitle => 'Your stats';
 
   @override
