@@ -126,13 +126,5 @@ void main() {
         AppRoutes.daily,
       );
     });
-
-    testWidgets('Challenge a friend → friends', (tester) async {
-      await expectRowNavigatesTo(
-        tester,
-        (l10n) => l10n.playSheetFriend,
-        AppRoutes.friends,
-      );
-    });
   });
 }

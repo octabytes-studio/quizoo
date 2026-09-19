@@ -1,8 +1,8 @@
 // File generated from the Firebase console config files
 // (android/app/google-services.json, ios/Runner/GoogleService-Info.plist)
-// for the "quizoo-d512b" Firebase project, in the shape `flutterfire configure`
+// for the "quizoo-d1b36" Firebase project, in the shape `flutterfire configure`
 // produces. Do not hand-edit beyond keeping it in sync with those two files —
-// re-run `flutterfire configure --project=quizoo-d512b` to regenerate for
+// re-run `flutterfire configure --project=quizoo-d1b36` to regenerate for
 // real once the FlutterFire CLI is available in this environment.
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
@@ -30,19 +30,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBc9fr_IkNBQnq6MzyUm9ThJ6L9Nx_b3wE',
-    appId: '1:724215808400:android:c3a9a54d40d471928f3315',
-    messagingSenderId: '724215808400',
-    projectId: 'quizoo-d512b',
-    storageBucket: 'quizoo-d512b.firebasestorage.app',
+    apiKey: 'AIzaSyAVEb5SRp1Jy3lJmOg92E1oZv8bVK7xGBU',
+    appId: '1:943523651627:android:7a46fe7a365885d1698a6e',
+    messagingSenderId: '943523651627',
+    projectId: 'quizoo-d1b36',
+    storageBucket: 'quizoo-d1b36.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBaYAygy3kl1lHl1NqCutYz8yXvKpM5HSw',
-    appId: '1:724215808400:ios:aadefac488c4fb598f3315',
-    messagingSenderId: '724215808400',
-    projectId: 'quizoo-d512b',
-    storageBucket: 'quizoo-d512b.firebasestorage.app',
+    apiKey: 'AIzaSyDxafPHQA4SIQAx-m6q2dyRbvmu6aibYcQ',
+    appId: '1:943523651627:ios:6990d3999a727819698a6e',
+    messagingSenderId: '943523651627',
+    projectId: 'quizoo-d1b36',
+    storageBucket: 'quizoo-d1b36.firebasestorage.app',
     iosBundleId: 'com.quizoo.play',
   );
 }

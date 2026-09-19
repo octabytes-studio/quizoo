@@ -48,7 +48,7 @@ final class SearchSuccess extends SearchState {
   @override
   final String query;
 
-  final List<Subcategory> results;
+  final List<SearchResult> results;
 
   bool get isEmpty => results.isEmpty;
 

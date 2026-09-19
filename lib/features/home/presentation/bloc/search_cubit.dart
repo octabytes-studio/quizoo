@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/home/data/home_repository.dart';
+import 'package:quizoo/features/home/domain/search_result.dart';
 
 part 'search_state.dart';
 

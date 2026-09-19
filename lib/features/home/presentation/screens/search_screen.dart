@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
-import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -224,7 +223,7 @@ class _SearchResults extends StatelessWidget {
       children: [
         _MetaLabel(text: l10n.searchResultCount(state.results.length)),
         SizedBox(height: AppSpacing.md.h),
-        for (final subcategory in state.results)
+        for (final result in state.results)
           Padding(
             padding: EdgeInsets.fromLTRB(
               AppSpacing.screenMargin.w,
@@ -233,17 +232,19 @@ class _SearchResults extends StatelessWidget {
               9.h,
             ),
             child: ListRowTile(
-              title: subcategory.name,
+              title: result.subcategory.name,
               subtitle: l10n.searchBreadcrumb(
-                MockCatalog.categoryById(subcategory.categoryId).name,
-                subcategory.groupName.isEmpty
-                    ? subcategory.name
-                    : subcategory.groupName,
-                subcategory.questionCount,
+                result.categoryName,
+                result.subcategory.groupName.isEmpty
+                    ? result.subcategory.name
+                    : result.subcategory.groupName,
+                result.subcategory.questionCount,
               ),
-              leadingEmoji: subcategory.emoji,
-              leadingPlateColor: AppGradients.hex(subcategory.plateColor),
-              onTap: () => onTopicTap(subcategory),
+              leadingEmoji: result.subcategory.emoji,
+              leadingPlateColor: AppGradients.hex(
+                result.subcategory.plateColor,
+              ),
+              onTap: () => onTopicTap(result.subcategory),
               trailing: Text(
                 l10n.searchPlay,
                 style: textTheme.bodyLarge!.copyWith(

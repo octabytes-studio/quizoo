@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "724215808400",
-    "project_id": "quizoo-d512b",
-    "storage_bucket": "quizoo-d512b.firebasestorage.app"
+    "project_number": "943523651627",
+    "project_id": "quizoo-d1b36",
+    "storage_bucket": "quizoo-d1b36.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:724215808400:android:c3a9a54d40d471928f3315",
+        "mobilesdk_app_id": "1:943523651627:android:7a46fe7a365885d1698a6e",
         "android_client_info": {
           "package_name": "com.quizoo.play"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBc9fr_IkNBQnq6MzyUm9ThJ6L9Nx_b3wE"
+          "current_key": "AIzaSyAVEb5SRp1Jy3lJmOg92E1oZv8bVK7xGBU"
         }
       ],
       "services": {
