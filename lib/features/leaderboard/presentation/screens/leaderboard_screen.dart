@@ -10,18 +10,20 @@ import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
+import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/list_row_tile.dart';
 import 'package:quizoo/core/widgets/segmented_tabs.dart';
-import 'package:quizoo/core/widgets/skeleton_box.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
 import 'package:quizoo/features/leaderboard/data/leaderboard_api.dart';
 import 'package:quizoo/features/leaderboard/data/leaderboard_repository.dart';
 import 'package:quizoo/features/leaderboard/domain/leaderboard_entry.dart';
 import 'package:quizoo/features/leaderboard/domain/leaderboard_scope.dart';
 import 'package:quizoo/features/leaderboard/presentation/bloc/leaderboard_cubit.dart';
+import 'package:quizoo/features/leaderboard/presentation/widgets/leaderboard_row_skeleton.dart';
 import 'package:quizoo/features/leaderboard/presentation/widgets/pinned_self_row.dart';
 import 'package:quizoo/features/leaderboard/presentation/widgets/podium.dart';
+import 'package:quizoo/features/leaderboard/presentation/widgets/podium_skeleton.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-29 — the global/country/friends leaderboard.
@@ -216,6 +218,19 @@ class _LeaderboardRoster extends StatelessWidget {
     final rows = state.remainingRows;
     final localeName = Localizations.localeOf(context).toLanguageTag();
 
+    if (state.roster.isEmpty) {
+      final l10n = AppLocalizations.of(context);
+      return EmptyStateView(
+        emoji: '🏆',
+        title: l10n.leaderboardEmptyTitle,
+        message: l10n.leaderboardEmptyBody,
+        action: ChunkyButton(
+          label: l10n.leaderboardEmptyCta,
+          onPressed: () => context.go(AppRoutes.home),
+        ),
+      );
+    }
+
     return ListView(
       padding: EdgeInsets.only(top: AppSpacing.md.h, bottom: AppSpacing.md.h),
       children: [
@@ -294,18 +309,25 @@ class _LeaderboardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
-      child: Column(
-        children: [
-          SizedBox(height: AppSpacing.xl.h),
-          SkeletonBox(height: 140.h),
-          SizedBox(height: AppSpacing.xl.h),
-          SkeletonBox(height: 64.h),
-          SizedBox(height: AppSpacing.sm.h),
-          SkeletonBox(height: 64.h),
-        ],
-      ),
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.only(top: AppSpacing.md.h, bottom: AppSpacing.md.h),
+      children: [
+        const PodiumSkeleton(),
+        SizedBox(height: AppSpacing.lg.h),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
+          child: Column(
+            children: [
+              for (var i = 0; i < 5; i++)
+                Padding(
+                  padding: EdgeInsets.only(bottom: AppSpacing.sm.h),
+                  child: const LeaderboardRowSkeleton(),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

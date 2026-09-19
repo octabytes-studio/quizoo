@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quizoo/app/content_language_cubit.dart';
-import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
@@ -12,83 +9,25 @@ import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/distribution_chart.dart';
-import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/result_wash.dart';
 import 'package:quizoo/core/widgets/share_sheet.dart';
-import 'package:quizoo/features/daily/data/daily_api.dart';
-import 'package:quizoo/features/daily/data/daily_repository.dart';
 import 'package:quizoo/features/daily/domain/daily_result.dart';
-import 'package:quizoo/features/daily/presentation/bloc/daily_result_cubit.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-28 — the daily challenge's result.
 ///
-/// There is no prior play screen to hand this a run (see [DailyResultCubit]):
-/// this screen both plays and scores today's challenge the moment it opens.
+/// [result] is real, server-scored data by the time this screen is reached:
+/// `DailyPlayScreen` fetches today's real questions, collects the player's
+/// actual answers, and submits that genuine pattern before pushing here with
+/// the outcome — this screen is now pure display, not a Cubit that plays the
+/// challenge itself.
 class DailyResultScreen extends StatelessWidget {
-  const DailyResultScreen({super.key});
+  const DailyResultScreen({required this.result, super.key});
+
+  final DailyResult result;
 
   @override
-  Widget build(BuildContext context) {
-    final languageCode = context.read<ContentLanguageCubit>().state.code;
-    return BlocProvider<DailyResultCubit>(
-      create: (_) =>
-          DailyResultCubit(DailyRepository(DailyApi(supabase)))
-            ..play(languageCode: languageCode),
-      child: BlocBuilder<DailyResultCubit, DailyResultState>(
-        builder: (context, state) => switch (state) {
-          DailyResultLoading() => const _DailyResultSpinner(),
-          DailyResultError(:final error) => _DailyResultError(
-            errorCode: error.code,
-          ),
-          DailyResultLoaded(:final result) => _DailyResultLoadedView(
-            result: result,
-          ),
-        },
-      ),
-    );
-  }
-}
-
-class _DailyResultSpinner extends StatelessWidget {
-  const _DailyResultSpinner();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.quizoo.s0,
-      body: const Center(child: CircularProgressIndicator()),
-    );
-  }
-}
-
-class _DailyResultError extends StatelessWidget {
-  const _DailyResultError({required this.errorCode});
-
-  final String? errorCode;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Scaffold(
-      backgroundColor: context.quizoo.s0,
-      body: SafeArea(
-        child: Center(
-          child: ErrorStateView(
-            title: l10n.contentErrorTitle,
-            emoji: '🎯',
-            message: l10n.contentErrorBody,
-            errorCode: errorCode,
-            action: ChunkyButton.ghost(
-              label: l10n.commonBack,
-              onPressed: context.pop,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => _DailyResultLoadedView(result: result);
 }
 
 class _DailyResultLoadedView extends StatelessWidget {

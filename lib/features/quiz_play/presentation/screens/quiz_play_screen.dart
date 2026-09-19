@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -19,7 +20,11 @@ import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/report_question_sheet.dart';
+import 'package:quizoo/features/daily/data/daily_api.dart';
+import 'package:quizoo/features/daily/data/daily_repository.dart';
+import 'package:quizoo/features/daily/domain/daily_result.dart';
 import 'package:quizoo/features/quiz_play/data/audioplayers_sound_effects_service.dart';
+import 'package:quizoo/features/quiz_play/data/cache_manager_audio_cache_service.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/data/stored_audio_tts_service.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
@@ -61,30 +66,48 @@ class QuizPlayScreen extends StatelessWidget {
     this.entry = QuizPlayEntry.play,
   });
 
-  final String levelId;
+  /// The daily challenge, playing through this exact same arena rather than
+  /// a separate screen (design decision: one play surface, not two).
+  const QuizPlayScreen.daily({super.key})
+    : levelId = null,
+      entry = QuizPlayEntry.play;
+
+  final String? levelId;
   final QuizPlayEntry entry;
 
   @override
   Widget build(BuildContext context) {
-    final (subcategoryId, _) = MockCatalog.parseLevelId(levelId);
-    final subcategory = MockCatalog.subcategories
-        .where((candidate) => candidate.id == subcategoryId)
-        .firstOrNull;
+    final audioCacheService = CacheManagerAudioCacheService();
+    final levelId = this.levelId;
+    final languageCode = context.read<ContentLanguageCubit>().state.code;
 
     return BlocProvider<QuizPlayCubit>(
-      create: (_) =>
-          QuizPlayCubit(
-            context.read<QuizPlayRepository>(),
-            context.read<SettingsRepository>(),
-            context.read<ContentLanguageRepository>(),
-            StoredAudioTtsService(),
-            AudioplayersSoundEffectsService(),
-          )..startLevel(
+      create: (_) {
+        final cubit = QuizPlayCubit(
+          context.read<QuizPlayRepository>(),
+          context.read<SettingsRepository>(),
+          context.read<ContentLanguageRepository>(),
+          StoredAudioTtsService(audioCacheService),
+          AudioplayersSoundEffectsService(),
+          audioCacheService,
+          dailyRepository: DailyRepository(DailyApi(supabase)),
+        );
+        if (levelId != null) {
+          final (subcategoryId, _) = MockCatalog.parseLevelId(levelId);
+          final subcategory = MockCatalog.subcategories
+              .where((candidate) => candidate.id == subcategoryId)
+              .firstOrNull;
+          cubit.startLevel(
             levelId: levelId,
             categoryId: subcategory?.categoryId ?? '',
             subcategoryName: subcategory?.name ?? '',
-            languageCode: context.read<ContentLanguageCubit>().state.code,
-          ),
+            languageCode: languageCode,
+          );
+        } else {
+          cubit.startDaily(languageCode: languageCode);
+        }
+        return cubit;
+      },
       child: _QuizPlayView(entry: entry),
     );
   }
@@ -159,6 +182,10 @@ class _QuizPlayViewState extends State<_QuizPlayView> {
     context.pushReplacement(route, extra: run);
   }
 
+  void _onDailyFinished(BuildContext context, DailyResult result) {
+    context.pushReplacement(AppRoutes.dailyResult, extra: result);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -175,6 +202,9 @@ class _QuizPlayViewState extends State<_QuizPlayView> {
           // Navigation belongs in the listener, never in the builder
           // (CLAUDE.md §3).
           if (state is QuizPlayEnded) _onRunEnded(context, state.run);
+          if (state is QuizPlayDailyFinished) {
+            _onDailyFinished(context, state.result);
+          }
         },
         builder: (context, state) {
           final cubit = context.read<QuizPlayCubit>();
@@ -297,8 +327,12 @@ class _ArenaBody extends StatelessWidget {
         onSkip: cubit.skipCountdown,
       ),
       // The run has ended and the listener is already navigating; holding the
-      // last frame avoids a flash of empty arena on the way out.
+      // last frame avoids a flash of empty arena on the way out. Same for a
+      // daily run's two terminal states below.
       QuizPlayEnded() => const _ArenaSpinner(),
+      QuizPlaySubmittingDaily() ||
+      QuizPlayDailyFinished() => const _ArenaSpinner(),
+      QuizPlayDailyAlreadyPlayed() => const _ArenaAlreadyPlayed(),
       _ => _QuestionView(state: state.playing!),
     };
   }
@@ -501,8 +535,11 @@ class _QuestionView extends StatelessWidget {
           ),
         ),
         // The dock is hidden while a verdict banner is up, which is what the
-        // bible's S-12 and S-13 frames show.
-        if (state.isAwaitingAnswer && state.phase == QuestionPhase.answering)
+        // bible's S-12 and S-13 frames show — and always hidden on a daily
+        // run, which has no power-up economy (§ QuizPlayCubit.startDaily).
+        if (!state.run.isDaily &&
+            state.isAwaitingAnswer &&
+            state.phase == QuestionPhase.answering)
           PowerUpDock(
             inventory: state.powerUps,
             isDanger: state.isDanger,
@@ -605,6 +642,32 @@ class _ArenaSpinner extends StatelessWidget {
       child: SizedBox.square(
         dimension: 32.w,
         child: CircularProgressIndicator(color: arena.onArena, strokeWidth: 3),
+      ),
+    );
+  }
+}
+
+/// A daily run's tenth answer landed, but `play_daily_challenge` says the
+/// player already has a `daily_attempts` row for today — a race (a second
+/// tab, a double tap on "Play now") rather than the normal path, since the
+/// initial `startDaily` fetch already checks this before showing a single
+/// question.
+class _ArenaAlreadyPlayed extends StatelessWidget {
+  const _ArenaAlreadyPlayed();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Center(
+      child: ErrorStateView(
+        title: l10n.dailyPlayAlreadyPlayedTitle,
+        emoji: '✅',
+        message: l10n.dailyPlayAlreadyPlayedBody,
+        action: ChunkyButton.ghost(
+          label: l10n.commonBack,
+          onPressed: context.pop,
+        ),
       ),
     );
   }

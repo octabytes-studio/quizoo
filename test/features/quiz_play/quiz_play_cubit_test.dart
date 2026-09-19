@@ -9,6 +9,7 @@ import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
+import 'package:quizoo/features/quiz_play/data/question_audio_cache_service.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/data/sound_effects_service.dart';
 import 'package:quizoo/features/quiz_play/data/tts_service.dart';
@@ -86,6 +87,22 @@ class _FakeSoundEffectsService implements SoundEffectsService {
   Future<void> dispose() async {}
 }
 
+/// A fake rather than a mocktail `Mock`: recording call arguments in order
+/// matters more than stubbing return values (same reasoning as
+/// `_FakeTtsService` above).
+class _FakeAudioCacheService implements QuestionAudioCacheService {
+  /// Each `prefetch` call's URL list, in call order.
+  final List<List<String>> prefetchCalls = [];
+
+  @override
+  Future<void> prefetch(List<String> urls) async {
+    prefetchCalls.add(urls);
+  }
+
+  @override
+  Future<String?> localPathFor(String url) async => null;
+}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(const AppSettings());
@@ -96,6 +113,7 @@ void main() {
   late _MockContentLanguageRepository contentLanguageRepository;
   late _FakeTtsService ttsService;
   late _FakeSoundEffectsService soundEffects;
+  late _FakeAudioCacheService audioCacheService;
 
   final levelId = MockCatalog.levelId(MockCatalog.footballId, 12);
   final questions = MockQuestions.forLevel(
@@ -125,6 +143,7 @@ void main() {
 
     ttsService = _FakeTtsService();
     soundEffects = _FakeSoundEffectsService();
+    audioCacheService = _FakeAudioCacheService();
   });
 
   QuizPlayCubit buildCubit() => QuizPlayCubit(
@@ -133,6 +152,7 @@ void main() {
     contentLanguageRepository,
     ttsService,
     soundEffects,
+    audioCacheService,
   );
 
   void stubQuestions([
@@ -369,6 +389,65 @@ void main() {
         final state = cubit.state as QuizPlayInProgress;
         expect(state.phase, QuestionPhase.answering);
         expect(ttsService.spoken, isEmpty);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
+
+    test('starting a level with audio available prefetches the first '
+        'audioPrefetchWindow questions during the countdown', () {
+      stubQuestions();
+      when(
+        () => settingsRepository.current,
+      ).thenReturn(const AppSettings(soundOn: true));
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+
+        expect(
+          audioCacheService.prefetchCalls.first,
+          questions
+              .take(QuizPlayCubit.audioPrefetchWindow)
+              .map((q) => q.audioUrl)
+              .toList(),
+        );
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
+
+    test('advancing to the next question tops up the prefetch window', () {
+      stubQuestions();
+      when(
+        () => settingsRepository.current,
+      ).thenReturn(const AppSettings(soundOn: true));
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+
+        for (var i = 0; i < 3; i++) {
+          ttsService.complete();
+          async.elapse(QuizPlayCubit.revealDuration);
+          final question = (cubit.state as QuizPlayInProgress).question;
+          cubit.answer(question.correctIndex);
+          async.elapse(QuizPlayCubit.autoAdvance);
+        }
+
+        // Question index is now 3 (0-indexed); the window should have
+        // topped up to include question 7 (3 + audioPrefetchWindow - 1),
+        // which the initial countdown-time call never covered.
+        final laterQuestionUrl = questions[7].audioUrl;
+        expect(
+          audioCacheService.prefetchCalls.any(
+            (call) => call.contains(laterQuestionUrl),
+          ),
+          isTrue,
+        );
 
         unawaited(cubit.close());
         async.flushMicrotasks();

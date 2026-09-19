@@ -13,6 +13,7 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
+import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/list_row_tile.dart';
 import 'package:quizoo/core/widgets/simple_top_bar.dart';
@@ -20,6 +21,7 @@ import 'package:quizoo/core/widgets/skeleton_box.dart';
 import 'package:quizoo/features/leaderboard/data/leaderboard_api.dart';
 import 'package:quizoo/features/leaderboard/data/leaderboard_repository.dart';
 import 'package:quizoo/features/leaderboard/presentation/bloc/category_leaderboard_cubit.dart';
+import 'package:quizoo/features/leaderboard/presentation/widgets/leaderboard_row_skeleton.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-30 — a single subcategory's own leaderboard.
@@ -141,17 +143,24 @@ class _CategoryLoaded extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        l10n.categoryLeaderboardRank(
-                          state.selfRank,
-                          state.countryName,
-                        ),
+                        state.selfRank == 0
+                            ? l10n.categoryLeaderboardUnranked
+                            : l10n.categoryLeaderboardRank(
+                                state.selfRank,
+                                state.countryName,
+                              ),
                         style: Theme.of(context).textTheme.titleMedium!
                             .copyWith(fontSize: 16.sp, color: Colors.white),
                       ),
                       Text(
-                        l10n.categoryLeaderboardGap(
-                          AppFormat.number(state.pointsFromTop, localeName),
-                        ),
+                        state.selfRank == 0
+                            ? l10n.categoryLeaderboardUnrankedBody
+                            : l10n.categoryLeaderboardGap(
+                                AppFormat.number(
+                                  state.pointsFromTop,
+                                  localeName,
+                                ),
+                              ),
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           fontSize: 11.5.sp,
                           color: Colors.white.withValues(alpha: 0.9),
@@ -165,24 +174,33 @@ class _CategoryLoaded extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: ListView(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenMargin.w,
-            ),
-            children: [
-              for (final entry in state.roster)
-                Padding(
-                  padding: EdgeInsets.only(bottom: AppSpacing.sm.h),
-                  child: ListRowTile(
-                    variant: ListRowVariant.player,
-                    title: entry.name,
-                    subtitle: entry.levelsLabel,
-                    leadingEmoji: entry.avatarEmoji,
-                    trailingValue: AppFormat.number(entry.score, localeName),
+          child: state.roster.isEmpty
+              ? EmptyStateView(
+                  emoji: '🏆',
+                  title: l10n.categoryLeaderboardEmptyTitle,
+                  message: l10n.categoryLeaderboardEmptyBody,
+                )
+              : ListView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenMargin.w,
                   ),
+                  children: [
+                    for (final entry in state.roster)
+                      Padding(
+                        padding: EdgeInsets.only(bottom: AppSpacing.sm.h),
+                        child: ListRowTile(
+                          variant: ListRowVariant.player,
+                          title: entry.name,
+                          subtitle: entry.levelsLabel,
+                          leadingEmoji: entry.avatarEmoji,
+                          trailingValue: AppFormat.number(
+                            entry.score,
+                            localeName,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-            ],
-          ),
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(
@@ -210,16 +228,25 @@ class _CategorySkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
-      child: Column(
-        children: [
-          SizedBox(height: AppSpacing.md.h),
-          SkeletonBox(height: 76.h),
-          SizedBox(height: AppSpacing.lg.h),
-          SkeletonBox(height: 200.h),
-        ],
-      ),
+      children: [
+        SizedBox(height: AppSpacing.md.h),
+        SkeletonBox(
+          height: 76.h,
+          borderRadius: AppRadius.cardAll,
+          appearAfter: Duration.zero,
+        ),
+        SizedBox(height: AppSpacing.lg.h),
+        for (var i = 0; i < 6; i++)
+          Padding(
+            padding: EdgeInsets.only(bottom: AppSpacing.sm.h),
+            child: const LeaderboardRowSkeleton(
+              showSecondaryTrailingLine: false,
+            ),
+          ),
+      ],
     );
   }
 }

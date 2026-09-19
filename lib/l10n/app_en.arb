@@ -793,6 +793,14 @@
   },
   "dailyPlayNow": "Play now",
   "@dailyPlayNow": { "description": "S-27 challenge card CTA." },
+  "dailyPlayAlreadyPlayedTitle": "Already played today",
+  "@dailyPlayAlreadyPlayedTitle": {
+    "description": "Daily-play screen's already-played state title."
+  },
+  "dailyPlayAlreadyPlayedBody": "You've already completed today's challenge. Come back tomorrow for a new one!",
+  "@dailyPlayAlreadyPlayedBody": {
+    "description": "Daily-play screen's already-played state body."
+  },
   "dailyYourStreak": "Your streak",
   "@dailyYourStreak": { "description": "S-27 section header." },
   "dailyRules": "Rules",
@@ -863,6 +871,12 @@
   "@leaderboardSelfGuestTitle": { "description": "S-29 pinned self-row title, guest." },
   "leaderboardSelfGuestSubtitle": "Not ranked — sign in to compete",
   "@leaderboardSelfGuestSubtitle": { "description": "S-29 pinned self-row subtitle, guest." },
+  "leaderboardEmptyTitle": "No rankings yet",
+  "@leaderboardEmptyTitle": { "description": "S-29 empty state, shown when a scope/period has no ranked players." },
+  "leaderboardEmptyBody": "Play a few rounds to put yourself on the board.",
+  "@leaderboardEmptyBody": { "description": "S-29 empty state body." },
+  "leaderboardEmptyCta": "Play now",
+  "@leaderboardEmptyCta": { "description": "S-29 empty state action button." },
 
   "categoryLeaderboardSubtitle": "Category leaderboard · this week",
   "@categoryLeaderboardSubtitle": { "description": "S-30 top bar subtitle." },
@@ -887,6 +901,14 @@
       "level": { "type": "int", "example": "12" }
     }
   },
+  "categoryLeaderboardEmptyTitle": "No rankings yet",
+  "@categoryLeaderboardEmptyTitle": { "description": "S-30 empty state, shown when nobody has scored in this category yet." },
+  "categoryLeaderboardEmptyBody": "Be the first to set a score here.",
+  "@categoryLeaderboardEmptyBody": { "description": "S-30 empty state body." },
+  "categoryLeaderboardUnranked": "Play a level to get ranked",
+  "@categoryLeaderboardUnranked": { "description": "S-30 header card headline shown instead of the rank line when the player hasn't scored in this category yet." },
+  "categoryLeaderboardUnrankedBody": "Finish a level here and your rank will show up.",
+  "@categoryLeaderboardUnrankedBody": { "description": "S-30 header card subhead shown instead of the points gap when the player hasn't scored in this category yet." },
 
   "friendsTitle": "Friends",
   "@friendsTitle": { "description": "S-31 top bar title." },

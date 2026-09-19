@@ -89,6 +89,13 @@ class QuizPlayRepository {
   void forget(String levelId) =>
       _prefetched.removeWhere((key, _) => key.startsWith('$levelId@'));
 
+  /// Today's real ten daily-challenge questions — never cached, since there
+  /// is exactly one attempt per day per player and nothing to prefetch
+  /// ahead of.
+  Future<DailyQuestionSession> questionsForDaily({
+    required String languageCode,
+  }) => _api.fetchDailyQuestions(languageCode: languageCode);
+
   static String _key(String levelId, String languageCode) =>
       '$levelId@$languageCode';
 }

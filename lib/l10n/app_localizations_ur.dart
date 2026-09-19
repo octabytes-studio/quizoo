@@ -853,6 +853,13 @@ class AppLocalizationsUr extends AppLocalizations {
   String get dailyPlayNow => 'Play now';
 
   @override
+  String get dailyPlayAlreadyPlayedTitle => 'Already played today';
+
+  @override
+  String get dailyPlayAlreadyPlayedBody =>
+      'You\'ve already completed today\'s challenge. Come back tomorrow for a new one!';
+
+  @override
   String get dailyYourStreak => 'Your streak';
 
   @override
@@ -937,6 +944,16 @@ class AppLocalizationsUr extends AppLocalizations {
   String get leaderboardSelfGuestSubtitle => 'Not ranked — sign in to compete';
 
   @override
+  String get leaderboardEmptyTitle => 'No rankings yet';
+
+  @override
+  String get leaderboardEmptyBody =>
+      'Play a few rounds to put yourself on the board.';
+
+  @override
+  String get leaderboardEmptyCta => 'Play now';
+
+  @override
   String get categoryLeaderboardSubtitle => 'Category leaderboard · this week';
 
   @override
@@ -953,6 +970,20 @@ class AppLocalizationsUr extends AppLocalizations {
   String categoryLeaderboardPlay(String subcategory, int level) {
     return 'Play $subcategory Level $level';
   }
+
+  @override
+  String get categoryLeaderboardEmptyTitle => 'No rankings yet';
+
+  @override
+  String get categoryLeaderboardEmptyBody =>
+      'Be the first to set a score here.';
+
+  @override
+  String get categoryLeaderboardUnranked => 'Play a level to get ranked';
+
+  @override
+  String get categoryLeaderboardUnrankedBody =>
+      'Finish a level here and your rank will show up.';
 
   @override
   String get friendsTitle => 'Friends';

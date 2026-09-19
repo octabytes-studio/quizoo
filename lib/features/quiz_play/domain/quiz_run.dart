@@ -85,6 +85,12 @@ abstract class QuizRun with _$QuizRun {
     @Default(20) int questionCount,
     @Default(false) bool isBoss,
 
+    /// True for the daily challenge's ten-question run through this same
+    /// arena — hearts never deplete and there is no power-up dock, but the
+    /// countdown, HUD, timer ring and answer options are identical to a
+    /// level (design decision: one play surface, not two).
+    @Default(false) bool isDaily,
+
     /// True once any power-up has been fired, which forfeits the clean-run
     /// bonus (§19).
     @Default(false) bool usedPowerUp,

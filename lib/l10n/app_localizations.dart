@@ -1496,6 +1496,18 @@ abstract class AppLocalizations {
   /// **'Play now'**
   String get dailyPlayNow;
 
+  /// Daily-play screen's already-played state title.
+  ///
+  /// In en, this message translates to:
+  /// **'Already played today'**
+  String get dailyPlayAlreadyPlayedTitle;
+
+  /// Daily-play screen's already-played state body.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve already completed today\'s challenge. Come back tomorrow for a new one!'**
+  String get dailyPlayAlreadyPlayedBody;
+
   /// S-27 section header.
   ///
   /// In en, this message translates to:
@@ -1646,6 +1658,24 @@ abstract class AppLocalizations {
   /// **'Not ranked — sign in to compete'**
   String get leaderboardSelfGuestSubtitle;
 
+  /// S-29 empty state, shown when a scope/period has no ranked players.
+  ///
+  /// In en, this message translates to:
+  /// **'No rankings yet'**
+  String get leaderboardEmptyTitle;
+
+  /// S-29 empty state body.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a few rounds to put yourself on the board.'**
+  String get leaderboardEmptyBody;
+
+  /// S-29 empty state action button.
+  ///
+  /// In en, this message translates to:
+  /// **'Play now'**
+  String get leaderboardEmptyCta;
+
   /// S-30 top bar subtitle.
   ///
   /// In en, this message translates to:
@@ -1669,6 +1699,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play {subcategory} Level {level}'**
   String categoryLeaderboardPlay(String subcategory, int level);
+
+  /// S-30 empty state, shown when nobody has scored in this category yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No rankings yet'**
+  String get categoryLeaderboardEmptyTitle;
+
+  /// S-30 empty state body.
+  ///
+  /// In en, this message translates to:
+  /// **'Be the first to set a score here.'**
+  String get categoryLeaderboardEmptyBody;
+
+  /// S-30 header card headline shown instead of the rank line when the player hasn't scored in this category yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a level to get ranked'**
+  String get categoryLeaderboardUnranked;
+
+  /// S-30 header card subhead shown instead of the points gap when the player hasn't scored in this category yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish a level here and your rank will show up.'**
+  String get categoryLeaderboardUnrankedBody;
 
   /// S-31 top bar title.
   ///

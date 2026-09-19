@@ -4,10 +4,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/daily/data/daily_repository.dart';
 import 'package:quizoo/features/daily/domain/daily_challenge.dart';
-import 'package:quizoo/features/daily/domain/daily_result.dart';
 import 'package:quizoo/features/daily/domain/streak_status.dart';
 import 'package:quizoo/features/daily/presentation/bloc/daily_cubit.dart';
-import 'package:quizoo/features/daily/presentation/bloc/daily_result_cubit.dart';
 
 class _MockDailyRepository extends Mock implements DailyRepository {}
 
@@ -72,73 +70,14 @@ void main() {
     );
   });
 
-  group('DailyResultCubit', () {
-    late _MockDailyRepository repository;
-
-    const result = DailyResult(
-      correctCount: 8,
-      totalCount: 10,
-      betterThanPercent: 82,
-      distributionPercents: [14, 34, 72, 100, 41],
-      highlightedBucketIndex: 3,
-      coinsEarned: 300,
-      streakNow: 13,
-      answerPattern: [
-        true,
-        true,
-        false,
-        true,
-        true,
-        true,
-        false,
-        true,
-        true,
-        true,
-      ],
-    );
-
-    setUp(() => repository = _MockDailyRepository());
-
-    test('starts by playing', () {
-      expect(DailyResultCubit(repository).state, isA<DailyResultLoading>());
-    });
-
-    blocTest<DailyResultCubit, DailyResultState>(
-      'success path: playing today lands on a loaded result',
-      setUp: () {
-        when(
-          () => repository.playToday(languageCode: any(named: 'languageCode')),
-        ).thenAnswer((_) async => result);
-      },
-      build: () => DailyResultCubit(repository),
-      act: (cubit) => cubit.play(languageCode: 'en'),
-      expect: () => [
-        isA<DailyResultLoading>(),
-        isA<DailyResultLoaded>().having(
-          (state) => state.result,
-          'result',
-          result,
-        ),
-      ],
-    );
-
-    blocTest<DailyResultCubit, DailyResultState>(
-      'failure path: a failed play surfaces as an error',
-      setUp: () {
-        when(
-          () => repository.playToday(languageCode: any(named: 'languageCode')),
-        ).thenThrow(const ApiException.network());
-      },
-      build: () => DailyResultCubit(repository),
-      act: (cubit) => cubit.play(languageCode: 'en'),
-      expect: () => [isA<DailyResultLoading>(), isA<DailyResultError>()],
-    );
-  });
+  // `DailyResultCubit` is gone: `DailyResultScreen` is now pure display,
+  // handed an already-scored `DailyResult` by `QuizPlayCubit.startDaily`
+  // (covered in quiz_play_cubit_daily_test.dart) rather than playing the
+  // challenge itself.
 
   // The 'DailyApi + DailyRepository' end-to-end group is gone: `DailyApi` now
   // talks to a real Supabase project (`fetchToday`/`play_daily_challenge`),
   // so there is no more pure-Dart `DailyApi()` to construct and exercise
   // directly the way the mock's deterministic `Random`-seeded fixture
-  // allowed. `DailyResult.bucketIndexFor`'s own logic is still covered above
-  // via the mocked-repository `DailyResultCubit` tests.
+  // allowed.
 }

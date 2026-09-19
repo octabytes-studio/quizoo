@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
+import 'package:quizoo/features/quiz_play/data/question_audio_cache_service.dart';
 import 'package:quizoo/features/quiz_play/data/tts_service.dart';
 
 /// The real [TtsService], playing a pre-generated audio file straight
@@ -7,11 +10,16 @@ import 'package:quizoo/features/quiz_play/data/tts_service.dart';
 /// `ElevenLabsTtsService`'s doc comment), `UrlSource` is a plain
 /// `setSourceUrl(isLocal: false)`, supported on every platform this app
 /// ships to.
+///
+/// Plays from [QuestionAudioCacheService]'s local disk cache when the
+/// clip's already there, falling back to the direct network stream — and
+/// warming the cache for next time — on a cache miss.
 class StoredAudioTtsService implements TtsService {
-  StoredAudioTtsService() {
+  StoredAudioTtsService(this._audioCacheService) {
     _player.onPlayerComplete.listen((_) => _onComplete?.call());
   }
 
+  final QuestionAudioCacheService _audioCacheService;
   final AudioPlayer _player = AudioPlayer(playerId: 'tts_stored_audio');
   void Function()? _onComplete;
 
@@ -22,10 +30,18 @@ class StoredAudioTtsService implements TtsService {
   @override
   Future<void> speak(String audioUrl) async {
     try {
-      await _player.play(UrlSource(audioUrl));
+      final localPath = await _audioCacheService.localPathFor(audioUrl);
+      if (localPath != null) {
+        await _player.play(DeviceFileSource(localPath));
+      } else {
+        // Cache miss: unchanged from today — stream directly, and warm
+        // the cache in the background so a retry/replay hits it next time.
+        await _player.play(UrlSource(audioUrl));
+        unawaited(_audioCacheService.prefetch([audioUrl]));
+      }
     } catch (_) {
       // Fail open: never leave the question stuck in the "speaking" phase
-      // on a network/playback failure.
+      // on a network/playback/cache failure.
       _onComplete?.call();
     }
   }

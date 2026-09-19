@@ -7,6 +7,10 @@ import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
+import 'package:quizoo/features/daily/data/daily_repository.dart';
+import 'package:quizoo/features/daily/domain/daily_result.dart';
+import 'package:quizoo/features/quiz_play/data/question_audio_cache_service.dart';
+import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/data/sound_effects_service.dart';
 import 'package:quizoo/features/quiz_play/data/tts_service.dart';
@@ -60,13 +64,24 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     this._contentLanguageRepository,
     this._ttsService,
     this._soundEffects,
-  ) : super(const QuizPlayPreparing());
+    this._audioCacheService, {
+    this._dailyRepository,
+  }) : super(const QuizPlayPreparing());
 
   final QuizPlayRepository _repository;
   final SettingsRepository _settingsRepository;
   final ContentLanguageRepository _contentLanguageRepository;
   final TtsService _ttsService;
   final SoundEffectsService _soundEffects;
+  final QuestionAudioCacheService _audioCacheService;
+
+  /// Only required by [startDaily] — scores a finished daily run via
+  /// `play_daily_challenge`. Null for a level run, which never touches it.
+  final DailyRepository? _dailyRepository;
+
+  /// Set by [startDaily]; [_submitDaily] needs it to call back into the same
+  /// language's challenge.
+  String _dailyLanguageCode = 'en';
 
   /// How long a verdict banner stays up before advancing on its own (S-12).
   static const Duration autoAdvance = Duration(milliseconds: 2500);
@@ -84,6 +99,11 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   /// The staggered fade+slide reveal's total window (§4.2: ~70-90ms per
   /// option) before the clock starts.
   static const Duration revealDuration = Duration(milliseconds: 450);
+
+  /// How many upcoming questions' narration this Cubit tries to keep
+  /// cached ahead of the current one (spec: "maintain 5 questions cached
+  /// ahead").
+  static const int audioPrefetchWindow = 5;
 
   Timer? _clockTimer;
   Timer? _autoAdvanceTimer;
@@ -195,6 +215,8 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     }
     if (isClosed) return;
 
+    if (_ttsAvailable) unawaited(_prefetchWindow(0));
+
     _questionIndex = 0;
     final run = QuizRun(
       attemptId: attemptId,
@@ -222,6 +244,83 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     emit(QuizPlayCountdown(run: run, beat: 3));
     _scheduleNextBeat();
   }
+
+  /// Loads today's real daily-challenge questions and runs the countdown —
+  /// the daily challenge plays through this exact same arena rather than a
+  /// separate screen (design decision: one play surface, not two). Hearts
+  /// never deplete and there is no power-up dock for a [QuizRun.isDaily] run
+  /// (see [_resolveWrong], [usePowerUp]); the run ends by scoring with the
+  /// server instead of routing to a level-complete/failed screen (see
+  /// [_finish], [_submitDaily]).
+  Future<void> startDaily({required String languageCode}) async {
+    _dailyLanguageCode = languageCode;
+    emit(const QuizPlayPreparing());
+
+    final DailyQuestionSession session;
+    try {
+      session = await _repository.questionsForDaily(languageCode: languageCode);
+    } on ApiException catch (error) {
+      if (isClosed) return;
+      emit(_dailyErrorState(error));
+      return;
+    }
+    if (isClosed) return;
+
+    if (session.questions.isEmpty) {
+      emit(
+        const QuizPlayFailed(
+          ApiException(
+            'No daily challenge today',
+            kind: ApiErrorKind.notFound,
+            code: 'ERR_CONTENT_404',
+          ),
+        ),
+      );
+      return;
+    }
+
+    _questions = session.questions;
+
+    _audioOn = _settingsRepository.current.soundOn;
+    if (_audioOn) {
+      final voiceId = await _contentLanguageRepository.voiceIdFor(languageCode);
+      if (isClosed) return;
+      _ttsAvailable = await _ttsService.setLanguage(
+        languageCode,
+        voiceId: voiceId,
+      );
+    } else {
+      _ttsAvailable = false;
+    }
+    if (isClosed) return;
+
+    if (_ttsAvailable) unawaited(_prefetchWindow(0));
+
+    _questionIndex = 0;
+    final run = QuizRun(
+      attemptId: 'daily',
+      levelId: 'daily',
+      subcategoryId: '',
+      subcategoryName: '',
+      categoryId: '',
+      levelNumber: 0,
+      secondsPerQuestion: session.secondsPerQuestion,
+      questionCount: _questions.length,
+      // Decorative only for a daily run — see _resolveWrong, which never
+      // decrements this.
+      heartsRemaining: MockPlayer.livesPerLevel,
+      isDaily: true,
+      startedAt: DateTime.now(),
+    );
+
+    emit(QuizPlayCountdown(run: run, beat: 3));
+    _scheduleNextBeat();
+  }
+
+  QuizPlayState _dailyErrorState(ApiException error) =>
+      error.code == 'already_played_today'
+      ? const QuizPlayDailyAlreadyPlayed()
+      : QuizPlayFailed(error);
 
   // --------------------------------------------------------------- countdown
 
@@ -256,6 +355,8 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _elapsed = Duration.zero;
     _questionBudget = Duration(seconds: run.secondsPerQuestion);
 
+    if (_ttsAvailable) unawaited(_prefetchWindow(_questionIndex + 1));
+
     final question = _questions[_questionIndex];
     final speaksThisQuestion =
         _audioOn &&
@@ -287,6 +388,23 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     } else {
       _startClock();
     }
+  }
+
+  /// Kicks off caching for up to [audioPrefetchWindow] questions starting
+  /// at [fromIndex], skipping any that don't need audio at all
+  /// (`ttsExcluded`, or no `audioUrl` yet). Best-effort and fire-and-forget
+  /// at every call site — a slow or failed prefetch never blocks gameplay
+  /// (spec §Design overview).
+  Future<void> _prefetchWindow(int fromIndex) async {
+    if (fromIndex >= _questions.length) return;
+    final end = (fromIndex + audioPrefetchWindow).clamp(0, _questions.length);
+    final urls = [
+      for (var i = fromIndex; i < end; i++)
+        if (!_questions[i].ttsExcluded && _questions[i].audioUrl != null)
+          _questions[i].audioUrl!,
+    ];
+    if (urls.isEmpty) return;
+    await _audioCacheService.prefetch(urls);
   }
 
   /// TTS finished (or was cancelled). [questionIndex] guards against a stale
@@ -477,7 +595,10 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
   void _resolveWrong(QuizPlayInProgress current, int optionIndex) {
     final run = current.run;
-    final hearts = run.heartsRemaining - 1;
+    // A daily run's hearts are decorative only — a wrong answer never costs
+    // one and can never trigger the out-of-lives wall (this fix's whole
+    // point: the daily challenge always plays all ten questions).
+    final hearts = run.isDaily ? run.heartsRemaining : run.heartsRemaining - 1;
     final next = run.copyWith(
       answers: [
         ...run.answers,
@@ -504,7 +625,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
     if (_audioOn) unawaited(_soundEffects.playWrong());
 
-    if (hearts <= 0) {
+    if (!run.isDaily && hearts <= 0) {
       // Hearts hit zero: S-19 offers a way back rather than ending the run.
       emit(
         QuizPlayOutOfLives(
@@ -574,6 +695,9 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   void usePowerUp(PowerUp powerUp) {
     final current = state;
     if (current is! QuizPlayInProgress || !current.isAwaitingAnswer) return;
+    // No power-up dock on a daily run (§ startDaily) — a no-op here is a
+    // defensive backstop, not the mechanism that hides it.
+    if (current.run.isDaily) return;
     if (current.phase != QuestionPhase.answering) return;
     if (!current.powerUps.has(powerUp)) return;
 
@@ -804,11 +928,57 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _adTimer?.cancel();
     _revealTimer?.cancel();
     unawaited(_ttsService.stop());
+
+    final finishedRun = run.copyWith(
+      ending: ending,
+      finishedAt: DateTime.now(),
+    );
+
+    if (run.isDaily) {
+      unawaited(_submitDaily(finishedRun));
+      return;
+    }
+
     // A replay should re-deal the level rather than reuse this run's cache.
     _repository.forget(run.levelId);
-    emit(
-      QuizPlayEnded(run.copyWith(ending: ending, finishedAt: DateTime.now())),
-    );
+    emit(QuizPlayEnded(finishedRun));
+  }
+
+  /// Scores a finished daily run against `play_daily_challenge`, which is
+  /// the authoritative source for coins/streak/distribution — this never
+  /// recomputes them client-side. [run]'s answers (right/wrong/timeout/
+  /// skip) collapse to the boolean pattern the RPC expects; a question
+  /// never reached (a quit before the tenth) simply isn't in the pattern,
+  /// same as the RPC's own `array_length` scoring already handles.
+  Future<void> _submitDaily(QuizRun run) async {
+    final dailyRepository = _dailyRepository;
+    if (dailyRepository == null) {
+      if (!isClosed) {
+        emit(
+          const QuizPlayFailed(
+            ApiException(
+              'Missing daily repository',
+              kind: ApiErrorKind.unknown,
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    emit(QuizPlaySubmittingDaily(run));
+    try {
+      final pattern = [for (final answer in run.answers) answer.isCorrect];
+      final result = await dailyRepository.playToday(
+        languageCode: _dailyLanguageCode,
+        answerPattern: pattern,
+      );
+      if (isClosed) return;
+      emit(QuizPlayDailyFinished(result));
+    } on ApiException catch (error) {
+      if (isClosed) return;
+      emit(_dailyErrorState(error));
+    }
   }
 
   @override

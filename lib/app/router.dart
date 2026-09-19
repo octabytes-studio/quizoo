@@ -12,6 +12,7 @@ import 'package:quizoo/features/auth/presentation/screens/profile_creation_scree
 import 'package:quizoo/features/auth/presentation/widgets/save_progress_sheet.dart';
 import 'package:quizoo/features/catalog/presentation/screens/category_detail_screen.dart';
 import 'package:quizoo/features/catalog/presentation/screens/level_map_screen.dart';
+import 'package:quizoo/features/daily/domain/daily_result.dart';
 import 'package:quizoo/features/daily/presentation/screens/daily_result_screen.dart';
 import 'package:quizoo/features/daily/presentation/screens/daily_screen.dart';
 import 'package:quizoo/features/dev/presentation/screens/screen_index_screen.dart';
@@ -219,9 +220,21 @@ abstract final class AppRouter {
 
         // Daily
         GoRoute(
+          path: AppRoutes.dailyPlay,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const QuizPlayScreen.daily(),
+        ),
+        GoRoute(
           path: AppRoutes.dailyResult,
           parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) => const DailyResultScreen(),
+          // Real navigations always arrive with the just-scored `DailyResult`
+          // as `extra` (from `QuizPlayScreen.daily`, via `QuizPlayCubit`'s
+          // `_submitDaily`); the dev screen index's S-28 entry pushes this
+          // route bare, so it falls back to a fixed preview rather than
+          // crashing on a null `extra`.
+          builder: (context, state) => DailyResultScreen(
+            result: state.extra as DailyResult? ?? DailyResult.preview(),
+          ),
         ),
 
         // Leaderboards & social
