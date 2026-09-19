@@ -19,6 +19,11 @@ _DailyResult _$DailyResultFromJson(Map<String, dynamic> json) => _DailyResult(
   answerPattern: (json['answerPattern'] as List<dynamic>)
       .map((e) => e as bool)
       .toList(),
+  newlyEarnedBadgeIds:
+      (json['newlyEarnedBadgeIds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$DailyResultToJson(_DailyResult instance) =>
@@ -31,4 +36,5 @@ Map<String, dynamic> _$DailyResultToJson(_DailyResult instance) =>
       'coinsEarned': instance.coinsEarned,
       'streakNow': instance.streakNow,
       'answerPattern': instance.answerPattern,
+      'newlyEarnedBadgeIds': instance.newlyEarnedBadgeIds,
     };

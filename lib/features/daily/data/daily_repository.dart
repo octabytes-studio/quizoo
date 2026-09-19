@@ -39,6 +39,7 @@ class DailyRepository {
       coinsEarned: outcome.coinsEarned,
       streakNow: outcome.streakNow,
       answerPattern: outcome.answerPattern,
+      newlyEarnedBadgeIds: outcome.newlyEarnedBadgeIds,
     );
   }
 }

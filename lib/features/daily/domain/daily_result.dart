@@ -25,6 +25,7 @@ abstract class DailyResult with _$DailyResult {
     /// One entry per question, true for a correct answer — the raw material
     /// for the share sheet's spoiler-free emoji grid.
     required List<bool> answerPattern,
+    @Default([]) List<String> newlyEarnedBadgeIds,
   }) = _DailyResult;
 
   const DailyResult._();

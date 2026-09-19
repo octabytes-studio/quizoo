@@ -1097,6 +1097,61 @@ class AppLocalizationsUr extends AppLocalizations {
   }
 
   @override
+  String get achievementHintSharpshooter =>
+      'Clear every question in one level to go flawless.';
+
+  @override
+  String get achievementHintOnFire =>
+      'Keep answering correctly in a row without missing one.';
+
+  @override
+  String get achievementHintBossSlayer =>
+      'Clear a boss level to earn this one.';
+
+  @override
+  String get achievementHintBigBrain =>
+      'Go flawless on IQ levels to build up this count.';
+
+  @override
+  String get achievementHintCategoryKing =>
+      'Keep clearing topics in this category with 3 stars.';
+
+  @override
+  String get achievementHintCenturion =>
+      'String together correct answers across levels without a miss.';
+
+  @override
+  String get achievementHintFlawless =>
+      'Go flawless on at least one level every day this week.';
+
+  @override
+  String get achievementHintGlobetrotter =>
+      'Play a level in every category to round out your passport.';
+
+  @override
+  String get achievementHintNightOwl =>
+      'Answer a question between midnight and 3am on more nights.';
+
+  @override
+  String get achievementHintQuickDraw =>
+      'Answer faster on average to beat the 3-second bar.';
+
+  @override
+  String get achievementHintRocket =>
+      'Answer faster on average to beat the 2-second bar.';
+
+  @override
+  String get achievementHintScholar => 'Reach level 20 in more subcategories.';
+
+  @override
+  String get achievementHintDuelist =>
+      'Win more bot duels to close in on this one.';
+
+  @override
+  String get achievementHintWeekWarrior =>
+      'Keep your daily streak alive to reach a full week.';
+
+  @override
   String get badgeUnlockedEyebrow => 'ACHIEVEMENT UNLOCKED';
 
   @override

@@ -18,7 +18,7 @@ mixin _$DailyResult {
  int get correctCount; int get totalCount; int get betterThanPercent;/// Five bucket heights, 0…100 — 0-2 / 3-4 / 5-6 / 7-8 / 9-10 correct.
  List<int> get distributionPercents; int get highlightedBucketIndex; int get coinsEarned; int get streakNow;/// One entry per question, true for a correct answer — the raw material
 /// for the share sheet's spoiler-free emoji grid.
- List<bool> get answerPattern;
+ List<bool> get answerPattern; List<String> get newlyEarnedBadgeIds;
 /// Create a copy of DailyResult
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +31,16 @@ $DailyResultCopyWith<DailyResult> get copyWith => _$DailyResultCopyWithImpl<Dail
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyResult&&(identical(other.correctCount, correctCount) || other.correctCount == correctCount)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.betterThanPercent, betterThanPercent) || other.betterThanPercent == betterThanPercent)&&const DeepCollectionEquality().equals(other.distributionPercents, distributionPercents)&&(identical(other.highlightedBucketIndex, highlightedBucketIndex) || other.highlightedBucketIndex == highlightedBucketIndex)&&(identical(other.coinsEarned, coinsEarned) || other.coinsEarned == coinsEarned)&&(identical(other.streakNow, streakNow) || other.streakNow == streakNow)&&const DeepCollectionEquality().equals(other.answerPattern, answerPattern));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyResult&&(identical(other.correctCount, correctCount) || other.correctCount == correctCount)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.betterThanPercent, betterThanPercent) || other.betterThanPercent == betterThanPercent)&&const DeepCollectionEquality().equals(other.distributionPercents, distributionPercents)&&(identical(other.highlightedBucketIndex, highlightedBucketIndex) || other.highlightedBucketIndex == highlightedBucketIndex)&&(identical(other.coinsEarned, coinsEarned) || other.coinsEarned == coinsEarned)&&(identical(other.streakNow, streakNow) || other.streakNow == streakNow)&&const DeepCollectionEquality().equals(other.answerPattern, answerPattern)&&const DeepCollectionEquality().equals(other.newlyEarnedBadgeIds, newlyEarnedBadgeIds));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,correctCount,totalCount,betterThanPercent,const DeepCollectionEquality().hash(distributionPercents),highlightedBucketIndex,coinsEarned,streakNow,const DeepCollectionEquality().hash(answerPattern));
+int get hashCode => Object.hash(runtimeType,correctCount,totalCount,betterThanPercent,const DeepCollectionEquality().hash(distributionPercents),highlightedBucketIndex,coinsEarned,streakNow,const DeepCollectionEquality().hash(answerPattern),const DeepCollectionEquality().hash(newlyEarnedBadgeIds));
 
 @override
 String toString() {
-  return 'DailyResult(correctCount: $correctCount, totalCount: $totalCount, betterThanPercent: $betterThanPercent, distributionPercents: $distributionPercents, highlightedBucketIndex: $highlightedBucketIndex, coinsEarned: $coinsEarned, streakNow: $streakNow, answerPattern: $answerPattern)';
+  return 'DailyResult(correctCount: $correctCount, totalCount: $totalCount, betterThanPercent: $betterThanPercent, distributionPercents: $distributionPercents, highlightedBucketIndex: $highlightedBucketIndex, coinsEarned: $coinsEarned, streakNow: $streakNow, answerPattern: $answerPattern, newlyEarnedBadgeIds: $newlyEarnedBadgeIds)';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $DailyResultCopyWith<$Res>  {
   factory $DailyResultCopyWith(DailyResult value, $Res Function(DailyResult) _then) = _$DailyResultCopyWithImpl;
 @useResult
 $Res call({
- int correctCount, int totalCount, int betterThanPercent, List<int> distributionPercents, int highlightedBucketIndex, int coinsEarned, int streakNow, List<bool> answerPattern
+ int correctCount, int totalCount, int betterThanPercent, List<int> distributionPercents, int highlightedBucketIndex, int coinsEarned, int streakNow, List<bool> answerPattern, List<String> newlyEarnedBadgeIds
 });
 
 
@@ -68,7 +68,7 @@ class _$DailyResultCopyWithImpl<$Res>
 
 /// Create a copy of DailyResult
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? correctCount = null,Object? totalCount = null,Object? betterThanPercent = null,Object? distributionPercents = null,Object? highlightedBucketIndex = null,Object? coinsEarned = null,Object? streakNow = null,Object? answerPattern = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? correctCount = null,Object? totalCount = null,Object? betterThanPercent = null,Object? distributionPercents = null,Object? highlightedBucketIndex = null,Object? coinsEarned = null,Object? streakNow = null,Object? answerPattern = null,Object? newlyEarnedBadgeIds = null,}) {
   return _then(_self.copyWith(
 correctCount: null == correctCount ? _self.correctCount : correctCount // ignore: cast_nullable_to_non_nullable
 as int,totalCount: null == totalCount ? _self.totalCount : totalCount // ignore: cast_nullable_to_non_nullable
@@ -78,7 +78,8 @@ as List<int>,highlightedBucketIndex: null == highlightedBucketIndex ? _self.high
 as int,coinsEarned: null == coinsEarned ? _self.coinsEarned : coinsEarned // ignore: cast_nullable_to_non_nullable
 as int,streakNow: null == streakNow ? _self.streakNow : streakNow // ignore: cast_nullable_to_non_nullable
 as int,answerPattern: null == answerPattern ? _self.answerPattern : answerPattern // ignore: cast_nullable_to_non_nullable
-as List<bool>,
+as List<bool>,newlyEarnedBadgeIds: null == newlyEarnedBadgeIds ? _self.newlyEarnedBadgeIds : newlyEarnedBadgeIds // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -163,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int correctCount,  int totalCount,  int betterThanPercent,  List<int> distributionPercents,  int highlightedBucketIndex,  int coinsEarned,  int streakNow,  List<bool> answerPattern)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int correctCount,  int totalCount,  int betterThanPercent,  List<int> distributionPercents,  int highlightedBucketIndex,  int coinsEarned,  int streakNow,  List<bool> answerPattern,  List<String> newlyEarnedBadgeIds)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DailyResult() when $default != null:
-return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_that.distributionPercents,_that.highlightedBucketIndex,_that.coinsEarned,_that.streakNow,_that.answerPattern);case _:
+return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_that.distributionPercents,_that.highlightedBucketIndex,_that.coinsEarned,_that.streakNow,_that.answerPattern,_that.newlyEarnedBadgeIds);case _:
   return orElse();
 
 }
@@ -184,10 +185,10 @@ return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int correctCount,  int totalCount,  int betterThanPercent,  List<int> distributionPercents,  int highlightedBucketIndex,  int coinsEarned,  int streakNow,  List<bool> answerPattern)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int correctCount,  int totalCount,  int betterThanPercent,  List<int> distributionPercents,  int highlightedBucketIndex,  int coinsEarned,  int streakNow,  List<bool> answerPattern,  List<String> newlyEarnedBadgeIds)  $default,) {final _that = this;
 switch (_that) {
 case _DailyResult():
-return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_that.distributionPercents,_that.highlightedBucketIndex,_that.coinsEarned,_that.streakNow,_that.answerPattern);case _:
+return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_that.distributionPercents,_that.highlightedBucketIndex,_that.coinsEarned,_that.streakNow,_that.answerPattern,_that.newlyEarnedBadgeIds);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +205,10 @@ return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int correctCount,  int totalCount,  int betterThanPercent,  List<int> distributionPercents,  int highlightedBucketIndex,  int coinsEarned,  int streakNow,  List<bool> answerPattern)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int correctCount,  int totalCount,  int betterThanPercent,  List<int> distributionPercents,  int highlightedBucketIndex,  int coinsEarned,  int streakNow,  List<bool> answerPattern,  List<String> newlyEarnedBadgeIds)?  $default,) {final _that = this;
 switch (_that) {
 case _DailyResult() when $default != null:
-return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_that.distributionPercents,_that.highlightedBucketIndex,_that.coinsEarned,_that.streakNow,_that.answerPattern);case _:
+return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_that.distributionPercents,_that.highlightedBucketIndex,_that.coinsEarned,_that.streakNow,_that.answerPattern,_that.newlyEarnedBadgeIds);case _:
   return null;
 
 }
@@ -219,7 +220,7 @@ return $default(_that.correctCount,_that.totalCount,_that.betterThanPercent,_tha
 @JsonSerializable()
 
 class _DailyResult extends DailyResult {
-  const _DailyResult({required this.correctCount, required this.totalCount, required this.betterThanPercent, required final  List<int> distributionPercents, required this.highlightedBucketIndex, required this.coinsEarned, required this.streakNow, required final  List<bool> answerPattern}): _distributionPercents = distributionPercents,_answerPattern = answerPattern,super._();
+  const _DailyResult({required this.correctCount, required this.totalCount, required this.betterThanPercent, required final  List<int> distributionPercents, required this.highlightedBucketIndex, required this.coinsEarned, required this.streakNow, required final  List<bool> answerPattern, final  List<String> newlyEarnedBadgeIds = const []}): _distributionPercents = distributionPercents,_answerPattern = answerPattern,_newlyEarnedBadgeIds = newlyEarnedBadgeIds,super._();
   factory _DailyResult.fromJson(Map<String, dynamic> json) => _$DailyResultFromJson(json);
 
 @override final  int correctCount;
@@ -248,6 +249,13 @@ class _DailyResult extends DailyResult {
   return EqualUnmodifiableListView(_answerPattern);
 }
 
+ final  List<String> _newlyEarnedBadgeIds;
+@override@JsonKey() List<String> get newlyEarnedBadgeIds {
+  if (_newlyEarnedBadgeIds is EqualUnmodifiableListView) return _newlyEarnedBadgeIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_newlyEarnedBadgeIds);
+}
+
 
 /// Create a copy of DailyResult
 /// with the given fields replaced by the non-null parameter values.
@@ -262,16 +270,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyResult&&(identical(other.correctCount, correctCount) || other.correctCount == correctCount)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.betterThanPercent, betterThanPercent) || other.betterThanPercent == betterThanPercent)&&const DeepCollectionEquality().equals(other._distributionPercents, _distributionPercents)&&(identical(other.highlightedBucketIndex, highlightedBucketIndex) || other.highlightedBucketIndex == highlightedBucketIndex)&&(identical(other.coinsEarned, coinsEarned) || other.coinsEarned == coinsEarned)&&(identical(other.streakNow, streakNow) || other.streakNow == streakNow)&&const DeepCollectionEquality().equals(other._answerPattern, _answerPattern));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyResult&&(identical(other.correctCount, correctCount) || other.correctCount == correctCount)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.betterThanPercent, betterThanPercent) || other.betterThanPercent == betterThanPercent)&&const DeepCollectionEquality().equals(other._distributionPercents, _distributionPercents)&&(identical(other.highlightedBucketIndex, highlightedBucketIndex) || other.highlightedBucketIndex == highlightedBucketIndex)&&(identical(other.coinsEarned, coinsEarned) || other.coinsEarned == coinsEarned)&&(identical(other.streakNow, streakNow) || other.streakNow == streakNow)&&const DeepCollectionEquality().equals(other._answerPattern, _answerPattern)&&const DeepCollectionEquality().equals(other._newlyEarnedBadgeIds, _newlyEarnedBadgeIds));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,correctCount,totalCount,betterThanPercent,const DeepCollectionEquality().hash(_distributionPercents),highlightedBucketIndex,coinsEarned,streakNow,const DeepCollectionEquality().hash(_answerPattern));
+int get hashCode => Object.hash(runtimeType,correctCount,totalCount,betterThanPercent,const DeepCollectionEquality().hash(_distributionPercents),highlightedBucketIndex,coinsEarned,streakNow,const DeepCollectionEquality().hash(_answerPattern),const DeepCollectionEquality().hash(_newlyEarnedBadgeIds));
 
 @override
 String toString() {
-  return 'DailyResult(correctCount: $correctCount, totalCount: $totalCount, betterThanPercent: $betterThanPercent, distributionPercents: $distributionPercents, highlightedBucketIndex: $highlightedBucketIndex, coinsEarned: $coinsEarned, streakNow: $streakNow, answerPattern: $answerPattern)';
+  return 'DailyResult(correctCount: $correctCount, totalCount: $totalCount, betterThanPercent: $betterThanPercent, distributionPercents: $distributionPercents, highlightedBucketIndex: $highlightedBucketIndex, coinsEarned: $coinsEarned, streakNow: $streakNow, answerPattern: $answerPattern, newlyEarnedBadgeIds: $newlyEarnedBadgeIds)';
 }
 
 
@@ -282,7 +290,7 @@ abstract mixin class _$DailyResultCopyWith<$Res> implements $DailyResultCopyWith
   factory _$DailyResultCopyWith(_DailyResult value, $Res Function(_DailyResult) _then) = __$DailyResultCopyWithImpl;
 @override @useResult
 $Res call({
- int correctCount, int totalCount, int betterThanPercent, List<int> distributionPercents, int highlightedBucketIndex, int coinsEarned, int streakNow, List<bool> answerPattern
+ int correctCount, int totalCount, int betterThanPercent, List<int> distributionPercents, int highlightedBucketIndex, int coinsEarned, int streakNow, List<bool> answerPattern, List<String> newlyEarnedBadgeIds
 });
 
 
@@ -299,7 +307,7 @@ class __$DailyResultCopyWithImpl<$Res>
 
 /// Create a copy of DailyResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? correctCount = null,Object? totalCount = null,Object? betterThanPercent = null,Object? distributionPercents = null,Object? highlightedBucketIndex = null,Object? coinsEarned = null,Object? streakNow = null,Object? answerPattern = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? correctCount = null,Object? totalCount = null,Object? betterThanPercent = null,Object? distributionPercents = null,Object? highlightedBucketIndex = null,Object? coinsEarned = null,Object? streakNow = null,Object? answerPattern = null,Object? newlyEarnedBadgeIds = null,}) {
   return _then(_DailyResult(
 correctCount: null == correctCount ? _self.correctCount : correctCount // ignore: cast_nullable_to_non_nullable
 as int,totalCount: null == totalCount ? _self.totalCount : totalCount // ignore: cast_nullable_to_non_nullable
@@ -309,7 +317,8 @@ as List<int>,highlightedBucketIndex: null == highlightedBucketIndex ? _self.high
 as int,coinsEarned: null == coinsEarned ? _self.coinsEarned : coinsEarned // ignore: cast_nullable_to_non_nullable
 as int,streakNow: null == streakNow ? _self.streakNow : streakNow // ignore: cast_nullable_to_non_nullable
 as int,answerPattern: null == answerPattern ? _self._answerPattern : answerPattern // ignore: cast_nullable_to_non_nullable
-as List<bool>,
+as List<bool>,newlyEarnedBadgeIds: null == newlyEarnedBadgeIds ? _self._newlyEarnedBadgeIds : newlyEarnedBadgeIds // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

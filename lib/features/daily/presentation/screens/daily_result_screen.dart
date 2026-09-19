@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
@@ -19,15 +20,31 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// [result] is real, server-scored data by the time this screen is reached:
 /// `DailyPlayScreen` fetches today's real questions, collects the player's
 /// actual answers, and submits that genuine pattern before pushing here with
-/// the outcome — this screen is now pure display, not a Cubit that plays the
-/// challenge itself.
-class DailyResultScreen extends StatelessWidget {
+/// the outcome — this screen is now pure display except for the post-frame
+/// badge-celebration chain (plan 014), which mirrors `LevelCompleteScreen`'s.
+class DailyResultScreen extends StatefulWidget {
   const DailyResultScreen({required this.result, super.key});
 
   final DailyResult result;
 
   @override
-  Widget build(BuildContext context) => _DailyResultLoadedView(result: result);
+  State<DailyResultScreen> createState() => _DailyResultScreenState();
+}
+
+class _DailyResultScreenState extends State<DailyResultScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _runChain());
+  }
+
+  Future<void> _runChain() async {
+    await celebrateBadges(context, widget.result.newlyEarnedBadgeIds);
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      _DailyResultLoadedView(result: widget.result);
 }
 
 class _DailyResultLoadedView extends StatelessWidget {

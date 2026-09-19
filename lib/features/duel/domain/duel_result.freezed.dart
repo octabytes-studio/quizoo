@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DuelResult {
 
- DuelOpponent get opponent; int get playerRoundsWon; int get opponentRoundsWon; double get playerAverageAnswerSeconds; double get opponentAverageAnswerSeconds; int get eloBefore; int get eloAfter; int get rewardCoins;
+ DuelOpponent get opponent; int get playerRoundsWon; int get opponentRoundsWon; double get playerAverageAnswerSeconds; double get opponentAverageAnswerSeconds; int get eloBefore; int get eloAfter; int get rewardCoins; List<String> get newlyEarnedBadgeIds;
 /// Create a copy of DuelResult
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DuelResultCopyWith<DuelResult> get copyWith => _$DuelResultCopyWithImpl<DuelRes
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelResult&&(identical(other.opponent, opponent) || other.opponent == opponent)&&(identical(other.playerRoundsWon, playerRoundsWon) || other.playerRoundsWon == playerRoundsWon)&&(identical(other.opponentRoundsWon, opponentRoundsWon) || other.opponentRoundsWon == opponentRoundsWon)&&(identical(other.playerAverageAnswerSeconds, playerAverageAnswerSeconds) || other.playerAverageAnswerSeconds == playerAverageAnswerSeconds)&&(identical(other.opponentAverageAnswerSeconds, opponentAverageAnswerSeconds) || other.opponentAverageAnswerSeconds == opponentAverageAnswerSeconds)&&(identical(other.eloBefore, eloBefore) || other.eloBefore == eloBefore)&&(identical(other.eloAfter, eloAfter) || other.eloAfter == eloAfter)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelResult&&(identical(other.opponent, opponent) || other.opponent == opponent)&&(identical(other.playerRoundsWon, playerRoundsWon) || other.playerRoundsWon == playerRoundsWon)&&(identical(other.opponentRoundsWon, opponentRoundsWon) || other.opponentRoundsWon == opponentRoundsWon)&&(identical(other.playerAverageAnswerSeconds, playerAverageAnswerSeconds) || other.playerAverageAnswerSeconds == playerAverageAnswerSeconds)&&(identical(other.opponentAverageAnswerSeconds, opponentAverageAnswerSeconds) || other.opponentAverageAnswerSeconds == opponentAverageAnswerSeconds)&&(identical(other.eloBefore, eloBefore) || other.eloBefore == eloBefore)&&(identical(other.eloAfter, eloAfter) || other.eloAfter == eloAfter)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins)&&const DeepCollectionEquality().equals(other.newlyEarnedBadgeIds, newlyEarnedBadgeIds));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,opponent,playerRoundsWon,opponentRoundsWon,playerAverageAnswerSeconds,opponentAverageAnswerSeconds,eloBefore,eloAfter,rewardCoins);
+int get hashCode => Object.hash(runtimeType,opponent,playerRoundsWon,opponentRoundsWon,playerAverageAnswerSeconds,opponentAverageAnswerSeconds,eloBefore,eloAfter,rewardCoins,const DeepCollectionEquality().hash(newlyEarnedBadgeIds));
 
 @override
 String toString() {
-  return 'DuelResult(opponent: $opponent, playerRoundsWon: $playerRoundsWon, opponentRoundsWon: $opponentRoundsWon, playerAverageAnswerSeconds: $playerAverageAnswerSeconds, opponentAverageAnswerSeconds: $opponentAverageAnswerSeconds, eloBefore: $eloBefore, eloAfter: $eloAfter, rewardCoins: $rewardCoins)';
+  return 'DuelResult(opponent: $opponent, playerRoundsWon: $playerRoundsWon, opponentRoundsWon: $opponentRoundsWon, playerAverageAnswerSeconds: $playerAverageAnswerSeconds, opponentAverageAnswerSeconds: $opponentAverageAnswerSeconds, eloBefore: $eloBefore, eloAfter: $eloAfter, rewardCoins: $rewardCoins, newlyEarnedBadgeIds: $newlyEarnedBadgeIds)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $DuelResultCopyWith<$Res>  {
   factory $DuelResultCopyWith(DuelResult value, $Res Function(DuelResult) _then) = _$DuelResultCopyWithImpl;
 @useResult
 $Res call({
- DuelOpponent opponent, int playerRoundsWon, int opponentRoundsWon, double playerAverageAnswerSeconds, double opponentAverageAnswerSeconds, int eloBefore, int eloAfter, int rewardCoins
+ DuelOpponent opponent, int playerRoundsWon, int opponentRoundsWon, double playerAverageAnswerSeconds, double opponentAverageAnswerSeconds, int eloBefore, int eloAfter, int rewardCoins, List<String> newlyEarnedBadgeIds
 });
 
 
@@ -65,7 +65,7 @@ class _$DuelResultCopyWithImpl<$Res>
 
 /// Create a copy of DuelResult
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? opponent = null,Object? playerRoundsWon = null,Object? opponentRoundsWon = null,Object? playerAverageAnswerSeconds = null,Object? opponentAverageAnswerSeconds = null,Object? eloBefore = null,Object? eloAfter = null,Object? rewardCoins = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? opponent = null,Object? playerRoundsWon = null,Object? opponentRoundsWon = null,Object? playerAverageAnswerSeconds = null,Object? opponentAverageAnswerSeconds = null,Object? eloBefore = null,Object? eloAfter = null,Object? rewardCoins = null,Object? newlyEarnedBadgeIds = null,}) {
   return _then(_self.copyWith(
 opponent: null == opponent ? _self.opponent : opponent // ignore: cast_nullable_to_non_nullable
 as DuelOpponent,playerRoundsWon: null == playerRoundsWon ? _self.playerRoundsWon : playerRoundsWon // ignore: cast_nullable_to_non_nullable
@@ -75,7 +75,8 @@ as double,opponentAverageAnswerSeconds: null == opponentAverageAnswerSeconds ? _
 as double,eloBefore: null == eloBefore ? _self.eloBefore : eloBefore // ignore: cast_nullable_to_non_nullable
 as int,eloAfter: null == eloAfter ? _self.eloAfter : eloAfter // ignore: cast_nullable_to_non_nullable
 as int,rewardCoins: null == rewardCoins ? _self.rewardCoins : rewardCoins // ignore: cast_nullable_to_non_nullable
-as int,
+as int,newlyEarnedBadgeIds: null == newlyEarnedBadgeIds ? _self.newlyEarnedBadgeIds : newlyEarnedBadgeIds // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 /// Create a copy of DuelResult
@@ -169,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DuelOpponent opponent,  int playerRoundsWon,  int opponentRoundsWon,  double playerAverageAnswerSeconds,  double opponentAverageAnswerSeconds,  int eloBefore,  int eloAfter,  int rewardCoins)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DuelOpponent opponent,  int playerRoundsWon,  int opponentRoundsWon,  double playerAverageAnswerSeconds,  double opponentAverageAnswerSeconds,  int eloBefore,  int eloAfter,  int rewardCoins,  List<String> newlyEarnedBadgeIds)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DuelResult() when $default != null:
-return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_that.playerAverageAnswerSeconds,_that.opponentAverageAnswerSeconds,_that.eloBefore,_that.eloAfter,_that.rewardCoins);case _:
+return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_that.playerAverageAnswerSeconds,_that.opponentAverageAnswerSeconds,_that.eloBefore,_that.eloAfter,_that.rewardCoins,_that.newlyEarnedBadgeIds);case _:
   return orElse();
 
 }
@@ -190,10 +191,10 @@ return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DuelOpponent opponent,  int playerRoundsWon,  int opponentRoundsWon,  double playerAverageAnswerSeconds,  double opponentAverageAnswerSeconds,  int eloBefore,  int eloAfter,  int rewardCoins)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DuelOpponent opponent,  int playerRoundsWon,  int opponentRoundsWon,  double playerAverageAnswerSeconds,  double opponentAverageAnswerSeconds,  int eloBefore,  int eloAfter,  int rewardCoins,  List<String> newlyEarnedBadgeIds)  $default,) {final _that = this;
 switch (_that) {
 case _DuelResult():
-return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_that.playerAverageAnswerSeconds,_that.opponentAverageAnswerSeconds,_that.eloBefore,_that.eloAfter,_that.rewardCoins);case _:
+return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_that.playerAverageAnswerSeconds,_that.opponentAverageAnswerSeconds,_that.eloBefore,_that.eloAfter,_that.rewardCoins,_that.newlyEarnedBadgeIds);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +211,10 @@ return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DuelOpponent opponent,  int playerRoundsWon,  int opponentRoundsWon,  double playerAverageAnswerSeconds,  double opponentAverageAnswerSeconds,  int eloBefore,  int eloAfter,  int rewardCoins)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DuelOpponent opponent,  int playerRoundsWon,  int opponentRoundsWon,  double playerAverageAnswerSeconds,  double opponentAverageAnswerSeconds,  int eloBefore,  int eloAfter,  int rewardCoins,  List<String> newlyEarnedBadgeIds)?  $default,) {final _that = this;
 switch (_that) {
 case _DuelResult() when $default != null:
-return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_that.playerAverageAnswerSeconds,_that.opponentAverageAnswerSeconds,_that.eloBefore,_that.eloAfter,_that.rewardCoins);case _:
+return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_that.playerAverageAnswerSeconds,_that.opponentAverageAnswerSeconds,_that.eloBefore,_that.eloAfter,_that.rewardCoins,_that.newlyEarnedBadgeIds);case _:
   return null;
 
 }
@@ -225,7 +226,7 @@ return $default(_that.opponent,_that.playerRoundsWon,_that.opponentRoundsWon,_th
 @JsonSerializable()
 
 class _DuelResult extends DuelResult {
-  const _DuelResult({required this.opponent, required this.playerRoundsWon, required this.opponentRoundsWon, required this.playerAverageAnswerSeconds, required this.opponentAverageAnswerSeconds, required this.eloBefore, required this.eloAfter, required this.rewardCoins}): super._();
+  const _DuelResult({required this.opponent, required this.playerRoundsWon, required this.opponentRoundsWon, required this.playerAverageAnswerSeconds, required this.opponentAverageAnswerSeconds, required this.eloBefore, required this.eloAfter, required this.rewardCoins, final  List<String> newlyEarnedBadgeIds = const []}): _newlyEarnedBadgeIds = newlyEarnedBadgeIds,super._();
   factory _DuelResult.fromJson(Map<String, dynamic> json) => _$DuelResultFromJson(json);
 
 @override final  DuelOpponent opponent;
@@ -236,6 +237,13 @@ class _DuelResult extends DuelResult {
 @override final  int eloBefore;
 @override final  int eloAfter;
 @override final  int rewardCoins;
+ final  List<String> _newlyEarnedBadgeIds;
+@override@JsonKey() List<String> get newlyEarnedBadgeIds {
+  if (_newlyEarnedBadgeIds is EqualUnmodifiableListView) return _newlyEarnedBadgeIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_newlyEarnedBadgeIds);
+}
+
 
 /// Create a copy of DuelResult
 /// with the given fields replaced by the non-null parameter values.
@@ -250,16 +258,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelResult&&(identical(other.opponent, opponent) || other.opponent == opponent)&&(identical(other.playerRoundsWon, playerRoundsWon) || other.playerRoundsWon == playerRoundsWon)&&(identical(other.opponentRoundsWon, opponentRoundsWon) || other.opponentRoundsWon == opponentRoundsWon)&&(identical(other.playerAverageAnswerSeconds, playerAverageAnswerSeconds) || other.playerAverageAnswerSeconds == playerAverageAnswerSeconds)&&(identical(other.opponentAverageAnswerSeconds, opponentAverageAnswerSeconds) || other.opponentAverageAnswerSeconds == opponentAverageAnswerSeconds)&&(identical(other.eloBefore, eloBefore) || other.eloBefore == eloBefore)&&(identical(other.eloAfter, eloAfter) || other.eloAfter == eloAfter)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelResult&&(identical(other.opponent, opponent) || other.opponent == opponent)&&(identical(other.playerRoundsWon, playerRoundsWon) || other.playerRoundsWon == playerRoundsWon)&&(identical(other.opponentRoundsWon, opponentRoundsWon) || other.opponentRoundsWon == opponentRoundsWon)&&(identical(other.playerAverageAnswerSeconds, playerAverageAnswerSeconds) || other.playerAverageAnswerSeconds == playerAverageAnswerSeconds)&&(identical(other.opponentAverageAnswerSeconds, opponentAverageAnswerSeconds) || other.opponentAverageAnswerSeconds == opponentAverageAnswerSeconds)&&(identical(other.eloBefore, eloBefore) || other.eloBefore == eloBefore)&&(identical(other.eloAfter, eloAfter) || other.eloAfter == eloAfter)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins)&&const DeepCollectionEquality().equals(other._newlyEarnedBadgeIds, _newlyEarnedBadgeIds));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,opponent,playerRoundsWon,opponentRoundsWon,playerAverageAnswerSeconds,opponentAverageAnswerSeconds,eloBefore,eloAfter,rewardCoins);
+int get hashCode => Object.hash(runtimeType,opponent,playerRoundsWon,opponentRoundsWon,playerAverageAnswerSeconds,opponentAverageAnswerSeconds,eloBefore,eloAfter,rewardCoins,const DeepCollectionEquality().hash(_newlyEarnedBadgeIds));
 
 @override
 String toString() {
-  return 'DuelResult(opponent: $opponent, playerRoundsWon: $playerRoundsWon, opponentRoundsWon: $opponentRoundsWon, playerAverageAnswerSeconds: $playerAverageAnswerSeconds, opponentAverageAnswerSeconds: $opponentAverageAnswerSeconds, eloBefore: $eloBefore, eloAfter: $eloAfter, rewardCoins: $rewardCoins)';
+  return 'DuelResult(opponent: $opponent, playerRoundsWon: $playerRoundsWon, opponentRoundsWon: $opponentRoundsWon, playerAverageAnswerSeconds: $playerAverageAnswerSeconds, opponentAverageAnswerSeconds: $opponentAverageAnswerSeconds, eloBefore: $eloBefore, eloAfter: $eloAfter, rewardCoins: $rewardCoins, newlyEarnedBadgeIds: $newlyEarnedBadgeIds)';
 }
 
 
@@ -270,7 +278,7 @@ abstract mixin class _$DuelResultCopyWith<$Res> implements $DuelResultCopyWith<$
   factory _$DuelResultCopyWith(_DuelResult value, $Res Function(_DuelResult) _then) = __$DuelResultCopyWithImpl;
 @override @useResult
 $Res call({
- DuelOpponent opponent, int playerRoundsWon, int opponentRoundsWon, double playerAverageAnswerSeconds, double opponentAverageAnswerSeconds, int eloBefore, int eloAfter, int rewardCoins
+ DuelOpponent opponent, int playerRoundsWon, int opponentRoundsWon, double playerAverageAnswerSeconds, double opponentAverageAnswerSeconds, int eloBefore, int eloAfter, int rewardCoins, List<String> newlyEarnedBadgeIds
 });
 
 
@@ -287,7 +295,7 @@ class __$DuelResultCopyWithImpl<$Res>
 
 /// Create a copy of DuelResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? opponent = null,Object? playerRoundsWon = null,Object? opponentRoundsWon = null,Object? playerAverageAnswerSeconds = null,Object? opponentAverageAnswerSeconds = null,Object? eloBefore = null,Object? eloAfter = null,Object? rewardCoins = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? opponent = null,Object? playerRoundsWon = null,Object? opponentRoundsWon = null,Object? playerAverageAnswerSeconds = null,Object? opponentAverageAnswerSeconds = null,Object? eloBefore = null,Object? eloAfter = null,Object? rewardCoins = null,Object? newlyEarnedBadgeIds = null,}) {
   return _then(_DuelResult(
 opponent: null == opponent ? _self.opponent : opponent // ignore: cast_nullable_to_non_nullable
 as DuelOpponent,playerRoundsWon: null == playerRoundsWon ? _self.playerRoundsWon : playerRoundsWon // ignore: cast_nullable_to_non_nullable
@@ -297,7 +305,8 @@ as double,opponentAverageAnswerSeconds: null == opponentAverageAnswerSeconds ? _
 as double,eloBefore: null == eloBefore ? _self.eloBefore : eloBefore // ignore: cast_nullable_to_non_nullable
 as int,eloAfter: null == eloAfter ? _self.eloAfter : eloAfter // ignore: cast_nullable_to_non_nullable
 as int,rewardCoins: null == rewardCoins ? _self.rewardCoins : rewardCoins // ignore: cast_nullable_to_non_nullable
-as int,
+as int,newlyEarnedBadgeIds: null == newlyEarnedBadgeIds ? _self._newlyEarnedBadgeIds : newlyEarnedBadgeIds // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

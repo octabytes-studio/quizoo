@@ -284,6 +284,7 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
     var eloBefore = _playerBaseElo;
     var eloAfter = _playerBaseElo + (isVictory ? 18 : -12);
     var coinsEarned = isVictory ? rewardCoinsVictory : rewardCoinsDefeat;
+    var newlyEarnedBadgeIds = const <String>[];
 
     try {
       final record = await _repository.submitBotDuel(
@@ -295,6 +296,7 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
       eloBefore = record.eloBefore;
       eloAfter = record.eloAfter;
       coinsEarned = record.coinsEarned;
+      newlyEarnedBadgeIds = record.newlyEarnedBadgeIds;
     } on ApiException {
       // Keep the client-computed estimate above — the play surface still
       // needs to end on something.
@@ -314,6 +316,7 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
       eloBefore: eloBefore,
       eloAfter: eloAfter,
       rewardCoins: coinsEarned,
+      newlyEarnedBadgeIds: newlyEarnedBadgeIds,
     );
     emit(DuelPlayEnded(result));
   }
