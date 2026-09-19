@@ -8,7 +8,6 @@ import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
-import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
@@ -61,22 +60,9 @@ class _LeaderboardView extends StatelessWidget {
                 horizontal: AppSpacing.screenMargin.w,
                 vertical: AppSpacing.sm.h,
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      l10n.leaderboardTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ),
-                  _SearchButton(
-                    onTap: () => AppSnackbar.show(
-                      context,
-                      title: l10n.commonMockFeature,
-                      intent: SnackbarIntent.info,
-                    ),
-                  ),
-                ],
+              child: Text(
+                l10n.leaderboardTitle,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
             BlocBuilder<LeaderboardCubit, LeaderboardState>(
@@ -98,7 +84,6 @@ class _LeaderboardView extends StatelessWidget {
                         labels: [
                           l10n.leaderboardScopeGlobal,
                           l10n.leaderboardScopeCountry,
-                          l10n.leaderboardScopeFriends,
                         ],
                         selectedIndex: scope.index,
                         onChanged: (index) =>
@@ -174,37 +159,6 @@ class _LeaderboardView extends StatelessWidget {
         LeaderboardPeriod.month => l10n.leaderboardPeriodMonth,
         LeaderboardPeriod.allTime => l10n.leaderboardPeriodAllTime,
       };
-}
-
-class _SearchButton extends StatelessWidget {
-  const _SearchButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final quizoo = context.quizoo;
-
-    return Semantics(
-      button: true,
-      label: AppLocalizations.of(context).homeSeeAll,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: 38.w,
-          height: 38.w,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: quizoo.s1,
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: quizoo.ln),
-          ),
-          child: const Text('🔍'),
-        ),
-      ),
-    );
-  }
 }
 
 class _LeaderboardRoster extends StatelessWidget {

@@ -7,6 +7,7 @@ import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/home/data/home_api.dart';
 import 'package:quizoo/features/home/data/home_repository.dart';
 import 'package:quizoo/features/home/domain/home_content.dart';
+import 'package:quizoo/features/home/domain/search_result.dart';
 import 'package:quizoo/features/home/presentation/bloc/home_cubit.dart';
 import 'package:quizoo/features/home/presentation/bloc/search_cubit.dart';
 
@@ -201,9 +202,19 @@ void main() {
             any(),
             languageCode: any(named: 'languageCode'),
           ),
-        ).thenAnswer(
-          (_) async => [MockCatalog.subcategoryById(MockCatalog.footballId)],
-        );
+        ).thenAnswer((_) async {
+          final subcategory = MockCatalog.subcategoryById(
+            MockCatalog.footballId,
+          );
+          return [
+            SearchResult(
+              subcategory: subcategory,
+              categoryName: MockCatalog.categoryById(
+                subcategory.categoryId,
+              ).name,
+            ),
+          ];
+        });
       },
       build: () => SearchCubit(repository, languageCode: 'en'),
       act: (cubit) => cubit.searchNow('foot'),
@@ -290,7 +301,10 @@ void main() {
       // By the sub-path the breadcrumb prints — "Science › Astronomy".
       final byPath = await repository.search('astronomy', languageCode: 'en');
       expect(byPath, isNotEmpty);
-      expect(byPath.every((topic) => topic.groupName == 'Astronomy'), isTrue);
+      expect(
+        byPath.every((result) => result.subcategory.groupName == 'Astronomy'),
+        isTrue,
+      );
       // By parent category.
       expect(await repository.search('sports', languageCode: 'en'), isNotEmpty);
       // An empty query never searches at all.

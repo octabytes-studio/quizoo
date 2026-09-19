@@ -9,7 +9,7 @@ import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-38 — the sheet the centre FAB opens.
 ///
-/// Four ways to start playing, ordered by what the player is most likely to
+/// Three ways to start playing, ordered by what the player is most likely to
 /// want. Intentionally stateless: it holds no data of its own, it closes
 /// itself and routes out through go_router, so the shell stays pure navigation
 /// chrome with no Cubit of its own.
@@ -82,15 +82,6 @@ class PlayLauncherSheet extends StatelessWidget {
             leadingPlateColor: quizoo.gold.withValues(alpha: 0.22),
             padding: rowPadding,
             onTap: () => _goTo(context, AppRoutes.daily),
-          ),
-          SizedBox(height: 10.h),
-          ListRowTile(
-            title: l10n.playSheetFriend,
-            subtitle: l10n.playSheetFriendMeta,
-            leadingEmoji: '👥',
-            leadingPlateColor: quizoo.info.withValues(alpha: 0.18),
-            padding: rowPadding,
-            onTap: () => _goTo(context, AppRoutes.friends),
           ),
         ],
       ),

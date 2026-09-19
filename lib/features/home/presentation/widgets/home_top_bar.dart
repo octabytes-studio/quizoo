@@ -123,6 +123,12 @@ class PlayerTopBar extends StatelessWidget {
           ),
         ),
         SizedBox(width: AppSpacing.sm.w),
+        HomeIconButton(
+          glyph: '🔍',
+          semanticLabel: l10n.homeSearchLabel,
+          onTap: onSearchPressed,
+        ),
+        SizedBox(width: AppSpacing.sm.w),
         CurrencyPill(
           kind: CurrencyKind.coin,
           value: AppFormat.number(currency.coins, localeName),

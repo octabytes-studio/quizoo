@@ -2,6 +2,7 @@ import 'package:quizoo/core/models/category.dart';
 import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/features/home/data/home_api.dart';
 import 'package:quizoo/features/home/domain/home_content.dart';
+import 'package:quizoo/features/home/domain/search_result.dart';
 
 /// The only thing that talks to [HomeApi].
 class HomeRepository {
@@ -26,7 +27,7 @@ class HomeRepository {
   /// match" is a data-shape decision — it searches a topic's own name, the
   /// sub-path the breadcrumb prints, and its category — and the presentation
   /// layer has no business knowing that.
-  Future<List<Subcategory>> search(
+  Future<List<SearchResult>> search(
     String query, {
     required String languageCode,
   }) async {
@@ -43,12 +44,9 @@ class HomeRepository {
 
     return [
       for (final subcategory in content.subcategories)
-        if (_matches(
-          subcategory,
-          categoriesById[subcategory.categoryId],
-          trimmed,
-        ))
-          subcategory,
+        if (categoriesById[subcategory.categoryId] case final category?
+            when _matches(subcategory, category, trimmed))
+          SearchResult(subcategory: subcategory, categoryName: category.name),
     ];
   }
 
@@ -64,10 +62,10 @@ class HomeRepository {
 
   static bool _matches(
     Subcategory subcategory,
-    Category? category,
+    Category category,
     String query,
   ) =>
       subcategory.name.toLowerCase().contains(query) ||
       subcategory.groupName.toLowerCase().contains(query) ||
-      (category?.name.toLowerCase().contains(query) ?? false);
+      category.name.toLowerCase().contains(query);
 }

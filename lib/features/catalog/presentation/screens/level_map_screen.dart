@@ -191,7 +191,7 @@ class _LevelMapLoadedState extends State<_LevelMapLoaded> {
   }
 }
 
-/// `.tb` — back, topic name, parent category, leaderboard.
+/// `.tb` — back, topic name, parent category.
 class _LevelMapTopBar extends StatelessWidget {
   const _LevelMapTopBar({required this.map});
 
@@ -249,13 +249,6 @@ class _LevelMapTopBar extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-          HomeIconButton(
-            glyph: '🏆',
-            semanticLabel: l10n.levelMapLeaderboard,
-            onTap: () => context.push(
-              AppRoutes.categoryLeaderboardPath(map.category.id),
             ),
           ),
         ],
