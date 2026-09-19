@@ -36,13 +36,9 @@ abstract final class MockPlayer {
   /// A guest's wallet: full hearts, nothing earned, so Home shows no pills.
   static const PlayerCurrency guestCurrency = PlayerCurrency();
 
-  /// Power-ups in hand, as the level brief and the play dock both render them.
-  static const int fiftyFiftyCount = 3;
+  /// Power-ups a fresh level grants, as the level brief's preview row shows.
+  static const int fiftyFiftyCount = 1;
   static const int addTimeCount = 1;
-  static const int skipCount = 2;
-
-  /// What a full refill costs on S-19.
-  static const int refillCost = 300;
 
   /// Hearts spent per level attempt, and the wall a run fails at.
   static const int livesPerLevel = 3;

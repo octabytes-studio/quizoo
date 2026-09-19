@@ -17,9 +17,9 @@ import 'package:quizoo/features/onboarding/presentation/screens/splash_screen.da
 import 'package:quizoo/features/dev/presentation/screens/screen_index_screen.dart';
 import 'package:quizoo/features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import 'package:quizoo/features/profile/presentation/screens/profile_screen.dart';
+import 'package:quizoo/features/settings/presentation/screens/settings_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
 import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
-import 'package:quizoo/features/shop/presentation/screens/shop_screen.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 void main() {
@@ -47,13 +47,23 @@ void main() {
   }
 
   group('AppRoutes', () {
-    test('reserves all 54 screen IDs', () {
-      expect(kScreenIndex, hasLength(54));
+    // S-36 (Shop) and S-37 (Rewarded ad prompt) were removed outright — the
+    // whole Shop feature was deleted, not deferred — so 52 of the bible's 54
+    // IDs remain reserved (plan 013).
+    const removedIds = {'S-36', 'S-37'};
+
+    test('reserves the remaining 52 screen IDs', () {
+      expect(kScreenIndex, hasLength(52));
 
       final ids = kScreenIndex.map((screen) => screen.id).toSet();
-      expect(ids, hasLength(54));
+      expect(ids, hasLength(52));
       for (var number = 1; number <= 54; number++) {
-        expect(ids, contains('S-${number.toString().padLeft(2, '0')}'));
+        final id = 'S-${number.toString().padLeft(2, '0')}';
+        if (removedIds.contains(id)) {
+          expect(ids, isNot(contains(id)));
+        } else {
+          expect(ids, contains(id));
+        }
       }
     });
 
@@ -198,15 +208,14 @@ void main() {
       expect(find.textContaining('S-01'), findsOneWidget);
 
       await tester.scrollUntilVisible(
-        find.textContaining('S-36'),
+        find.textContaining('S-42'),
         300,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.textContaining('S-36'));
+      await tester.tap(find.textContaining('S-42'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(ShopScreen), findsOneWidget);
-      expect(find.text('Shop'), findsOneWidget);
+      expect(find.byType(SettingsScreen), findsOneWidget);
     });
   });
 

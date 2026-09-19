@@ -23,12 +23,14 @@ import 'package:quizoo/core/widgets/report_question_sheet.dart';
 import 'package:quizoo/features/daily/data/daily_api.dart';
 import 'package:quizoo/features/daily/data/daily_repository.dart';
 import 'package:quizoo/features/daily/domain/daily_result.dart';
+import 'package:quizoo/features/quiz_play/data/admob_rewarded_ad_service.dart';
 import 'package:quizoo/features/quiz_play/data/audioplayers_sound_effects_service.dart';
 import 'package:quizoo/features/quiz_play/data/cache_manager_audio_cache_service.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/data/stored_audio_tts_service.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
+import 'package:quizoo/features/quiz_play/presentation/bloc/heart_ad_cubit.dart';
 import 'package:quizoo/features/quiz_play/presentation/bloc/quiz_play_cubit.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/countdown_screen.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/feedback_banner.dart';
@@ -292,14 +294,12 @@ class _ArenaScaffold extends StatelessWidget {
                 _Overlay(
                   dimOpacity: 0.35,
                   alignment: Alignment.center,
-                  child: OutOfLivesDialog(
-                    state: state,
-
-                    onWatchAd: context.read<QuizPlayCubit>().watchAdForHeart,
-                    onRefill: context
-                        .read<QuizPlayCubit>()
-                        .refillHeartsWithCoins,
-                    onBackToMap: context.read<QuizPlayCubit>().abandonRun,
+                  child: BlocProvider<HeartAdCubit>(
+                    create: (_) => HeartAdCubit(AdMobRewardedAdService()),
+                    child: OutOfLivesDialog(
+                      state: state,
+                      onBackToMap: context.read<QuizPlayCubit>().abandonRun,
+                    ),
                   ),
                 ),
             ],
@@ -382,7 +382,6 @@ class _QuestionView extends StatelessWidget {
         state.selectedIndex == index
             ? AnswerOptionState.selected
             : AnswerOptionState.rest,
-      SkippedFeedback() => AnswerOptionState.rest,
       // Right or wrong, the correct option always lights mint. The bible is
       // explicit: always show the right answer.
       _ when index == state.question.correctIndex => AnswerOptionState.correct,
@@ -544,7 +543,6 @@ class _QuestionView extends StatelessWidget {
             inventory: state.powerUps,
             isDanger: state.isDanger,
             onUse: cubit.usePowerUp,
-            onBuy: () => context.push(AppRoutes.shop),
           ),
       ],
     );
@@ -554,7 +552,7 @@ class _QuestionView extends StatelessWidget {
         Positioned.fill(
           child: _ShakeOnWrong(feedback: state.feedback, child: body),
         ),
-        if (!state.isAwaitingAnswer && state.feedback is! SkippedFeedback)
+        if (!state.isAwaitingAnswer)
           Positioned(
             left: 0,
             right: 0,

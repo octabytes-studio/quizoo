@@ -89,9 +89,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   /// One second per countdown beat (S-10).
   static const Duration countdownBeat = Duration(seconds: 1);
 
-  /// The mocked rewarded ad's runtime (S-19).
-  static const Duration adDuration = Duration(milliseconds: 1200);
-
   /// How often the clock is sampled. Fine enough that a whole second is
   /// never missed, coarse enough to cost nothing.
   static const Duration clockResolution = Duration(milliseconds: 100);
@@ -108,7 +105,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   Timer? _clockTimer;
   Timer? _autoAdvanceTimer;
   Timer? _countdownTimer;
-  Timer? _adTimer;
   Timer? _revealTimer;
 
   /// Whether [_soundEffects] currently has the tick loop playing — tracked
@@ -238,6 +234,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       heartsRemaining: MockPlayer.livesPerLevel,
       isBoss:
           _repository.isBossFor(levelId, languageCode: languageCode) ?? false,
+      powerUps: const PowerUpInventory(fiftyFifty: 1, addTime: 1),
       startedAt: DateTime.now(),
     );
 
@@ -309,6 +306,9 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       // Decorative only for a daily run — see _resolveWrong, which never
       // decrements this.
       heartsRemaining: MockPlayer.livesPerLevel,
+      // Granted for symmetry with a level run, though the dock never renders
+      // for `isDaily` (see quiz_play_screen.dart's guard) so it's inert here.
+      powerUps: const PowerUpInventory(fiftyFifty: 1, addTime: 1),
       isDaily: true,
       startedAt: DateTime.now(),
     );
@@ -370,11 +370,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
         run: run,
         question: question,
         secondsRemaining: run.secondsPerQuestion,
-        powerUps: const PowerUpInventory(
-          fiftyFifty: MockPlayer.fiftyFiftyCount,
-          addTime: MockPlayer.addTimeCount,
-          skip: MockPlayer.skipCount,
-        ),
+        powerUps: run.powerUps,
         phase: speaksThisQuestion
             ? QuestionPhase.speaking
             : QuestionPhase.answering,
@@ -627,15 +623,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
     if (!run.isDaily && hearts <= 0) {
       // Hearts hit zero: S-19 offers a way back rather than ending the run.
-      emit(
-        QuizPlayOutOfLives(
-          underlying: resolved,
-          coins: MockPlayer.currency.coins,
-          heartRefillAt:
-              MockPlayer.currency.heartRefillAt ??
-              DateTime.now().add(const Duration(minutes: 30)),
-        ),
-      );
+      emit(QuizPlayOutOfLives(underlying: resolved));
       return;
     }
 
@@ -690,8 +678,8 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
   // ---------------------------------------------------------------- power-ups
 
-  /// Fires a power-up. A player with none of it does nothing here — the tile
-  /// routes to the shop instead, which is the widget's job.
+  /// Fires a power-up. A player with none of it does nothing here — a zero
+  /// tile has no tap target, which is the widget's job to enforce.
   void usePowerUp(PowerUp powerUp) {
     final current = state;
     if (current is! QuizPlayInProgress || !current.isAwaitingAnswer) return;
@@ -702,8 +690,10 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     if (!current.powerUps.has(powerUp)) return;
 
     final spent = current.powerUps.spend(powerUp);
-    // Any power-up forfeits the clean-run bonus (§19).
-    final run = current.run.copyWith(usedPowerUp: true);
+    // Any power-up forfeits the clean-run bonus (§19). The spend persists
+    // onto `run` itself, not just this question's transient state, so it
+    // survives into the next question's `_beginQuestion`.
+    final run = current.run.copyWith(usedPowerUp: true, powerUps: spent);
 
     switch (powerUp) {
       case PowerUp.fiftyFifty:
@@ -726,31 +716,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
                 current.secondsRemaining + PowerUpInventory.addTimeSeconds,
           ),
         );
-      case PowerUp.skip:
-        _stopClock();
-        emit(
-          current.copyWith(
-            run: run.copyWith(
-              answers: [
-                ...run.answers,
-                AnsweredQuestion(
-                  question: current.question,
-                  outcome: AnswerOutcome.skipped,
-                ),
-              ],
-            ),
-            powerUps: spent,
-            feedback: const SkippedFeedback(),
-          ),
-        );
-        _scheduleAutoAdvance();
-      case PowerUp.freeze:
-        // Shop-only for now — see `core/models/power_up.dart`. Solo play has
-        // no opponent clock to freeze, so the dock never offers this tile
-        // (`PowerUpDock`'s row list is fixed to the other three) and this
-        // branch is unreachable; it exists only so the switch stays
-        // exhaustive against the shared enum.
-        break;
     }
   }
 
@@ -858,40 +823,18 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
   // ------------------------------------------------------------- out of lives
 
-  /// S-19's free option: a mocked rewarded ad that grants one heart.
+  /// S-19's free option: a completed rewarded ad grants one heart.
   ///
-  /// No ad SDK is involved (plan 002, Scope) — the delay exists so the
-  /// screen's "playing ad" state is real rather than skipped over.
-  Future<void> watchAdForHeart() async {
+  /// The ad itself is owned by `HeartAdCubit`/`RewardedAdService` — this
+  /// Cubit never knows an ad is in flight, only the outcome, called by the
+  /// dialog once `HeartAdCubit` reaches `HeartAdSucceeded`.
+  void grantHeartFromAd() {
     final current = state;
-    if (current is! QuizPlayOutOfLives || current.isWatchingAd) return;
-
-    emit(
-      QuizPlayOutOfLives(
-        underlying: current.underlying,
-        coins: current.coins,
-        heartRefillAt: current.heartRefillAt,
-        isWatchingAd: true,
-      ),
-    );
-
-    final completer = Completer<void>();
-    _adTimer?.cancel();
-    _adTimer = Timer(adDuration, completer.complete);
-    await completer.future;
-    if (isClosed) return;
-
+    if (current is! QuizPlayOutOfLives) return;
     _grantHearts(current.underlying, hearts: 1);
   }
 
-  /// S-19's paid option, enabled only when the wallet can cover it.
-  void refillHeartsWithCoins() {
-    final current = state;
-    if (current is! QuizPlayOutOfLives || !current.canAffordRefill) return;
-    _grantHearts(current.underlying, hearts: MockPlayer.livesPerLevel);
-  }
-
-  /// S-19's third action: leave without refilling.
+  /// S-19's second action: leave without watching an ad.
   ///
   /// Recorded as [RunEnding.outOfHearts], **not** as a quit. The player did
   /// not choose to walk away from a healthy run — they hit the wall. S-22's
@@ -905,11 +848,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
   /// Puts the player back in the run with [hearts] in hand and lets the
   /// verdict banner advance as it would have.
-  ///
-  /// The coin cost of the paid refill is not deducted from a persistent
-  /// wallet, because there is no persistent wallet in this phase — currency
-  /// resets with the fixture on every launch. A known mock limitation (plan
-  /// 002, Scope), not an economy.
   void _grantHearts(QuizPlayInProgress underlying, {required int hearts}) {
     emit(
       underlying.copyWith(
@@ -925,7 +863,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _stopClock();
     _autoAdvanceTimer?.cancel();
     _countdownTimer?.cancel();
-    _adTimer?.cancel();
     _revealTimer?.cancel();
     unawaited(_ttsService.stop());
 
@@ -986,7 +923,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _stopClock();
     _autoAdvanceTimer?.cancel();
     _countdownTimer?.cancel();
-    _adTimer?.cancel();
     _revealTimer?.cancel();
     unawaited(_ttsService.stop());
     unawaited(_ttsService.dispose());

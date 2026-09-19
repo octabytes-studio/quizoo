@@ -193,19 +193,6 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
                 label: l10n.quizPowerUpAddTime,
                 count: MockPlayer.addTimeCount,
               ),
-              SizedBox(width: 10.w),
-              _BriefPowerUp(
-                emoji: '⏭️',
-                label: l10n.quizPowerUpSkip,
-                count: MockPlayer.skipCount,
-              ),
-              SizedBox(width: 10.w),
-              _BriefPowerUp(
-                emoji: '➕',
-                label: l10n.levelBriefShop,
-                count: 0,
-                isDimmed: true,
-              ),
             ],
           ),
           SizedBox(height: 18.h),
@@ -283,74 +270,69 @@ class _BriefPowerUp extends StatelessWidget {
     required this.emoji,
     required this.label,
     required this.count,
-    this.isDimmed = false,
   });
 
   final String emoji;
   final String label;
   final int count;
-  final bool isDimmed;
 
   @override
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
     final textTheme = Theme.of(context).textTheme;
 
-    return Opacity(
-      opacity: isDimmed ? 0.5 : 1,
-      child: SizedBox(
-        width: 56.w,
-        height: 52.h,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              width: 56.w,
-              height: 52.h,
-              decoration: BoxDecoration(
-                color: quizoo.s3,
-                border: Border.all(color: quizoo.ln),
-                borderRadius: BorderRadius.circular(AppRadius.powerUp.r),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(emoji, style: AppTypography.glyph(19.sp)),
-                  Text(
-                    label,
-                    style: textTheme.labelSmall!.copyWith(
-                      fontSize: 8.5.sp,
-                      fontWeight: FontWeight.w800,
-                      color: quizoo.tx2,
-                    ),
-                  ),
-                ],
-              ),
+    return SizedBox(
+      width: 56.w,
+      height: 52.h,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 56.w,
+            height: 52.h,
+            decoration: BoxDecoration(
+              color: quizoo.s3,
+              border: Border.all(color: quizoo.ln),
+              borderRadius: BorderRadius.circular(AppRadius.powerUp.r),
             ),
-            if (count > 0)
-              PositionedDirectional(
-                top: -5.h,
-                end: -4.w,
-                child: Container(
-                  width: 17.w,
-                  height: 17.w,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: quizoo.p,
-                    shape: BoxShape.circle,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(emoji, style: AppTypography.glyph(19.sp)),
+                Text(
+                  label,
+                  style: textTheme.labelSmall!.copyWith(
+                    fontSize: 8.5.sp,
+                    fontWeight: FontWeight.w800,
+                    color: quizoo.tx2,
                   ),
-                  child: Text(
-                    '$count',
-                    style: textTheme.labelSmall!.copyWith(
-                      fontSize: 9.sp,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
+                ),
+              ],
+            ),
+          ),
+          if (count > 0)
+            PositionedDirectional(
+              top: -5.h,
+              end: -4.w,
+              child: Container(
+                width: 17.w,
+                height: 17.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: quizoo.p,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '$count',
+                  style: textTheme.labelSmall!.copyWith(
+                    fontSize: 9.sp,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
+import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
@@ -336,5 +337,28 @@ void main() {
 
       await tester.pump(const Duration(seconds: 30));
     });
+
+    testWidgets(
+      'S-19 out of lives: the paid refill button is gone — only watch-ad '
+      'and back-to-map remain',
+      (tester) async {
+        await tester.pumpScreen(
+          QuizPlayScreen(levelId: levelId, entry: QuizPlayEntry.outOfLives),
+          quizPlayRepository: fakeQuizPlayRepository(),
+        );
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pump();
+
+        expect(
+          find.descendant(
+            of: find.byType(OutOfLivesDialog),
+            matching: find.byType(ChunkyButton),
+          ),
+          findsNWidgets(2),
+        );
+
+        await tester.pump(const Duration(seconds: 30));
+      },
+    );
   });
 }

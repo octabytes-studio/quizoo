@@ -146,13 +146,6 @@ abstract final class AppRoutes {
   /// S-35 Stats.
   static const String stats = '/you/stats';
 
-  // -------------------------------------------------------------- shop
-  /// S-36 Shop.
-  static const String shop = '/shop';
-
-  /// S-37 Rewarded ad prompt.
-  static const String rewardedAd = '/shop/rewarded-ad';
-
   // -------------------------------------------------------------- duel
   /// S-38 Play sheet (centre FAB).
   ///
@@ -248,8 +241,6 @@ abstract final class AppRoutes {
   static const String s33 = achievements;
   static const String s34 = badgeDetail;
   static const String s35 = stats;
-  static const String s36 = shop;
-  static const String s37 = rewardedAd;
   static const String s38 = playLauncher;
   static const String s39 = duelMatchmaking;
   static const String s40 = duelPlay;
@@ -383,8 +374,6 @@ const List<ScreenRef> kScreenIndex = [
   ScreenRef('S-33', 'Achievements grid', AppRoutes.achievements, '003'),
   ScreenRef('S-34', 'Badge detail dialog', AppRoutes.badgeDetail, '003'),
   ScreenRef('S-35', 'Stats', AppRoutes.stats, '003'),
-  ScreenRef('S-36', 'Shop', AppRoutes.shop, '004', group: 'Shop'),
-  ScreenRef('S-37', 'Rewarded ad prompt', AppRoutes.rewardedAd, '004'),
   ScreenRef(
     'S-38',
     'Play sheet (FAB)',

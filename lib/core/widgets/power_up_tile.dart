@@ -8,30 +8,27 @@ import 'package:quizoo/core/theme/quizoo_colors.dart';
 /// A tile in the play surface's power-up dock (§06).
 ///
 /// 56×52, always visible during a level. The count badge is mango; a tile the
-/// player has none of drops to 40% and opens the shop instead of firing.
+/// player has none of drops to 40% and has no tap target — there is nowhere
+/// left for a tap to route to once the Shop is gone.
 class PowerUpTile extends StatelessWidget {
   const PowerUpTile({
     required this.emoji,
     required this.label,
     required this.count,
     required this.onUse,
-    required this.onBuy,
     super.key,
   });
 
   final String emoji;
 
-  /// "50:50", "+15s", "SKIP".
+  /// "50:50", "+5s".
   final String label;
 
-  /// How many the player holds. Zero dims the tile and routes taps to [onBuy].
+  /// How many the player holds. Zero dims the tile and makes it inert.
   final int count;
 
   /// Fired when the player has at least one.
   final VoidCallback onUse;
-
-  /// Fired when the player has none — opens the shop.
-  final VoidCallback onBuy;
 
   /// `.pup` — 56×52.
   static const double width = 56;
@@ -78,11 +75,11 @@ class PowerUpTile extends StatelessWidget {
     );
 
     return Semantics(
-      button: true,
+      button: isAvailable,
       label: '$label power-up',
-      value: isAvailable ? '$count left' : 'None left, tap to buy',
+      value: isAvailable ? '$count left' : 'None left',
       child: GestureDetector(
-        onTap: isAvailable ? onUse : onBuy,
+        onTap: isAvailable ? onUse : null,
         behavior: HitTestBehavior.opaque,
         child: SizedBox(
           width: width.w,

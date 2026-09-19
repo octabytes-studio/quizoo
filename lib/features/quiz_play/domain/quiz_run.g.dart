@@ -28,7 +28,6 @@ const _$AnswerOutcomeEnumMap = {
   AnswerOutcome.correct: 'correct',
   AnswerOutcome.wrong: 'wrong',
   AnswerOutcome.timedOut: 'timedOut',
-  AnswerOutcome.skipped: 'skipped',
 };
 
 _QuizRun _$QuizRunFromJson(Map<String, dynamic> json) => _QuizRun(
@@ -51,6 +50,9 @@ _QuizRun _$QuizRunFromJson(Map<String, dynamic> json) => _QuizRun(
   heartsRemaining: (json['heartsRemaining'] as num?)?.toInt() ?? 3,
   questionCount: (json['questionCount'] as num?)?.toInt() ?? 20,
   isBoss: json['isBoss'] as bool? ?? false,
+  powerUps: json['powerUps'] == null
+      ? const PowerUpInventory()
+      : PowerUpInventory.fromJson(json['powerUps'] as Map<String, dynamic>),
   isDaily: json['isDaily'] as bool? ?? false,
   usedPowerUp: json['usedPowerUp'] as bool? ?? false,
   ending:
@@ -77,6 +79,7 @@ Map<String, dynamic> _$QuizRunToJson(_QuizRun instance) => <String, dynamic>{
   'heartsRemaining': instance.heartsRemaining,
   'questionCount': instance.questionCount,
   'isBoss': instance.isBoss,
+  'powerUps': instance.powerUps,
   'isDaily': instance.isDaily,
   'usedPowerUp': instance.usedPowerUp,
   'ending': _$RunEndingEnumMap[instance.ending]!,

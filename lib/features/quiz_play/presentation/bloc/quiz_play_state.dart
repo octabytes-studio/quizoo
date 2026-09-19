@@ -95,11 +95,6 @@ final class TimeoutFeedback extends QuestionFeedback {
   List<Object?> get props => [brokeStreak];
 }
 
-/// The player spent a Skip.
-final class SkippedFeedback extends QuestionFeedback {
-  const SkippedFeedback();
-}
-
 /// The play surface's states.
 ///
 /// [QuizPlayPaused], [QuizPlayQuitting] and [QuizPlayOutOfLives] each **wrap**
@@ -292,29 +287,12 @@ final class QuizPlayQuitting extends QuizPlayState {
 
 /// S-19 — hearts hit zero. Never a hard wall: the run is still recoverable.
 final class QuizPlayOutOfLives extends QuizPlayState {
-  const QuizPlayOutOfLives({
-    required this.underlying,
-    required this.coins,
-    required this.heartRefillAt,
-    this.isWatchingAd = false,
-  });
+  const QuizPlayOutOfLives({required this.underlying});
 
   final QuizPlayInProgress underlying;
 
-  /// The wallet, which decides whether the paid refill is affordable.
-  final int coins;
-
-  /// When the next heart arrives on its own — printed as a clock time, never
-  /// as a countdown.
-  final DateTime heartRefillAt;
-
-  /// True while the mocked rewarded ad "plays".
-  final bool isWatchingAd;
-
-  bool get canAffordRefill => coins >= MockPlayer.refillCost;
-
   @override
-  List<Object?> get props => [underlying, coins, heartRefillAt, isWatchingAd];
+  List<Object?> get props => [underlying];
 }
 
 /// The run is over, however it ended. The screen navigates to the result on

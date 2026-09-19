@@ -49,7 +49,6 @@ class FeedbackBanner extends StatelessWidget {
         // rather than leaving the player to infer it.
         l10n.feedbackNoHeartLost,
       ),
-      SkippedFeedback() => ('⏭️', l10n.quizPowerUpSkip, null),
       NoFeedback() => ('', '', null),
     };
 
@@ -74,7 +73,6 @@ class FeedbackBanner extends StatelessWidget {
         if (heartsRemaining == 1) body.write(' ${l10n.feedbackLastHeart}');
       case TimeoutFeedback(:final brokeStreak):
         if (brokeStreak) body.write(' ${l10n.feedbackStreakReset}');
-      case SkippedFeedback():
       case NoFeedback():
         break;
     }

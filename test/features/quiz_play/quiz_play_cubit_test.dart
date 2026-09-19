@@ -703,7 +703,7 @@ void main() {
       });
     });
 
-    test('+15s extends the clock rather than restarting it', () {
+    test('+5s extends the clock rather than restarting it', () {
       stubQuestions();
       fakeAsync((async) {
         final cubit = buildCubit();
@@ -715,10 +715,10 @@ void main() {
         expect((cubit.state as QuizPlayInProgress).secondsRemaining, 15);
 
         cubit.usePowerUp(PowerUp.addTime);
-        expect((cubit.state as QuizPlayInProgress).secondsRemaining, 30);
+        expect((cubit.state as QuizPlayInProgress).secondsRemaining, 20);
 
         async.elapse(const Duration(seconds: 2));
-        expect((cubit.state as QuizPlayInProgress).secondsRemaining, 28);
+        expect((cubit.state as QuizPlayInProgress).secondsRemaining, 18);
 
         unawaited(cubit.close());
         async.flushMicrotasks();
@@ -793,8 +793,53 @@ void main() {
           isFalse,
           reason: '50:50 must never remove the correct answer',
         );
-        expect(state.powerUps.fiftyFifty, 2);
+        expect(state.powerUps.fiftyFifty, 0);
         expect(state.run.usedPowerUp, isTrue);
+      },
+    );
+
+    blocTest<QuizPlayCubit, QuizPlayState>(
+      'a spent power-up stays spent into the next question rather than '
+      'being re-seeded (regression guard, plan 013)',
+      setUp: stubQuestions,
+      build: () => buildCubit(),
+      act: (cubit) async {
+        await start(cubit);
+        cubit.skipCountdown();
+        cubit.usePowerUp(PowerUp.fiftyFifty);
+        final question = (cubit.state as QuizPlayInProgress).question;
+        cubit
+          ..answer(question.correctIndex)
+          ..next();
+      },
+      verify: (cubit) {
+        final state = cubit.state as QuizPlayInProgress;
+        expect(state.powerUps.fiftyFifty, 0);
+        expect(state.run.powerUps.fiftyFifty, 0);
+      },
+    );
+
+    blocTest<QuizPlayCubit, QuizPlayState>(
+      'grantHeartFromAd puts one heart back and resumes the run',
+      setUp: stubQuestions,
+      build: () => buildCubit(),
+      act: (cubit) async {
+        await start(cubit);
+        cubit.skipCountdown();
+        for (var attempt = 0; attempt < 3; attempt++) {
+          final playing = cubit.state.playing!;
+          cubit.answer(
+            (playing.question.correctIndex + 1) %
+                playing.question.options.length,
+          );
+          if (cubit.state is QuizPlayInProgress) cubit.next();
+        }
+        cubit.grantHeartFromAd();
+      },
+      verify: (cubit) {
+        final state = cubit.state;
+        expect(state, isA<QuizPlayInProgress>());
+        expect((state as QuizPlayInProgress).run.heartsRemaining, 1);
       },
     );
 

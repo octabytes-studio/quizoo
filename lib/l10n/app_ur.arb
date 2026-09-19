@@ -92,10 +92,9 @@
 
   "outOfLivesTitle": "جانیں ختم",
   "outOfLivesWatchAd": "▶ ایک ❤️ کے لیے اشتہار دیکھیں",
-  "outOfLivesRefill": "۵ ❤️ بھریں · {coins} 🪙",
   "outOfLivesBackToMap": "لیول نقشے پر واپس",
+  "outOfLivesAdLoading": "اشتہار لوڈ ہو رہا ہے…",
   "outOfLivesAdPlaying": "اشتہار چل رہا ہے…",
-  "outOfLivesNotEnoughCoins": "سکے ناکافی ہیں",
 
   "languageTitle": "اپنی زبان منتخب کریں",
   "languageSubtitle": "آپ اسے کسی بھی وقت ترتیبات میں بدل سکتے ہیں",

@@ -830,12 +830,6 @@ abstract class AppLocalizations {
   /// **'POWER-UPS IN HAND'**
   String get levelBriefPowerUps;
 
-  /// S-09 dimmed shop tile label.
-  ///
-  /// In en, this message translates to:
-  /// **'SHOP'**
-  String get levelBriefShop;
-
   /// S-09 primary CTA.
   ///
   /// In en, this message translates to:
@@ -896,17 +890,11 @@ abstract class AppLocalizations {
   /// **'50:50'**
   String get quizPowerUpFiftyFifty;
 
-  /// Power-up that adds fifteen seconds.
+  /// Power-up that adds five seconds.
   ///
   /// In en, this message translates to:
-  /// **'+15s'**
+  /// **'+5s'**
   String get quizPowerUpAddTime;
-
-  /// Power-up that skips a question.
-  ///
-  /// In en, this message translates to:
-  /// **'SKIP'**
-  String get quizPowerUpSkip;
 
   /// S-12 feedback banner heading.
   ///
@@ -1058,11 +1046,11 @@ abstract class AppLocalizations {
   /// **'Out of lives'**
   String get outOfLivesTitle;
 
-  /// S-19 dialog body. The refill is a clock time, never a relative countdown.
+  /// S-19 dialog body. Never claims hearts regenerate on a timer — a fresh level start simply grants 3 again.
   ///
   /// In en, this message translates to:
-  /// **'Lives refill one every 30 minutes — the next one lands at {time}. Or keep this run going right now.'**
-  String outOfLivesBody(String time);
+  /// **'Watch an ad for one more heart, or come back with 3 fresh hearts next time you start this level.'**
+  String get outOfLivesBody;
 
   /// S-19 free action, listed first and loudest.
   ///
@@ -1070,29 +1058,29 @@ abstract class AppLocalizations {
   /// **'▶ Watch an ad for 1 ❤️'**
   String get outOfLivesWatchAd;
 
-  /// S-19 paid action.
-  ///
-  /// In en, this message translates to:
-  /// **'Refill 5 ❤️ · {coins} 🪙'**
-  String outOfLivesRefill(int coins);
-
   /// S-19 abandon action.
   ///
   /// In en, this message translates to:
   /// **'Back to level map'**
   String get outOfLivesBackToMap;
 
-  /// S-19 label while the mocked rewarded ad runs.
+  /// S-19 label while the rewarded ad is loading, right after the player taps the button.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading ad…'**
+  String get outOfLivesAdLoading;
+
+  /// S-19 label while the rewarded ad runs.
   ///
   /// In en, this message translates to:
   /// **'Playing ad…'**
   String get outOfLivesAdPlaying;
 
-  /// S-19 sub-label on the refill action when the balance is short.
+  /// S-19 snackbar when the rewarded ad fails to load or show — the button must always stay recoverable via retry.
   ///
   /// In en, this message translates to:
-  /// **'Not enough coins'**
-  String get outOfLivesNotEnoughCoins;
+  /// **'Ad failed to load'**
+  String get outOfLivesAdFailedTitle;
 
   /// S-21 heading.
   ///
@@ -2107,168 +2095,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{seconds}s average'**
   String statsFastestAverage(String seconds);
-
-  /// S-36 top bar title.
-  ///
-  /// In en, this message translates to:
-  /// **'Shop'**
-  String get shopTitle;
-
-  /// S-36 free-coins card heading.
-  ///
-  /// In en, this message translates to:
-  /// **'Watch a 30s ad'**
-  String get shopFreeCoinsTitle;
-
-  /// S-36 free-coins card caption while ads remain.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} left today'**
-  String shopFreeCoinsMeta(int count);
-
-  /// S-36 free-coins card caption once today's ads are used up.
-  ///
-  /// In en, this message translates to:
-  /// **'Come back tomorrow for more'**
-  String get shopFreeCoinsNoneLeft;
-
-  /// S-36 section header.
-  ///
-  /// In en, this message translates to:
-  /// **'Power-ups'**
-  String get shopPowerUpsHeading;
-
-  /// S-36 50:50 row description.
-  ///
-  /// In en, this message translates to:
-  /// **'Removes two wrong options'**
-  String get shopPowerUpFiftyFiftyBody;
-
-  /// S-36 +15s row description.
-  ///
-  /// In en, this message translates to:
-  /// **'Adds 15 seconds to the clock'**
-  String get shopPowerUpAddTimeBody;
-
-  /// S-36 Skip row description.
-  ///
-  /// In en, this message translates to:
-  /// **'Skips a question, no heart lost'**
-  String get shopPowerUpSkipBody;
-
-  /// S-36 Freeze row title — duel-only, see core/models/power_up.dart.
-  ///
-  /// In en, this message translates to:
-  /// **'Freeze'**
-  String get shopPowerUpFreeze;
-
-  /// S-36 Freeze row description.
-  ///
-  /// In en, this message translates to:
-  /// **'Freezes your opponent\'s timer for 5s in a duel'**
-  String get shopPowerUpFreezeBody;
-
-  /// S-36 power-up row trailing caption.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} owned'**
-  String shopOwned(int count);
-
-  /// S-36 snackbar after a successful power-up purchase.
-  ///
-  /// In en, this message translates to:
-  /// **'Bought {name}'**
-  String shopPurchaseSuccess(String name);
-
-  /// S-36 snackbar when a coin-priced purchase can't be afforded.
-  ///
-  /// In en, this message translates to:
-  /// **'Not enough coins'**
-  String get shopInsufficientCoins;
-
-  /// S-36 snackbar when a gem-priced purchase can't be afforded.
-  ///
-  /// In en, this message translates to:
-  /// **'Not enough gems'**
-  String get shopInsufficientGems;
-
-  /// S-36 section header.
-  ///
-  /// In en, this message translates to:
-  /// **'Coin packs'**
-  String get shopCoinPacksHeading;
-
-  /// S-36 remove-ads row title.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove ads forever'**
-  String get shopRemoveAdsTitle;
-
-  /// S-36 remove-ads row body, quoting the bible's own product decision about the free-coin route.
-  ///
-  /// In en, this message translates to:
-  /// **'Free coins stay available — this only removes ads.'**
-  String get shopRemoveAdsBody;
-
-  /// S-36 remove-ads row price.
-  ///
-  /// In en, this message translates to:
-  /// **'\$6.99'**
-  String get shopRemoveAdsPrice;
-
-  /// Snackbar for a coin-pack or remove-ads tap, per plan 004's Scope.
-  ///
-  /// In en, this message translates to:
-  /// **'Mock — payments not wired'**
-  String get shopMockPayment;
-
-  /// S-37 dialog title.
-  ///
-  /// In en, this message translates to:
-  /// **'Watch to earn'**
-  String get rewardedAdTitle;
-
-  /// S-37 dialog body.
-  ///
-  /// In en, this message translates to:
-  /// **'A 30-second ad gets you {coins} coins. You have {left} of {total} daily rewards left.'**
-  String rewardedAdBody(int coins, int left, int total);
-
-  /// S-37 primary action.
-  ///
-  /// In en, this message translates to:
-  /// **'▶ Watch now'**
-  String get rewardedAdWatch;
-
-  /// S-37 primary action while the mocked ad plays.
-  ///
-  /// In en, this message translates to:
-  /// **'Watching…'**
-  String get rewardedAdWatching;
-
-  /// S-37 secondary action.
-  ///
-  /// In en, this message translates to:
-  /// **'No thanks'**
-  String get rewardedAdNoThanks;
-
-  /// S-37 toast when the mocked ad fails, which must fall back rather than leave a dead button.
-  ///
-  /// In en, this message translates to:
-  /// **'Ad failed to load'**
-  String get rewardedAdFailedTitle;
-
-  /// S-37 toast body.
-  ///
-  /// In en, this message translates to:
-  /// **'Give it another try'**
-  String get rewardedAdFailedBody;
-
-  /// S-37 success snackbar after the dialog closes.
-  ///
-  /// In en, this message translates to:
-  /// **'+{coins} 🪙 credited'**
-  String rewardedAdSuccessTitle(int coins);
 
   /// S-39 heading.
   ///
