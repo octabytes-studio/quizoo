@@ -51,6 +51,7 @@ _QuizRun _$QuizRunFromJson(Map<String, dynamic> json) => _QuizRun(
   heartsRemaining: (json['heartsRemaining'] as num?)?.toInt() ?? 3,
   questionCount: (json['questionCount'] as num?)?.toInt() ?? 20,
   isBoss: json['isBoss'] as bool? ?? false,
+  isDaily: json['isDaily'] as bool? ?? false,
   usedPowerUp: json['usedPowerUp'] as bool? ?? false,
   ending:
       $enumDecodeNullable(_$RunEndingEnumMap, json['ending']) ??
@@ -76,6 +77,7 @@ Map<String, dynamic> _$QuizRunToJson(_QuizRun instance) => <String, dynamic>{
   'heartsRemaining': instance.heartsRemaining,
   'questionCount': instance.questionCount,
   'isBoss': instance.isBoss,
+  'isDaily': instance.isDaily,
   'usedPowerUp': instance.usedPowerUp,
   'ending': _$RunEndingEnumMap[instance.ending]!,
   'finishedAt': instance.finishedAt?.toIso8601String(),

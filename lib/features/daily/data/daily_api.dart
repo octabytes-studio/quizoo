@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/daily/domain/daily_challenge.dart';
 import 'package:quizoo/features/daily/domain/streak_status.dart';
@@ -8,12 +6,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// The real daily-challenge endpoints, over Postgrest and the
 /// `play_daily_challenge` RPC (functions migration).
 ///
-/// [play] still synthesizes a plausible answer pattern rather than routing
-/// through a real ten-question play surface (plan 006, Assumption #1(b)) —
-/// there is no daily-play screen in the routed screens list yet, and adding
-/// one is out of this plan's "no new screens" scope. The RPC itself is real:
-/// it independently derives `streak_days`/coin payout from whatever pattern
-/// it is handed, exactly as it would for a genuine answer log.
+/// Fetching today's actual questions to play is `QuizPlayApi`'s job now
+/// (`fetchDailyQuestions`, calling `get_daily_challenge_questions`) — the
+/// daily challenge plays through the same arena a level does
+/// (`QuizPlayCubit.startDaily`), so it needs the same `Question` shape that
+/// API already produces. This class keeps only what's daily-specific: today's
+/// card data, the streak, and scoring a finished run.
 class DailyApi {
   DailyApi(this._client);
 
@@ -151,23 +149,18 @@ class DailyApi {
     }
   }
 
-  Future<DailyPlayOutcome> play({required String languageCode}) async {
+  /// Scores the real answer pattern the player just produced.
+  Future<DailyPlayOutcome> play({
+    required String languageCode,
+    required List<bool> answerPattern,
+  }) async {
     try {
-      final today = await fetchToday(languageCode: languageCode);
-      final random = Random();
-      // A plausible "did fine" spread rather than a uniform 0..10 — the
-      // bible's own S-28 frame lands on 8/10 (plan 006, Assumption #1(b): no
-      // real ten-question play surface exists yet to generate a genuine
-      // pattern from).
-      final correct = 6 + random.nextInt(5);
-      final pattern = <bool>[
-        for (var index = 0; index < today.questionCount; index++)
-          index < correct,
-      ]..shuffle(random);
-
       final response = await _client.rpc<Map<String, dynamic>>(
         'play_daily_challenge',
-        params: {'p_answer_pattern': pattern, 'p_language_code': languageCode},
+        params: {
+          'p_answer_pattern': answerPattern,
+          'p_language_code': languageCode,
+        },
       );
 
       final distribution = response['distribution'] as Map<String, dynamic>?;
@@ -179,7 +172,7 @@ class DailyApi {
 
       return DailyPlayOutcome(
         correctCount: response['correctCount'] as int,
-        answerPattern: pattern,
+        answerPattern: answerPattern,
         coinsEarned: response['coinsEarned'] as int,
         streakNow: response['streakNow'] as int,
         distributionPercents: [

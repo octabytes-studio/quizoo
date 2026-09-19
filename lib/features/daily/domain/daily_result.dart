@@ -32,6 +32,31 @@ abstract class DailyResult with _$DailyResult {
   factory DailyResult.fromJson(Map<String, dynamic> json) =>
       _$DailyResultFromJson(json);
 
+  /// A plausible fixed result for contexts with no real play to show —
+  /// currently just the dev screen index's S-28 entry, opened with no
+  /// route `extra`.
+  factory DailyResult.preview() => const DailyResult(
+    correctCount: 8,
+    totalCount: 10,
+    betterThanPercent: 82,
+    distributionPercents: [14, 34, 72, 100, 41],
+    highlightedBucketIndex: 3,
+    coinsEarned: 300,
+    streakNow: 13,
+    answerPattern: [
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+    ],
+  );
+
   /// The bible's own worked example — 🟩 for correct, ⬜ for wrong, in rows of
   /// five, e.g. "🟩🟩⬜🟩🟩\n🟩⬜🟩🟩🟩".
   String get shareGrid {

@@ -65,6 +65,37 @@ class QuizPlayApi {
     }
   }
 
+  /// Today's real questions to answer — `get_daily_challenge_questions`
+  /// (`get_daily_challenge_questions_full_shape` migration), shaped exactly
+  /// like [fetchLevelQuestions]'s so the daily challenge can play through the
+  /// same [Question]-driven arena a level does (`QuizPlayCubit.startDaily`).
+  ///
+  /// Throws with `code: 'already_played_today'` when the caller already has
+  /// a `daily_attempts` row for today, and `code: 'no_challenge_today'` if
+  /// nothing was generated for this date/language yet — both raised by the
+  /// RPC itself, not derived here.
+  Future<DailyQuestionSession> fetchDailyQuestions({
+    required String languageCode,
+  }) async {
+    try {
+      final response = await _client.rpc<Map<String, dynamic>>(
+        'get_daily_challenge_questions',
+        params: {'p_language_code': languageCode},
+      );
+
+      final questions = [
+        for (final row in response['questions'] as List)
+          _questionFromRow(row as Map<String, dynamic>),
+      ];
+      return DailyQuestionSession(
+        questions: questions,
+        secondsPerQuestion: response['secondsPerQuestion'] as int,
+      );
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
   static Question _questionFromRow(Map<String, dynamic> row) => Question(
     id: row['id'] as String,
     subcategoryId: row['subcategoryId'] as String,
@@ -78,4 +109,16 @@ class QuizPlayApi {
     ttsExcluded: row['ttsExcluded'] as bool? ?? false,
     audioUrl: row['audioUrl'] as String?,
   );
+}
+
+/// Today's real questions plus the clock to answer them under — what
+/// [QuizPlayRepository.questionsForDaily] hands [QuizPlayCubit.startDaily].
+class DailyQuestionSession {
+  const DailyQuestionSession({
+    required this.questions,
+    required this.secondsPerQuestion,
+  });
+
+  final List<Question> questions;
+  final int secondsPerQuestion;
 }

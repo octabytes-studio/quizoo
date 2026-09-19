@@ -275,7 +275,7 @@ class _TodayChallengeCard extends StatelessWidget {
                   SizedBox(height: AppSpacing.sm.h),
                   ChunkyButton(
                     label: l10n.dailyPlayNow,
-                    onPressed: () => context.push(AppRoutes.dailyResult),
+                    onPressed: () => context.push(AppRoutes.dailyPlay),
                   ),
                 ],
               ),

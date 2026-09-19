@@ -112,13 +112,17 @@ sealed class QuizPlayState extends Equatable {
 
   /// The live run, on every state that has one.
   QuizRun? get run => switch (this) {
-    QuizPlayPreparing() || QuizPlayFailed() => null,
+    QuizPlayPreparing() ||
+    QuizPlayFailed() ||
+    QuizPlayDailyFinished() ||
+    QuizPlayDailyAlreadyPlayed() => null,
     QuizPlayCountdown(:final run) => run,
     QuizPlayInProgress(:final run) => run,
     QuizPlayPaused(:final underlying) => underlying.run,
     QuizPlayQuitting(:final underlying) => underlying.run,
     QuizPlayOutOfLives(:final underlying) => underlying.run,
     QuizPlayEnded(:final run) => run,
+    QuizPlaySubmittingDaily(:final run) => run,
   };
 
   /// The question screen underneath, which the pause sheet blurs and the two
@@ -315,6 +319,10 @@ final class QuizPlayOutOfLives extends QuizPlayState {
 
 /// The run is over, however it ended. The screen navigates to the result on
 /// this state and never renders it.
+///
+/// Never reached for a daily run — [QuizRun.isDaily] runs end at
+/// [QuizPlaySubmittingDaily] instead, since a daily result has to come back
+/// from the server rather than being computed locally the way a level's is.
 final class QuizPlayEnded extends QuizPlayState {
   const QuizPlayEnded(this.run);
 
@@ -323,4 +331,36 @@ final class QuizPlayEnded extends QuizPlayState {
 
   @override
   List<Object?> get props => [run];
+}
+
+/// The daily run's tenth answer just landed; scoring it with the server via
+/// `play_daily_challenge`. The arena shows a spinner on this state, same as
+/// [QuizPlayEnded] does for a level.
+final class QuizPlaySubmittingDaily extends QuizPlayState {
+  const QuizPlaySubmittingDaily(this.run);
+
+  @override
+  final QuizRun run;
+
+  @override
+  List<Object?> get props => [run];
+}
+
+/// The daily run was scored — the screen navigates to S-28 with [result] and
+/// never renders this state, mirroring [QuizPlayEnded]'s own contract.
+final class QuizPlayDailyFinished extends QuizPlayState {
+  const QuizPlayDailyFinished(this.result);
+
+  final DailyResult result;
+
+  @override
+  List<Object?> get props => [result];
+}
+
+/// The player already has a `daily_attempts` row for today — surfaced as its
+/// own state (reached either from the initial fetch or from submitting a
+/// finished run) rather than a generic [QuizPlayFailed], so the screen can
+/// show real "come back tomorrow" copy instead of a network-error template.
+final class QuizPlayDailyAlreadyPlayed extends QuizPlayState {
+  const QuizPlayDailyAlreadyPlayed();
 }

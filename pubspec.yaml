@@ -53,6 +53,7 @@ dependencies:
 
   # Material "shared axis" transition — the next-question slide (§05 `slide`)
   animations: ^2.0.11
+  flutter_cache_manager: ^3.4.5
 
 dev_dependencies:
   flutter_test:

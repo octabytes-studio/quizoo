@@ -112,6 +112,9 @@ abstract final class AppRoutes {
   /// S-27 Daily tab — shell tab 4.
   static const String daily = '/daily';
 
+  /// The daily challenge's real ten-question run, between S-27 and S-28.
+  static const String dailyPlay = '/daily/play';
+
   /// S-28 Daily result.
   static const String dailyResult = '/daily/result';
 
