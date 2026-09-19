@@ -44,7 +44,6 @@ import 'package:quizoo/features/settings/presentation/screens/privacy_settings_s
 import 'package:quizoo/features/settings/presentation/screens/settings_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
 import 'package:quizoo/features/shell/presentation/widgets/play_launcher_sheet.dart';
-import 'package:quizoo/features/shop/presentation/screens/shop_screen.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// The app's one and only [GoRouter].
@@ -270,21 +269,6 @@ abstract final class AppRouter {
           path: AppRoutes.stats,
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const StatsScreen(),
-        ),
-
-        // Shop
-        GoRoute(
-          path: AppRoutes.shop,
-          parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) => const ShopScreen(),
-        ),
-        // S-37 is a dialog, so its path opens the shop with the dialog
-        // already presented, exactly like S-09's level-brief sheet.
-        GoRoute(
-          path: AppRoutes.rewardedAd,
-          parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) =>
-              const ShopScreen(showRewardedAdOnOpen: true),
         ),
 
         // Duel

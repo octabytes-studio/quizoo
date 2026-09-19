@@ -25,7 +25,6 @@ class QuizResultApi {
                 'secondsLeft': answer.secondsLeft,
                 'action': switch (answer.outcome) {
                   AnswerOutcome.timedOut => 'timedOut',
-                  AnswerOutcome.skipped => 'skipped',
                   _ => 'answered',
                 },
               },

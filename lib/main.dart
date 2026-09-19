@@ -6,6 +6,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:quizoo/app/app.dart';
 import 'package:quizoo/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,8 @@ const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await MobileAds.instance.initialize();
 
   await Supabase.initialize(
     url: _supabaseUrl,

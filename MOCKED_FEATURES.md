@@ -9,7 +9,7 @@
 
 | File | What's mocked | Impact |
 |---|---|---|
-| `core/mock/mock_player.dart` | Entire "signed-in player" fixture: name (`Waleed`), avatar emoji, `dayStreak` (12), `playerLevel` (12), `xpIntoLevel`, wallet (`currency`), power-up counts, `livesPerLevel`, 8 fixed avatar emoji, 6 fixed countries, `takenUsernames` set. | High — pulled into Home, Auth, Quiz Play, Shop, Duel, Catalog widgets, often **instead of** real per-user data that already exists elsewhere in the app (see Home below). |
+| `core/mock/mock_player.dart` | Entire "signed-in player" fixture: name (`Waleed`), avatar emoji, `dayStreak` (12), `playerLevel` (12), `xpIntoLevel`, wallet (`currency`), power-up counts, `livesPerLevel`, 8 fixed avatar emoji, 6 fixed countries, `takenUsernames` set. | High — pulled into Home, Auth, Quiz Play, Duel, Catalog widgets, often **instead of** real per-user data that already exists elsewhere in the app (see Home below). |
 | `core/mock/mock_catalog.dart` | Full taxonomy fixture (categories/subcategories/levels) plus `levelId`/`parseLevelId`/`bandFor`/`secondsFor` helpers. | Mixed — `CatalogApi` (real Supabase) only reuses the pure ID/band helpers, which is fine, but several **screens** import `MockCatalog` directly for display data (see Leaderboard, Achievements, Profile below), bypassing the real repository layer entirely. |
 | `core/mock/mock_badges.dart` | A hardcoded 12-badge catalogue. | Low — appears unused now; `achievements_api.dart`/`profile_api.dart` read real `rarity_percent` etc. from Supabase. Dead code, safe to delete once confirmed unused. |
 | `core/mock/mock_api.dart` | A documented "temporary" base class for simulated latency/failure. | Low — no `*_api.dart` file extends it anymore (all now hit Supabase directly). Also dead code. |
@@ -22,23 +22,17 @@
 |---|---|---|
 | `quiz_play_repository.dart` / `quiz_play_api.dart` / `daily_repository` | Questions, level pacing, and daily-challenge scoring are **real** (`start_level_attempt`, `get_daily_challenge_questions` RPCs). | — (confirms this part is *not* mocked, included for contrast) |
 | `presentation/bloc/quiz_play_cubit.dart:238,311` | `heartsRemaining` for every level/daily run is hardcoded to `MockPlayer.livesPerLevel` (always 3), not read from any per-user state. | Medium — "lives" is a fixed game-design constant today, not a real economy, so this only matters if per-user extra-lives is ever intended. |
-| `quiz_play_cubit.dart:373-377` (`_beginQuestion`) | The power-up dock (`fiftyFifty`/`addTime`/`skip` counts) is **reset to the fixed `MockPlayer` counts on every single question**, and `usePowerUp` only spends from this local, in-memory `PowerUpInventory` — never against a real wallet. | **High** — power-ups are effectively infinite/free every level; nothing purchased in the Shop is ever consumed here, and nothing spent here is ever deducted from the real account. |
-| `quiz_play_cubit.dart:861-864` (`watchAdForHeart`) | Explicitly commented: *"a mocked rewarded ad... No ad SDK is involved"* — just a 1.2s `Timer`. | **High** — the "watch an ad for a heart" flow never shows a real ad. |
-| `quiz_play_cubit.dart:887-892,906-919` (`refillHeartsWithCoins`, `_grantHearts`) | Explicitly commented: *"there is no persistent wallet in this phase — currency resets with the fixture on every launch. A known mock limitation."* Refill "costs" coins visually but nothing is deducted anywhere real. | **High** — paid heart refill is non-functional as an economy; it's a free action dressed as a purchase. |
-| `presentation/widgets/out_of_lives_dialog.dart:53` | Refill cost label reads `MockPlayer.refillCost`, a fixed constant, not tied to any live pricing config. | Low — cosmetic/config, consistent with the above. |
+| ~~`quiz_play_cubit.dart:373-377` (`_beginQuestion`)~~ | **Fixed by plan 013.** Power-ups are now granted once per level (`QuizRun.powerUps`, one 50:50 + one +5s) and spent from that same pool across every question, never re-seeded per question. | — |
+| ~~`quiz_play_cubit.dart:861-864` (`watchAdForHeart`)~~ | **Fixed by plan 013.** The out-of-lives "watch an ad for 1 ❤️" flow is now a real `google_mobile_ads` rewarded ad (`HeartAdCubit`/`AdMobRewardedAdService`), using Google's public test rewarded ad unit IDs. | — |
+| ~~`quiz_play_cubit.dart:887-892,906-919` (`refillHeartsWithCoins`)~~ | **Removed by plan 013**, along with the Shop it depended on — the out-of-lives dialog now offers exactly two actions (watch ad, back to map), no paid coin refill. | — |
 | `data/mock_questions.dart` | A hand-written pool of ~15 football + 10 solar-system questions, explicitly flagged in its own doc comment as a fixture ("plan 002, Assumption 4"). | Low — appears to be **dead code** now; `quiz_play_repository.dart` sources questions from the real Supabase question bank (`start_level_attempt`). Only remaining reference is `lib/app/router.dart:441` (see Dev/Router below). Safe to delete if confirmed unreferenced elsewhere. |
 | `presentation/screens/quiz_play_screen.dart:353-370` (report-question sheet) | "Report question" submit handler just pops the sheet and shows a success snackbar — **no backend call, nothing is persisted**. | Medium — players believe their report was sent; it goes nowhere. |
 
 ---
 
-## `shop` — purchases and power-up inventory are not real
+## `shop` — removed entirely (plan 013)
 
-| File:Line | What's mocked | Impact |
-|---|---|---|
-| `data/shop_api.dart:8-20,83-87` | Coins/gems balance **is real** (Postgres `profiles` table), but `CoinPack` catalogue is a fixed in-app list (not Remote Config/store pricing), and `inventory` (power-up counts) is hardcoded to `MockPlayer` fixture counts, explicitly flagged in the file's own doc comment as an unresolved, disagreeing pair with `QuizPlayCubit`. | High — the "shop" shows a real wallet balance next to fake, unpurchasable inventory. |
-| `presentation/screens/shop_screen.dart:166-172,231,249` (`_mockPurchase`) | Tapping any **coin pack** or **"Remove Ads"** tile shows a snackbar (`l10n.shopMockPayment`) and does nothing else. | **High** — no `in_app_purchase` integration at all; every monetization button in the shop is a no-op. |
-| `presentation/bloc/shop_cubit.dart:32-58` (`buyPowerUp`) | "Buying" a power-up with coins/gems only mutates in-memory Cubit state (`ShopLoaded.copyWith`) — never calls Supabase to deduct the balance or persist the inventory grant. | **High** — a real, silent bug: the deduction is visually shown then discarded; reloading the shop restores the original server balance and fixture inventory, so purchased power-ups vanish and coins aren't actually spent server-side either. |
-| `presentation/bloc/rewarded_ad_cubit.dart:9-14,34-79` | "Watch ad for coins" dialog: explicitly commented *"the mocked ad 'plays' for `adDuration` then either succeeds or, occasionally, fails"* — a `Timer` + `Random`, no AdMob SDK call. | High — distinct from (and worse than) simply using AdMob's public test unit IDs; there's no ad SDK integration here at all. |
+The Shop feature (`lib/features/shop/`) was deleted outright rather than fixed: coins/gems are still earned (daily challenge, duel payouts) and still shown in the Home top bar, but there is no longer any spend surface for them, and nothing in the app can be purchased with coins or gems. `PowerUp.skip`/`PowerUp.freeze` (Skip removed from play, Freeze was Shop-only) were removed from `core/models/power_up.dart` alongside it.
 
 ---
 
@@ -109,8 +103,8 @@ Real by contrast: `notifications_api.dart` (in-app notification list, mark-read,
 
 10 of 14 features had at least one mocked/stubbed item. The highest-impact clusters are:
 
-1. **Shop/monetization is entirely non-functional** — coin packs, "Remove Ads", and power-up purchases are all `_mockPurchase` no-ops or discard state on reload; no `in_app_purchase` integration exists.
-2. **Quiz Play's in-game economy is disconnected from the wallet** — power-ups reset to fixed counts every question, "watch ad for heart" is a timer with no ad SDK, and paid heart refills don't touch any real balance.
+1. ~~**Shop/monetization is entirely non-functional**~~ — **the Shop feature was deleted outright (plan 013)**, not fixed; coin packs, "Remove Ads", and power-up purchases no longer exist as a surface at all.
+2. ~~**Quiz Play's in-game economy is disconnected from the wallet**~~ — **fixed by plan 013**: power-ups are now granted once per level and spent from that pool, and "watch ad for heart" is a real `google_mobile_ads` rewarded ad rather than a `Timer`.
 3. **Duel has no real matchmaking** — every duel is scripted against one of 6 named bots; "searching for opponent" always resolves to a bot.
 4. **Delete Account doesn't delete anything** — it signs out to guest and shows a success message.
 5. **Home's top bar shows a fixed level/streak** for every signed-in user, even though the real values are already computed correctly in the Profile feature one tap away.

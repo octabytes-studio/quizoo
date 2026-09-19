@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 
 part 'quiz_run.freezed.dart';
@@ -10,7 +11,7 @@ part 'quiz_run.g.dart';
 /// timeout costs the question but not a heart, so a cautious player can
 /// survive on knowledge alone". Collapsing the two is the single easiest bug
 /// to write in this feature.
-enum AnswerOutcome { correct, wrong, timedOut, skipped }
+enum AnswerOutcome { correct, wrong, timedOut }
 
 /// How a run ended.
 enum RunEnding {
@@ -36,7 +37,7 @@ abstract class AnsweredQuestion with _$AnsweredQuestion {
     required Question question,
     required AnswerOutcome outcome,
 
-    /// What the player picked, or null on a timeout or skip.
+    /// What the player picked, or null on a timeout.
     int? chosenIndex,
 
     /// Seconds left on the clock when they answered — the speed bonus's input.
@@ -84,6 +85,11 @@ abstract class QuizRun with _$QuizRun {
     @Default(3) int heartsRemaining,
     @Default(20) int questionCount,
     @Default(false) bool isBoss,
+
+    /// Granted once at the top of the level (or daily run) — one 50:50, one
+    /// +5s — and spent from this same pool across every question, never
+    /// re-seeded per question.
+    @Default(PowerUpInventory()) PowerUpInventory powerUps,
 
     /// True for the daily challenge's ten-question run through this same
     /// arena — hearts never deplete and there is no power-up dock, but the

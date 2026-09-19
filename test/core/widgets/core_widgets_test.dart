@@ -531,20 +531,8 @@ void main() {
         () => Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            PowerUpTile(
-              emoji: '🎯',
-              label: '50:50',
-              count: 3,
-              onUse: () {},
-              onBuy: () {},
-            ),
-            PowerUpTile(
-              emoji: '❄️',
-              label: 'FREEZE',
-              count: 0,
-              onUse: () {},
-              onBuy: () {},
-            ),
+            PowerUpTile(emoji: '🎯', label: '50:50', count: 3, onUse: () {}),
+            PowerUpTile(emoji: '⏱️', label: '+5s', count: 0, onUse: () {}),
           ],
         ),
         body: () async {
@@ -554,26 +542,16 @@ void main() {
       );
     });
 
-    testWidgets('a zero-count tile routes to the shop instead of firing', (
-      tester,
-    ) async {
+    testWidgets('a zero-count tile has no tap target', (tester) async {
       var used = 0;
-      var bought = 0;
       await tester.pumpApp(
-        PowerUpTile(
-          emoji: '❄️',
-          label: 'FREEZE',
-          count: 0,
-          onUse: () => used++,
-          onBuy: () => bought++,
-        ),
+        PowerUpTile(emoji: '⏱️', label: '+5s', count: 0, onUse: () => used++),
       );
 
       await tester.tap(find.byType(PowerUpTile));
       await tester.pumpAndSettle();
 
       expect(used, 0);
-      expect(bought, 1);
     });
   });
 

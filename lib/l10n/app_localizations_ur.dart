@@ -455,9 +455,6 @@ class AppLocalizationsUr extends AppLocalizations {
   String get levelBriefPowerUps => 'POWER-UPS IN HAND';
 
   @override
-  String get levelBriefShop => 'SHOP';
-
-  @override
   String levelBriefStart(int level) {
     return 'Start Level $level';
   }
@@ -494,10 +491,7 @@ class AppLocalizationsUr extends AppLocalizations {
   String get quizPowerUpFiftyFifty => '50:50';
 
   @override
-  String get quizPowerUpAddTime => '+15s';
-
-  @override
-  String get quizPowerUpSkip => 'SKIP';
+  String get quizPowerUpAddTime => '+5s';
 
   @override
   String get feedbackCorrect => 'درست!';
@@ -584,26 +578,23 @@ class AppLocalizationsUr extends AppLocalizations {
   String get outOfLivesTitle => 'جانیں ختم';
 
   @override
-  String outOfLivesBody(String time) {
-    return 'Lives refill one every 30 minutes — the next one lands at $time. Or keep this run going right now.';
-  }
+  String get outOfLivesBody =>
+      'Watch an ad for one more heart, or come back with 3 fresh hearts next time you start this level.';
 
   @override
   String get outOfLivesWatchAd => '▶ ایک ❤️ کے لیے اشتہار دیکھیں';
 
   @override
-  String outOfLivesRefill(int coins) {
-    return '۵ ❤️ بھریں · $coins 🪙';
-  }
+  String get outOfLivesBackToMap => 'لیول نقشے پر واپس';
 
   @override
-  String get outOfLivesBackToMap => 'لیول نقشے پر واپس';
+  String get outOfLivesAdLoading => 'اشتہار لوڈ ہو رہا ہے…';
 
   @override
   String get outOfLivesAdPlaying => 'اشتہار چل رہا ہے…';
 
   @override
-  String get outOfLivesNotEnoughCoins => 'سکے ناکافی ہیں';
+  String get outOfLivesAdFailedTitle => 'Ad failed to load';
 
   @override
   String resultCompleteTitle(int level) {
@@ -1215,99 +1206,6 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String statsFastestAverage(String seconds) {
     return '${seconds}s average';
-  }
-
-  @override
-  String get shopTitle => 'Shop';
-
-  @override
-  String get shopFreeCoinsTitle => 'Watch a 30s ad';
-
-  @override
-  String shopFreeCoinsMeta(int count) {
-    return '$count left today';
-  }
-
-  @override
-  String get shopFreeCoinsNoneLeft => 'Come back tomorrow for more';
-
-  @override
-  String get shopPowerUpsHeading => 'Power-ups';
-
-  @override
-  String get shopPowerUpFiftyFiftyBody => 'Removes two wrong options';
-
-  @override
-  String get shopPowerUpAddTimeBody => 'Adds 15 seconds to the clock';
-
-  @override
-  String get shopPowerUpSkipBody => 'Skips a question, no heart lost';
-
-  @override
-  String get shopPowerUpFreeze => 'Freeze';
-
-  @override
-  String get shopPowerUpFreezeBody =>
-      'Freezes your opponent\'s timer for 5s in a duel';
-
-  @override
-  String shopOwned(int count) {
-    return '$count owned';
-  }
-
-  @override
-  String shopPurchaseSuccess(String name) {
-    return 'Bought $name';
-  }
-
-  @override
-  String get shopInsufficientCoins => 'Not enough coins';
-
-  @override
-  String get shopInsufficientGems => 'Not enough gems';
-
-  @override
-  String get shopCoinPacksHeading => 'Coin packs';
-
-  @override
-  String get shopRemoveAdsTitle => 'Remove ads forever';
-
-  @override
-  String get shopRemoveAdsBody =>
-      'Free coins stay available — this only removes ads.';
-
-  @override
-  String get shopRemoveAdsPrice => '\$6.99';
-
-  @override
-  String get shopMockPayment => 'Mock — payments not wired';
-
-  @override
-  String get rewardedAdTitle => 'Watch to earn';
-
-  @override
-  String rewardedAdBody(int coins, int left, int total) {
-    return 'A 30-second ad gets you $coins coins. You have $left of $total daily rewards left.';
-  }
-
-  @override
-  String get rewardedAdWatch => '▶ Watch now';
-
-  @override
-  String get rewardedAdWatching => 'Watching…';
-
-  @override
-  String get rewardedAdNoThanks => 'No thanks';
-
-  @override
-  String get rewardedAdFailedTitle => 'Ad failed to load';
-
-  @override
-  String get rewardedAdFailedBody => 'Give it another try';
-
-  @override
-  String rewardedAdSuccessTitle(int coins) {
-    return '+$coins 🪙 credited';
   }
 
   @override
