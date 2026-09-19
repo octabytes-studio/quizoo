@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
+import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
@@ -54,11 +55,8 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
     await Future<void>.delayed(const Duration(milliseconds: 2600));
     if (!mounted) return;
 
-    final badgeId = widget.state.badgeToCelebrate;
-    if (badgeId != null) {
-      await context.push(AppRoutes.badgeUnlockedPath(badgeId));
-      if (!mounted) return;
-    }
+    await celebrateBadges(context, widget.state.result.newlyEarnedBadgeIds);
+    if (!mounted) return;
 
     if (widget.state.result.shouldOfferSaveProgress) {
       // Recorded before it is shown, so a second run in the same session

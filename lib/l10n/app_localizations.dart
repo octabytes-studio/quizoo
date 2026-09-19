@@ -1910,6 +1910,90 @@ abstract class AppLocalizations {
   /// **'Unlocked {date}'**
   String badgeDetailUnlockedOn(String date);
 
+  /// S-34 progress hint: badge_sharpshooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear every question in one level to go flawless.'**
+  String get achievementHintSharpshooter;
+
+  /// S-34 progress hint: badge_on_fire.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep answering correctly in a row without missing one.'**
+  String get achievementHintOnFire;
+
+  /// S-34 progress hint: badge_boss_slayer (binary, no fraction).
+  ///
+  /// In en, this message translates to:
+  /// **'Clear a boss level to earn this one.'**
+  String get achievementHintBossSlayer;
+
+  /// S-34 progress hint: badge_big_brain.
+  ///
+  /// In en, this message translates to:
+  /// **'Go flawless on IQ levels to build up this count.'**
+  String get achievementHintBigBrain;
+
+  /// S-34 progress hint: badge_category_king.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep clearing topics in this category with 3 stars.'**
+  String get achievementHintCategoryKing;
+
+  /// S-34 progress hint: badge_centurion.
+  ///
+  /// In en, this message translates to:
+  /// **'String together correct answers across levels without a miss.'**
+  String get achievementHintCenturion;
+
+  /// S-34 progress hint: badge_flawless (perfect_week).
+  ///
+  /// In en, this message translates to:
+  /// **'Go flawless on at least one level every day this week.'**
+  String get achievementHintFlawless;
+
+  /// S-34 progress hint: badge_globetrotter.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a level in every category to round out your passport.'**
+  String get achievementHintGlobetrotter;
+
+  /// S-34 progress hint: badge_night_owl.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer a question between midnight and 3am on more nights.'**
+  String get achievementHintNightOwl;
+
+  /// S-34 progress hint: badge_quick_draw.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer faster on average to beat the 3-second bar.'**
+  String get achievementHintQuickDraw;
+
+  /// S-34 progress hint: badge_rocket.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer faster on average to beat the 2-second bar.'**
+  String get achievementHintRocket;
+
+  /// S-34 progress hint: badge_scholar.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach level 20 in more subcategories.'**
+  String get achievementHintScholar;
+
+  /// S-34 progress hint: badge_duelist.
+  ///
+  /// In en, this message translates to:
+  /// **'Win more bot duels to close in on this one.'**
+  String get achievementHintDuelist;
+
+  /// S-34 progress hint: badge_week_warrior.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your daily streak alive to reach a full week.'**
+  String get achievementHintWeekWarrior;
+
   /// S-23 eyebrow.
   ///
   /// In en, this message translates to:

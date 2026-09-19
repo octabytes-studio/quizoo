@@ -38,6 +38,7 @@ class QuizResultApi {
               'cannot submit an in-progress run',
             ),
           },
+          'p_local_hour': DateTime.now().hour,
         },
       );
 

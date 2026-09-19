@@ -17,6 +17,7 @@ abstract class DuelResult with _$DuelResult {
     required int eloBefore,
     required int eloAfter,
     required int rewardCoins,
+    @Default([]) List<String> newlyEarnedBadgeIds,
   }) = _DuelResult;
 
   const DuelResult._();

@@ -114,6 +114,9 @@ class DuelApi {
         eloBefore: response['eloBefore'] as int,
         eloAfter: response['eloAfter'] as int,
         coinsEarned: response['coinsEarned'] as int,
+        newlyEarnedBadgeIds:
+            (response['newlyEarnedBadgeIds'] as List? ?? const [])
+                .cast<String>(),
       );
     } catch (error) {
       throw ApiException.fromSupabase(error);
@@ -140,9 +143,11 @@ class BotDuelRecord {
     required this.eloBefore,
     required this.eloAfter,
     required this.coinsEarned,
+    required this.newlyEarnedBadgeIds,
   });
 
   final int eloBefore;
   final int eloAfter;
   final int coinsEarned;
+  final List<String> newlyEarnedBadgeIds;
 }

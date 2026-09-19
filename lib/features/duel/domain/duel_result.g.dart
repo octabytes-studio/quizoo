@@ -17,6 +17,11 @@ _DuelResult _$DuelResultFromJson(Map<String, dynamic> json) => _DuelResult(
   eloBefore: (json['eloBefore'] as num).toInt(),
   eloAfter: (json['eloAfter'] as num).toInt(),
   rewardCoins: (json['rewardCoins'] as num).toInt(),
+  newlyEarnedBadgeIds:
+      (json['newlyEarnedBadgeIds'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$DuelResultToJson(_DuelResult instance) =>
@@ -29,4 +34,5 @@ Map<String, dynamic> _$DuelResultToJson(_DuelResult instance) =>
       'eloBefore': instance.eloBefore,
       'eloAfter': instance.eloAfter,
       'rewardCoins': instance.rewardCoins,
+      'newlyEarnedBadgeIds': instance.newlyEarnedBadgeIds,
     };

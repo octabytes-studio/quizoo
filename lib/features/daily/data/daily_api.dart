@@ -179,6 +179,9 @@ class DailyApi {
           for (final count in counts)
             maxCount == 0 ? 0 : ((count / maxCount) * 100).round(),
         ],
+        newlyEarnedBadgeIds:
+            (response['newlyEarnedBadgeIds'] as List? ?? const [])
+                .cast<String>(),
       );
     } catch (error) {
       throw ApiException.fromSupabase(error);
@@ -213,6 +216,7 @@ class DailyPlayOutcome {
     required this.coinsEarned,
     required this.streakNow,
     required this.distributionPercents,
+    required this.newlyEarnedBadgeIds,
   });
 
   final int correctCount;
@@ -223,4 +227,5 @@ class DailyPlayOutcome {
   /// Five bucket heights, 0…100 — a genuinely global stat now, computed
   /// server-side from `daily_challenges.score_histogram`.
   final List<int> distributionPercents;
+  final List<String> newlyEarnedBadgeIds;
 }

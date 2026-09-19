@@ -6,6 +6,7 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/network/api_exception.dart';
+import 'package:quizoo/features/duel/data/duel_api.dart';
 import 'package:quizoo/features/duel/data/duel_repository.dart';
 import 'package:quizoo/features/duel/domain/duel_opponent.dart';
 import 'package:quizoo/features/duel/presentation/bloc/duel_play_cubit.dart';
@@ -216,5 +217,46 @@ void main() {
         async.flushMicrotasks();
       });
     });
+
+    test(
+      'newly-earned badge ids from submitBotDuel pass through unchanged '
+      'onto the emitted DuelResult',
+      () {
+        when(
+          () => repository.fetchRoundQuestions(
+            languageCode: any(named: 'languageCode'),
+          ),
+        ).thenAnswer((_) async => questions);
+        when(
+          () => repository.submitBotDuel(
+            opponentElo: any(named: 'opponentElo'),
+            playerRoundsWon: any(named: 'playerRoundsWon'),
+            opponentRoundsWon: any(named: 'opponentRoundsWon'),
+            rounds: any(named: 'rounds'),
+          ),
+        ).thenAnswer(
+          (_) async => const BotDuelRecord(
+            eloBefore: 1200,
+            eloAfter: 1218,
+            coinsEarned: 200,
+            newlyEarnedBadgeIds: ['badge_duelist'],
+          ),
+        );
+
+        fakeAsync((async) {
+          final cubit = DuelPlayCubit(repository, random: Random(4));
+          unawaited(cubit.start(fastBot, languageCode: 'en'));
+          async.flushMicrotasks();
+
+          async.elapse(const Duration(seconds: 95));
+
+          final result = (cubit.state as DuelPlayEnded).result;
+          expect(result.newlyEarnedBadgeIds, ['badge_duelist']);
+
+          unawaited(cubit.close());
+          async.flushMicrotasks();
+        });
+      },
+    );
   });
 }

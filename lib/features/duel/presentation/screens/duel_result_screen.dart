@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -16,7 +17,11 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// parameterized screen (plan 004, Research findings: "identical in
 /// structure … build both from one parameterized screen/widget, not two
 /// separate files").
-class DuelResultScreen extends StatelessWidget {
+///
+/// A `StatefulWidget` so it can run the same post-frame celebration chain as
+/// `LevelCompleteScreen` — every newly-earned badge in [result] gets its own
+/// S-23 celebration, not just the first (plan 014).
+class DuelResultScreen extends StatefulWidget {
   const DuelResultScreen({super.key, this.result});
 
   final DuelResult? result;
@@ -38,8 +43,24 @@ class DuelResultScreen extends StatelessWidget {
   );
 
   @override
+  State<DuelResultScreen> createState() => _DuelResultScreenState();
+}
+
+class _DuelResultScreenState extends State<DuelResultScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _runChain());
+  }
+
+  Future<void> _runChain() async {
+    final effective = widget.result ?? DuelResultScreen._fallback;
+    await celebrateBadges(context, effective.newlyEarnedBadgeIds);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final effective = result ?? _fallback;
+    final effective = widget.result ?? DuelResultScreen._fallback;
     final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;

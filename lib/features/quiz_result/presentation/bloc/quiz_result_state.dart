@@ -19,9 +19,6 @@ final class QuizResultCompleted extends QuizResultState {
 
   final LevelResult result;
 
-  /// The badge to celebrate first, or null when none was earned.
-  String? get badgeToCelebrate => result.newlyEarnedBadgeIds.firstOrNull;
-
   @override
   List<Object?> get props => [result];
 }

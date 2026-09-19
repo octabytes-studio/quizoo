@@ -11,8 +11,7 @@
 |---|---|---|
 | `core/mock/mock_player.dart` | Entire "signed-in player" fixture: name (`Waleed`), avatar emoji, `dayStreak` (12), `playerLevel` (12), `xpIntoLevel`, wallet (`currency`), power-up counts, `livesPerLevel`, 8 fixed avatar emoji, 6 fixed countries, `takenUsernames` set. | High — pulled into Home, Auth, Quiz Play, Duel, Catalog widgets, often **instead of** real per-user data that already exists elsewhere in the app (see Home below). |
 | `core/mock/mock_catalog.dart` | Full taxonomy fixture (categories/subcategories/levels) plus `levelId`/`parseLevelId`/`bandFor`/`secondsFor` helpers. | Mixed — `CatalogApi` (real Supabase) only reuses the pure ID/band helpers, which is fine, but several **screens** import `MockCatalog` directly for display data (see Leaderboard, Achievements, Profile below), bypassing the real repository layer entirely. |
-| `core/mock/mock_badges.dart` | A hardcoded 12-badge catalogue. | Low — appears unused now; `achievements_api.dart`/`profile_api.dart` read real `rarity_percent` etc. from Supabase. Dead code, safe to delete once confirmed unused. |
-| `core/mock/mock_api.dart` | A documented "temporary" base class for simulated latency/failure. | Low — no `*_api.dart` file extends it anymore (all now hit Supabase directly). Also dead code. |
+| `core/mock/mock_api.dart` | A documented "temporary" base class for simulated latency/failure. | Low — no `*_api.dart` file extends it anymore (all now hit Supabase directly), but it's still live test infrastructure (`test/core/mock/mock_api_test.dart`, `test/support/pump_app.dart`'s `useMockApiFailureRate`) — not dead code, kept. |
 
 ---
 
