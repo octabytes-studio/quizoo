@@ -756,6 +756,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get saveProgressSaved => 'Progress saved';
 
   @override
+  String get saveProgressFailed => 'Couldn\'t sign you in';
+
+  @override
   String get profileTitle => 'Create your profile';
 
   @override
@@ -766,6 +769,18 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get profileCountry => 'COUNTRY';
+
+  @override
+  String get profileLanguage => 'LANGUAGE';
+
+  @override
+  String get profileChooseCountry => 'Choose your country';
+
+  @override
+  String get profileCountrySearchHint => 'Search countries';
+
+  @override
+  String get profileCountryNoResults => 'No countries found';
 
   @override
   String get profileEmail => 'EMAIL';
@@ -793,6 +808,9 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get profileCreated => 'Profile created';
+
+  @override
+  String get profileChooseAvatar => 'Choose your avatar';
 
   @override
   String get contentErrorTitle => 'یہ لوڈ نہیں ہو سکا';

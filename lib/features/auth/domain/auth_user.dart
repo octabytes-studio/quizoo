@@ -40,6 +40,12 @@ abstract class AuthUser with _$AuthUser {
     /// False until the player has been through S-25. A vendor sign-in skips
     /// it, so most users are complete the moment they arrive.
     @Default(true) bool isProfileComplete,
+
+    /// The vendor's own profile name, offered as S-25's starting point for a
+    /// fresh Google/Apple sign-in — null once a username exists, or when the
+    /// vendor (most often Apple, on a repeat authorization) never supplied
+    /// one.
+    String? suggestedDisplayName,
   }) = _AuthUser;
 
   factory AuthUser.fromJson(Map<String, dynamic> json) =>

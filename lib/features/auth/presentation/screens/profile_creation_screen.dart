@@ -1,19 +1,33 @@
 import 'dart:async';
 
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quizoo/core/mock/mock_player.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
+import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
+import 'package:quizoo/features/auth/data/avatars_api.dart';
+import 'package:quizoo/features/auth/data/avatars_repository.dart';
+import 'package:quizoo/features/auth/domain/auth_user.dart';
+import 'package:quizoo/features/auth/presentation/bloc/avatar_picker_cubit.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
+import 'package:quizoo/features/auth/presentation/widgets/avatar_picker_sheet.dart';
+import 'package:quizoo/features/auth/presentation/widgets/country_picker_sheet.dart';
+import 'package:quizoo/features/auth/presentation/widgets/language_picker_sheet.dart';
 import 'package:quizoo/features/auth/presentation/widgets/profile_field.dart';
 import 'package:quizoo/features/home/presentation/widgets/home_top_bar.dart';
+import 'package:quizoo/features/onboarding/data/languages_api.dart';
+import 'package:quizoo/features/onboarding/data/languages_repository.dart';
+import 'package:quizoo/features/onboarding/domain/language_option.dart';
+import 'package:quizoo/features/onboarding/presentation/bloc/language_picker_cubit.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-25 — profile creation and its field errors.
@@ -28,19 +42,47 @@ import 'package:quizoo/l10n/app_localizations.dart';
 ///
 /// And the CTA stays **visibly disabled** rather than disappearing, so nobody
 /// goes hunting for it.
-class ProfileCreationScreen extends StatefulWidget {
+class ProfileCreationScreen extends StatelessWidget {
   const ProfileCreationScreen({super.key});
 
   @override
-  State<ProfileCreationScreen> createState() => _ProfileCreationScreenState();
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AvatarPickerCubit>(
+          create: (_) =>
+              AvatarPickerCubit(AvatarsRepository(AvatarsApi(supabase)))
+                ..load(),
+        ),
+        BlocProvider<LanguagePickerCubit>(
+          create: (_) =>
+              LanguagePickerCubit(LanguagesRepository(LanguagesApi(supabase)))
+                ..load(),
+        ),
+      ],
+      child: const _ProfileCreationView(),
+    );
+  }
 }
 
-class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
+class _ProfileCreationView extends StatefulWidget {
+  const _ProfileCreationView();
+
+  @override
+  State<_ProfileCreationView> createState() => _ProfileCreationViewState();
+}
+
+class _ProfileCreationViewState extends State<_ProfileCreationView> {
   final TextEditingController _username = TextEditingController();
   final TextEditingController _email = TextEditingController();
 
-  int _avatarIndex = 0;
-  int _countryIndex = 0;
+  late String _avatarKey;
+  late Country _country;
+
+  /// A vendor (Google/Apple) sign-in already carries the player's email from
+  /// Supabase, so S-25 skips its email field entirely for that route — only
+  /// the email route still needs to collect one (plan 015).
+  late bool _isVendorSignIn;
 
   /// Errors only appear once a field has been left, which is the whole point
   /// of tracking these separately from the values.
@@ -51,13 +93,15 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   bool _isCheckingUsername = false;
   Timer? _usernameDebounce;
 
-  String get _avatar => MockPlayer.avatarChoices[_avatarIndex];
-
-  (String, String) get _country => MockPlayer.countries[_countryIndex];
-
   @override
   void initState() {
     super.initState();
+    final user = context.read<SessionCubit>().state.user;
+    _avatarKey = user?.avatarEmoji ?? '🐼';
+    _country =
+        CountryService().findByCode('PK') ?? CountryService().getAll().first;
+    _isVendorSignIn = user?.provider != AuthProvider.email;
+    _username.text = user?.suggestedDisplayName ?? '';
     _username.addListener(_onUsernameChanged);
     _email.addListener(() => setState(() {}));
   }
@@ -96,6 +140,38 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     });
   }
 
+  Future<void> _pickAvatar() async {
+    final result = await AppBottomSheet.show<String>(
+      context,
+      builder: (_) => BlocProvider.value(
+        value: context.read<AvatarPickerCubit>(),
+        child: AvatarPickerSheet(selectedEmoji: _avatarKey),
+      ),
+    );
+    if (result != null) setState(() => _avatarKey = result);
+  }
+
+  Future<void> _pickCountry() async {
+    final result = await AppBottomSheet.show<Country>(
+      context,
+      builder: (_) => CountryPickerSheet(selectedCode: _country.countryCode),
+    );
+    if (result != null) setState(() => _country = result);
+  }
+
+  Future<void> _pickLanguage() async {
+    // `ContentLanguageCubit` is provided at the app root (above the
+    // Navigator), so it's already visible inside the sheet's route — only
+    // the screen-local `LanguagePickerCubit` needs forwarding explicitly.
+    await AppBottomSheet.show<void>(
+      context,
+      builder: (_) => BlocProvider.value(
+        value: context.read<LanguagePickerCubit>(),
+        child: const LanguagePickerSheet(),
+      ),
+    );
+  }
+
   String? _usernameError(AppLocalizations l10n) {
     if (!_usernameTouched) return null;
     if (_username.text.trim().length < 3) return l10n.profileUsernameTooShort;
@@ -123,18 +199,17 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
   bool get _isValid =>
       _username.text.trim().length >= 3 &&
       _isUsernameAvailable == true &&
-      _isCompleteEmail(_email.text.trim());
+      (_isVendorSignIn || _isCompleteEmail(_email.text.trim()));
 
   Future<void> _create() async {
     final l10n = AppLocalizations.of(context);
-    final (flag, name) = _country;
+    final user = context.read<SessionCubit>().state.user;
 
     await context.read<SessionCubit>().createProfile(
       username: _username.text.trim(),
-      email: _email.text.trim(),
-      avatarEmoji: _avatar,
-      countryName: name,
-      countryFlag: flag,
+      email: _isVendorSignIn ? user!.email! : _email.text.trim(),
+      avatarEmoji: _avatarKey,
+      countryCode: _country.countryCode,
     );
     if (!mounted) return;
 
@@ -152,6 +227,15 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
     final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
+    final language = context.watch<ContentLanguageCubit>().state;
+    final languageFlag = languageFlags[language.code] ?? '🌐';
+    final languageName = switch (context.watch<LanguagePickerCubit>().state) {
+      LanguagePickerLoaded(:final languages) => _findLanguage(
+        languages,
+        language.code,
+      )?.nativeName,
+      _ => null,
+    };
 
     return Scaffold(
       backgroundColor: quizoo.s0,
@@ -207,11 +291,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                 children: [
                   Center(
                     child: GestureDetector(
-                      onTap: () => setState(
-                        () => _avatarIndex =
-                            (_avatarIndex + 1) %
-                            MockPlayer.avatarChoices.length,
-                      ),
+                      onTap: _pickAvatar,
                       behavior: HitTestBehavior.opaque,
                       child: Column(
                         children: [
@@ -225,7 +305,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                               border: Border.all(color: quizoo.g, width: 3),
                             ),
                             child: Text(
-                              _avatar,
+                              _avatarKey,
                               style: AppTypography.glyph(44.sp),
                             ),
                           ),
@@ -273,20 +353,27 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                   SizedBox(height: AppSpacing.md.h),
                   ProfilePickerField(
                     label: l10n.profileCountry,
-                    value: '${_country.$1} ${_country.$2}',
-                    onTap: () => setState(
-                      () => _countryIndex =
-                          (_countryIndex + 1) % MockPlayer.countries.length,
-                    ),
+                    value: _country.name,
+                    leadingEmoji: _country.flagEmoji,
+                    onTap: _pickCountry,
                   ),
                   SizedBox(height: AppSpacing.md.h),
-                  ProfileField(
-                    label: l10n.profileEmail,
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    error: _emailError(l10n),
-                    onBlur: () => setState(() => _emailTouched = true),
+                  ProfilePickerField(
+                    label: l10n.profileLanguage,
+                    value: languageName ?? language.code.toUpperCase(),
+                    leadingEmoji: languageFlag,
+                    onTap: _pickLanguage,
                   ),
+                  if (!_isVendorSignIn) ...[
+                    SizedBox(height: AppSpacing.md.h),
+                    ProfileField(
+                      label: l10n.profileEmail,
+                      controller: _email,
+                      keyboardType: TextInputType.emailAddress,
+                      error: _emailError(l10n),
+                      onBlur: () => setState(() => _emailTouched = true),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -309,4 +396,11 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
       ),
     );
   }
+}
+
+LanguageOption? _findLanguage(List<LanguageOption> languages, String code) {
+  for (final option in languages) {
+    if (option.code == code) return option;
+  }
+  return null;
 }

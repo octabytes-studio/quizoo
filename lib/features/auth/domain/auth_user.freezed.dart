@@ -18,7 +18,11 @@ mixin _$AuthUser {
  String get id; String get displayName; AuthProvider get provider;/// The avatar the player picked on S-25, or the mascot they start with.
  String get avatarEmoji; String? get email; String? get countryName; String? get countryFlag;/// False until the player has been through S-25. A vendor sign-in skips
 /// it, so most users are complete the moment they arrive.
- bool get isProfileComplete;
+ bool get isProfileComplete;/// The vendor's own profile name, offered as S-25's starting point for a
+/// fresh Google/Apple sign-in — null once a username exists, or when the
+/// vendor (most often Apple, on a repeat authorization) never supplied
+/// one.
+ String? get suggestedDisplayName;
 /// Create a copy of AuthUser
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +35,16 @@ $AuthUserCopyWith<AuthUser> get copyWith => _$AuthUserCopyWithImpl<AuthUser>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthUser&&(identical(other.id, id) || other.id == id)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.provider, provider) || other.provider == provider)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.email, email) || other.email == email)&&(identical(other.countryName, countryName) || other.countryName == countryName)&&(identical(other.countryFlag, countryFlag) || other.countryFlag == countryFlag)&&(identical(other.isProfileComplete, isProfileComplete) || other.isProfileComplete == isProfileComplete));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthUser&&(identical(other.id, id) || other.id == id)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.provider, provider) || other.provider == provider)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.email, email) || other.email == email)&&(identical(other.countryName, countryName) || other.countryName == countryName)&&(identical(other.countryFlag, countryFlag) || other.countryFlag == countryFlag)&&(identical(other.isProfileComplete, isProfileComplete) || other.isProfileComplete == isProfileComplete)&&(identical(other.suggestedDisplayName, suggestedDisplayName) || other.suggestedDisplayName == suggestedDisplayName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,displayName,provider,avatarEmoji,email,countryName,countryFlag,isProfileComplete);
+int get hashCode => Object.hash(runtimeType,id,displayName,provider,avatarEmoji,email,countryName,countryFlag,isProfileComplete,suggestedDisplayName);
 
 @override
 String toString() {
-  return 'AuthUser(id: $id, displayName: $displayName, provider: $provider, avatarEmoji: $avatarEmoji, email: $email, countryName: $countryName, countryFlag: $countryFlag, isProfileComplete: $isProfileComplete)';
+  return 'AuthUser(id: $id, displayName: $displayName, provider: $provider, avatarEmoji: $avatarEmoji, email: $email, countryName: $countryName, countryFlag: $countryFlag, isProfileComplete: $isProfileComplete, suggestedDisplayName: $suggestedDisplayName)';
 }
 
 
@@ -51,7 +55,7 @@ abstract mixin class $AuthUserCopyWith<$Res>  {
   factory $AuthUserCopyWith(AuthUser value, $Res Function(AuthUser) _then) = _$AuthUserCopyWithImpl;
 @useResult
 $Res call({
- String id, String displayName, AuthProvider provider, String avatarEmoji, String? email, String? countryName, String? countryFlag, bool isProfileComplete
+ String id, String displayName, AuthProvider provider, String avatarEmoji, String? email, String? countryName, String? countryFlag, bool isProfileComplete, String? suggestedDisplayName
 });
 
 
@@ -68,7 +72,7 @@ class _$AuthUserCopyWithImpl<$Res>
 
 /// Create a copy of AuthUser
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? displayName = null,Object? provider = null,Object? avatarEmoji = null,Object? email = freezed,Object? countryName = freezed,Object? countryFlag = freezed,Object? isProfileComplete = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? displayName = null,Object? provider = null,Object? avatarEmoji = null,Object? email = freezed,Object? countryName = freezed,Object? countryFlag = freezed,Object? isProfileComplete = null,Object? suggestedDisplayName = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
@@ -78,7 +82,8 @@ as String,email: freezed == email ? _self.email : email // ignore: cast_nullable
 as String?,countryName: freezed == countryName ? _self.countryName : countryName // ignore: cast_nullable_to_non_nullable
 as String?,countryFlag: freezed == countryFlag ? _self.countryFlag : countryFlag // ignore: cast_nullable_to_non_nullable
 as String?,isProfileComplete: null == isProfileComplete ? _self.isProfileComplete : isProfileComplete // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,suggestedDisplayName: freezed == suggestedDisplayName ? _self.suggestedDisplayName : suggestedDisplayName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -163,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String displayName,  AuthProvider provider,  String avatarEmoji,  String? email,  String? countryName,  String? countryFlag,  bool isProfileComplete)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String displayName,  AuthProvider provider,  String avatarEmoji,  String? email,  String? countryName,  String? countryFlag,  bool isProfileComplete,  String? suggestedDisplayName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthUser() when $default != null:
-return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_that.email,_that.countryName,_that.countryFlag,_that.isProfileComplete);case _:
+return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_that.email,_that.countryName,_that.countryFlag,_that.isProfileComplete,_that.suggestedDisplayName);case _:
   return orElse();
 
 }
@@ -184,10 +189,10 @@ return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String displayName,  AuthProvider provider,  String avatarEmoji,  String? email,  String? countryName,  String? countryFlag,  bool isProfileComplete)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String displayName,  AuthProvider provider,  String avatarEmoji,  String? email,  String? countryName,  String? countryFlag,  bool isProfileComplete,  String? suggestedDisplayName)  $default,) {final _that = this;
 switch (_that) {
 case _AuthUser():
-return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_that.email,_that.countryName,_that.countryFlag,_that.isProfileComplete);case _:
+return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_that.email,_that.countryName,_that.countryFlag,_that.isProfileComplete,_that.suggestedDisplayName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +209,10 @@ return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String displayName,  AuthProvider provider,  String avatarEmoji,  String? email,  String? countryName,  String? countryFlag,  bool isProfileComplete)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String displayName,  AuthProvider provider,  String avatarEmoji,  String? email,  String? countryName,  String? countryFlag,  bool isProfileComplete,  String? suggestedDisplayName)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthUser() when $default != null:
-return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_that.email,_that.countryName,_that.countryFlag,_that.isProfileComplete);case _:
+return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_that.email,_that.countryName,_that.countryFlag,_that.isProfileComplete,_that.suggestedDisplayName);case _:
   return null;
 
 }
@@ -219,7 +224,7 @@ return $default(_that.id,_that.displayName,_that.provider,_that.avatarEmoji,_tha
 @JsonSerializable()
 
 class _AuthUser implements AuthUser {
-  const _AuthUser({required this.id, required this.displayName, required this.provider, this.avatarEmoji = '🐼', this.email, this.countryName, this.countryFlag, this.isProfileComplete = true});
+  const _AuthUser({required this.id, required this.displayName, required this.provider, this.avatarEmoji = '🐼', this.email, this.countryName, this.countryFlag, this.isProfileComplete = true, this.suggestedDisplayName});
   factory _AuthUser.fromJson(Map<String, dynamic> json) => _$AuthUserFromJson(json);
 
 @override final  String id;
@@ -233,6 +238,11 @@ class _AuthUser implements AuthUser {
 /// False until the player has been through S-25. A vendor sign-in skips
 /// it, so most users are complete the moment they arrive.
 @override@JsonKey() final  bool isProfileComplete;
+/// The vendor's own profile name, offered as S-25's starting point for a
+/// fresh Google/Apple sign-in — null once a username exists, or when the
+/// vendor (most often Apple, on a repeat authorization) never supplied
+/// one.
+@override final  String? suggestedDisplayName;
 
 /// Create a copy of AuthUser
 /// with the given fields replaced by the non-null parameter values.
@@ -247,16 +257,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthUser&&(identical(other.id, id) || other.id == id)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.provider, provider) || other.provider == provider)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.email, email) || other.email == email)&&(identical(other.countryName, countryName) || other.countryName == countryName)&&(identical(other.countryFlag, countryFlag) || other.countryFlag == countryFlag)&&(identical(other.isProfileComplete, isProfileComplete) || other.isProfileComplete == isProfileComplete));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthUser&&(identical(other.id, id) || other.id == id)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.provider, provider) || other.provider == provider)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.email, email) || other.email == email)&&(identical(other.countryName, countryName) || other.countryName == countryName)&&(identical(other.countryFlag, countryFlag) || other.countryFlag == countryFlag)&&(identical(other.isProfileComplete, isProfileComplete) || other.isProfileComplete == isProfileComplete)&&(identical(other.suggestedDisplayName, suggestedDisplayName) || other.suggestedDisplayName == suggestedDisplayName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,displayName,provider,avatarEmoji,email,countryName,countryFlag,isProfileComplete);
+int get hashCode => Object.hash(runtimeType,id,displayName,provider,avatarEmoji,email,countryName,countryFlag,isProfileComplete,suggestedDisplayName);
 
 @override
 String toString() {
-  return 'AuthUser(id: $id, displayName: $displayName, provider: $provider, avatarEmoji: $avatarEmoji, email: $email, countryName: $countryName, countryFlag: $countryFlag, isProfileComplete: $isProfileComplete)';
+  return 'AuthUser(id: $id, displayName: $displayName, provider: $provider, avatarEmoji: $avatarEmoji, email: $email, countryName: $countryName, countryFlag: $countryFlag, isProfileComplete: $isProfileComplete, suggestedDisplayName: $suggestedDisplayName)';
 }
 
 
@@ -267,7 +277,7 @@ abstract mixin class _$AuthUserCopyWith<$Res> implements $AuthUserCopyWith<$Res>
   factory _$AuthUserCopyWith(_AuthUser value, $Res Function(_AuthUser) _then) = __$AuthUserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String displayName, AuthProvider provider, String avatarEmoji, String? email, String? countryName, String? countryFlag, bool isProfileComplete
+ String id, String displayName, AuthProvider provider, String avatarEmoji, String? email, String? countryName, String? countryFlag, bool isProfileComplete, String? suggestedDisplayName
 });
 
 
@@ -284,7 +294,7 @@ class __$AuthUserCopyWithImpl<$Res>
 
 /// Create a copy of AuthUser
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? displayName = null,Object? provider = null,Object? avatarEmoji = null,Object? email = freezed,Object? countryName = freezed,Object? countryFlag = freezed,Object? isProfileComplete = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? displayName = null,Object? provider = null,Object? avatarEmoji = null,Object? email = freezed,Object? countryName = freezed,Object? countryFlag = freezed,Object? isProfileComplete = null,Object? suggestedDisplayName = freezed,}) {
   return _then(_AuthUser(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
@@ -294,7 +304,8 @@ as String,email: freezed == email ? _self.email : email // ignore: cast_nullable
 as String?,countryName: freezed == countryName ? _self.countryName : countryName // ignore: cast_nullable_to_non_nullable
 as String?,countryFlag: freezed == countryFlag ? _self.countryFlag : countryFlag // ignore: cast_nullable_to_non_nullable
 as String?,isProfileComplete: null == isProfileComplete ? _self.isProfileComplete : isProfileComplete // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,suggestedDisplayName: freezed == suggestedDisplayName ? _self.suggestedDisplayName : suggestedDisplayName // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

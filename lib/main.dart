@@ -36,35 +36,17 @@ Future<void> main() async {
   // every backend call gated on auth.uid() would fail regardless of how long
   // we waited here.
   if (Supabase.instance.client.auth.currentSession == null) {
-    final stopwatch = Stopwatch()..start();
-    debugPrint('[diag] SUPABASE_URL="$_supabaseUrl"');
-    debugPrint(
-      '[diag] SUPABASE_ANON_KEY len=${_supabaseAnonKey.length} '
-      'starts=${_supabaseAnonKey.isEmpty ? "" : _supabaseAnonKey.substring(0, _supabaseAnonKey.length < 12 ? _supabaseAnonKey.length : 12)}',
-    );
-    debugPrint('[diag] starting signInAnonymously at t=0ms');
     try {
       await Supabase.instance.client.auth.signInAnonymously().timeout(
         const Duration(seconds: 45),
       );
-      debugPrint(
-        '[diag] signInAnonymously SUCCEEDED at t=${stopwatch.elapsedMilliseconds}ms',
-      );
     } on TimeoutException {
-      debugPrint(
-        '[diag] signInAnonymously TIMED OUT (45s) at t=${stopwatch.elapsedMilliseconds}ms — continuing without a session.',
-      );
-    } on AuthException catch (error, stack) {
-      debugPrint(
-        '[diag] signInAnonymously AuthException at t=${stopwatch.elapsedMilliseconds}ms: '
-        '${error.runtimeType} message="${error.message}" statusCode=${error is AuthApiException ? error.statusCode : "n/a"}',
-      );
-      debugPrint('[diag] stack: $stack');
-    } catch (error, stack) {
-      debugPrint(
-        '[diag] signInAnonymously UNEXPECTED ${error.runtimeType} at t=${stopwatch.elapsedMilliseconds}ms: $error',
-      );
-      debugPrint('[diag] stack: $stack');
+      // Continuing without a session — every backend call gated on
+      // auth.uid() will fail, same as a genuinely dead network.
+    } on AuthException {
+      // Continuing without a session — see the timeout branch above.
+    } catch (_) {
+      // Anything else unexpected — same fallback, never block startup on it.
     }
   }
 

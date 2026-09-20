@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
+import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 
 /// One labelled field on S-25.
@@ -139,11 +140,16 @@ class ProfilePickerField extends StatelessWidget {
     required this.value,
     required this.onTap,
     super.key,
+    this.leadingEmoji,
   });
 
   final String label;
   final String value;
   final VoidCallback onTap;
+
+  /// A flag or glyph shown before [value] — the country/language pickers'
+  /// own emoji, so the row reads at a glance rather than as plain text.
+  final String? leadingEmoji;
 
   @override
   Widget build(BuildContext context) {
@@ -168,6 +174,10 @@ class ProfilePickerField extends StatelessWidget {
             ),
             child: Row(
               children: [
+                if (leadingEmoji != null) ...[
+                  Text(leadingEmoji!, style: AppTypography.glyph(19.sp)),
+                  SizedBox(width: AppSpacing.sm.w),
+                ],
                 Expanded(
                   child: Text(
                     value,

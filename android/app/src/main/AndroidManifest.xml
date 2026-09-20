@@ -40,6 +40,15 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- com.quizoo.play://login-callback above is a Supabase OAuth/email-OTP
+             callback only, handled entirely by app_links/supabase_flutter —
+             Flutter's own default deep-link-to-route forwarding must stay off,
+             or go_router also tries to navigate to it as an app route (no
+             matching GoRoute) and wipes out whatever screen/sheet was on top
+             when the vendor sign-in browser redirects back in. -->
+        <meta-data
+            android:name="flutter_deeplinking_enabled"
+            android:value="false" />
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713" />

@@ -27,8 +27,10 @@ import 'package:quizoo/l10n/app_localizations.dart';
 ///   a failure. That gating lives in `AuthRepository`, not here.
 /// * The vendor buttons follow each vendor's required chrome exactly.
 ///
-/// Sign-in is mocked end to end: no token, no network, no vendor SDK.
-class SaveProgressSheet extends StatelessWidget {
+/// A vendor sign-in only *launches* here — it resolves later via
+/// [SessionCubit]'s deep-link listener, so this widget waits for that
+/// resolution rather than treating the browser opening as success.
+class SaveProgressSheet extends StatefulWidget {
   const SaveProgressSheet({
     required this.score,
     required this.levelNumber,
@@ -54,12 +56,23 @@ class SaveProgressSheet extends StatelessWidget {
     dayStreak: MockPlayer.dayStreak,
   );
 
+  @override
+  State<SaveProgressSheet> createState() => _SaveProgressSheetState();
+}
+
+class _SaveProgressSheetState extends State<SaveProgressSheet> {
+  /// Set while waiting for a vendor's OAuth browser to resolve, so the
+  /// [BlocConsumer] listener below knows the resulting [SessionSignedIn] or
+  /// [SessionFailure] is this sheet's to react to — and not, say, the
+  /// separate synchronous completion of the email route.
+  bool _awaitingVendorResult = false;
+
   Future<void> _signIn(BuildContext context, AuthProvider provider) async {
     final session = context.read<SessionCubit>();
-    final l10n = AppLocalizations.of(context);
 
     if (provider == AuthProvider.email) {
-      // Email is the only route with a profile still to fill in.
+      // Email is the only route with a profile still to fill in, and it
+      // resolves synchronously — no deep link to wait for.
       await session.startEmailSignIn();
       if (!context.mounted) return;
       context.pop();
@@ -67,15 +80,46 @@ class SaveProgressSheet extends StatelessWidget {
       return;
     }
 
+    setState(() => _awaitingVendorResult = true);
+    // Only launches the OAuth browser. Actual success or failure arrives
+    // later through the BlocConsumer listener once the deep link lands.
     await session.signInWithVendor(provider);
-    if (!context.mounted) return;
-    context.pop();
-    AppSnackbar.show(
-      context,
-      title: l10n.saveProgressSaved,
-      intent: SnackbarIntent.success,
-      emoji: '✅',
-    );
+  }
+
+  void _onSessionChange(BuildContext context, SessionState state) {
+    if (!_awaitingVendorResult) return;
+    final l10n = AppLocalizations.of(context);
+
+    switch (state) {
+      case SessionSignedIn(:final user):
+        setState(() => _awaitingVendorResult = false);
+        context.pop();
+        if (!user.isProfileComplete) {
+          // A vendor never hands back a `profiles.username` — that column
+          // stays null for every provider alike (there's no per-vendor
+          // default), so Google/Apple need S-25 exactly as much as the email
+          // route already gets it, just via a different entry point.
+          context.push(AppRoutes.profileCreation);
+          return;
+        }
+        AppSnackbar.show(
+          context,
+          title: l10n.saveProgressSaved,
+          intent: SnackbarIntent.success,
+          emoji: '✅',
+        );
+      case SessionFailure():
+        setState(() => _awaitingVendorResult = false);
+        AppSnackbar.show(
+          context,
+          title: l10n.saveProgressFailed,
+          message: l10n.commonRetry,
+          intent: SnackbarIntent.error,
+        );
+      case SessionGuest():
+      case SessionAuthenticating():
+        break;
+    }
   }
 
   @override
@@ -85,7 +129,8 @@ class SaveProgressSheet extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final localeName = Localizations.localeOf(context).toLanguageTag();
 
-    return BlocBuilder<SessionCubit, SessionState>(
+    return BlocConsumer<SessionCubit, SessionState>(
+      listener: _onSessionChange,
       builder: (context, session) {
         final isBusy = session is SessionAuthenticating;
 
@@ -102,13 +147,19 @@ class SaveProgressSheet extends StatelessWidget {
               ),
               SizedBox(height: 6.h),
               Text(
-                l10n.saveProgressTitle(AppFormat.number(score, localeName)),
+                l10n.saveProgressTitle(
+                  AppFormat.number(widget.score, localeName),
+                ),
                 textAlign: TextAlign.center,
                 style: textTheme.headlineLarge,
               ),
               SizedBox(height: 5.h),
               Text(
-                l10n.saveProgressBody(percentThrough, levelNumber, dayStreak),
+                l10n.saveProgressBody(
+                  widget.percentThrough,
+                  widget.levelNumber,
+                  widget.dayStreak,
+                ),
                 textAlign: TextAlign.center,
                 style: textTheme.bodySmall,
               ),

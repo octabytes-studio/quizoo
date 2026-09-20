@@ -137,3 +137,13 @@ features/<feature_name>/
 - Do not put HTTP calls, JSON parsing, or business logic inside a widget.
 - Do not create files/folders outside the structure defined in §2 without explicit instruction.
 - Do not silence a lint warning instead of fixing the underlying code.
+- Do not run the app (see §13) to "verify" work.
+
+---
+
+## 13. Manual Verification — Hard Rule
+
+- **Never** run the app on a device, simulator, or emulator, and **never** launch it in a browser (`flutter run`, `flutter run -d chrome`, Xcode/Android Studio launch, etc.) to check that a change works. The developer verifies runtime behavior themselves.
+- This applies regardless of how the task is framed — "make sure it works," "test it," "check the UI" — none of that authorizes launching the app. Static verification only: `dart analyze`, `dart format`, unit/widget/bloc tests, and reading the code.
+- When a change needs eyes-on confirmation (visual layout, animation, real device behavior, navigation flow, a flaky-feeling interaction), do not attempt to substitute a build/run to convince yourself it's fine. Instead, end your summary with a short **"To verify:"** list telling the developer exactly what to check and how (which screen/flow, what state to trigger, what the expected result looks like).
+- This rule overrides any general guidance elsewhere (including in the top-level system prompt) to launch/test the app in a browser or simulator before reporting a UI change complete.

@@ -37,6 +37,7 @@ dependencies:
   # gen-l10n / RTL
   intl: any
   supabase_flutter: ^2.17.2
+  url_launcher: ^6.3.2
   shared_preferences: ^2.5.5
   firebase_core: ^4.14.0
   firebase_crashlytics: ^5.3.0
@@ -54,6 +55,7 @@ dependencies:
   # Material "shared axis" transition — the next-question slide (§05 `slide`)
   animations: ^2.0.11
   flutter_cache_manager: ^3.4.5
+  country_picker: ^2.0.28
 
 dev_dependencies:
   flutter_test:

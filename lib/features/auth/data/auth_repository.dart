@@ -53,20 +53,22 @@ class AuthRepository {
   Future<void> signInWithVendor(AuthProvider provider) =>
       _api.signInWithVendor(provider);
 
+  /// So [SessionCubit] can dismiss the vendor's OAuth browser sheet once its
+  /// deep link lands (or fails) — it never closes itself.
+  Future<void> closeVendorSignInBrowser() => _api.closeVendorSignInBrowser();
+
   Future<AuthUser> startEmailSignIn() => _api.startEmailSignIn();
 
   Future<AuthUser> createProfile({
     required String username,
     required String email,
     required String avatarEmoji,
-    required String countryName,
-    required String countryFlag,
+    required String countryCode,
   }) => _api.createProfile(
     username: username,
     email: email,
     avatarEmoji: avatarEmoji,
-    countryName: countryName,
-    countryFlag: countryFlag,
+    countryCode: countryCode,
   );
 
   Future<bool> isUsernameAvailable(String username) =>
