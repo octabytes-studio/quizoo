@@ -7,6 +7,7 @@ import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/models/level.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
+import 'package:quizoo/core/router/app_route_observer.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_elevation.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
@@ -61,15 +62,65 @@ class LevelMapScreen extends StatelessWidget {
             subcategoryId: subcategoryId,
             locale: locale,
           ),
-      child: _LevelMapView(initialBriefLevelNumber: initialBriefLevelNumber),
+      child: _LevelMapView(
+        categoryId: categoryId,
+        subcategoryId: subcategoryId,
+        initialBriefLevelNumber: initialBriefLevelNumber,
+      ),
     );
   }
 }
 
-class _LevelMapView extends StatelessWidget {
-  const _LevelMapView({this.initialBriefLevelNumber});
+class _LevelMapView extends StatefulWidget {
+  const _LevelMapView({
+    required this.categoryId,
+    required this.subcategoryId,
+    this.initialBriefLevelNumber,
+  });
 
+  final String categoryId;
+  final String subcategoryId;
   final int? initialBriefLevelNumber;
+
+  @override
+  State<_LevelMapView> createState() => _LevelMapViewState();
+}
+
+class _LevelMapViewState extends State<_LevelMapView> with RouteAware {
+  // Only the very first load should reopen S-09's brief sheet; a later
+  // reload triggered by [didPopNext] must not reopen it.
+  late int? _initialBriefLevelNumber = widget.initialBriefLevelNumber;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute<dynamic>) {
+      appRouteObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    appRouteObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // The play screen reaches its result screen with `pushReplacement`, so
+  // this map's route is never popped by that hand-off — it just sits,
+  // still mounted, directly beneath the result screen. `LevelMapCubit.load`
+  // otherwise only ever runs once, in `BlocProvider.create`, so without
+  // this the map keeps showing pre-quiz progress after the player pops
+  // back from results.
+  @override
+  void didPopNext() {
+    _initialBriefLevelNumber = null;
+    context.read<LevelMapCubit>().load(
+      categoryId: widget.categoryId,
+      subcategoryId: widget.subcategoryId,
+      locale: context.read<ContentLanguageCubit>().state.code,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +138,7 @@ class _LevelMapView extends StatelessWidget {
             LevelMapEmpty(:final map) => _LevelMapEmpty(map: map),
             LevelMapLoaded(:final map) => _LevelMapLoaded(
               map: map,
-              initialBriefLevelNumber: initialBriefLevelNumber,
+              initialBriefLevelNumber: _initialBriefLevelNumber,
             ),
           },
         ),

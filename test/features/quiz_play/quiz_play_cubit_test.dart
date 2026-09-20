@@ -644,7 +644,7 @@ void main() {
       });
     });
 
-    test('a timeout costs the question but never a heart (§19)', () {
+    test('a timeout costs the question and a heart, like a wrong answer', () {
       stubQuestions();
       fakeAsync((async) {
         final cubit = buildCubit();
@@ -656,11 +656,35 @@ void main() {
         async.elapse(const Duration(seconds: 21));
 
         final state = cubit.state as QuizPlayInProgress;
-        expect(state.feedback, isA<TimeoutFeedback>());
+        final feedback = state.feedback as TimeoutFeedback;
         expect(state.run.answers.single.outcome, AnswerOutcome.timedOut);
-        // The whole point of the branch: hearts are untouched.
-        expect(state.run.heartsRemaining, 3);
+        expect(state.run.heartsRemaining, 2);
+        expect(feedback.heartsRemaining, 2);
         expect(state.run.currentStreak, 0);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
+
+    test('three timeouts in a row open S-19 rather than ending the run', () {
+      stubQuestions();
+      fakeAsync((async) {
+        final cubit = buildCubit();
+        unawaited(start(cubit));
+        async.flushMicrotasks();
+        cubit.skipCountdown();
+
+        for (var attempt = 0; attempt < 2; attempt++) {
+          async.elapse(const Duration(seconds: 21));
+          cubit.next();
+          async.flushMicrotasks();
+        }
+        async.elapse(const Duration(seconds: 21));
+
+        final state = cubit.state;
+        expect(state, isA<QuizPlayOutOfLives>());
+        expect((state as QuizPlayOutOfLives).underlying.run.heartsRemaining, 0);
 
         unawaited(cubit.close());
         async.flushMicrotasks();
@@ -913,6 +937,70 @@ void main() {
           Scoring.breakdown(state.run).fold<int>(0, (a, b) => a + b.value),
           Scoring.total(state.run),
         );
+      },
+    );
+
+    late bool isLastQuestionAtNineteen;
+    blocTest<QuizPlayCubit, QuizPlayState>(
+      'isLastQuestion only flips true on the twentieth verdict, not the '
+      "nineteenth's",
+      setUp: stubQuestions,
+      build: () => buildCubit(),
+      act: (cubit) async {
+        await start(cubit);
+        cubit.skipCountdown();
+        for (var i = 0; i < MockQuestions.questionsPerLevel - 2; i++) {
+          final state = cubit.state as QuizPlayInProgress;
+          cubit
+            ..answer(state.question.correctIndex)
+            ..next();
+        }
+        // Now on the nineteenth question — answering it must not yet flag
+        // the banner as the level's last.
+        final nineteenth = cubit.state as QuizPlayInProgress;
+        cubit.answer(nineteenth.question.correctIndex);
+        isLastQuestionAtNineteen =
+            (cubit.state as QuizPlayInProgress).isLastQuestion;
+        cubit.next();
+        final twentieth = cubit.state as QuizPlayInProgress;
+        cubit.answer(twentieth.question.correctIndex);
+      },
+      verify: (cubit) {
+        expect(isLastQuestionAtNineteen, isFalse);
+        final state = cubit.state as QuizPlayInProgress;
+        expect(state.run.answers.length, MockQuestions.questionsPerLevel);
+        expect(state.isLastQuestion, isTrue);
+      },
+    );
+
+    blocTest<QuizPlayCubit, QuizPlayState>(
+      'running out of hearts on the final question finishes the run instead '
+      'of opening S-19',
+      setUp: stubQuestions,
+      build: () => buildCubit(),
+      act: (cubit) async {
+        await start(cubit);
+        cubit.skipCountdown();
+        var wrongsSpent = 0;
+        while (cubit.state is QuizPlayInProgress) {
+          final state = cubit.state as QuizPlayInProgress;
+          final isFinalQuestion =
+              state.run.answers.length == MockQuestions.questionsPerLevel - 1;
+          final answerWrong = wrongsSpent < 2 || isFinalQuestion;
+          if (answerWrong) wrongsSpent++;
+          cubit.answer(
+            answerWrong
+                ? (state.question.correctIndex + 1) %
+                      state.question.options.length
+                : state.question.correctIndex,
+          );
+          cubit.next();
+        }
+      },
+      verify: (cubit) {
+        final state = cubit.state as QuizPlayEnded;
+        expect(state.run.heartsRemaining, 0);
+        expect(state.run.ending, RunEnding.finished);
       },
     );
   });

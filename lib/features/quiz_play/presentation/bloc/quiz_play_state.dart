@@ -82,17 +82,20 @@ final class WrongFeedback extends QuestionFeedback {
 
 /// The clock ran out with nothing selected.
 ///
-/// **Not a wrong answer**: §19 says a timeout costs the question but not a
-/// heart. It is rendered like S-13 because the bible shows no separate frame
-/// for it, and that interpretation is flagged in plan 002's edge cases rather
-/// than assumed silently.
+/// Costs a heart exactly like [WrongFeedback] — a timeout is not a free
+/// pass, it is simply an answer of "nothing". It is rendered like S-13
+/// because the bible shows no separate frame for it.
 final class TimeoutFeedback extends QuestionFeedback {
-  const TimeoutFeedback({required this.brokeStreak});
+  const TimeoutFeedback({
+    required this.heartsRemaining,
+    required this.brokeStreak,
+  });
 
+  final int heartsRemaining;
   final bool brokeStreak;
 
   @override
-  List<Object?> get props => [brokeStreak];
+  List<Object?> get props => [heartsRemaining, brokeStreak];
 }
 
 /// The play surface's states.
@@ -215,7 +218,12 @@ final class QuizPlayInProgress extends QuizPlayState {
       isAwaitingAnswer && secondsRemaining <= dangerThresholdSeconds;
 
   /// True on the twentieth question, which changes the banner's button.
-  bool get isLastQuestion => run.questionNumber >= run.questionCount;
+  ///
+  /// Deliberately checked against `answers.length`, not [QuizRun.questionNumber]
+  /// (`answers.length + 1`) — by the time a verdict banner is up, the just-
+  /// answered question is already appended to `run.answers`, so `+ 1` would
+  /// flag the *second-to-last* question as last one banner too early.
+  bool get isLastQuestion => run.answers.length >= run.questionCount;
 
   /// §09: the arena turns crimson for the last five seconds.
   static const int dangerThresholdSeconds = 5;

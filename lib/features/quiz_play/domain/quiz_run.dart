@@ -7,10 +7,9 @@ part 'quiz_run.g.dart';
 
 /// How a question was resolved.
 ///
-/// [timedOut] is deliberately distinct from [wrong]: §19 is explicit that "a
-/// timeout costs the question but not a heart, so a cautious player can
-/// survive on knowledge alone". Collapsing the two is the single easiest bug
-/// to write in this feature.
+/// [timedOut] is kept distinct from [wrong] for the review list and result
+/// copy (S-22 tells the two apart), even though both cost a heart the same
+/// way — see `QuizPlayCubit._resolveTimeout`.
 enum AnswerOutcome { correct, wrong, timedOut }
 
 /// How a run ended.

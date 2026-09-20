@@ -131,10 +131,9 @@ class _QuizPlayViewState extends State<_QuizPlayView> {
   @override
   void initState() {
     super.initState();
-    // **The pause trigger.** The bible's HUD shows no pause affordance
-    // (plan 002, Assumption 2), so rather than invent chrome the design does
-    // not have, pause is reached the two ways the platform already offers:
-    // a back gesture (the `PopScope` below) and the app being backgrounded.
+    // **The pause trigger.** Besides the HUD's own pause button, the run
+    // also pauses on a back gesture (the `PopScope` below) and on the app
+    // being backgrounded, so nothing is lost to either.
     _lifecycleListener = AppLifecycleListener(
       onInactive: () => context.read<QuizPlayCubit>().pause(),
     );
@@ -413,7 +412,7 @@ class _QuestionView extends StatelessWidget {
         QuizHud(
           run: state.run,
           isAudioOn: state.isAudioOn,
-          onQuitPressed: cubit.requestQuit,
+          onPausePressed: cubit.pause,
           onReportPressed: () => _openReportSheet(context),
           onToggleAudioPressed: cubit.toggleQuestionAudio,
         ),
@@ -473,10 +472,10 @@ class _QuestionView extends StatelessWidget {
                     ),
                     child: Text(
                       state.question.text,
-                      // Up to three lines, then it truncates rather than
-                      // pushing the options off the screen.
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
+                      // The full question always renders — the options
+                      // below live in their own `Expanded` scroll view, so a
+                      // long question shrinking that space never overflows
+                      // the arena.
                       style: textTheme.headlineSmall!.copyWith(
                         color: arena.onArena,
                       ),

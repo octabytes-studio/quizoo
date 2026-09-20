@@ -484,9 +484,7 @@
     "placeholders": { "points": { "type": "String", "example": "395" } }
   },
   "feedbackHeartLost": "−1 ❤️",
-  "@feedbackHeartLost": { "description": "S-13 cost, top-right of the banner." },
-  "feedbackNoHeartLost": "No heart lost",
-  "@feedbackNoHeartLost": { "description": "Timeout banner cost line — a timeout costs the question, not a heart (§19)." },
+  "@feedbackHeartLost": { "description": "S-13 / timeout banner cost, top-right of the banner." },
   "feedbackNext": "Next question",
   "@feedbackNext": { "description": "S-12 / S-13 banner action." },
   "feedbackFinish": "See results",

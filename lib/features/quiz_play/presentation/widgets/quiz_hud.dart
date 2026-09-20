@@ -11,14 +11,14 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// `.hud` + `.qmeta` — the chrome above every question, in every state.
 ///
 /// It mirrors wholesale under an RTL locale without a single conditional: the
-/// dot strip is a [Row], so it fills right-to-left, and the close button and
-/// streak badge swap ends, because [Directionality] already decides what
-/// "start" and "end" mean here.
+/// dot strip and icon row are each a [Row], so they fill right-to-left, and
+/// the pause button and streak badge swap ends, because [Directionality]
+/// already decides what "start" and "end" mean here.
 class QuizHud extends StatelessWidget {
   const QuizHud({
     required this.run,
     required this.isAudioOn,
-    required this.onQuitPressed,
+    required this.onPausePressed,
     required this.onReportPressed,
     required this.onToggleAudioPressed,
     super.key,
@@ -30,11 +30,10 @@ class QuizHud extends StatelessWidget {
   /// §4.2), unlike `PauseSheet`'s separate, still-inert sound toggle.
   final bool isAudioOn;
 
-  /// Opens S-18. There is deliberately **no pause button here**: the bible's
-  /// HUD does not have one, and inventing chrome the design does not show
-  /// would be a silent deviation. Pause is reached the two ways the platform
-  /// already offers — see `QuizPlayScreen`.
-  final VoidCallback onQuitPressed;
+  /// Opens S-17's pause sheet. Quitting is no longer a direct HUD action —
+  /// it is reached from inside the pause sheet, so a stray tap can no longer
+  /// jump straight to the quit confirmation.
+  final VoidCallback onPausePressed;
 
   /// Opens S-51 (plan 004) — the "⋯" overflow next to the streak badge.
   final VoidCallback onReportPressed;
@@ -43,8 +42,9 @@ class QuizHud extends StatelessWidget {
   /// the current one and reveals immediately.
   final VoidCallback onToggleAudioPressed;
 
-  /// `.play .hud .x` — 34×34.
-  static const double closeButtonSize = 34;
+  /// `.play .hud` icon chrome — 34×34, shared by the pause, audio and
+  /// report buttons, and matched by the streak badge's height.
+  static const double chromeButtonSize = 34;
 
   @override
   Widget build(BuildContext context) {
@@ -56,16 +56,31 @@ class QuizHud extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(18.w, 2.h, 18.w, 10.h),
+          padding: EdgeInsets.fromLTRB(18.w, 2.h, 18.w, 8.h),
           child: Row(
             children: [
               _ChromeButton(
+                // The glyph reads as a close/✕ mark; it pauses rather than
+                // quitting outright — quitting now lives one step further
+                // in, inside the pause sheet this opens.
                 glyph: '✕',
-                semanticLabel: l10n.quizQuitLabel,
-                onTap: onQuitPressed,
+                semanticLabel: l10n.quizPauseLabel,
+                onTap: onPausePressed,
               ),
               SizedBox(width: 10.w),
-              Expanded(child: _ProgressDots(run: run)),
+              // Lives are hearts, never a bare number (S-11) — sitting where
+              // the dot strip used to, now that the dots have their own row.
+              Expanded(
+                child: Center(
+                  child: Semantics(
+                    label: '${run.heartsRemaining}',
+                    child: Text(
+                      _hearts(run),
+                      style: AppTypography.glyph(15.sp),
+                    ),
+                  ),
+                ),
+              ),
               SizedBox(width: 10.w),
               _StreakBadge(streak: run.currentStreak),
               SizedBox(width: 10.w),
@@ -86,6 +101,10 @@ class QuizHud extends StatelessWidget {
           ),
         ),
         Padding(
+          padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 8.h),
+          child: _ProgressDots(run: run),
+        ),
+        Padding(
           padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 10.h),
           // The two text cells flex rather than sitting at their natural
           // width: a five-figure score late in a level is wider than the gap
@@ -102,11 +121,6 @@ class QuizHud extends StatelessWidget {
                     run.questionCount,
                   ),
                 ),
-              ),
-              // Lives are hearts, never a bare number (S-11).
-              Semantics(
-                label: '${run.heartsRemaining}',
-                child: Text(_hearts(run), style: AppTypography.glyph(11.5.sp)),
               ),
               Expanded(
                 child: Text.rich(
@@ -204,7 +218,9 @@ class _StreakBadge extends StatelessWidget {
     return Opacity(
       opacity: streak == 0 ? 0.4 : 1,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+        height: QuizHud.chromeButtonSize.w,
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 10.w),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.16),
           borderRadius: BorderRadius.circular(AppRadius.pill.r),
@@ -245,7 +261,7 @@ class _MetaText extends StatelessWidget {
   }
 }
 
-/// `.play .hud .x` — a translucent square on the arena.
+/// `.play .hud` icon — a translucent square on the arena.
 class _ChromeButton extends StatelessWidget {
   const _ChromeButton({
     required this.glyph,
@@ -268,8 +284,8 @@ class _ChromeButton extends StatelessWidget {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          width: QuizHud.closeButtonSize.w,
-          height: QuizHud.closeButtonSize.w,
+          width: QuizHud.chromeButtonSize.w,
+          height: QuizHud.chromeButtonSize.w,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: arena.chrome,

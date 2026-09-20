@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/router/app_route_observer.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
@@ -70,6 +71,7 @@ abstract final class AppRouter {
     return GoRouter(
       navigatorKey: rootNavigatorKey,
       initialLocation: AppRoutes.splash,
+      observers: [appRouteObserver],
       routes: [
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) =>
