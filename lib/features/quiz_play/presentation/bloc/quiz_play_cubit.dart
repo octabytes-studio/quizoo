@@ -32,8 +32,10 @@ part 'quiz_play_state.dart';
 /// * **The clock does not start until "GO" has left the screen.** The first
 ///   question's ticker is started by [_beginQuestion], which the countdown
 ///   only reaches after its final beat.
-/// * **A timeout is not a wrong answer.** It costs the question, never a
-///   heart (§19), so a careful player can survive on knowledge alone.
+/// * **A timeout costs a heart, exactly like a wrong answer.** [_resolveWrong]
+///   and [_resolveTimeout] both decrement `heartsRemaining` (and both skip a
+///   daily run's decorative hearts) — the clock running out is not a free
+///   pass.
 /// * **Pausing freezes the clock the instant the sheet begins animating**,
 ///   not when it lands — so [pause] stops the ticker synchronously, before
 ///   the sheet's entrance is even scheduled.
@@ -621,8 +623,14 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
     if (_audioOn) unawaited(_soundEffects.playWrong());
 
-    if (!run.isDaily && hearts <= 0) {
-      // Hearts hit zero: S-19 offers a way back rather than ending the run.
+    // Hearts hit zero: S-19 offers a way back rather than ending the run —
+    // but only when there is a run left to come back to. On the level's
+    // final question there is nothing left to spend a rescued heart on, so
+    // the wall would just be blocking the way to a result the player already
+    // earned by reaching the last question.
+    if (!run.isDaily &&
+        hearts <= 0 &&
+        next.answers.length < next.questionCount) {
       emit(QuizPlayOutOfLives(underlying: resolved));
       return;
     }
@@ -631,10 +639,13 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _scheduleAutoAdvance();
   }
 
-  /// The clock ran out. Costs the question, **not** a heart (§19).
+  /// The clock ran out with nothing selected. Costs a heart exactly like a
+  /// wrong answer — see [_resolveWrong], whose daily/out-of-lives handling
+  /// this mirrors.
   void _resolveTimeout(QuizPlayInProgress current) {
     _stopClock();
     final run = current.run;
+    final hearts = run.isDaily ? run.heartsRemaining : run.heartsRemaining - 1;
     final next = run.copyWith(
       answers: [
         ...run.answers,
@@ -644,15 +655,28 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
         ),
       ],
       currentStreak: 0,
+      heartsRemaining: hearts,
     );
 
-    emit(
-      current.copyWith(
-        run: next,
-        secondsRemaining: 0,
-        feedback: TimeoutFeedback(brokeStreak: run.currentStreak > 0),
+    final resolved = current.copyWith(
+      run: next,
+      secondsRemaining: 0,
+      feedback: TimeoutFeedback(
+        heartsRemaining: hearts,
+        brokeStreak: run.currentStreak > 0,
       ),
     );
+
+    // See _resolveWrong: no wall on the final question, since there is
+    // nothing left to spend a rescued heart on.
+    if (!run.isDaily &&
+        hearts <= 0 &&
+        next.answers.length < next.questionCount) {
+      emit(QuizPlayOutOfLives(underlying: resolved));
+      return;
+    }
+
+    emit(resolved);
     _scheduleAutoAdvance();
   }
 

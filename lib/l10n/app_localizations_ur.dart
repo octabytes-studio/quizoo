@@ -511,9 +511,6 @@ class AppLocalizationsUr extends AppLocalizations {
   String get feedbackHeartLost => '−۱ ❤️';
 
   @override
-  String get feedbackNoHeartLost => 'کوئی جان کم نہیں ہوئی';
-
-  @override
   String get feedbackNext => 'اگلا سوال';
 
   @override

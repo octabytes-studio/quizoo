@@ -244,9 +244,11 @@ void main() {
         tester.element(find.byType(QuizPlayScreen)),
       );
 
-      // The HUD's ✕ opens S-18; confirming ends the run as a quit, never a
-      // completion.
+      // The HUD's pause button opens S-17; its quit line item opens S-18,
+      // and confirming ends the run as a quit, never a completion.
       await tester.tap(find.text('✕'));
+      await tester.pump();
+      await tester.tap(find.text(playL10n.pauseQuit));
       await tester.pump();
       await tester.tap(find.text(playL10n.quitConfirm));
       await tester.pump();

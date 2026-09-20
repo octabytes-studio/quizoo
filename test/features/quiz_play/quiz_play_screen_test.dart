@@ -269,14 +269,31 @@ void main() {
       }
 
       expect(tester.takeException(), isNull);
-      await tester.pump(const Duration(seconds: 40));
+      // Two 20-second pumps rather than one 40-second jump: a heart now
+      // costs the same on a timeout as on a wrong answer, so the found
+      // question's own clock can run out and open S-19 during this
+      // trailing settle. Splitting the jump gives `flutter_animate`'s
+      // zero-duration restart timer (armed when S-19's dialog mounts) a
+      // frame to fire in before the tree is torn down, rather than leaving
+      // it pending across a single large jump.
+      await tester.pump(const Duration(seconds: 20));
+      await tester.pump(const Duration(seconds: 20));
     });
 
-    testWidgets('S-18 quit: the dialog quotes the run and never pre-focuses '
-        'the destructive action', (tester) async {
+    testWidgets('S-18 quit: reached from the pause sheet, the dialog quotes '
+        'the run and never pre-focuses the destructive action', (tester) async {
       await pumpToQuestion(tester);
 
+      // The HUD's pause button opens the pause sheet; quit is one of its
+      // line items, not a direct HUD action.
       await tester.tap(find.text('✕'));
+      await tester.pump();
+
+      expect(find.byType(PauseSheet), findsOneWidget);
+      final sheetL10n = AppLocalizations.of(
+        tester.element(find.byType(PauseSheet)),
+      );
+      await tester.tap(find.text(sheetL10n.pauseQuit));
       await tester.pump();
 
       expect(find.byType(QuitConfirmationDialog), findsOneWidget);
@@ -295,15 +312,40 @@ void main() {
       await tester.pump(const Duration(seconds: 30));
     });
 
-    testWidgets('S-17 pause: a back gesture freezes the clock', (tester) async {
+    testWidgets('S-17 pause: the HUD pause button freezes the clock', (
+      tester,
+    ) async {
       await pumpToQuestion(tester);
 
       final ringBefore = tester
           .widget<TimerRing>(find.byType(TimerRing))
           .secondsRemaining;
 
-      // The pause trigger: a system back gesture, since the HUD has no pause
-      // button of its own.
+      await tester.tap(find.text('✕'));
+      await tester.pump();
+
+      expect(find.byType(PauseSheet), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 5));
+      expect(
+        tester.widget<TimerRing>(find.byType(TimerRing)).secondsRemaining,
+        ringBefore,
+      );
+
+      await tester.pump(const Duration(seconds: 30));
+    });
+
+    testWidgets('S-17 pause: a back gesture also freezes the clock', (
+      tester,
+    ) async {
+      await pumpToQuestion(tester);
+
+      final ringBefore = tester
+          .widget<TimerRing>(find.byType(TimerRing))
+          .secondsRemaining;
+
+      // A system back gesture pauses too, so the run is never lost to a
+      // stray swipe.
       await tester.binding.handlePopRoute();
       await tester.pump();
 

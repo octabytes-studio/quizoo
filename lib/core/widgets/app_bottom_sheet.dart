@@ -47,7 +47,11 @@ class AppBottomSheet extends StatelessWidget {
       isScrollControlled: isScrollControlled,
       isDismissible: isDismissible,
       enableDrag: isDismissible,
-      useSafeArea: true,
+      // The sheet itself accounts for the bottom safe-area inset (see
+      // build() below) so its rounded card reaches the true screen edge.
+      // Letting the framework also wrap the route in SafeArea would pad
+      // with transparent, scrim-coloured space *outside* that card,
+      // leaving a visible gap beneath it.
       backgroundColor: Colors.transparent,
       barrierColor: quizoo.ov,
       elevation: 0,
@@ -70,6 +74,17 @@ class AppBottomSheet extends StatelessWidget {
     final quizoo = context.quizoo;
     final textTheme = Theme.of(context).textTheme;
 
+    // The design's bottom padding and the device's safe-area inset (home
+    // indicator, gesture bar) both reserve breathing room at the bottom —
+    // take whichever is larger instead of stacking them, or a sheet on a
+    // notched device ends up with the inset *plus* the full design padding
+    // as dead space beneath its content.
+    final safeAreaBottom = MediaQuery.paddingOf(context).bottom;
+    final designBottomPadding = AppSpacing.xl.h + 2.h;
+    final bottomPadding = safeAreaBottom > designBottomPadding
+        ? safeAreaBottom
+        : designBottomPadding;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: quizoo.s1,
@@ -78,8 +93,9 @@ class AppBottomSheet extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
+        bottom: false,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(22.w, 10.h, 22.w, AppSpacing.xl.h + 2.h),
+          padding: EdgeInsets.fromLTRB(22.w, 10.h, 22.w, bottomPadding),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -42,13 +42,7 @@ class FeedbackBanner extends StatelessWidget {
         l10n.feedbackPoints(AppFormat.number(pointsEarned, localeName)),
       ),
       WrongFeedback() => ('💔', l10n.feedbackWrong, l10n.feedbackHeartLost),
-      TimeoutFeedback() => (
-        '⏳',
-        l10n.feedbackTimeout,
-        // A timeout costs the question, never a heart — the banner says so
-        // rather than leaving the player to infer it.
-        l10n.feedbackNoHeartLost,
-      ),
+      TimeoutFeedback() => ('⏳', l10n.feedbackTimeout, l10n.feedbackHeartLost),
       NoFeedback() => ('', '', null),
     };
 
@@ -71,8 +65,9 @@ class FeedbackBanner extends StatelessWidget {
       case WrongFeedback(:final brokeStreak, :final heartsRemaining):
         if (brokeStreak) body.write(' ${l10n.feedbackStreakReset}');
         if (heartsRemaining == 1) body.write(' ${l10n.feedbackLastHeart}');
-      case TimeoutFeedback(:final brokeStreak):
+      case TimeoutFeedback(:final brokeStreak, :final heartsRemaining):
         if (brokeStreak) body.write(' ${l10n.feedbackStreakReset}');
+        if (heartsRemaining == 1) body.write(' ${l10n.feedbackLastHeart}');
       case NoFeedback():
         break;
     }

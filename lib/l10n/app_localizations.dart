@@ -920,17 +920,11 @@ abstract class AppLocalizations {
   /// **'+{points}'**
   String feedbackPoints(String points);
 
-  /// S-13 cost, top-right of the banner.
+  /// S-13 / timeout banner cost, top-right of the banner.
   ///
   /// In en, this message translates to:
   /// **'−1 ❤️'**
   String get feedbackHeartLost;
-
-  /// Timeout banner cost line — a timeout costs the question, not a heart (§19).
-  ///
-  /// In en, this message translates to:
-  /// **'No heart lost'**
-  String get feedbackNoHeartLost;
 
   /// S-12 / S-13 banner action.
   ///

@@ -512,9 +512,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackHeartLost => '−1 ❤️';
 
   @override
-  String get feedbackNoHeartLost => 'No heart lost';
-
-  @override
   String get feedbackNext => 'Next question';
 
   @override
