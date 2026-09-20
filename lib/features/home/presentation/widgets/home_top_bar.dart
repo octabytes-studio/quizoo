@@ -104,7 +104,7 @@ class PlayerTopBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                l10n.homeGreeting(name),
+                name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.titleLarge!.copyWith(fontSize: 19.sp),

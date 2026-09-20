@@ -15,6 +15,7 @@ _AuthUser _$AuthUserFromJson(Map<String, dynamic> json) => _AuthUser(
   countryName: json['countryName'] as String?,
   countryFlag: json['countryFlag'] as String?,
   isProfileComplete: json['isProfileComplete'] as bool? ?? true,
+  suggestedDisplayName: json['suggestedDisplayName'] as String?,
 );
 
 Map<String, dynamic> _$AuthUserToJson(_AuthUser instance) => <String, dynamic>{
@@ -26,6 +27,7 @@ Map<String, dynamic> _$AuthUserToJson(_AuthUser instance) => <String, dynamic>{
   'countryName': instance.countryName,
   'countryFlag': instance.countryFlag,
   'isProfileComplete': instance.isProfileComplete,
+  'suggestedDisplayName': instance.suggestedDisplayName,
 };
 
 const _$AuthProviderEnumMap = {

@@ -50,7 +50,20 @@ class ProfileScreen extends StatelessWidget {
     return BlocProvider<ProfileCubit>(
       create: (_) =>
           ProfileCubit(ProfileRepository(ProfileApi(supabase)))..load(),
-      child: _ProfileView(isOwnProfile: isOwnProfile),
+      child: BlocListener<SessionCubit, SessionState>(
+        // This screen is one of `StatefulShellRoute.indexedStack`'s four
+        // branches, so it's built (and `ProfileCubit.load()`'d) exactly
+        // once and kept alive for the rest of the session — it never
+        // rebuilds on a tab switch. Without this listener, a fresh sign-up
+        // or sign-in changes the very `profiles` row this screen already
+        // fetched as a guest (username, avatar, country all move from
+        // empty/default to the player's own picks), but S-32 keeps showing
+        // that pre-signup snapshot until the app is restarted.
+        listenWhen: (previous, current) =>
+            current is SessionSignedIn && previous is! SessionSignedIn,
+        listener: (context, state) => context.read<ProfileCubit>().load(),
+        child: _ProfileView(isOwnProfile: isOwnProfile),
+      ),
     );
   }
 }
@@ -145,7 +158,11 @@ class _ProfileLoadedView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _ProfileHeader(summary: summary, isOwnProfile: isOwnProfile),
+        _ProfileHeader(
+          summary: summary,
+          isOwnProfile: isOwnProfile,
+          isSignedIn: isSignedIn,
+        ),
         Expanded(
           child: ListView(
             padding: EdgeInsets.fromLTRB(
@@ -356,11 +373,19 @@ class _ProfileHeader extends StatelessWidget {
     required this.isOwnProfile,
     this.summary,
     this.isLoading = false,
+    this.isSignedIn = false,
   });
 
   final ProfileSummary? summary;
   final bool isOwnProfile;
   final bool isLoading;
+
+  /// Whether this is a real signed-in account rather than a guest's
+  /// anonymous session — [summary] is non-null (and its `username` empty)
+  /// for both, since a guest's real anonymous profile row has no username
+  /// either (see [ProfileScreen]'s own doc comment). This is what actually
+  /// tells the two apart, rather than `summary.username.isEmpty`.
+  final bool isSignedIn;
 
   static final _skeletonBase = Colors.white.withValues(alpha: 0.22);
   static final _skeletonHighlight = Colors.white.withValues(alpha: 0.4);
@@ -440,7 +465,9 @@ class _ProfileHeader extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (summary != null)
+                          if (summary != null &&
+                              isSignedIn &&
+                              summary.username.isNotEmpty)
                             Text(
                               summary.username,
                               style: textTheme.displayMedium!.copyWith(
@@ -466,7 +493,16 @@ class _ProfileHeader extends StatelessWidget {
                           SizedBox(height: 4.h),
                           if (summary != null)
                             Text(
-                              '${summary.cityLabel} · ${summary.joinedLabel}',
+                              // `cityLabel` is a flag (plus a city name S-25
+                              // never actually collects, so it's always just
+                              // the flag in practice) — shown after the
+                              // joined date, not before, and omitted
+                              // entirely rather than leaving a stray "·"
+                              // when there's no country on file yet.
+                              summary.cityLabel.isEmpty
+                                  ? summary.joinedLabel
+                                  : '${summary.joinedLabel} · '
+                                        '${summary.cityLabel}',
                               style: textTheme.bodyMedium!.copyWith(
                                 fontSize: 12.sp,
                                 fontWeight: FontWeight.w700,

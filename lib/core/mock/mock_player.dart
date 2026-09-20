@@ -43,28 +43,6 @@ abstract final class MockPlayer {
   /// Hearts spent per level attempt, and the wall a run fails at.
   static const int livesPerLevel = 3;
 
-  /// The avatars S-25 cycles through, since there is no real picker.
-  static const List<String> avatarChoices = [
-    '🐼',
-    '🦊',
-    '🐯',
-    '🦉',
-    '🐨',
-    '🐸',
-    '🦁',
-    '🐵',
-  ];
-
-  /// The short fixed country list S-25 offers instead of a real database.
-  static const List<(String flag, String name)> countries = [
-    ('🇵🇰', 'Pakistan'),
-    ('🇬🇧', 'United Kingdom'),
-    ('🇺🇸', 'United States'),
-    ('🇮🇳', 'India'),
-    ('🇸🇦', 'Saudi Arabia'),
-    ('🇦🇪', 'United Arab Emirates'),
-  ];
-
   /// Usernames the mocked availability check reports as taken.
   static const Set<String> takenUsernames = {'waleed', 'quizoo', 'admin'};
 }

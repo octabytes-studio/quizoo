@@ -1328,11 +1328,17 @@ abstract class AppLocalizations {
   /// **'By continuing you agree to our Terms and Privacy Policy.'**
   String get saveProgressTerms;
 
-  /// Snackbar shown after a mocked sign-in.
+  /// Snackbar shown once a vendor or email sign-in actually completes.
   ///
   /// In en, this message translates to:
   /// **'Progress saved'**
   String get saveProgressSaved;
+
+  /// S-24 snackbar shown when a vendor sign-in is cancelled or fails after the OAuth browser closes.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sign you in'**
+  String get saveProgressFailed;
 
   /// S-25 heading.
   ///
@@ -1357,6 +1363,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'COUNTRY'**
   String get profileCountry;
+
+  /// S-25 field label.
+  ///
+  /// In en, this message translates to:
+  /// **'LANGUAGE'**
+  String get profileLanguage;
+
+  /// S-25 country picker sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your country'**
+  String get profileChooseCountry;
+
+  /// S-25 country picker search field placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search countries'**
+  String get profileCountrySearchHint;
+
+  /// S-25 country picker empty search-results state.
+  ///
+  /// In en, this message translates to:
+  /// **'No countries found'**
+  String get profileCountryNoResults;
 
   /// S-25 field label.
   ///
@@ -1405,6 +1435,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile created'**
   String get profileCreated;
+
+  /// S-25 avatar picker sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your avatar'**
+  String get profileChooseAvatar;
 
   /// Generic content-error heading for this plan's screens.
   ///

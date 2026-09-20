@@ -30,6 +30,7 @@ class SessionCubit extends Cubit<SessionState> {
   SessionCubit(this._repository) : super(const SessionGuest()) {
     _authStateSubscription = _repository.authStateChanges.listen(
       _onAuthStateChange,
+      onError: _onAuthStateError,
     );
   }
 
@@ -55,13 +56,31 @@ class SessionCubit extends Cubit<SessionState> {
     if (data.event != AuthChangeEvent.signedIn) return;
     final user = data.session?.user;
     if (user == null || user.isAnonymous) return;
+    unawaited(_repository.closeVendorSignInBrowser());
     unawaited(_completeVendorSignIn());
+  }
+
+  /// The deep link landed but the exchange itself failed — e.g. the vendor
+  /// or Supabase rejected the code. `supabase_flutter` reports this as a
+  /// stream error on [AuthRepository.authStateChanges] rather than a data
+  /// event (via GoTrue's `notifyException`), so it needs its own handler:
+  /// without one, it's an unhandled async error that never reaches
+  /// [SessionCubit] at all, leaving S-24 stuck showing "signing in..."
+  /// forever with no [SessionFailure] and the OAuth browser stranded open.
+  void _onAuthStateError(Object error, StackTrace stackTrace) {
+    unawaited(_repository.closeVendorSignInBrowser());
+    if (isClosed || state is! SessionAuthenticating) return;
+    emit(SessionFailure(ApiException.fromSupabase(error)));
   }
 
   Future<void> _completeVendorSignIn() async {
     try {
       final user = await _repository.restoreSignedInUser();
-      if (user != null && !isClosed) emit(SessionSignedIn(user));
+      if (isClosed) return;
+      // A null result now also covers the just-recovered-from-an-orphaned-
+      // account case (see AuthApi.restoreSignedInUser) — drop back to guest
+      // explicitly rather than leaving the state stuck on `Authenticating`.
+      emit(user == null ? const SessionGuest() : SessionSignedIn(user));
     } on ApiException catch (error) {
       if (!isClosed) emit(SessionFailure(error));
     }
@@ -93,8 +112,7 @@ class SessionCubit extends Cubit<SessionState> {
     required String username,
     required String email,
     required String avatarEmoji,
-    required String countryName,
-    required String countryFlag,
+    required String countryCode,
   }) async {
     emit(const SessionAuthenticating());
     try {
@@ -104,8 +122,7 @@ class SessionCubit extends Cubit<SessionState> {
             username: username,
             email: email,
             avatarEmoji: avatarEmoji,
-            countryName: countryName,
-            countryFlag: countryFlag,
+            countryCode: countryCode,
           ),
         ),
       );

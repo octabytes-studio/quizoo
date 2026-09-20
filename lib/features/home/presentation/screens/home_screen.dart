@@ -259,10 +259,19 @@ class _HomeContentView extends StatelessWidget {
     final currency = content.currency;
     final sections = content.sections;
 
-    // Order is state-dependent (S-05): daily banner → Continue → Popular →
-    // category sections. A guest gets the informational save-progress card
-    // in the banner slot instead, and has nothing in the Continue slot.
+    // Order is state-dependent (S-05): Popular is always first, then daily
+    // banner → Continue → category sections. A guest gets the informational
+    // save-progress card in the banner slot instead, and has nothing in the
+    // Continue slot.
     final leading = <Widget>[
+      SectionHeader(
+        title: l10n.homePopularThisWeek,
+        actionLabel: l10n.homeSeeAll,
+        onActionPressed: onSearchPressed,
+      ),
+      SizedBox(height: AppSpacing.md.h),
+      _PopularRail(state: state, content: content),
+      SizedBox(height: AppSpacing.lg.h - 2.h),
       if (content.daily case final daily?)
         DailyChallengeBanner(
           daily: daily,
@@ -285,21 +294,13 @@ class _HomeContentView extends StatelessWidget {
           ),
         ),
       ],
-      SizedBox(height: AppSpacing.lg.h - 2.h),
-      SectionHeader(
-        title: l10n.homePopularThisWeek,
-        actionLabel: l10n.homeSeeAll,
-        onActionPressed: onSearchPressed,
-      ),
-      SizedBox(height: AppSpacing.md.h),
-      _PopularRail(state: state, content: content),
     ];
 
     return Column(
       children: [
         if (user != null && currency != null)
           PlayerTopBar(
-            name: user.displayName.isEmpty ? MockPlayer.name : user.displayName,
+            name: user.displayName,
             avatarEmoji: user.avatarEmoji,
             currency: currency,
             dayStreak: MockPlayer.dayStreak,
@@ -493,7 +494,7 @@ class _HomeSkeleton extends StatelessWidget {
       children: [
         if (session case SessionSignedIn(:final user))
           PlayerTopBar(
-            name: user.displayName.isEmpty ? MockPlayer.name : user.displayName,
+            name: user.displayName,
             avatarEmoji: user.avatarEmoji,
             currency: MockPlayer.currency,
             dayStreak: MockPlayer.dayStreak,

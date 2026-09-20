@@ -18,13 +18,13 @@ class _MockAuthApi extends Mock implements AuthApi {}
 
 /// A signed-in (non-anonymous) session — what a real OAuth deep link hands
 /// `authStateChanges` once it lands.
-Session _fakeSession() => Session(
+Session _fakeSession({Map<String, dynamic> userMetadata = const {}}) => Session(
   accessToken: 'token',
   tokenType: 'bearer',
   user: User(
     id: 'user_google',
     appMetadata: const {'provider': 'google'},
-    userMetadata: const {},
+    userMetadata: userMetadata,
     aud: 'authenticated',
     createdAt: DateTime(2026).toIso8601String(),
   ),
@@ -49,6 +49,9 @@ void main() {
     when(
       () => repository.authStateChanges,
     ).thenAnswer((_) => authStateController.stream);
+    // Dismisses the vendor OAuth browser sheet once the deep link lands —
+    // every test that drives `authStateController` needs this stubbed.
+    when(() => repository.closeVendorSignInBrowser()).thenAnswer((_) async {});
   });
 
   tearDown(() => authStateController.close());
@@ -88,6 +91,42 @@ void main() {
     );
 
     blocTest<SessionCubit, SessionState>(
+      "a vendor sign-in with an incomplete profile carries the vendor's own "
+      'suggested display name through to SessionSignedIn (plan 015)',
+      setUp: () {
+        when(() => repository.signInWithVendor(any())).thenAnswer((_) async {});
+        when(() => repository.restoreSignedInUser()).thenAnswer(
+          (_) async => const AuthUser(
+            id: 'user_google',
+            displayName: '',
+            provider: AuthProvider.google,
+            isProfileComplete: false,
+            suggestedDisplayName: 'Waleed Shah',
+          ),
+        );
+      },
+      build: () => SessionCubit(repository),
+      act: (cubit) async {
+        await cubit.signInWithVendor(AuthProvider.google);
+        authStateController.add(
+          AuthState(
+            AuthChangeEvent.signedIn,
+            _fakeSession(userMetadata: const {'full_name': 'Waleed Shah'}),
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+      },
+      expect: () => [
+        isA<SessionAuthenticating>(),
+        isA<SessionSignedIn>().having(
+          (state) => state.user.suggestedDisplayName,
+          'suggestedDisplayName',
+          'Waleed Shah',
+        ),
+      ],
+    );
+
+    blocTest<SessionCubit, SessionState>(
       'failure path: a failed sign-in leaves the player playable',
       setUp: () {
         when(
@@ -97,6 +136,27 @@ void main() {
       build: () => SessionCubit(repository),
       act: (cubit) => cubit.signInWithVendor(AuthProvider.apple),
       expect: () => [isA<SessionAuthenticating>(), isA<SessionFailure>()],
+    );
+
+    blocTest<SessionCubit, SessionState>(
+      'failure path: a rejected OAuth code exchange (a deep-link-time '
+      'stream error, not a launch-time exception) still ends in '
+      'SessionFailure rather than hanging forever',
+      setUp: () {
+        when(() => repository.signInWithVendor(any())).thenAnswer((_) async {});
+      },
+      build: () => SessionCubit(repository),
+      act: (cubit) async {
+        await cubit.signInWithVendor(AuthProvider.apple);
+        authStateController.addError(
+          const ApiException('Unable to exchange external code'),
+        );
+        await Future<void>.delayed(Duration.zero);
+      },
+      expect: () => [isA<SessionAuthenticating>(), isA<SessionFailure>()],
+      verify: (_) {
+        verify(() => repository.closeVendorSignInBrowser()).called(1);
+      },
     );
 
     blocTest<SessionCubit, SessionState>(

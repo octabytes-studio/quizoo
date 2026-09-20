@@ -231,6 +231,14 @@
 				</array>
 			</dict>
 		</array>
+		<!-- com.quizoo.play://login-callback is a Supabase OAuth callback only,
+		     handled entirely by app_links/supabase_flutter — Flutter's own
+		     default deep-link-to-route forwarding must stay off, or GoRouter
+		     also tries to navigate to it as an app route (no matching GoRoute)
+		     and wipes out whatever screen/sheet was on top when the vendor
+		     sign-in browser redirects back in. -->
+		<key>FlutterDeepLinkingEnabled</key>
+		<false/>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
 		<key>UIMainStoryboardFile</key>

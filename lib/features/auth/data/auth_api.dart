@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:quizoo/core/format/country_directory.dart';
 import 'package:quizoo/core/network/api_exception.dart';
+import 'package:quizoo/core/network/orphaned_profile_recovery.dart';
 import 'package:quizoo/features/auth/domain/auth_user.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthUser;
+import 'package:url_launcher/url_launcher.dart' show closeInAppWebView;
 
 /// The real identity endpoint, over `supabase_flutter`'s Auth + Postgrest.
 ///
@@ -35,6 +38,11 @@ class AuthApi {
     try {
       return await _fetchCurrentAuthUser();
     } catch (error) {
+      // The account behind this persisted session was deleted server-side —
+      // recover a fresh anonymous session and report back as a guest rather
+      // than surfacing a content error for an identity that no longer
+      // exists.
+      if (await recoverFromOrphanedProfile(_client, error)) return null;
       throw ApiException.fromSupabase(error);
     }
   }
@@ -53,10 +61,30 @@ class AuthApi {
         oauthProvider,
         redirectTo: _oauthRedirect,
       );
+    } on PlatformException catch (error) {
+      // `url_launcher`'s SFSafariViewController reports
+      // `didCompleteInitialLoad(didLoadSuccessfully: false)` — and this
+      // "Error while launching..." exception — for any URL that redirects on
+      // its very first hop, which every OAuth `/authorize` endpoint does
+      // (Supabase 302s straight to the vendor). The browser sheet is
+      // presented and working regardless; [authStateChanges] is the real
+      // source of truth for whether the sign-in itself succeeds or fails, so
+      // this specific false negative shouldn't fail the flow before the
+      // player has even seen the vendor's sign-in screen.
+      if (error.code != 'Error') throw ApiException.fromSupabase(error);
     } catch (error) {
       throw ApiException.fromSupabase(error);
     }
   }
+
+  /// Dismisses the in-app browser sheet [signInWithVendor] opened.
+  ///
+  /// The OAuth provider redirects to [_oauthRedirect], which the OS hands
+  /// straight to the app via its URL scheme — but that never tells the
+  /// `SFSafariViewController`/Custom Tab itself to close, so it's left
+  /// stranded on screen (covering the app) until this is called. Safe to
+  /// call even if no such browser is currently open.
+  Future<void> closeVendorSignInBrowser() => closeInAppWebView();
 
   /// The email route has nothing to "start" against a real backend — the
   /// guest's existing anonymous session is what [createProfile] upgrades,
@@ -84,8 +112,7 @@ class AuthApi {
     required String username,
     required String email,
     required String avatarEmoji,
-    required String countryName,
-    required String countryFlag,
+    required String countryCode,
   }) async {
     final authUser = _client.auth.currentUser;
     if (authUser == null) {
@@ -97,13 +124,12 @@ class AuthApi {
     try {
       unawaited(_client.auth.updateUser(UserAttributes(email: email)));
 
-      final countryCode = CountryDirectory.codeFor(countryName);
       await _client
           .from('profiles')
           .update({
             'username': username,
             'avatar_key': avatarEmoji,
-            'country_code': ?countryCode,
+            'country_code': countryCode,
           })
           .eq('id', authUser.id);
 
@@ -113,8 +139,8 @@ class AuthApi {
         provider: AuthProvider.email,
         avatarEmoji: avatarEmoji,
         email: email,
-        countryName: countryName,
-        countryFlag: countryFlag,
+        countryName: CountryDirectory.nameFor(countryCode),
+        countryFlag: CountryDirectory.flagFor(countryCode),
       );
     } catch (error) {
       throw ApiException.fromSupabase(error);
@@ -157,6 +183,10 @@ class AuthApi {
   }) {
     final username = row['username'] as String?;
     final countryCode = row['country_code'] as String?;
+    final suggestedDisplayName = username == null
+        ? (authUser.userMetadata?['full_name'] as String? ??
+              authUser.userMetadata?['name'] as String?)
+        : null;
     return AuthUser(
       id: authUser.id,
       displayName: username ?? '',
@@ -170,6 +200,7 @@ class AuthApi {
           ? null
           : CountryDirectory.flagFor(countryCode),
       isProfileComplete: username != null,
+      suggestedDisplayName: suggestedDisplayName,
     );
   }
 
