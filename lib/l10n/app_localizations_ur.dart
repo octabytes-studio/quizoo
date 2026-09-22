@@ -1243,6 +1243,26 @@ class AppLocalizationsUr extends AppLocalizations {
   String get profileGuestBannerSubtitle => 'Sign in to save your progress';
 
   @override
+  String get profileLogout => 'Log out';
+
+  @override
+  String get profileLogoutTitle => 'Log out of your account?';
+
+  @override
+  String get profileLogoutBody =>
+      'You\'ll need to sign in again to see your progress on this device.';
+
+  @override
+  String get profileLogoutCancel => 'Stay signed in';
+
+  @override
+  String get profileLogoutConfirm => 'Log out';
+
+  @override
+  String get profileLogoutError =>
+      'Couldn\'t log out — check your connection and try again';
+
+  @override
   String get statsTitle => 'Your stats';
 
   @override

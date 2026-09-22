@@ -147,6 +147,30 @@ class AuthApi {
     }
   }
 
+  /// Ends the current real session and re-establishes a fresh anonymous one,
+  /// so the device drops back to a fully-functional guest — exactly what a
+  /// cold start already does in `main.dart` — rather than being left with no
+  /// session at all, which would break every RLS-gated call this app makes.
+  ///
+  /// [SupabaseClient.auth.signOut] invalidates the account's session token
+  /// server-side, not just on-device, which is what actually revokes it.
+  Future<void> signOut() async {
+    try {
+      await _client.auth.signOut();
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+    try {
+      await _client.auth.signInAnonymously();
+    } on AuthException {
+      // Same fallback as main.dart's bootstrap: continuing without a session
+      // is no worse than a dead network at cold start, and the real sign-out
+      // above already succeeded — this must not be reported as a failure.
+    } catch (_) {
+      // ignore
+    }
+  }
+
   /// The live availability check on S-25's username field.
   Future<bool> isUsernameAvailable(String username) async {
     try {
