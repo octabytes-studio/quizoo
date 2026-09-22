@@ -2150,6 +2150,42 @@ abstract class AppLocalizations {
   /// **'Sign in to save your progress'**
   String get profileGuestBannerSubtitle;
 
+  /// S-32 logout button, shown only to a signed-in (non-guest, non-anonymous) player.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get profileLogout;
+
+  /// S-32 logout confirmation dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out of your account?'**
+  String get profileLogoutTitle;
+
+  /// S-32 logout confirmation dialog body.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll need to sign in again to see your progress on this device.'**
+  String get profileLogoutBody;
+
+  /// S-32 logout confirmation dialog's dominant, ghost-styled action.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay signed in'**
+  String get profileLogoutCancel;
+
+  /// S-32 logout confirmation dialog's destructive action.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get profileLogoutConfirm;
+
+  /// Snackbar shown when the real sign-out call fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t log out — check your connection and try again'**
+  String get profileLogoutError;
+
   /// S-35 top bar title.
   ///
   /// In en, this message translates to:

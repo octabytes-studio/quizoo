@@ -190,6 +190,33 @@ void main() {
       act: (cubit) => cubit.continueAsGuest(),
       expect: () => [isA<SessionGuest>()],
     );
+
+    blocTest<SessionCubit, SessionState>(
+      'success path: signing out invalidates the session and drops back to '
+      'guest',
+      setUp: () {
+        when(() => repository.signOut()).thenAnswer((_) async {});
+      },
+      build: () => SessionCubit(repository),
+      seed: () => const SessionSignedIn(user),
+      act: (cubit) => cubit.signOut(),
+      expect: () => [isA<SessionGuest>()],
+    );
+
+    blocTest<SessionCubit, SessionState>(
+      'failure path: a failed sign-out rethrows and leaves the player '
+      'signed in rather than silently dropping to guest',
+      setUp: () {
+        when(
+          () => repository.signOut(),
+        ).thenThrow(const ApiException.network());
+      },
+      build: () => SessionCubit(repository),
+      seed: () => const SessionSignedIn(user),
+      act: (cubit) => cubit.signOut(),
+      expect: () => <SessionState>[],
+      errors: () => [isA<ApiException>()],
+    );
   });
 
   group('AuthRepository save-progress rules', () {

@@ -135,6 +135,18 @@ class SessionCubit extends Cubit<SessionState> {
   /// is explicit that nothing about play is ever gated on an account.
   void continueAsGuest() => emit(const SessionGuest());
 
+  /// Ends the current account's session for real (see
+  /// [AuthRepository.signOut]) and drops back to guest.
+  ///
+  /// Rethrows on failure rather than emitting [SessionFailure] — that state
+  /// has no `user`, so anything reading [SessionState.user] or switching on
+  /// `is SessionSignedIn` would wrongly read as guest before the server has
+  /// actually confirmed the session is gone. The caller shows the error.
+  Future<void> signOut() async {
+    await _repository.signOut();
+    if (!isClosed) emit(const SessionGuest());
+  }
+
   @override
   Future<void> close() {
     unawaited(_authStateSubscription?.cancel());

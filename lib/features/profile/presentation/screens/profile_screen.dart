@@ -14,6 +14,8 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
+import 'package:quizoo/core/widgets/app_dialog.dart';
+import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
@@ -25,6 +27,7 @@ import 'package:quizoo/features/profile/data/profile_api.dart';
 import 'package:quizoo/features/profile/data/profile_repository.dart';
 import 'package:quizoo/features/profile/domain/profile_summary.dart';
 import 'package:quizoo/features/profile/presentation/bloc/profile_cubit.dart';
+import 'package:quizoo/features/profile/presentation/widgets/logout_confirmation_dialog.dart';
 import 'package:quizoo/features/profile/presentation/widgets/stat_strip.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
@@ -58,9 +61,13 @@ class ProfileScreen extends StatelessWidget {
         // or sign-in changes the very `profiles` row this screen already
         // fetched as a guest (username, avatar, country all move from
         // empty/default to the player's own picks), but S-32 keeps showing
-        // that pre-signup snapshot until the app is restarted.
+        // that pre-signup snapshot until the app is restarted. The same
+        // gap exists in reverse on logout: `AuthRepository.signOut` hands
+        // the device a brand-new anonymous `profiles` row, so this must
+        // also fire on the SessionSignedIn -> SessionGuest transition, not
+        // only guest -> signed-in.
         listenWhen: (previous, current) =>
-            current is SessionSignedIn && previous is! SessionSignedIn,
+            (current is SessionSignedIn) != (previous is SessionSignedIn),
         listener: (context, state) => context.read<ProfileCubit>().load(),
         child: _ProfileView(isOwnProfile: isOwnProfile),
       ),
@@ -144,6 +151,31 @@ class _ProfileLoadedView extends StatelessWidget {
 
   final ProfileSummary summary;
   final bool isOwnProfile;
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await AppDialog.show<bool>(
+      context,
+      builder: (dialogContext) => LogoutConfirmationDialog(
+        onCancel: () => Navigator.of(dialogContext).pop(false),
+        onConfirm: () => Navigator.of(dialogContext).pop(true),
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      // Invalidates the account's real Supabase session and drops
+      // `SessionCubit` back to `SessionGuest` — the screen's own
+      // `BlocListener` reloads this screen's data once that lands.
+      await context.read<SessionCubit>().signOut();
+    } on ApiException {
+      if (!context.mounted) return;
+      AppSnackbar.show(
+        context,
+        title: AppLocalizations.of(context).profileLogoutError,
+        intent: SnackbarIntent.error,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -268,6 +300,16 @@ class _ProfileLoadedView extends StatelessWidget {
                     },
                   ),
                 ),
+              // Never shown to a guest (there is no real account session to
+              // end) and never on another player's public profile — only
+              // the owner's own, already-real sign-in.
+              if (isOwnProfile && isSignedIn) ...[
+                SizedBox(height: AppSpacing.md.h),
+                ChunkyButton.ghost(
+                  label: l10n.profileLogout,
+                  onPressed: () => _confirmLogout(context),
+                ),
+              ],
             ],
           ),
         ),
