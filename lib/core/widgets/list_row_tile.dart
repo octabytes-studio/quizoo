@@ -29,6 +29,7 @@ class ListRowTile extends StatelessWidget {
     required this.title,
     super.key,
     this.subtitle,
+    this.rank,
     this.leadingEmoji,
     this.leadingPlateColor,
     this.trailingValue,
@@ -43,6 +44,10 @@ class ListRowTile extends StatelessWidget {
 
   final String title;
   final String? subtitle;
+
+  /// A rank number printed as a fixed-width prefix before [leadingEmoji] —
+  /// a leaderboard row's "#N", never used by the content/self variants.
+  final int? rank;
 
   /// The glyph inside the leading plate.
   final String? leadingEmoji;
@@ -146,6 +151,21 @@ class ListRowTile extends StatelessWidget {
       ),
       child: Row(
         children: [
+          if (rank != null) ...[
+            SizedBox(
+              width: 22.w,
+              child: Text(
+                '$rank',
+                textAlign: TextAlign.center,
+                style: textTheme.bodyLarge!.copyWith(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w800,
+                  color: quizoo.tx3,
+                ),
+              ),
+            ),
+            SizedBox(width: AppSpacing.sm.w),
+          ],
           if (leading != null) ...[leading, SizedBox(width: AppSpacing.md.w)],
           Expanded(
             child: Column(

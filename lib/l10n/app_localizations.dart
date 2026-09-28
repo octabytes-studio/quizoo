@@ -1580,6 +1580,24 @@ abstract class AppLocalizations {
   /// **'All time'**
   String get leaderboardPeriodAllTime;
 
+  /// S-29 podium — 1st place's rank label.
+  ///
+  /// In en, this message translates to:
+  /// **'1st'**
+  String get leaderboardPodiumFirst;
+
+  /// S-29 podium — 2nd place's rank label.
+  ///
+  /// In en, this message translates to:
+  /// **'2nd'**
+  String get leaderboardPodiumSecond;
+
+  /// S-29 podium — 3rd place's rank label.
+  ///
+  /// In en, this message translates to:
+  /// **'3rd'**
+  String get leaderboardPodiumThird;
+
   /// S-29 pinned self-row title, signed in.
   ///
   /// In en, this message translates to:

@@ -900,6 +900,15 @@ class AppLocalizationsUr extends AppLocalizations {
   String get leaderboardPeriodAllTime => 'All time';
 
   @override
+  String get leaderboardPodiumFirst => '1st';
+
+  @override
+  String get leaderboardPodiumSecond => '2nd';
+
+  @override
+  String get leaderboardPodiumThird => '3rd';
+
+  @override
   String get leaderboardSelfTitle => 'You';
 
   @override
