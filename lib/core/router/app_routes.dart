@@ -146,6 +146,12 @@ abstract final class AppRoutes {
   /// S-35 Stats.
   static const String stats = '/you/stats';
 
+  /// Edit Profile — avatar/display-name/language editing, reached by tapping
+  /// the player's own avatar on Home or the You screen (plan 019). Not one of
+  /// the bible's 54 IDs (see this class's own doc comment), so it has no
+  /// `sXX` alias below.
+  static const String editProfile = '/you/edit-profile';
+
   // -------------------------------------------------------------- duel
   /// S-38 — Duel arena; the centre FAB pushes it (plan 017).
   static const String duelArena = '/duel';

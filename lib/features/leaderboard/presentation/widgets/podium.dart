@@ -6,6 +6,7 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/features/leaderboard/domain/leaderboard_entry.dart';
+import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-29's top-3 podium — the one place in the whole app that uses variable
 /// "plinth" heights; everywhere else is a flat row (the bible's own explicit
@@ -25,9 +26,11 @@ class Podium extends StatelessWidget {
 
   final ValueChanged<LeaderboardEntry>? onTap;
 
-  static const double firstPlinth = 64;
-  static const double secondPlinth = 48;
-  static const double thirdPlinth = 36;
+  // Taller than a plain rank number needs, since the plinth now also carries
+  // the country flag underneath the ordinal label.
+  static const double firstPlinth = 76;
+  static const double secondPlinth = 60;
+  static const double thirdPlinth = 48;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +42,7 @@ class Podium extends StatelessWidget {
           Expanded(
             child: _PodiumPlace(
               entry: second,
+              place: 2,
               plinthHeight: secondPlinth,
               onTap: onTap,
             ),
@@ -47,6 +51,7 @@ class Podium extends StatelessWidget {
           Expanded(
             child: _PodiumPlace(
               entry: first,
+              place: 1,
               plinthHeight: firstPlinth,
               onTap: onTap,
             ),
@@ -55,6 +60,7 @@ class Podium extends StatelessWidget {
           Expanded(
             child: _PodiumPlace(
               entry: third,
+              place: 3,
               plinthHeight: thirdPlinth,
               onTap: onTap,
             ),
@@ -68,21 +74,54 @@ class Podium extends StatelessWidget {
 class _PodiumPlace extends StatelessWidget {
   const _PodiumPlace({
     required this.entry,
+    required this.place,
     required this.plinthHeight,
     this.onTap,
   });
 
   final LeaderboardEntry entry;
+
+  /// 1, 2 or 3 — which medal/prominence this place gets, independent of
+  /// [entry]'s own rank (so ties still render a sensible medal).
+  final int place;
   final double plinthHeight;
   final ValueChanged<LeaderboardEntry>? onTap;
 
   static const double avatarSize = 48;
+  static const double firstAvatarSize = 60;
+
+  static String _medalFor(int place) => switch (place) {
+    1 => '🥇',
+    2 => '🥈',
+    _ => '🥉',
+  };
+
+  static String _ordinalFor(AppLocalizations l10n, int place) =>
+      switch (place) {
+        1 => l10n.leaderboardPodiumFirst,
+        2 => l10n.leaderboardPodiumSecond,
+        _ => l10n.leaderboardPodiumThird,
+      };
+
+  /// [LeaderboardEntry.locationLabel] is always `'<flag> <country name>'`
+  /// (`LeaderboardApi._locationLabel`) — the flag is everything before the
+  /// first space, regardless of how many words the country name itself has.
+  static String? _flagOf(LeaderboardEntry entry) {
+    final label = entry.locationLabel;
+    if (label == null) return null;
+    final spaceIndex = label.indexOf(' ');
+    return spaceIndex == -1 ? label : label.substring(0, spaceIndex);
+  }
 
   @override
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
+    final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
     final localeName = Localizations.localeOf(context).toLanguageTag();
+    final isFirst = place == 1;
+    final avatarDiameter = isFirst ? firstAvatarSize : avatarSize;
+    final flag = _flagOf(entry);
 
     return GestureDetector(
       onTap: onTap == null ? null : () => onTap!(entry),
@@ -90,28 +129,64 @@ class _PodiumPlace extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: avatarSize.w,
-            height: avatarSize.w,
+          Stack(
+            clipBehavior: Clip.none,
             alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: quizoo.s3,
-              border: Border.all(color: quizoo.s1, width: 2),
-            ),
-            child: Text(entry.avatarEmoji, style: AppTypography.glyph(23.sp)),
+            children: [
+              Container(
+                width: avatarDiameter.w,
+                height: avatarDiameter.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: quizoo.s3,
+                  border: Border.all(
+                    color: isFirst ? quizoo.gold : quizoo.s1,
+                    width: isFirst ? 3 : 2,
+                  ),
+                ),
+                child: Text(
+                  entry.avatarEmoji,
+                  style: AppTypography.glyph(isFirst ? 27.sp : 23.sp),
+                ),
+              ),
+              Positioned(
+                bottom: -6.h,
+                child: Text(
+                  _medalFor(place),
+                  style: AppTypography.glyph(isFirst ? 30.sp : 24.sp),
+                ),
+              ),
+              // A crown, tilted right, is 1st place's only extra prominence
+              // marker — no background glow (washes out badly in light mode).
+              if (isFirst)
+                Positioned(
+                  top: -16.h,
+                  right: -8.w,
+                  child: Transform.rotate(
+                    angle: 0.35,
+                    child: Text('👑', style: AppTypography.glyph(28.sp)),
+                  ),
+                ),
+            ],
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 12.h),
           Text(
             entry.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: textTheme.bodyLarge!.copyWith(fontSize: 12.5.sp),
+            style: textTheme.bodyLarge!.copyWith(
+              fontSize: isFirst ? 13.5.sp : 12.5.sp,
+              fontWeight: isFirst ? FontWeight.w800 : FontWeight.w700,
+            ),
           ),
           Text(
             AppFormat.compact(entry.score, localeName),
-            style: textTheme.labelSmall,
+            style: textTheme.labelSmall!.copyWith(
+              color: isFirst ? quizoo.gold : quizoo.tx3,
+              fontWeight: isFirst ? FontWeight.w800 : FontWeight.w600,
+            ),
           ),
           SizedBox(height: AppSpacing.sm.h),
           Container(
@@ -119,17 +194,30 @@ class _PodiumPlace extends StatelessWidget {
             height: plinthHeight.h,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: quizoo.s2,
+              color: isFirst ? quizoo.gold.withValues(alpha: 0.18) : quizoo.s2,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(AppRadius.tile.r),
               ),
             ),
-            child: Text(
-              '${entry.rank}',
-              style: textTheme.displayMedium!.copyWith(
-                fontSize: 20.sp,
-                color: quizoo.tx2,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _ordinalFor(l10n, place),
+                  style: textTheme.displayMedium!.copyWith(
+                    fontSize: isFirst ? 18.sp : 16.sp,
+                    color: isFirst ? quizoo.gold : quizoo.tx2,
+                  ),
+                ),
+                if (flag != null) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    flag,
+                    style: AppTypography.glyph(isFirst ? 22.sp : 17.sp),
+                  ),
+                ],
+              ],
             ),
           ),
         ],

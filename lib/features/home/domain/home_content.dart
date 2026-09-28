@@ -98,6 +98,12 @@ abstract class HomeContent with _$HomeContent {
     /// Null for a guest, which is what removes the wallet pills from the top
     /// bar — the bible is explicit that a guest has earned nothing yet.
     PlayerCurrency? currency,
+
+    /// The signed-in player's real `profiles.streak_days`/`player_level`
+    /// (plan 019) — 0 for a guest, and 0 in `_HomeSkeleton`'s pre-fetch
+    /// flash, which has no [HomeContent] to read yet.
+    @Default(0) int dayStreak,
+    @Default(0) int playerLevel,
   }) = _HomeContent;
 
   const HomeContent._();

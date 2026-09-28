@@ -160,5 +160,39 @@ void main() {
 
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets(
+      "tapping the header's own avatar opens Edit Profile (plan 019)",
+      (tester) async {
+        await tester.pumpScreen(const ProfileScreen());
+        await tester.pump(const Duration(seconds: 2));
+
+        // The header's own 🐼 avatar glyph is unique on this screen (the
+        // sign-in-required state's `EmptyStateView` uses 🔐).
+        await tester.tap(
+          find.ancestor(
+            of: find.text('🐼'),
+            matching: find.byType(GestureDetector),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('pushed:/you/edit-profile'), findsOneWidget);
+      },
+    );
+
+    testWidgets("the settings gear's Semantics button/label survive the plated "
+        'visual change (plan 019)', (tester) async {
+      await tester.pumpScreen(const ProfileScreen());
+      await tester.pump(const Duration(seconds: 2));
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ProfileScreen)),
+      );
+      await tester.tap(find.bySemanticsLabel(l10n.profileSettings));
+      await tester.pumpAndSettle();
+
+      expect(find.text('pushed:/settings'), findsOneWidget);
+    });
   });
 }

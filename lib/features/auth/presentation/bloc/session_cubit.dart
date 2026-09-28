@@ -131,6 +131,23 @@ class SessionCubit extends Cubit<SessionState> {
     }
   }
 
+  /// Edit Profile: updates the signed-in player's own username/avatar.
+  ///
+  /// Rethrows on failure rather than emitting [SessionFailure] — like
+  /// [signOut] — since a save error must never look like the player got
+  /// signed out. The caller (Edit Profile) shows its own error and keeps the
+  /// form open.
+  Future<void> updateProfile({
+    required String username,
+    required String avatarEmoji,
+  }) async {
+    final updated = await _repository.updateProfile(
+      username: username,
+      avatarEmoji: avatarEmoji,
+    );
+    if (!isClosed) emit(SessionSignedIn(updated));
+  }
+
   /// Drops back to guest. A failed sign-in ends here too, because the bible
   /// is explicit that nothing about play is ever gated on an account.
   void continueAsGuest() => emit(const SessionGuest());

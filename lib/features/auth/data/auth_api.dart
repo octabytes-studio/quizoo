@@ -147,6 +147,33 @@ class AuthApi {
     }
   }
 
+  /// Edit Profile: persists a signed-in player's own avatar/display-name
+  /// change, then rebuilds the [AuthUser] from the DB rather than
+  /// hand-assembling one, avoiding duplicating [createProfile]'s field
+  /// mapping.
+  Future<AuthUser> updateProfile({
+    required String username,
+    required String avatarEmoji,
+  }) async {
+    final authUser = _client.auth.currentUser;
+    if (authUser == null) {
+      throw const ApiException(
+        'Not signed in',
+        kind: ApiErrorKind.unauthorized,
+      );
+    }
+    try {
+      await _client
+          .from('profiles')
+          .update({'username': username, 'avatar_key': avatarEmoji})
+          .eq('id', authUser.id);
+      return await _fetchCurrentAuthUser();
+    } catch (error) {
+      if (error is ApiException) rethrow;
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
   /// Ends the current real session and re-establishes a fresh anonymous one,
   /// so the device drops back to a fully-functional guest — exactly what a
   /// cold start already does in `main.dart` — rather than being left with no

@@ -1364,6 +1364,36 @@ abstract class AppLocalizations {
   /// **'Choose your avatar'**
   String get profileChooseAvatar;
 
+  /// Edit Profile screen's SimpleTopBar title (plan 019).
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditTitle;
+
+  /// Semantic label for the tappable avatar on Home/You that opens Edit Profile (plan 019).
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEditAction;
+
+  /// Edit Profile's CTA, visibly disabled until valid (plan 019).
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get profileSaveChanges;
+
+  /// Snackbar shown after Edit Profile saves successfully (plan 019).
+  ///
+  /// In en, this message translates to:
+  /// **'Changes saved'**
+  String get profileChangesSaved;
+
+  /// Snackbar shown when Edit Profile's save fails (plan 019).
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save your changes'**
+  String get profileUpdateError;
+
   /// Generic content-error heading for this plan's screens.
   ///
   /// In en, this message translates to:
@@ -1579,6 +1609,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All time'**
   String get leaderboardPeriodAllTime;
+
+  /// S-29 podium — 1st place's rank label.
+  ///
+  /// In en, this message translates to:
+  /// **'1st'**
+  String get leaderboardPodiumFirst;
+
+  /// S-29 podium — 2nd place's rank label.
+  ///
+  /// In en, this message translates to:
+  /// **'2nd'**
+  String get leaderboardPodiumSecond;
+
+  /// S-29 podium — 3rd place's rank label.
+  ///
+  /// In en, this message translates to:
+  /// **'3rd'**
+  String get leaderboardPodiumThird;
 
   /// S-29 pinned self-row title, signed in.
   ///

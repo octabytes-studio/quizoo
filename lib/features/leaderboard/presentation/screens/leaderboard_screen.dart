@@ -231,6 +231,7 @@ class _LeaderboardRow extends StatelessWidget {
 
     return ListRowTile(
       variant: ListRowVariant.player,
+      rank: entry.rank,
       title: entry.name,
       subtitle: entry.locationLabel,
       leadingEmoji: entry.avatarEmoji,

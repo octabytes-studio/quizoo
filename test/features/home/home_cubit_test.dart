@@ -311,6 +311,27 @@ void main() {
       expect(await repository.search('  ', languageCode: 'en'), isEmpty);
     });
 
+    test('fetchCachedHome passes a signed-in profile row\'s streak_days/'
+        'player_level straight through as HomeContent.dayStreak/playerLevel '
+        '(plan 019)', () async {
+      when(
+        () => api.fetchCachedHome(
+          isSignedIn: any(named: 'isSignedIn'),
+          languageCode: any(named: 'languageCode'),
+        ),
+      ).thenAnswer(
+        (_) async => const HomeContent(dayStreak: 7, playerLevel: 9),
+      );
+
+      final content = await repository.fetchCachedHome(
+        isSignedIn: true,
+        languageCode: 'en',
+      );
+
+      expect(content.dayStreak, 7);
+      expect(content.playerLevel, 9);
+    });
+
     test('error-mapping path: the API exception reaches the caller', () async {
       when(
         () => api.fetchCachedHome(

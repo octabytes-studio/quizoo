@@ -35,6 +35,7 @@ import 'package:quizoo/features/onboarding/data/onboarding_repository.dart';
 import 'package:quizoo/features/onboarding/presentation/screens/language_picker_screen.dart';
 import 'package:quizoo/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:quizoo/features/onboarding/presentation/screens/splash_screen.dart';
+import 'package:quizoo/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:quizoo/features/profile/presentation/screens/profile_screen.dart';
 import 'package:quizoo/features/profile/presentation/screens/stats_screen.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
@@ -275,6 +276,11 @@ abstract final class AppRouter {
           path: AppRoutes.stats,
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const StatsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.editProfile,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const EditProfileScreen(),
         ),
 
         // Duel

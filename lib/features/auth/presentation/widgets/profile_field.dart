@@ -18,6 +18,7 @@ class ProfileField extends StatefulWidget {
     this.error,
     this.trailing,
     this.keyboardType,
+    this.enabled = true,
   });
 
   final String label;
@@ -32,6 +33,10 @@ class ProfileField extends StatefulWidget {
   final Widget? trailing;
 
   final TextInputType? keyboardType;
+
+  /// Edit Profile's guest path (plan 019): a disabled field shows its value
+  /// greyed and inert — no focus, no `onBlur`-driven error chrome.
+  final bool enabled;
 
   /// The bible's field height.
   static const double height = 50;
@@ -51,6 +56,7 @@ class _ProfileFieldState extends State<ProfileField> {
   }
 
   void _onFocusChanged() {
+    if (!widget.enabled) return;
     final hasFocus = _focusNode.hasFocus;
     if (!hasFocus && _isFocused) widget.onBlur();
     setState(() => _isFocused = hasFocus);
@@ -79,10 +85,12 @@ class _ProfileFieldState extends State<ProfileField> {
           height: ProfileField.height.h,
           padding: EdgeInsets.symmetric(horizontal: 14.w),
           decoration: BoxDecoration(
-            color: quizoo.s1,
+            color: widget.enabled ? quizoo.s1 : quizoo.s2,
             borderRadius: BorderRadius.circular(15.r),
             border: Border.all(
-              color: hasError
+              color: !widget.enabled
+                  ? quizoo.ln.withValues(alpha: 0.5)
+                  : hasError
                   ? quizoo.bad
                   : _isFocused
                   ? quizoo.g
@@ -97,8 +105,11 @@ class _ProfileFieldState extends State<ProfileField> {
                   controller: widget.controller,
                   focusNode: _focusNode,
                   keyboardType: widget.keyboardType,
+                  enabled: widget.enabled,
                   cursorColor: quizoo.g,
-                  style: textTheme.bodyLarge!.copyWith(color: quizoo.tx),
+                  style: textTheme.bodyLarge!.copyWith(
+                    color: widget.enabled ? quizoo.tx : quizoo.tx3,
+                  ),
                   decoration: const InputDecoration(
                     isDense: true,
                     border: InputBorder.none,

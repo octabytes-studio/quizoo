@@ -52,8 +52,16 @@ class HomeScreen extends StatelessWidget {
     // The session decides what Home asks for, so the Cubit is created with it
     // already known rather than reading it mid-build.
     return BlocBuilder<SessionCubit, SessionState>(
-      buildWhen: (previous, current) =>
-          (previous is SessionSignedIn) != (current is SessionSignedIn),
+      buildWhen: (previous, current) {
+        final wasSignedIn = previous is SessionSignedIn;
+        final isSignedIn = current is SessionSignedIn;
+        if (wasSignedIn != isSignedIn) return true;
+        // Also repaint on an in-place profile edit (Edit Profile's Save),
+        // so the top bar's name/avatar reflect it immediately.
+        return previous is SessionSignedIn &&
+            current is SessionSignedIn &&
+            previous.user != current.user;
+      },
       builder: (context, session) {
         final isSignedIn = session is SessionSignedIn;
         final languageCode = context.watch<ContentLanguageCubit>().state.code;
@@ -303,9 +311,10 @@ class _HomeContentView extends StatelessWidget {
             name: user.displayName,
             avatarEmoji: user.avatarEmoji,
             currency: currency,
-            dayStreak: MockPlayer.dayStreak,
-            playerLevel: MockPlayer.playerLevel,
+            dayStreak: content.dayStreak,
+            playerLevel: content.playerLevel,
             onSearchPressed: onSearchPressed,
+            onAvatarTap: () => context.push(AppRoutes.editProfile),
           )
         else
           GuestTopBar(onSearchPressed: onSearchPressed),
@@ -497,9 +506,13 @@ class _HomeSkeleton extends StatelessWidget {
             name: user.displayName,
             avatarEmoji: user.avatarEmoji,
             currency: MockPlayer.currency,
-            dayStreak: MockPlayer.dayStreak,
-            playerLevel: MockPlayer.playerLevel,
+            // No `HomeContent` yet at this pre-first-fetch loading flash —
+            // an honest 0 rather than a fabricated specific number (plan
+            // 019, Design overview Part B).
+            dayStreak: 0,
+            playerLevel: 0,
             onSearchPressed: onSearchPressed,
+            onAvatarTap: () => context.push(AppRoutes.editProfile),
           )
         else
           GuestTopBar(onSearchPressed: onSearchPressed),

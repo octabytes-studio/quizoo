@@ -864,7 +864,10 @@ mixin _$HomeContent {
 
  List<Category> get categories; List<Subcategory> get subcategories; List<PopularQuiz> get popular; ContinueEntry? get continueEntry; DailyChallengePreview? get daily;/// Null for a guest, which is what removes the wallet pills from the top
 /// bar — the bible is explicit that a guest has earned nothing yet.
- PlayerCurrency? get currency;
+ PlayerCurrency? get currency;/// The signed-in player's real `profiles.streak_days`/`player_level`
+/// (plan 019) — 0 for a guest, and 0 in `_HomeSkeleton`'s pre-fetch
+/// flash, which has no [HomeContent] to read yet.
+ int get dayStreak; int get playerLevel;
 /// Create a copy of HomeContent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -877,16 +880,16 @@ $HomeContentCopyWith<HomeContent> get copyWith => _$HomeContentCopyWithImpl<Home
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeContent&&const DeepCollectionEquality().equals(other.categories, categories)&&const DeepCollectionEquality().equals(other.subcategories, subcategories)&&const DeepCollectionEquality().equals(other.popular, popular)&&(identical(other.continueEntry, continueEntry) || other.continueEntry == continueEntry)&&(identical(other.daily, daily) || other.daily == daily)&&(identical(other.currency, currency) || other.currency == currency));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeContent&&const DeepCollectionEquality().equals(other.categories, categories)&&const DeepCollectionEquality().equals(other.subcategories, subcategories)&&const DeepCollectionEquality().equals(other.popular, popular)&&(identical(other.continueEntry, continueEntry) || other.continueEntry == continueEntry)&&(identical(other.daily, daily) || other.daily == daily)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.dayStreak, dayStreak) || other.dayStreak == dayStreak)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(categories),const DeepCollectionEquality().hash(subcategories),const DeepCollectionEquality().hash(popular),continueEntry,daily,currency);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(categories),const DeepCollectionEquality().hash(subcategories),const DeepCollectionEquality().hash(popular),continueEntry,daily,currency,dayStreak,playerLevel);
 
 @override
 String toString() {
-  return 'HomeContent(categories: $categories, subcategories: $subcategories, popular: $popular, continueEntry: $continueEntry, daily: $daily, currency: $currency)';
+  return 'HomeContent(categories: $categories, subcategories: $subcategories, popular: $popular, continueEntry: $continueEntry, daily: $daily, currency: $currency, dayStreak: $dayStreak, playerLevel: $playerLevel)';
 }
 
 
@@ -897,7 +900,7 @@ abstract mixin class $HomeContentCopyWith<$Res>  {
   factory $HomeContentCopyWith(HomeContent value, $Res Function(HomeContent) _then) = _$HomeContentCopyWithImpl;
 @useResult
 $Res call({
- List<Category> categories, List<Subcategory> subcategories, List<PopularQuiz> popular, ContinueEntry? continueEntry, DailyChallengePreview? daily, PlayerCurrency? currency
+ List<Category> categories, List<Subcategory> subcategories, List<PopularQuiz> popular, ContinueEntry? continueEntry, DailyChallengePreview? daily, PlayerCurrency? currency, int dayStreak, int playerLevel
 });
 
 
@@ -914,7 +917,7 @@ class _$HomeContentCopyWithImpl<$Res>
 
 /// Create a copy of HomeContent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? categories = null,Object? subcategories = null,Object? popular = null,Object? continueEntry = freezed,Object? daily = freezed,Object? currency = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? categories = null,Object? subcategories = null,Object? popular = null,Object? continueEntry = freezed,Object? daily = freezed,Object? currency = freezed,Object? dayStreak = null,Object? playerLevel = null,}) {
   return _then(_self.copyWith(
 categories: null == categories ? _self.categories : categories // ignore: cast_nullable_to_non_nullable
 as List<Category>,subcategories: null == subcategories ? _self.subcategories : subcategories // ignore: cast_nullable_to_non_nullable
@@ -922,7 +925,9 @@ as List<Subcategory>,popular: null == popular ? _self.popular : popular // ignor
 as List<PopularQuiz>,continueEntry: freezed == continueEntry ? _self.continueEntry : continueEntry // ignore: cast_nullable_to_non_nullable
 as ContinueEntry?,daily: freezed == daily ? _self.daily : daily // ignore: cast_nullable_to_non_nullable
 as DailyChallengePreview?,currency: freezed == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
-as PlayerCurrency?,
+as PlayerCurrency?,dayStreak: null == dayStreak ? _self.dayStreak : dayStreak // ignore: cast_nullable_to_non_nullable
+as int,playerLevel: null == playerLevel ? _self.playerLevel : playerLevel // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 /// Create a copy of HomeContent
@@ -1043,10 +1048,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<Category> categories,  List<Subcategory> subcategories,  List<PopularQuiz> popular,  ContinueEntry? continueEntry,  DailyChallengePreview? daily,  PlayerCurrency? currency)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<Category> categories,  List<Subcategory> subcategories,  List<PopularQuiz> popular,  ContinueEntry? continueEntry,  DailyChallengePreview? daily,  PlayerCurrency? currency,  int dayStreak,  int playerLevel)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HomeContent() when $default != null:
-return $default(_that.categories,_that.subcategories,_that.popular,_that.continueEntry,_that.daily,_that.currency);case _:
+return $default(_that.categories,_that.subcategories,_that.popular,_that.continueEntry,_that.daily,_that.currency,_that.dayStreak,_that.playerLevel);case _:
   return orElse();
 
 }
@@ -1064,10 +1069,10 @@ return $default(_that.categories,_that.subcategories,_that.popular,_that.continu
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<Category> categories,  List<Subcategory> subcategories,  List<PopularQuiz> popular,  ContinueEntry? continueEntry,  DailyChallengePreview? daily,  PlayerCurrency? currency)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<Category> categories,  List<Subcategory> subcategories,  List<PopularQuiz> popular,  ContinueEntry? continueEntry,  DailyChallengePreview? daily,  PlayerCurrency? currency,  int dayStreak,  int playerLevel)  $default,) {final _that = this;
 switch (_that) {
 case _HomeContent():
-return $default(_that.categories,_that.subcategories,_that.popular,_that.continueEntry,_that.daily,_that.currency);case _:
+return $default(_that.categories,_that.subcategories,_that.popular,_that.continueEntry,_that.daily,_that.currency,_that.dayStreak,_that.playerLevel);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1084,10 +1089,10 @@ return $default(_that.categories,_that.subcategories,_that.popular,_that.continu
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<Category> categories,  List<Subcategory> subcategories,  List<PopularQuiz> popular,  ContinueEntry? continueEntry,  DailyChallengePreview? daily,  PlayerCurrency? currency)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<Category> categories,  List<Subcategory> subcategories,  List<PopularQuiz> popular,  ContinueEntry? continueEntry,  DailyChallengePreview? daily,  PlayerCurrency? currency,  int dayStreak,  int playerLevel)?  $default,) {final _that = this;
 switch (_that) {
 case _HomeContent() when $default != null:
-return $default(_that.categories,_that.subcategories,_that.popular,_that.continueEntry,_that.daily,_that.currency);case _:
+return $default(_that.categories,_that.subcategories,_that.popular,_that.continueEntry,_that.daily,_that.currency,_that.dayStreak,_that.playerLevel);case _:
   return null;
 
 }
@@ -1099,7 +1104,7 @@ return $default(_that.categories,_that.subcategories,_that.popular,_that.continu
 @JsonSerializable()
 
 class _HomeContent extends HomeContent {
-  const _HomeContent({final  List<Category> categories = const [], final  List<Subcategory> subcategories = const [], final  List<PopularQuiz> popular = const [], this.continueEntry, this.daily, this.currency}): _categories = categories,_subcategories = subcategories,_popular = popular,super._();
+  const _HomeContent({final  List<Category> categories = const [], final  List<Subcategory> subcategories = const [], final  List<PopularQuiz> popular = const [], this.continueEntry, this.daily, this.currency, this.dayStreak = 0, this.playerLevel = 0}): _categories = categories,_subcategories = subcategories,_popular = popular,super._();
   factory _HomeContent.fromJson(Map<String, dynamic> json) => _$HomeContentFromJson(json);
 
  final  List<Category> _categories;
@@ -1128,6 +1133,11 @@ class _HomeContent extends HomeContent {
 /// Null for a guest, which is what removes the wallet pills from the top
 /// bar — the bible is explicit that a guest has earned nothing yet.
 @override final  PlayerCurrency? currency;
+/// The signed-in player's real `profiles.streak_days`/`player_level`
+/// (plan 019) — 0 for a guest, and 0 in `_HomeSkeleton`'s pre-fetch
+/// flash, which has no [HomeContent] to read yet.
+@override@JsonKey() final  int dayStreak;
+@override@JsonKey() final  int playerLevel;
 
 /// Create a copy of HomeContent
 /// with the given fields replaced by the non-null parameter values.
@@ -1142,16 +1152,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeContent&&const DeepCollectionEquality().equals(other._categories, _categories)&&const DeepCollectionEquality().equals(other._subcategories, _subcategories)&&const DeepCollectionEquality().equals(other._popular, _popular)&&(identical(other.continueEntry, continueEntry) || other.continueEntry == continueEntry)&&(identical(other.daily, daily) || other.daily == daily)&&(identical(other.currency, currency) || other.currency == currency));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeContent&&const DeepCollectionEquality().equals(other._categories, _categories)&&const DeepCollectionEquality().equals(other._subcategories, _subcategories)&&const DeepCollectionEquality().equals(other._popular, _popular)&&(identical(other.continueEntry, continueEntry) || other.continueEntry == continueEntry)&&(identical(other.daily, daily) || other.daily == daily)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.dayStreak, dayStreak) || other.dayStreak == dayStreak)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_categories),const DeepCollectionEquality().hash(_subcategories),const DeepCollectionEquality().hash(_popular),continueEntry,daily,currency);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_categories),const DeepCollectionEquality().hash(_subcategories),const DeepCollectionEquality().hash(_popular),continueEntry,daily,currency,dayStreak,playerLevel);
 
 @override
 String toString() {
-  return 'HomeContent(categories: $categories, subcategories: $subcategories, popular: $popular, continueEntry: $continueEntry, daily: $daily, currency: $currency)';
+  return 'HomeContent(categories: $categories, subcategories: $subcategories, popular: $popular, continueEntry: $continueEntry, daily: $daily, currency: $currency, dayStreak: $dayStreak, playerLevel: $playerLevel)';
 }
 
 
@@ -1162,7 +1172,7 @@ abstract mixin class _$HomeContentCopyWith<$Res> implements $HomeContentCopyWith
   factory _$HomeContentCopyWith(_HomeContent value, $Res Function(_HomeContent) _then) = __$HomeContentCopyWithImpl;
 @override @useResult
 $Res call({
- List<Category> categories, List<Subcategory> subcategories, List<PopularQuiz> popular, ContinueEntry? continueEntry, DailyChallengePreview? daily, PlayerCurrency? currency
+ List<Category> categories, List<Subcategory> subcategories, List<PopularQuiz> popular, ContinueEntry? continueEntry, DailyChallengePreview? daily, PlayerCurrency? currency, int dayStreak, int playerLevel
 });
 
 
@@ -1179,7 +1189,7 @@ class __$HomeContentCopyWithImpl<$Res>
 
 /// Create a copy of HomeContent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? categories = null,Object? subcategories = null,Object? popular = null,Object? continueEntry = freezed,Object? daily = freezed,Object? currency = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? categories = null,Object? subcategories = null,Object? popular = null,Object? continueEntry = freezed,Object? daily = freezed,Object? currency = freezed,Object? dayStreak = null,Object? playerLevel = null,}) {
   return _then(_HomeContent(
 categories: null == categories ? _self._categories : categories // ignore: cast_nullable_to_non_nullable
 as List<Category>,subcategories: null == subcategories ? _self._subcategories : subcategories // ignore: cast_nullable_to_non_nullable
@@ -1187,7 +1197,9 @@ as List<Subcategory>,popular: null == popular ? _self._popular : popular // igno
 as List<PopularQuiz>,continueEntry: freezed == continueEntry ? _self.continueEntry : continueEntry // ignore: cast_nullable_to_non_nullable
 as ContinueEntry?,daily: freezed == daily ? _self.daily : daily // ignore: cast_nullable_to_non_nullable
 as DailyChallengePreview?,currency: freezed == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
-as PlayerCurrency?,
+as PlayerCurrency?,dayStreak: null == dayStreak ? _self.dayStreak : dayStreak // ignore: cast_nullable_to_non_nullable
+as int,playerLevel: null == playerLevel ? _self.playerLevel : playerLevel // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

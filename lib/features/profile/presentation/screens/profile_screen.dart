@@ -27,6 +27,8 @@ import 'package:quizoo/features/profile/data/profile_api.dart';
 import 'package:quizoo/features/profile/data/profile_repository.dart';
 import 'package:quizoo/features/profile/domain/profile_summary.dart';
 import 'package:quizoo/features/profile/presentation/bloc/profile_cubit.dart';
+import 'package:quizoo/features/profile/presentation/widgets/badges_rail.dart';
+import 'package:quizoo/features/profile/presentation/widgets/guest_sign_in_banner.dart';
 import 'package:quizoo/features/profile/presentation/widgets/logout_confirmation_dialog.dart';
 import 'package:quizoo/features/profile/presentation/widgets/stat_strip.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
@@ -66,8 +68,16 @@ class ProfileScreen extends StatelessWidget {
         // the device a brand-new anonymous `profiles` row, so this must
         // also fire on the SessionSignedIn -> SessionGuest transition, not
         // only guest -> signed-in.
-        listenWhen: (previous, current) =>
-            (current is SessionSignedIn) != (previous is SessionSignedIn),
+        listenWhen: (previous, current) {
+          final wasSignedIn = previous is SessionSignedIn;
+          final isSignedIn = current is SessionSignedIn;
+          if (wasSignedIn != isSignedIn) return true;
+          // Also reload on an in-place profile edit (Edit Profile's Save) —
+          // `AuthUser` is `@freezed`, so `!=` is already value equality.
+          return previous is SessionSignedIn &&
+              current is SessionSignedIn &&
+              previous.user != current.user;
+        },
         listener: (context, state) => context.read<ProfileCubit>().load(),
         child: _ProfileView(isOwnProfile: isOwnProfile),
       ),
@@ -205,7 +215,7 @@ class _ProfileLoadedView extends StatelessWidget {
             ),
             children: [
               if (isOwnProfile && !isSignedIn) ...[
-                const _GuestSignInBanner(),
+                const GuestSignInBanner(),
                 SizedBox(height: AppSpacing.xl.h),
               ],
               StatStrip(
@@ -220,55 +230,10 @@ class _ProfileLoadedView extends StatelessWidget {
                 ],
               ),
               SizedBox(height: AppSpacing.xl.h),
-              SectionHeader(
-                title: l10n.profileRecentBadges,
-                actionLabel: l10n.profileAllBadges(summary.badgeCount),
-                onActionPressed: () => context.push(AppRoutes.achievements),
-              ),
-              SizedBox(height: AppSpacing.md.h),
-              SizedBox(
-                height: 96.h,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: summary.recentBadges.length,
-                  separatorBuilder: (_, _) => SizedBox(width: AppSpacing.md.w),
-                  itemBuilder: (context, index) {
-                    final badge = summary.recentBadges[index];
-                    return SizedBox(
-                      width: 78.w,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 78.w,
-                            height: 78.w,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              gradient: AppGradients.tileFromHex(
-                                badge.gradientFrom,
-                                badge.gradientTo,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.card.r + 4,
-                              ),
-                            ),
-                            child: Text(
-                              badge.emoji,
-                              style: AppTypography.glyph(36.sp),
-                            ),
-                          ),
-                          SizedBox(height: 5.h),
-                          Text(
-                            badge.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.labelSmall,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+              BadgesRail(
+                badges: summary.recentBadges,
+                badgeCount: summary.badgeCount,
+                onSeeAll: () => context.push(AppRoutes.achievements),
               ),
               SizedBox(height: AppSpacing.xl.h),
               SectionHeader(title: l10n.profileBestCategories),
@@ -314,89 +279,6 @@ class _ProfileLoadedView extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// The loaded view's guest nudge: real data is already showing above it (the
-/// player's anonymous session is a real Supabase identity), so this is an
-/// invitation to turn that into a permanent account, not a gate. The sign-in
-/// button renders explicitly below the copy rather than relying on the whole
-/// card being silently tappable, so the CTA reads as a CTA.
-class _GuestSignInBanner extends StatelessWidget {
-  const _GuestSignInBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final quizoo = context.quizoo;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md.w),
-      decoration: BoxDecoration(
-        color: quizoo.s1,
-        borderRadius: BorderRadius.circular(AppRadius.listRow.r),
-        border: Border.all(color: quizoo.g, width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: ListRowTile.avatarSize.w,
-                height: ListRowTile.avatarSize.w,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: quizoo.s3,
-                  border: Border.all(color: quizoo.s1, width: 2),
-                ),
-                child: Text('🐼', style: AppTypography.glyph(19.sp)),
-              ),
-              SizedBox(width: AppSpacing.md.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      l10n.homePlayingAsGuest,
-                      style: textTheme.bodyLarge!.copyWith(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.14,
-                        color: quizoo.tx,
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 1.h),
-                      child: Text(
-                        l10n.profileGuestBannerSubtitle,
-                        style: textTheme.bodyLarge!.copyWith(
-                          fontSize: 11.5.sp,
-                          fontWeight: FontWeight.w600,
-                          color: quizoo.tx3,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: AppSpacing.sm.h),
-          SizedBox(
-            width: double.infinity,
-            child: ChunkyButton.secondary(
-              label: l10n.profileGuestAction,
-              isSmall: true,
-              onPressed: () => context.push(AppRoutes.saveProgress),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -473,7 +355,24 @@ class _ProfileHeader extends StatelessWidget {
                         child: GestureDetector(
                           onTap: () => context.push(AppRoutes.settings),
                           behavior: HitTestBehavior.opaque,
-                          child: Text('⚙️', style: AppTypography.glyph(17.sp)),
+                          child: Container(
+                            width: 34.w,
+                            height: 34.w,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.18),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.5),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.settings_rounded,
+                              size: 18.sp,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                   ],
@@ -482,24 +381,34 @@ class _ProfileHeader extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 74.w,
-                      height: 74.w,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.16),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          width: 3,
+                    Semantics(
+                      button: isOwnProfile,
+                      label: isOwnProfile ? l10n.profileEditAction : null,
+                      child: GestureDetector(
+                        onTap: isOwnProfile
+                            ? () => context.push(AppRoutes.editProfile)
+                            : null,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          width: 74.w,
+                          height: 74.w,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.16),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              width: 3,
+                            ),
+                          ),
+                          child: isLoading
+                              ? null
+                              : Text(
+                                  summary?.avatarEmoji ?? '🐼',
+                                  style: AppTypography.glyph(37.sp),
+                                ),
                         ),
                       ),
-                      child: isLoading
-                          ? null
-                          : Text(
-                              summary?.avatarEmoji ?? '🐼',
-                              style: AppTypography.glyph(37.sp),
-                            ),
                     ),
                     SizedBox(width: AppSpacing.md.w + 2.w),
                     Expanded(

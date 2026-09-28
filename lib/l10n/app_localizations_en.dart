@@ -775,6 +775,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileChooseAvatar => 'Choose your avatar';
 
   @override
+  String get profileEditTitle => 'Edit profile';
+
+  @override
+  String get profileEditAction => 'Edit profile';
+
+  @override
+  String get profileSaveChanges => 'Save changes';
+
+  @override
+  String get profileChangesSaved => 'Changes saved';
+
+  @override
+  String get profileUpdateError => 'Couldn\'t save your changes';
+
+  @override
   String get contentErrorTitle => 'That didn\'t load';
 
   @override
@@ -900,6 +915,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaderboardPeriodAllTime => 'All time';
+
+  @override
+  String get leaderboardPodiumFirst => '1st';
+
+  @override
+  String get leaderboardPodiumSecond => '2nd';
+
+  @override
+  String get leaderboardPodiumThird => '3rd';
 
   @override
   String get leaderboardSelfTitle => 'You';

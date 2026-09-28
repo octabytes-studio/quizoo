@@ -58,6 +58,7 @@ class LeaderboardApi {
       final rows = await query
           .order(
             scope == LeaderboardScope.country ? 'rank_country' : 'rank_global',
+            ascending: true,
           )
           .limit(_rosterLimit);
 
@@ -141,7 +142,7 @@ class LeaderboardApi {
           .from('lb_alltime')
           .select('user_id, points, rank_subcategory')
           .eq('subcategory_id', subcategoryId)
-          .order('rank_subcategory')
+          .order('rank_subcategory', ascending: true)
           .limit(_rosterLimit);
 
       final userIds = [for (final row in rows) row['user_id'] as String];
@@ -434,7 +435,7 @@ class LeaderboardApi {
     if (userIds.isEmpty) return const {};
     final rows = await _client
         .from('profiles')
-        .select('id, username, avatar_key, country_code, city')
+        .select('id, username, avatar_key, country_code')
         .inFilter('id', userIds.toSet().toList());
 
     return {
@@ -442,18 +443,19 @@ class LeaderboardApi {
         row['id'] as String: (
           row['username'] as String? ?? '—',
           row['avatar_key'] as String? ?? '🐼',
-          _locationLabel(
-            row['country_code'] as String?,
-            row['city'] as String?,
-          ),
+          _locationLabel(row['country_code'] as String?),
         ),
     };
   }
 
-  static String? _locationLabel(String? countryCode, String? city) {
+  /// "🇵🇰 Pakistan" — flag plus the player's real, currently-selected
+  /// country. Never a city: `profiles.city` isn't a field players actually
+  /// set today, so showing it renders leftover seed/mock data instead of
+  /// something a real player chose.
+  static String? _locationLabel(String? countryCode) {
     if (countryCode == null) return null;
     final flag = CountryDirectory.flagFor(countryCode);
-    return city == null || city.isEmpty ? flag : '$flag $city';
+    return '$flag ${CountryDirectory.nameFor(countryCode)}';
   }
 
   static DateTime _startOfWeekUtc() {
