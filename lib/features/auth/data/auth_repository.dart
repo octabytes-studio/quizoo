@@ -74,6 +74,11 @@ class AuthRepository {
   Future<bool> isUsernameAvailable(String username) =>
       _api.isUsernameAvailable(username);
 
+  Future<AuthUser> updateProfile({
+    required String username,
+    required String avatarEmoji,
+  }) => _api.updateProfile(username: username, avatarEmoji: avatarEmoji);
+
   /// Invalidates the current account's session and drops back to a guest.
   Future<void> signOut() => _api.signOut();
 }

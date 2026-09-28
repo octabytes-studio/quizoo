@@ -217,6 +217,56 @@ void main() {
       expect: () => <SessionState>[],
       errors: () => [isA<ApiException>()],
     );
+
+    blocTest<SessionCubit, SessionState>(
+      'success path: Edit Profile saves the new username/avatar directly '
+      'into SessionSignedIn, with no SessionAuthenticating step',
+      setUp: () {
+        when(
+          () => repository.updateProfile(
+            username: any(named: 'username'),
+            avatarEmoji: any(named: 'avatarEmoji'),
+          ),
+        ).thenAnswer(
+          (_) async => const AuthUser(
+            id: 'user_google',
+            displayName: 'NewName',
+            provider: AuthProvider.google,
+            avatarEmoji: '🐸',
+          ),
+        );
+      },
+      build: () => SessionCubit(repository),
+      seed: () => const SessionSignedIn(user),
+      act: (cubit) =>
+          cubit.updateProfile(username: 'NewName', avatarEmoji: '🐸'),
+      expect: () => [
+        isA<SessionSignedIn>().having(
+          (state) => state.user.displayName,
+          'name',
+          'NewName',
+        ),
+      ],
+    );
+
+    blocTest<SessionCubit, SessionState>(
+      'failure path: a failed Edit Profile save rethrows and leaves the '
+      'player signed in exactly as before, like signOut',
+      setUp: () {
+        when(
+          () => repository.updateProfile(
+            username: any(named: 'username'),
+            avatarEmoji: any(named: 'avatarEmoji'),
+          ),
+        ).thenThrow(const ApiException.network());
+      },
+      build: () => SessionCubit(repository),
+      seed: () => const SessionSignedIn(user),
+      act: (cubit) =>
+          cubit.updateProfile(username: 'NewName', avatarEmoji: '🐸'),
+      expect: () => <SessionState>[],
+      errors: () => [isA<ApiException>()],
+    );
   });
 
   group('AuthRepository save-progress rules', () {

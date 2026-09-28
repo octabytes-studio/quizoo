@@ -95,16 +95,23 @@ class HomeApi {
       PlayerCurrency? currency;
       DailyChallengePreview? daily;
       ContinueEntry? continueEntry;
+      var dayStreak = 0;
+      var playerLevel = 0;
 
       if (isSignedIn) {
         final userId = _client.auth.currentUser!.id;
 
         final profileRow = await _client
             .from('profiles')
-            .select('coins, gems, hearts, max_hearts, hearts_updated_at')
+            .select(
+              'coins, gems, hearts, max_hearts, hearts_updated_at, '
+              'streak_days, player_level',
+            )
             .eq('id', userId)
             .single();
         currency = _currencyFromRow(profileRow);
+        dayStreak = profileRow['streak_days'] as int? ?? 0;
+        playerLevel = profileRow['player_level'] as int? ?? 1;
 
         final today = DateTime.now().toUtc();
         final todayDate =
@@ -156,6 +163,8 @@ class HomeApi {
         currency: currency,
         daily: daily,
         continueEntry: continueEntry,
+        dayStreak: dayStreak,
+        playerLevel: playerLevel,
       );
     } catch (error) {
       if (error is ApiException) rethrow;

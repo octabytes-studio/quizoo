@@ -774,6 +774,21 @@ class AppLocalizationsUr extends AppLocalizations {
   String get profileChooseAvatar => 'Choose your avatar';
 
   @override
+  String get profileEditTitle => 'Edit profile';
+
+  @override
+  String get profileEditAction => 'Edit profile';
+
+  @override
+  String get profileSaveChanges => 'Save changes';
+
+  @override
+  String get profileChangesSaved => 'Changes saved';
+
+  @override
+  String get profileUpdateError => 'Couldn\'t save your changes';
+
+  @override
   String get contentErrorTitle => 'یہ لوڈ نہیں ہو سکا';
 
   @override

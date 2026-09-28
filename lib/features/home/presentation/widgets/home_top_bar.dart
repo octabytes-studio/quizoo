@@ -64,6 +64,7 @@ class PlayerTopBar extends StatelessWidget {
     required this.dayStreak,
     required this.playerLevel,
     required this.onSearchPressed,
+    required this.onAvatarTap,
     super.key,
   });
 
@@ -73,6 +74,9 @@ class PlayerTopBar extends StatelessWidget {
   final int dayStreak;
   final int playerLevel;
   final VoidCallback onSearchPressed;
+
+  /// Opens Edit Profile (plan 019) — Home's only entry point to it.
+  final VoidCallback onAvatarTap;
 
   /// `.avc` at the size the top bar uses.
   static const double avatarSize = 38;
@@ -86,16 +90,24 @@ class PlayerTopBar extends StatelessWidget {
 
     return _TopBarFrame(
       children: [
-        Container(
-          width: avatarSize.w,
-          height: avatarSize.w,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: quizoo.s3,
-            border: Border.all(color: quizoo.s1, width: 2),
+        Semantics(
+          button: true,
+          label: l10n.profileEditAction,
+          child: GestureDetector(
+            onTap: onAvatarTap,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              width: avatarSize.w,
+              height: avatarSize.w,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: quizoo.s3,
+                border: Border.all(color: quizoo.s1, width: 2),
+              ),
+              child: Text(avatarEmoji, style: AppTypography.glyph(19.sp)),
+            ),
           ),
-          child: Text(avatarEmoji, style: AppTypography.glyph(19.sp)),
         ),
         SizedBox(width: AppSpacing.md.w),
         Expanded(

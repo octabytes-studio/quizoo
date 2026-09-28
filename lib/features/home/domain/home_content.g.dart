@@ -90,6 +90,8 @@ _HomeContent _$HomeContentFromJson(Map<String, dynamic> json) => _HomeContent(
   currency: json['currency'] == null
       ? null
       : PlayerCurrency.fromJson(json['currency'] as Map<String, dynamic>),
+  dayStreak: (json['dayStreak'] as num?)?.toInt() ?? 0,
+  playerLevel: (json['playerLevel'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$HomeContentToJson(_HomeContent instance) =>
@@ -100,4 +102,6 @@ Map<String, dynamic> _$HomeContentToJson(_HomeContent instance) =>
       'continueEntry': instance.continueEntry,
       'daily': instance.daily,
       'currency': instance.currency,
+      'dayStreak': instance.dayStreak,
+      'playerLevel': instance.playerLevel,
     };

@@ -58,7 +58,7 @@ The Shop feature (`lib/features/shop/`) was deleted outright rather than fixed: 
 
 | File:Line | What's mocked | Impact |
 |---|---|---|
-| `presentation/screens/home_screen.dart:302-306,496-500` | `PlayerTopBar` is given `dayStreak: MockPlayer.dayStreak` and `playerLevel: MockPlayer.playerLevel` unconditionally — **even for a real signed-in user with real data**. `currency` in the loaded state is real, but level/streak are not. | **High** — the real `dayStreak`/`playerLevel` computation already exists and is correct in `features/profile` (`profile_api.dart:103-104`, reading `streak_days`/`player_level` from Postgres); Home simply never calls it, so every signed-in player sees a fixed "Level 12, 12-day streak" regardless of their actual progress. |
+| ~~`presentation/screens/home_screen.dart:302-306,496-500`~~ | **Fixed by plan 019.** `PlayerTopBar` now reads `dayStreak`/`playerLevel` from `HomeContent` (`HomeApi.fetchCachedHome`'s `profiles` query now selects `streak_days`/`player_level`), never `MockPlayer`. The pre-fetch skeleton shows an honest `0`/`Level 0` instead of a fabricated specific number. | — |
 | `home_screen.dart:135-136` | Continue-row category lookup keys off `MockCatalog.footballId`/`solarSystemId` constants (IDs only, not display data) — low impact, just noted for completeness. | Low |
 
 ---
@@ -113,4 +113,4 @@ Real by contrast: `notifications_api.dart` (in-app notification list, mark-read,
 2. ~~**Quiz Play's in-game economy is disconnected from the wallet**~~ — **fixed by plan 013**: power-ups are now granted once per level and spent from that pool, and "watch ad for heart" is a real `google_mobile_ads` rewarded ad rather than a `Timer`.
 3. ~~**Duel has no real matchmaking**~~ — **fixed by plan 017**: a realtime Duel Arena (challenges + join requests), server-side matchmaking and server-refereed live duels; the bot is now only a labelled practice fallback.
 4. **Delete Account doesn't delete anything** — it signs out to guest and shows a success message.
-5. **Home's top bar shows a fixed level/streak** for every signed-in user, even though the real values are already computed correctly in the Profile feature one tap away.
+5. ~~**Home's top bar shows a fixed level/streak**~~ — **fixed by plan 019**: `PlayerTopBar` now reads the signed-in player's real `streak_days`/`player_level` from `HomeContent`.
