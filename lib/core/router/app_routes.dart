@@ -147,17 +147,16 @@ abstract final class AppRoutes {
   static const String stats = '/you/stats';
 
   // -------------------------------------------------------------- duel
-  /// S-38 Play sheet (centre FAB).
-  ///
-  /// The FAB itself opens `PlayLauncherSheet` as a modal bottom sheet — it
-  /// does not push. This path exists so the sheet is still deep-linkable for
-  /// design review.
-  static const String playLauncher = '/play-launcher';
+  /// S-38 — Duel arena; the centre FAB pushes it (plan 017).
+  static const String duelArena = '/duel';
 
-  /// S-39 Matchmaking.
+  /// S-39 Matchmaking; `extra`: the `DuelTopic` to match in.
   static const String duelMatchmaking = '/duel/matchmaking';
 
-  /// S-40 Duel in play.
+  /// The labelled bot duel (S-40 variant); `extra`: `BotDuelArgs`.
+  static const String duelBot = '/duel/bot';
+
+  /// S-40 live duel by server id.
   static const String duelPlay = '/duel/:duelId';
 
   static String duelPlayPath(String duelId) => '/duel/$duelId';
@@ -241,7 +240,7 @@ abstract final class AppRoutes {
   static const String s33 = achievements;
   static const String s34 = badgeDetail;
   static const String s35 = stats;
-  static const String s38 = playLauncher;
+  static const String s38 = duelArena;
   static const String s39 = duelMatchmaking;
   static const String s40 = duelPlay;
   static const String s41 = duelResult;
@@ -376,9 +375,9 @@ const List<ScreenRef> kScreenIndex = [
   ScreenRef('S-35', 'Stats', AppRoutes.stats, '003'),
   ScreenRef(
     'S-38',
-    'Play sheet (FAB)',
-    AppRoutes.playLauncher,
-    '001',
+    'Duel arena (FAB)',
+    AppRoutes.duelArena,
+    '017',
     group: 'Duel',
   ),
   ScreenRef('S-39', 'Matchmaking', AppRoutes.duelMatchmaking, '004'),

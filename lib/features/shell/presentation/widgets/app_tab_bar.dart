@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/app_elevation.dart';
-import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
@@ -15,13 +14,12 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// bottom of the viewport rather than floating up under short content (§05).
 ///
 /// The centre slot is not a tab. It has no page of its own; tapping it opens
-/// the play sheet and rotates the FAB 45° into a close icon.
+/// the full-screen Duel Arena (plan 017).
 class AppTabBar extends StatelessWidget {
   const AppTabBar({
     required this.currentIndex,
     required this.onTabSelected,
     required this.onPlayPressed,
-    required this.isPlaySheetOpen,
     super.key,
   });
 
@@ -31,9 +29,6 @@ class AppTabBar extends StatelessWidget {
 
   final ValueChanged<int> onTabSelected;
   final VoidCallback onPlayPressed;
-
-  /// Rotates the FAB into its close state.
-  final bool isPlaySheetOpen;
 
   /// `.tabs .fab` — 58×58.
   static const double fabSize = 58;
@@ -74,9 +69,7 @@ class AppTabBar extends StatelessWidget {
                     onTap: () => onTabSelected(branch),
                   ),
                 ),
-              Expanded(
-                child: _PlayFab(isOpen: isPlaySheetOpen, onTap: onPlayPressed),
-              ),
+              Expanded(child: _PlayFab(onTap: onPlayPressed)),
               for (var branch = 2; branch < 4; branch++)
                 Expanded(
                   child: _TabButton(
@@ -162,12 +155,11 @@ class _TabButton extends StatelessWidget {
   }
 }
 
-/// The centre FAB. Mango on its own 4px ledge, lifted above the bar, and
-/// rotated 45° into a ✕ while the play sheet is open.
+/// The centre FAB. Mango on its own 4px ledge, lifted above the bar; opens
+/// the Duel Arena.
 class _PlayFab extends StatelessWidget {
-  const _PlayFab({required this.isOpen, required this.onTap});
+  const _PlayFab({required this.onTap});
 
-  final bool isOpen;
   final VoidCallback onTap;
 
   @override
@@ -178,8 +170,7 @@ class _PlayFab extends StatelessWidget {
 
     return Semantics(
       button: true,
-      expanded: isOpen,
-      label: isOpen ? l10n.playSheetClose : l10n.tabPlay,
+      label: l10n.tabPlay,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
@@ -202,17 +193,12 @@ class _PlayFab extends StatelessWidget {
                   BoxShadow(color: quizoo.pShadow, offset: Offset(0, ledge)),
                 ],
               ),
-              child: AnimatedRotation(
-                duration: AppMotion.durationOf(context, AppMotion.sheet),
-                curve: AppMotion.curveOf(context, AppMotion.sheetCurve),
-                turns: isOpen ? 0.125 : 0,
-                child: Text(
-                  isOpen ? '✕' : '⚔️',
-                  style: AppTypography.glyph(
-                    isOpen ? 22.sp : 26.sp,
-                    height: 1,
-                    color: Colors.white,
-                  ),
+              child: Text(
+                '⚔️',
+                style: AppTypography.glyph(
+                  26.sp,
+                  height: 1,
+                  color: Colors.white,
                 ),
               ),
             ),

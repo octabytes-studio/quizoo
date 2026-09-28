@@ -28,18 +28,6 @@
   "tabDaily": "روزانہ",
   "tabYou": "آپ",
 
-  "playSheetTitle": "کھیلیں",
-  "playSheetSubtitle": "منتخب کریں کہ ابھی کیسے کھیلنا ہے۔",
-  "playSheetDuel": "ایک بمقابلہ ایک مقابلہ",
-  "playSheetDuelMeta": "۵ سوالات · جیتنے والا لے گا ۲۰۰ 🪙",
-  "playSheetQuickPlay": "فوری کھیل",
-  "playSheetQuickPlayMeta": "آپ کی سطح کا ایک بے ترتیب لیول",
-  "playSheetDaily": "روزانہ کا چیلنج",
-  "playSheetDailyMeta": "ابھی نہیں کھیلا · ۴ گھنٹے ۱۲ منٹ باقی",
-  "playSheetFriend": "دوست کو چیلنج کریں",
-  "playSheetFriendMeta": "دانش ایم ابھی آن لائن ہیں",
-  "playSheetGo": "چلیں ←",
-  "playSheetClose": "کھیل کا مینو بند کریں",
 
   "questionCounter": "سوال {current} از {total}",
   "questionLevelMeta": "لیول {level} از {total} · فی سوال {seconds} سیکنڈ",

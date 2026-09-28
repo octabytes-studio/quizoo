@@ -235,7 +235,10 @@ void main() {
         return gradient.colors;
       }
 
-      final router = AppRouter.create()..go(AppRoutes.duelPlayPath('demo'));
+      // The bot duel's route with no args renders its error state inside the
+      // arena gradient without touching the network — the live duel route
+      // (`duelPlayPath`) would open Realtime channels (plan 017).
+      final router = AppRouter.create()..go(AppRoutes.duelBot);
       final preferences = await testPreferences();
 
       await tester.pumpWidget(

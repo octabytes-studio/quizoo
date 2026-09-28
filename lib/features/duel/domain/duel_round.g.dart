@@ -14,6 +14,9 @@ _DuelRoundRecord _$DuelRoundRecordFromJson(Map<String, dynamic> json) =>
       playerAnswerSeconds: (json['playerAnswerSeconds'] as num).toInt(),
       opponentAnswerSeconds: (json['opponentAnswerSeconds'] as num).toInt(),
       outcome: $enumDecode(_$RoundOutcomeEnumMap, json['outcome']),
+      correctIndex: (json['correctIndex'] as num?)?.toInt(),
+      playerChoice: (json['playerChoice'] as num?)?.toInt(),
+      opponentChoice: (json['opponentChoice'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$DuelRoundRecordToJson(_DuelRoundRecord instance) =>
@@ -24,6 +27,9 @@ Map<String, dynamic> _$DuelRoundRecordToJson(_DuelRoundRecord instance) =>
       'playerAnswerSeconds': instance.playerAnswerSeconds,
       'opponentAnswerSeconds': instance.opponentAnswerSeconds,
       'outcome': _$RoundOutcomeEnumMap[instance.outcome]!,
+      'correctIndex': instance.correctIndex,
+      'playerChoice': instance.playerChoice,
+      'opponentChoice': instance.opponentChoice,
     };
 
 const _$RoundOutcomeEnumMap = {

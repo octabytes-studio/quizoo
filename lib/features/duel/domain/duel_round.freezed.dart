@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DuelRoundRecord {
 
- int get roundNumber; bool get playerCorrect; bool get opponentCorrect; int get playerAnswerSeconds; int get opponentAnswerSeconds; RoundOutcome get outcome;
+ int get roundNumber; bool get playerCorrect; bool get opponentCorrect; int get playerAnswerSeconds; int get opponentAnswerSeconds; RoundOutcome get outcome; int? get correctIndex; int? get playerChoice; int? get opponentChoice;
 /// Create a copy of DuelRoundRecord
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DuelRoundRecordCopyWith<DuelRoundRecord> get copyWith => _$DuelRoundRecordCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelRoundRecord&&(identical(other.roundNumber, roundNumber) || other.roundNumber == roundNumber)&&(identical(other.playerCorrect, playerCorrect) || other.playerCorrect == playerCorrect)&&(identical(other.opponentCorrect, opponentCorrect) || other.opponentCorrect == opponentCorrect)&&(identical(other.playerAnswerSeconds, playerAnswerSeconds) || other.playerAnswerSeconds == playerAnswerSeconds)&&(identical(other.opponentAnswerSeconds, opponentAnswerSeconds) || other.opponentAnswerSeconds == opponentAnswerSeconds)&&(identical(other.outcome, outcome) || other.outcome == outcome));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelRoundRecord&&(identical(other.roundNumber, roundNumber) || other.roundNumber == roundNumber)&&(identical(other.playerCorrect, playerCorrect) || other.playerCorrect == playerCorrect)&&(identical(other.opponentCorrect, opponentCorrect) || other.opponentCorrect == opponentCorrect)&&(identical(other.playerAnswerSeconds, playerAnswerSeconds) || other.playerAnswerSeconds == playerAnswerSeconds)&&(identical(other.opponentAnswerSeconds, opponentAnswerSeconds) || other.opponentAnswerSeconds == opponentAnswerSeconds)&&(identical(other.outcome, outcome) || other.outcome == outcome)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.playerChoice, playerChoice) || other.playerChoice == playerChoice)&&(identical(other.opponentChoice, opponentChoice) || other.opponentChoice == opponentChoice));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,roundNumber,playerCorrect,opponentCorrect,playerAnswerSeconds,opponentAnswerSeconds,outcome);
+int get hashCode => Object.hash(runtimeType,roundNumber,playerCorrect,opponentCorrect,playerAnswerSeconds,opponentAnswerSeconds,outcome,correctIndex,playerChoice,opponentChoice);
 
 @override
 String toString() {
-  return 'DuelRoundRecord(roundNumber: $roundNumber, playerCorrect: $playerCorrect, opponentCorrect: $opponentCorrect, playerAnswerSeconds: $playerAnswerSeconds, opponentAnswerSeconds: $opponentAnswerSeconds, outcome: $outcome)';
+  return 'DuelRoundRecord(roundNumber: $roundNumber, playerCorrect: $playerCorrect, opponentCorrect: $opponentCorrect, playerAnswerSeconds: $playerAnswerSeconds, opponentAnswerSeconds: $opponentAnswerSeconds, outcome: $outcome, correctIndex: $correctIndex, playerChoice: $playerChoice, opponentChoice: $opponentChoice)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $DuelRoundRecordCopyWith<$Res>  {
   factory $DuelRoundRecordCopyWith(DuelRoundRecord value, $Res Function(DuelRoundRecord) _then) = _$DuelRoundRecordCopyWithImpl;
 @useResult
 $Res call({
- int roundNumber, bool playerCorrect, bool opponentCorrect, int playerAnswerSeconds, int opponentAnswerSeconds, RoundOutcome outcome
+ int roundNumber, bool playerCorrect, bool opponentCorrect, int playerAnswerSeconds, int opponentAnswerSeconds, RoundOutcome outcome, int? correctIndex, int? playerChoice, int? opponentChoice
 });
 
 
@@ -65,7 +65,7 @@ class _$DuelRoundRecordCopyWithImpl<$Res>
 
 /// Create a copy of DuelRoundRecord
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? roundNumber = null,Object? playerCorrect = null,Object? opponentCorrect = null,Object? playerAnswerSeconds = null,Object? opponentAnswerSeconds = null,Object? outcome = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? roundNumber = null,Object? playerCorrect = null,Object? opponentCorrect = null,Object? playerAnswerSeconds = null,Object? opponentAnswerSeconds = null,Object? outcome = null,Object? correctIndex = freezed,Object? playerChoice = freezed,Object? opponentChoice = freezed,}) {
   return _then(_self.copyWith(
 roundNumber: null == roundNumber ? _self.roundNumber : roundNumber // ignore: cast_nullable_to_non_nullable
 as int,playerCorrect: null == playerCorrect ? _self.playerCorrect : playerCorrect // ignore: cast_nullable_to_non_nullable
@@ -73,7 +73,10 @@ as bool,opponentCorrect: null == opponentCorrect ? _self.opponentCorrect : oppon
 as bool,playerAnswerSeconds: null == playerAnswerSeconds ? _self.playerAnswerSeconds : playerAnswerSeconds // ignore: cast_nullable_to_non_nullable
 as int,opponentAnswerSeconds: null == opponentAnswerSeconds ? _self.opponentAnswerSeconds : opponentAnswerSeconds // ignore: cast_nullable_to_non_nullable
 as int,outcome: null == outcome ? _self.outcome : outcome // ignore: cast_nullable_to_non_nullable
-as RoundOutcome,
+as RoundOutcome,correctIndex: freezed == correctIndex ? _self.correctIndex : correctIndex // ignore: cast_nullable_to_non_nullable
+as int?,playerChoice: freezed == playerChoice ? _self.playerChoice : playerChoice // ignore: cast_nullable_to_non_nullable
+as int?,opponentChoice: freezed == opponentChoice ? _self.opponentChoice : opponentChoice // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -158,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int roundNumber,  bool playerCorrect,  bool opponentCorrect,  int playerAnswerSeconds,  int opponentAnswerSeconds,  RoundOutcome outcome)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int roundNumber,  bool playerCorrect,  bool opponentCorrect,  int playerAnswerSeconds,  int opponentAnswerSeconds,  RoundOutcome outcome,  int? correctIndex,  int? playerChoice,  int? opponentChoice)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DuelRoundRecord() when $default != null:
-return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_that.playerAnswerSeconds,_that.opponentAnswerSeconds,_that.outcome);case _:
+return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_that.playerAnswerSeconds,_that.opponentAnswerSeconds,_that.outcome,_that.correctIndex,_that.playerChoice,_that.opponentChoice);case _:
   return orElse();
 
 }
@@ -179,10 +182,10 @@ return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int roundNumber,  bool playerCorrect,  bool opponentCorrect,  int playerAnswerSeconds,  int opponentAnswerSeconds,  RoundOutcome outcome)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int roundNumber,  bool playerCorrect,  bool opponentCorrect,  int playerAnswerSeconds,  int opponentAnswerSeconds,  RoundOutcome outcome,  int? correctIndex,  int? playerChoice,  int? opponentChoice)  $default,) {final _that = this;
 switch (_that) {
 case _DuelRoundRecord():
-return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_that.playerAnswerSeconds,_that.opponentAnswerSeconds,_that.outcome);case _:
+return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_that.playerAnswerSeconds,_that.opponentAnswerSeconds,_that.outcome,_that.correctIndex,_that.playerChoice,_that.opponentChoice);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +202,10 @@ return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int roundNumber,  bool playerCorrect,  bool opponentCorrect,  int playerAnswerSeconds,  int opponentAnswerSeconds,  RoundOutcome outcome)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int roundNumber,  bool playerCorrect,  bool opponentCorrect,  int playerAnswerSeconds,  int opponentAnswerSeconds,  RoundOutcome outcome,  int? correctIndex,  int? playerChoice,  int? opponentChoice)?  $default,) {final _that = this;
 switch (_that) {
 case _DuelRoundRecord() when $default != null:
-return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_that.playerAnswerSeconds,_that.opponentAnswerSeconds,_that.outcome);case _:
+return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_that.playerAnswerSeconds,_that.opponentAnswerSeconds,_that.outcome,_that.correctIndex,_that.playerChoice,_that.opponentChoice);case _:
   return null;
 
 }
@@ -213,8 +216,8 @@ return $default(_that.roundNumber,_that.playerCorrect,_that.opponentCorrect,_tha
 /// @nodoc
 @JsonSerializable()
 
-class _DuelRoundRecord implements DuelRoundRecord {
-  const _DuelRoundRecord({required this.roundNumber, required this.playerCorrect, required this.opponentCorrect, required this.playerAnswerSeconds, required this.opponentAnswerSeconds, required this.outcome});
+class _DuelRoundRecord extends DuelRoundRecord {
+  const _DuelRoundRecord({required this.roundNumber, required this.playerCorrect, required this.opponentCorrect, required this.playerAnswerSeconds, required this.opponentAnswerSeconds, required this.outcome, this.correctIndex, this.playerChoice, this.opponentChoice}): super._();
   factory _DuelRoundRecord.fromJson(Map<String, dynamic> json) => _$DuelRoundRecordFromJson(json);
 
 @override final  int roundNumber;
@@ -223,6 +226,9 @@ class _DuelRoundRecord implements DuelRoundRecord {
 @override final  int playerAnswerSeconds;
 @override final  int opponentAnswerSeconds;
 @override final  RoundOutcome outcome;
+@override final  int? correctIndex;
+@override final  int? playerChoice;
+@override final  int? opponentChoice;
 
 /// Create a copy of DuelRoundRecord
 /// with the given fields replaced by the non-null parameter values.
@@ -237,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelRoundRecord&&(identical(other.roundNumber, roundNumber) || other.roundNumber == roundNumber)&&(identical(other.playerCorrect, playerCorrect) || other.playerCorrect == playerCorrect)&&(identical(other.opponentCorrect, opponentCorrect) || other.opponentCorrect == opponentCorrect)&&(identical(other.playerAnswerSeconds, playerAnswerSeconds) || other.playerAnswerSeconds == playerAnswerSeconds)&&(identical(other.opponentAnswerSeconds, opponentAnswerSeconds) || other.opponentAnswerSeconds == opponentAnswerSeconds)&&(identical(other.outcome, outcome) || other.outcome == outcome));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelRoundRecord&&(identical(other.roundNumber, roundNumber) || other.roundNumber == roundNumber)&&(identical(other.playerCorrect, playerCorrect) || other.playerCorrect == playerCorrect)&&(identical(other.opponentCorrect, opponentCorrect) || other.opponentCorrect == opponentCorrect)&&(identical(other.playerAnswerSeconds, playerAnswerSeconds) || other.playerAnswerSeconds == playerAnswerSeconds)&&(identical(other.opponentAnswerSeconds, opponentAnswerSeconds) || other.opponentAnswerSeconds == opponentAnswerSeconds)&&(identical(other.outcome, outcome) || other.outcome == outcome)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.playerChoice, playerChoice) || other.playerChoice == playerChoice)&&(identical(other.opponentChoice, opponentChoice) || other.opponentChoice == opponentChoice));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,roundNumber,playerCorrect,opponentCorrect,playerAnswerSeconds,opponentAnswerSeconds,outcome);
+int get hashCode => Object.hash(runtimeType,roundNumber,playerCorrect,opponentCorrect,playerAnswerSeconds,opponentAnswerSeconds,outcome,correctIndex,playerChoice,opponentChoice);
 
 @override
 String toString() {
-  return 'DuelRoundRecord(roundNumber: $roundNumber, playerCorrect: $playerCorrect, opponentCorrect: $opponentCorrect, playerAnswerSeconds: $playerAnswerSeconds, opponentAnswerSeconds: $opponentAnswerSeconds, outcome: $outcome)';
+  return 'DuelRoundRecord(roundNumber: $roundNumber, playerCorrect: $playerCorrect, opponentCorrect: $opponentCorrect, playerAnswerSeconds: $playerAnswerSeconds, opponentAnswerSeconds: $opponentAnswerSeconds, outcome: $outcome, correctIndex: $correctIndex, playerChoice: $playerChoice, opponentChoice: $opponentChoice)';
 }
 
 
@@ -257,7 +263,7 @@ abstract mixin class _$DuelRoundRecordCopyWith<$Res> implements $DuelRoundRecord
   factory _$DuelRoundRecordCopyWith(_DuelRoundRecord value, $Res Function(_DuelRoundRecord) _then) = __$DuelRoundRecordCopyWithImpl;
 @override @useResult
 $Res call({
- int roundNumber, bool playerCorrect, bool opponentCorrect, int playerAnswerSeconds, int opponentAnswerSeconds, RoundOutcome outcome
+ int roundNumber, bool playerCorrect, bool opponentCorrect, int playerAnswerSeconds, int opponentAnswerSeconds, RoundOutcome outcome, int? correctIndex, int? playerChoice, int? opponentChoice
 });
 
 
@@ -274,7 +280,7 @@ class __$DuelRoundRecordCopyWithImpl<$Res>
 
 /// Create a copy of DuelRoundRecord
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? roundNumber = null,Object? playerCorrect = null,Object? opponentCorrect = null,Object? playerAnswerSeconds = null,Object? opponentAnswerSeconds = null,Object? outcome = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? roundNumber = null,Object? playerCorrect = null,Object? opponentCorrect = null,Object? playerAnswerSeconds = null,Object? opponentAnswerSeconds = null,Object? outcome = null,Object? correctIndex = freezed,Object? playerChoice = freezed,Object? opponentChoice = freezed,}) {
   return _then(_DuelRoundRecord(
 roundNumber: null == roundNumber ? _self.roundNumber : roundNumber // ignore: cast_nullable_to_non_nullable
 as int,playerCorrect: null == playerCorrect ? _self.playerCorrect : playerCorrect // ignore: cast_nullable_to_non_nullable
@@ -282,7 +288,10 @@ as bool,opponentCorrect: null == opponentCorrect ? _self.opponentCorrect : oppon
 as bool,playerAnswerSeconds: null == playerAnswerSeconds ? _self.playerAnswerSeconds : playerAnswerSeconds // ignore: cast_nullable_to_non_nullable
 as int,opponentAnswerSeconds: null == opponentAnswerSeconds ? _self.opponentAnswerSeconds : opponentAnswerSeconds // ignore: cast_nullable_to_non_nullable
 as int,outcome: null == outcome ? _self.outcome : outcome // ignore: cast_nullable_to_non_nullable
-as RoundOutcome,
+as RoundOutcome,correctIndex: freezed == correctIndex ? _self.correctIndex : correctIndex // ignore: cast_nullable_to_non_nullable
+as int?,playerChoice: freezed == playerChoice ? _self.playerChoice : playerChoice // ignore: cast_nullable_to_non_nullable
+as int?,opponentChoice: freezed == opponentChoice ? _self.opponentChoice : opponentChoice // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

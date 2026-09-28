@@ -18,8 +18,12 @@ import 'package:quizoo/features/daily/presentation/screens/daily_result_screen.d
 import 'package:quizoo/features/daily/presentation/screens/daily_screen.dart';
 import 'package:quizoo/features/dev/presentation/screens/screen_index_screen.dart';
 import 'package:quizoo/features/duel/domain/duel_result.dart';
+import 'package:quizoo/features/duel/domain/duel_topic.dart';
+import 'package:quizoo/features/duel/presentation/screens/bot_duel_args.dart';
+import 'package:quizoo/features/duel/presentation/screens/duel_arena_screen.dart';
 import 'package:quizoo/features/duel/presentation/screens/duel_play_screen.dart';
 import 'package:quizoo/features/duel/presentation/screens/duel_result_screen.dart';
+import 'package:quizoo/features/duel/presentation/screens/live_duel_screen.dart';
 import 'package:quizoo/features/duel/presentation/screens/matchmaking_screen.dart';
 import 'package:quizoo/features/home/presentation/screens/home_screen.dart';
 import 'package:quizoo/features/home/presentation/screens/search_screen.dart';
@@ -44,7 +48,6 @@ import 'package:quizoo/features/settings/presentation/screens/notifications_scre
 import 'package:quizoo/features/settings/presentation/screens/privacy_settings_screen.dart';
 import 'package:quizoo/features/settings/presentation/screens/settings_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
-import 'package:quizoo/features/shell/presentation/widgets/play_launcher_sheet.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// The app's one and only [GoRouter].
@@ -52,7 +55,8 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// Shape, fixed here so plans 002–004 only ever swap a builder's body:
 ///
 /// * A [StatefulShellRoute.indexedStack] holding the four tab branches. The
-///   centre "Play" slot is not a branch — it opens a sheet, it does not push.
+///   centre "Play" slot is not a branch — it pushes the Duel Arena
+///   (plan 017).
 /// * Everything else as a **top-level** route on the root navigator, so it
 ///   covers the tab bar. That is what implements the bible's "the play surface
 ///   is a full-screen route pushed over the shell with the tab bar hidden".
@@ -275,26 +279,28 @@ abstract final class AppRouter {
 
         // Duel
         GoRoute(
-          path: AppRoutes.playLauncher,
+          path: AppRoutes.duelArena,
           parentNavigatorKey: rootNavigatorKey,
-          pageBuilder: (context, state) =>
-              _sheetPage(state, const PlayLauncherSheet()),
+          builder: (context, state) => const DuelArenaScreen(),
         ),
+        // Static `/duel/...` segments must precede `/duel/:duelId`.
         GoRoute(
           path: AppRoutes.duelMatchmaking,
           parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) => const MatchmakingScreen(),
+          builder: (context, state) =>
+              MatchmakingScreen(topic: state.extra as DuelTopic?),
+        ),
+        GoRoute(
+          path: AppRoutes.duelBot,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) =>
+              DuelPlayScreen(args: state.extra as BotDuelArgs?),
         ),
         GoRoute(
           path: AppRoutes.duelPlay,
           parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) {
-            final args = state.extra as DuelPlayArgs?;
-            return DuelPlayScreen(
-              duelId: state.pathParameters['duelId']!,
-              opponent: args?.opponent,
-            );
-          },
+          builder: (context, state) =>
+              LiveDuelScreen(duelId: state.pathParameters['duelId']!),
         ),
         GoRoute(
           path: AppRoutes.duelResult,

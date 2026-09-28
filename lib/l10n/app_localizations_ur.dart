@@ -54,42 +54,6 @@ class AppLocalizationsUr extends AppLocalizations {
   String get tabYou => 'آپ';
 
   @override
-  String get playSheetTitle => 'کھیلیں';
-
-  @override
-  String get playSheetSubtitle => 'منتخب کریں کہ ابھی کیسے کھیلنا ہے۔';
-
-  @override
-  String get playSheetDuel => 'ایک بمقابلہ ایک مقابلہ';
-
-  @override
-  String get playSheetDuelMeta => '۵ سوالات · جیتنے والا لے گا ۲۰۰ 🪙';
-
-  @override
-  String get playSheetQuickPlay => 'فوری کھیل';
-
-  @override
-  String get playSheetQuickPlayMeta => 'آپ کی سطح کا ایک بے ترتیب لیول';
-
-  @override
-  String get playSheetDaily => 'روزانہ کا چیلنج';
-
-  @override
-  String get playSheetDailyMeta => 'ابھی نہیں کھیلا · ۴ گھنٹے ۱۲ منٹ باقی';
-
-  @override
-  String get playSheetFriend => 'دوست کو چیلنج کریں';
-
-  @override
-  String get playSheetFriendMeta => 'دانش ایم ابھی آن لائن ہیں';
-
-  @override
-  String get playSheetGo => 'چلیں ←';
-
-  @override
-  String get playSheetClose => 'کھیل کا مینو بند کریں';
-
-  @override
   String questionCounter(int current, int total) {
     return 'سوال $current از $total';
   }
@@ -1315,11 +1279,8 @@ class AppLocalizationsUr extends AppLocalizations {
   }
 
   @override
-  String get duelCancelPlayBot => 'Cancel — play a bot instead';
-
-  @override
   String duelRoundLabel(int current, int total) {
-    return 'ROUND $current/$total';
+    return 'QUESTION $current/$total';
   }
 
   @override
@@ -1337,7 +1298,7 @@ class AppLocalizationsUr extends AppLocalizations {
   String get duelResultDefeatTitle => 'Good game';
 
   @override
-  String get duelResultRoundsWon => 'Rounds won';
+  String get duelResultRoundsWon => 'Correct answers';
 
   @override
   String get duelResultAvgTime => 'Average answer time';
@@ -1358,6 +1319,376 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get duelResultFindNew => 'Find a new opponent';
+
+  @override
+  String get duelArenaTitle => 'Duel Arena';
+
+  @override
+  String duelArenaOnline(int count) {
+    return '$count in the arena';
+  }
+
+  @override
+  String get duelArenaReconnecting => 'Reconnecting…';
+
+  @override
+  String get duelArenaCloseLabel => 'Close arena';
+
+  @override
+  String get duelQuickMatchTitle => 'Quick match';
+
+  @override
+  String get duelQuickMatchBody => 'Auto-paired with a player near your level';
+
+  @override
+  String get duelQuickMatchCta => 'Find match';
+
+  @override
+  String get duelLiveChallengesHeader => 'Live challenges';
+
+  @override
+  String get duelFeedEmptyTitle => 'No live challenges yet';
+
+  @override
+  String get duelFeedEmptyBody =>
+      'Throw down the first one — players in the same topic see it instantly.';
+
+  @override
+  String get duelFeedEmptyCta => 'Create challenge';
+
+  @override
+  String duelFeedNewPill(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new challenges',
+      one: '1 new challenge',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get duelRejoinTitle => 'You have a duel in progress';
+
+  @override
+  String get duelRejoinCta => 'Rejoin';
+
+  @override
+  String duelCardReward(int rounds, int coins) {
+    return '$rounds questions · winner +$coins 🪙';
+  }
+
+  @override
+  String get duelCardJoin => 'Join';
+
+  @override
+  String duelCardQueued(int ahead) {
+    return 'Request sent · $ahead ahead';
+  }
+
+  @override
+  String get duelCardSent => 'Request sent';
+
+  @override
+  String duelCardDeciding(String name) {
+    return '$name is deciding…';
+  }
+
+  @override
+  String get duelCardNotThisTime => 'Not this time';
+
+  @override
+  String duelCardRetryIn(int seconds) {
+    return 'Try again in ${seconds}s';
+  }
+
+  @override
+  String get duelCardAway => 'Away';
+
+  @override
+  String get duelCardLive => 'LIVE';
+
+  @override
+  String duelCardInProgress(String name) {
+    return 'In progress · vs $name';
+  }
+
+  @override
+  String get duelCardYours => 'Your challenge';
+
+  @override
+  String get duelCardWaiting => 'Waiting for a challenger…';
+
+  @override
+  String get duelCardPaused => 'Paused while you\'re away';
+
+  @override
+  String get duelCardCancel => 'Cancel';
+
+  @override
+  String get duelFairnessEven => 'Even match';
+
+  @override
+  String get duelFairnessTough => 'Tough one';
+
+  @override
+  String get duelFairnessFavourable => 'Favourable';
+
+  @override
+  String duelGuestName(String tag) {
+    return 'Guest $tag';
+  }
+
+  @override
+  String duelTopicLevel(int level) {
+    return 'Lv $level';
+  }
+
+  @override
+  String duelCardSemantics(
+    String name,
+    String league,
+    int elo,
+    String topic,
+    String time,
+  ) {
+    return 'Challenge from $name, $league, $elo ELO, $topic, $time left';
+  }
+
+  @override
+  String get duelComposerCreate => 'Create challenge';
+
+  @override
+  String duelComposerCooldown(String time) {
+    return 'New challenge in $time';
+  }
+
+  @override
+  String duelComposerOpen(String topic, String time) {
+    return 'Your $topic challenge · $time left';
+  }
+
+  @override
+  String get duelComposerSignIn => 'Sign in to create challenges';
+
+  @override
+  String get duelComposerInDuel => 'You\'re in a duel';
+
+  @override
+  String duelIncomingTitle(String name) {
+    return '$name wants to duel!';
+  }
+
+  @override
+  String duelIncomingMeta(String league, int elo, String topic, int level) {
+    return '$league · $elo ELO · $topic Lv $level';
+  }
+
+  @override
+  String get duelIncomingAccept => 'Accept';
+
+  @override
+  String get duelIncomingDecline => 'Decline';
+
+  @override
+  String duelIncomingMore(int count) {
+    return '+$count waiting';
+  }
+
+  @override
+  String get duelPickerTitleCreate => 'Pick your battleground';
+
+  @override
+  String get duelPickerTitleMatch => 'Match in which topic?';
+
+  @override
+  String get duelPickerBody => 'You\'ll only face players in the same topic.';
+
+  @override
+  String duelPickerSearching(int count) {
+    return '$count searching';
+  }
+
+  @override
+  String duelPickerOpen(int count) {
+    return '$count open';
+  }
+
+  @override
+  String get duelPickerEmpty => 'No duel topics in this language yet.';
+
+  @override
+  String duelNoticeCooldown(String time) {
+    return 'You can create another challenge in $time';
+  }
+
+  @override
+  String get duelNoticeAlreadyOpen => 'You already have a live challenge';
+
+  @override
+  String get duelNoticeDailyCap =>
+      'Daily challenge limit reached — try Quick match';
+
+  @override
+  String duelNoticeTooManyRequests(int max) {
+    return 'You can wait on up to $max challenges at once';
+  }
+
+  @override
+  String get duelNoticeRateLimited =>
+      'Slow down a little — try again in a moment';
+
+  @override
+  String duelNoticeCreatorAway(String name) {
+    return '$name stepped away';
+  }
+
+  @override
+  String get duelNoticeChallengeGone => 'That challenge is no longer available';
+
+  @override
+  String duelNoticeDeclined(String name) {
+    return '$name passed this time';
+  }
+
+  @override
+  String duelNoticeNoResponse(String name) {
+    return 'No answer from $name';
+  }
+
+  @override
+  String duelNoticeTakenByOther(String name) {
+    return '$name started a duel with someone else';
+  }
+
+  @override
+  String duelNoticeRequesterBusy(String name) {
+    return '$name just started another duel';
+  }
+
+  @override
+  String get duelNoticeOpponentNoShow => 'Your opponent didn\'t show up';
+
+  @override
+  String get duelNoticeTopicUnavailable =>
+      'That topic isn\'t available for duels right now';
+
+  @override
+  String get duelNoticeSignInRequired => 'Sign in to create challenges';
+
+  @override
+  String get duelNoticeGeneric => 'Something went wrong — please try again';
+
+  @override
+  String duelSearchingBand(int min, int max) {
+    return 'Searching… $min – $max ELO';
+  }
+
+  @override
+  String duelBotOfferTitle(String topic) {
+    return 'No one\'s around in $topic right now';
+  }
+
+  @override
+  String get duelBotOfferBody =>
+      'Play a practice bot — clearly labelled, results count at half ELO.';
+
+  @override
+  String get duelBotOfferPlay => '🤖 Play a bot';
+
+  @override
+  String get duelKeepSearching => 'Keep searching';
+
+  @override
+  String get duelBotBadge => 'BOT';
+
+  @override
+  String get duelLeaveQueueLabel => 'Stop searching';
+
+  @override
+  String duelLeagueEloCaption(String league, String elo) {
+    return '$league · $elo ELO';
+  }
+
+  @override
+  String get duelIntroRanked => 'Ranked';
+
+  @override
+  String get duelIntroUnranked => 'Unranked';
+
+  @override
+  String duelIntroStartsIn(int seconds) {
+    return 'Starting in $seconds';
+  }
+
+  @override
+  String duelWaitingFor(String name) {
+    return 'Waiting for $name…';
+  }
+
+  @override
+  String get duelGetReady => 'Get ready…';
+
+  @override
+  String duelOpponentReconnecting(String name, int seconds) {
+    return '$name reconnecting… ${seconds}s';
+  }
+
+  @override
+  String get duelQuitTitle => 'Leave the duel?';
+
+  @override
+  String get duelQuitBody =>
+      'Leaving gives your opponent the remaining questions.';
+
+  @override
+  String get duelQuitConfirm => 'Leave';
+
+  @override
+  String get duelQuitStay => 'Stay';
+
+  @override
+  String get duelQuitLabel => 'Leave duel';
+
+  @override
+  String get duelResultDrawTitle => 'It\'s a draw';
+
+  @override
+  String duelResultUnranked(String name, int count) {
+    return 'Unranked — you\'ve played $name $count times today';
+  }
+
+  @override
+  String get duelResultUnrankedShort => 'Unranked — ELO unchanged';
+
+  @override
+  String duelResultOpponentForfeit(String name) {
+    return '$name left — the remaining questions count for you';
+  }
+
+  @override
+  String get duelResultYouForfeited => 'You left the duel';
+
+  @override
+  String get duelResultXp => 'XP';
+
+  @override
+  String duelRematchWaiting(String name) {
+    return 'Waiting for $name…';
+  }
+
+  @override
+  String duelRematchOffered(String name) {
+    return '$name wants a rematch!';
+  }
+
+  @override
+  String get duelRematchAccept => 'Accept rematch';
+
+  @override
+  String duelRematchUnavailable(String name) {
+    return '$name has left';
+  }
 
   @override
   String get settingsTitle => 'Settings';

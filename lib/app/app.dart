@@ -21,6 +21,8 @@ import 'package:quizoo/core/theme/app_theme.dart';
 import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
+import 'package:quizoo/features/duel/data/duel_realtime.dart';
+import 'package:quizoo/features/duel/data/server_clock.dart';
 import 'package:quizoo/features/onboarding/data/onboarding_repository.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
@@ -51,6 +53,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// [QuizPlayRepository] is the prefetch cache the level brief sheet (S-09)
 /// warms and the play surface (S-11) reads, on a different route. All three
 /// are in-memory for this phase; see each class for what that costs.
+///
+/// Plan 017 adds [DuelRealtime] and [ServerClock]: the Duel Arena,
+/// matchmaking and live-duel screens are stacked routes that all listen to
+/// the same `duel-user:<uid>` inbox channel (ref-counted, so it is joined
+/// once) and all show countdowns that must agree with the server, so both
+/// live above any one of them — one channel per topic, one clock offset.
 class QuizooApp extends StatefulWidget {
   const QuizooApp({required this.preferences, super.key, this.router});
 
@@ -91,6 +99,8 @@ class _QuizooAppState extends State<QuizooApp> {
     _contentLanguageRepository,
   );
   late final SessionCubit _sessionCubit = SessionCubit(_authRepository);
+  late final DuelRealtime _duelRealtime = DuelRealtime(supabase);
+  late final ServerClock _serverClock = ServerClock();
 
   @override
   void initState() {
@@ -144,6 +154,8 @@ class _QuizooAppState extends State<QuizooApp> {
         RepositoryProvider<ContentLanguageRepository>.value(
           value: _contentLanguageRepository,
         ),
+        RepositoryProvider<DuelRealtime>.value(value: _duelRealtime),
+        RepositoryProvider<ServerClock>.value(value: _serverClock),
       ],
       child: MultiBlocProvider(
         providers: [

@@ -24,14 +24,17 @@ final class DuelPlayFailed extends DuelPlayState {
 
 /// A live round.
 ///
-/// **[revealedOpponentAnswerIndex] is the withheld-correctness rule made
-/// concrete**: it is `null` on every instance of this state until
-/// [isRevealed] flips true, which `DuelPlayCubit` only ever does once both
-/// [playerHasAnswered] and [opponentHasAnswered] are true. There is
-/// deliberately no other field carrying the opponent's chosen index — a
-/// widget has no way to read it early because the data is not there to read.
+/// **[revealedOpponentAnswerIndex] and [revealedCorrectIndex] are the
+/// withheld-correctness rule made concrete**: both are `null` on every
+/// instance of this state until [isRevealed] flips true, which
+/// `DuelPlayCubit` only ever does once both [playerHasAnswered] and
+/// [opponentHasAnswered] are true. There is deliberately no other field
+/// carrying either — [question] is a [DuelQuestion], which has no correct
+/// index — so a widget has no way to read the verdict early because the data
+/// is not there to read.
 final class DuelPlayRound extends DuelPlayState {
   const DuelPlayRound({
+    required this.me,
     required this.opponent,
     required this.roundNumber,
     required this.totalRounds,
@@ -45,14 +48,21 @@ final class DuelPlayRound extends DuelPlayState {
     this.opponentAnswerSecondsElapsed,
     this.isRevealed = false,
     this.revealedOpponentAnswerIndex,
+    this.revealedCorrectIndex,
+    this.isAudioOn = false,
   });
 
-  final DuelOpponent opponent;
+  /// The last this-many seconds of an unanswered question wash the arena
+  /// red and pulse the ring — play mode's S-14 danger state.
+  static const int dangerThresholdSeconds = 5;
+
+  final DuelPlayer me;
+  final DuelPlayer opponent;
 
   /// 1-based.
   final int roundNumber;
   final int totalRounds;
-  final Question question;
+  final DuelQuestion question;
   final int secondsRemaining;
   final int secondsTotal;
 
@@ -76,12 +86,30 @@ final class DuelPlayRound extends DuelPlayState {
   /// The opponent's real answer — `null` until [isRevealed].
   final int? revealedOpponentAnswerIndex;
 
-  int get playerRoundsWon =>
-      history.where((round) => round.outcome == RoundOutcome.playerWon).length;
+  /// The correct option — `null` until [isRevealed].
+  final int? revealedCorrectIndex;
 
-  int get opponentRoundsWon => history
-      .where((round) => round.outcome == RoundOutcome.opponentWon)
-      .length;
+  /// The speaker toggle — question read-aloud and sound effects.
+  final bool isAudioOn;
+
+  /// The player is still answering and the clock is in its last seconds.
+  bool get isDanger =>
+      !playerHasAnswered &&
+      !isRevealed &&
+      secondsRemaining <= dangerThresholdSeconds;
+
+  /// How long the player took, once locked in (the clock stops on a lock;
+  /// a timeout counts the whole round).
+  int? get playerAnswerSeconds =>
+      playerHasAnswered ? secondsTotal - secondsRemaining : null;
+
+  /// The player's points — one per correct answer.
+  int get playerRoundsWon =>
+      history.where((round) => round.playerCorrect).length;
+
+  /// The bot's points — one per correct answer.
+  int get opponentRoundsWon =>
+      history.where((round) => round.opponentCorrect).length;
 
   DuelPlayRound copyWith({
     int? secondsRemaining,
@@ -91,8 +119,11 @@ final class DuelPlayRound extends DuelPlayState {
     int? opponentAnswerSecondsElapsed,
     bool? isRevealed,
     int? revealedOpponentAnswerIndex,
+    int? revealedCorrectIndex,
     List<DuelRoundRecord>? history,
+    bool? isAudioOn,
   }) => DuelPlayRound(
+    me: me,
     opponent: opponent,
     roundNumber: roundNumber,
     totalRounds: totalRounds,
@@ -108,10 +139,13 @@ final class DuelPlayRound extends DuelPlayState {
     isRevealed: isRevealed ?? this.isRevealed,
     revealedOpponentAnswerIndex:
         revealedOpponentAnswerIndex ?? this.revealedOpponentAnswerIndex,
+    revealedCorrectIndex: revealedCorrectIndex ?? this.revealedCorrectIndex,
+    isAudioOn: isAudioOn ?? this.isAudioOn,
   );
 
   @override
   List<Object?> get props => [
+    me,
     opponent,
     roundNumber,
     totalRounds,
@@ -125,6 +159,8 @@ final class DuelPlayRound extends DuelPlayState {
     opponentAnswerSecondsElapsed,
     isRevealed,
     revealedOpponentAnswerIndex,
+    revealedCorrectIndex,
+    isAudioOn,
   ];
 }
 

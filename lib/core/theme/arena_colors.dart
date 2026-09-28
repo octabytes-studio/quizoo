@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quizoo/core/theme/app_colors.dart';
 
 /// The play surface's palette — §09 of the design bible calls the arena
 /// "the one place the app commits to a single look".
@@ -73,6 +74,46 @@ class ArenaColors extends ThemeExtension<ArenaColors> {
 
   /// Secondary HUD meta text (`.qmeta`).
   Color get metaText => Colors.white.withValues(alpha: 0.72);
+
+  // ------------------------------------------------ Duel Arena (plan 017)
+
+  /// A challenge card's white plate — same as [optionRest].
+  Color get cardPlate => Colors.white.withValues(alpha: 0.97);
+
+  /// Ink on a white card plate (bible `--tx`, light).
+  Color get cardInk => AppColors.lightTx;
+
+  /// Secondary ink on a white card plate (bible `--tx2`, light).
+  Color get cardInkMuted => AppColors.lightTx2;
+
+  /// A tappable card's 4px hard ledge — same as [optionRestShadow].
+  Color get cardLedge => Colors.black.withValues(alpha: 0.22);
+
+  /// The pulsing "● LIVE" dot on an in-progress challenge (raspberry).
+  Color get liveDot => AppColors.lightBad;
+
+  /// The border on the viewer's own challenge card (lemon).
+  Color get ownCardBorder => AppColors.lightGold;
+
+  /// Countdown ring with plenty of time left (mint).
+  Color get countdownSafe => AppColors.lightOk;
+
+  /// Countdown ring under two minutes (lemon).
+  Color get countdownWarn => AppColors.lightGold;
+
+  /// Countdown ring under thirty seconds (raspberry).
+  Color get countdownDanger => AppColors.lightBad;
+
+  /// The "BOT" pill on the practice bot's avatar (lemon; ink `onGold`).
+  Color get botBadge => AppColors.lightGold;
+
+  /// A chip, countdown track or avatar well on a white card plate — the
+  /// light sunken fill (`--s3`), kept invariant like the plate itself.
+  Color get cardChip => AppColors.lightS3;
+
+  /// The grape outline on a challenge card whose creator is deciding on the
+  /// viewer's request.
+  Color get pendingGlow => AppColors.lightG;
 
   @override
   ArenaColors copyWith() => const ArenaColors();

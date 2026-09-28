@@ -8,7 +8,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/duel/data/duel_api.dart';
 import 'package:quizoo/features/duel/data/duel_repository.dart';
-import 'package:quizoo/features/duel/domain/duel_opponent.dart';
+import 'package:quizoo/features/duel/domain/duel_player.dart';
+import 'package:quizoo/features/duel/domain/duel_question.dart';
+import 'package:quizoo/features/duel/domain/duel_topic.dart';
 import 'package:quizoo/features/duel/presentation/bloc/duel_play_cubit.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 
@@ -21,19 +23,30 @@ void main() {
 
   // Bronze — a ~9s average answer time, which leaves a wide, easy-to-assert
   // window between the player answering and the bot answering.
-  const slowBot = DuelOpponent(
+  const slowBot = DuelPlayer(
     id: 'bot_slow',
     name: 'Fox',
     avatarEmoji: '🦊',
     elo: 400,
+    isBot: true,
   );
   // Platinum — a ~2.5s average, so a full 5-round duel finishes fast in a
   // test that just lets every round's clock run out.
-  const fastBot = DuelOpponent(
+  const fastBot = DuelPlayer(
     id: 'bot_fast',
     name: 'Owl',
     avatarEmoji: '🦉',
     elo: 2200,
+    isBot: true,
+  );
+  const me = DuelPlayer(id: 'me', name: 'Waleed', avatarEmoji: '🐼', elo: 1310);
+  const topic = DuelTopic(
+    id: 'sub_football',
+    name: 'Football',
+    emoji: '⚽',
+    plateColor: '#DDF1FF',
+    categoryName: 'Sports',
+    categoryEmoji: '🏅',
   );
 
   setUp(() {
@@ -43,6 +56,7 @@ void main() {
   void stubQuestions() {
     when(
       () => repository.fetchRoundQuestions(
+        subcategoryId: any(named: 'subcategoryId'),
         languageCode: any(named: 'languageCode'),
       ),
     ).thenAnswer((_) async => questions);
@@ -55,6 +69,7 @@ void main() {
         playerRoundsWon: any(named: 'playerRoundsWon'),
         opponentRoundsWon: any(named: 'opponentRoundsWon'),
         rounds: any(named: 'rounds'),
+        subcategoryId: any(named: 'subcategoryId'),
       ),
     ).thenThrow(const ApiException.network());
   }
@@ -65,14 +80,44 @@ void main() {
     });
 
     blocTest<DuelPlayCubit, DuelPlayState>(
+      'failure path: no topic (a design-review visit) ends in DuelPlayFailed',
+      build: () => DuelPlayCubit(repository),
+      act: (cubit) => cubit.failWithoutTopic(),
+      expect: () => [isA<DuelPlayFailed>()],
+    );
+
+    test('draws questions from the chosen topic', () {
+      stubQuestions();
+      fakeAsync((async) {
+        final cubit = DuelPlayCubit(repository, random: Random(6));
+        unawaited(
+          cubit.start(slowBot, me: me, topic: topic, languageCode: 'en'),
+        );
+        async.flushMicrotasks();
+
+        verify(
+          () => repository.fetchRoundQuestions(
+            subcategoryId: 'sub_football',
+            languageCode: 'en',
+          ),
+        ).called(1);
+
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
+
+    blocTest<DuelPlayCubit, DuelPlayState>(
       'failure path: a failed fetch ends in DuelPlayFailed',
       setUp: () => when(
         () => repository.fetchRoundQuestions(
+          subcategoryId: any(named: 'subcategoryId'),
           languageCode: any(named: 'languageCode'),
         ),
       ).thenThrow(const ApiException.network()),
       build: () => DuelPlayCubit(repository),
-      act: (cubit) => cubit.start(slowBot, languageCode: 'en'),
+      act: (cubit) =>
+          cubit.start(slowBot, me: me, topic: topic, languageCode: 'en'),
       expect: () => [isA<DuelPlayLoading>(), isA<DuelPlayFailed>()],
     );
 
@@ -93,7 +138,9 @@ void main() {
           }
         });
 
-        unawaited(cubit.start(slowBot, languageCode: 'en'));
+        unawaited(
+          cubit.start(slowBot, me: me, topic: topic, languageCode: 'en'),
+        );
         async.flushMicrotasks();
 
         // The player locks in an answer almost immediately.
@@ -105,11 +152,18 @@ void main() {
         async.elapse(const Duration(seconds: 13));
 
         for (final round in seenRound1) {
+          // The public question never carries the answer at all.
+          expect(round.question, isA<DuelQuestion>());
           if (!round.isRevealed) {
             expect(
               round.revealedOpponentAnswerIndex,
               isNull,
               reason: 'the opponent\'s answer leaked onto an unrevealed state',
+            );
+            expect(
+              round.revealedCorrectIndex,
+              isNull,
+              reason: 'the correct answer leaked onto an unrevealed state',
             );
           }
         }
@@ -118,11 +172,16 @@ void main() {
         expect(
           seenRound1.any(
             (round) =>
-                round.isRevealed && round.revealedOpponentAnswerIndex != null,
+                round.isRevealed &&
+                round.revealedOpponentAnswerIndex != null &&
+                round.revealedCorrectIndex ==
+                    MockQuestions.football.first.correctIndex,
           ),
           isTrue,
           reason: 'round 1 never actually resolved during this test',
         );
+        // The player is the real `me`, never a mock.
+        expect(seenRound1.first.me, me);
 
         unawaited(subscription.cancel());
         unawaited(cubit.close());
@@ -136,7 +195,9 @@ void main() {
         // Platinum answers fast, so it very likely answers before a player
         // who never taps until well into the round.
         final cubit = DuelPlayCubit(repository, random: Random(2));
-        unawaited(cubit.start(fastBot, languageCode: 'en'));
+        unawaited(
+          cubit.start(fastBot, me: me, topic: topic, languageCode: 'en'),
+        );
         async.flushMicrotasks();
 
         async.elapse(const Duration(seconds: 4));
@@ -147,6 +208,7 @@ void main() {
         // reveals until the player also answers.
         expect(round.isRevealed, isFalse);
         expect(round.revealedOpponentAnswerIndex, isNull);
+        expect(round.revealedCorrectIndex, isNull);
 
         unawaited(cubit.close());
         async.flushMicrotasks();
@@ -157,7 +219,9 @@ void main() {
       stubQuestions();
       fakeAsync((async) {
         final cubit = DuelPlayCubit(repository, random: Random(3));
-        unawaited(cubit.start(fastBot, languageCode: 'en'));
+        unawaited(
+          cubit.start(fastBot, me: me, topic: topic, languageCode: 'en'),
+        );
         async.flushMicrotasks();
 
         // Never taps an option — the full round clock runs out.
@@ -173,39 +237,83 @@ void main() {
       });
     });
 
-    test('completes all 5 rounds and ends on DuelPlayEnded', () {
+    test('every correct answer is a point, even when the bot was faster', () {
       stubQuestions();
       fakeAsync((async) {
         final cubit = DuelPlayCubit(repository, random: Random(4));
-        unawaited(cubit.start(fastBot, languageCode: 'en'));
+        unawaited(
+          cubit.start(fastBot, me: me, topic: topic, languageCode: 'en'),
+        );
         async.flushMicrotasks();
 
-        // Every round's 15s clock runs out, plus the ~1.8s reveal pause,
-        // five times over, with slack.
-        async.elapse(const Duration(seconds: 95));
+        for (var i = 0; i < DuelPlayCubit.totalRounds; i++) {
+          // Well after the fast bot (≈2.5 s) has locked its answer.
+          async.elapse(const Duration(seconds: 8));
+          final round = cubit.state as DuelPlayRound;
+          final question =
+              questions[(round.roundNumber - 1) % questions.length];
+          cubit.answer(question.correctIndex);
+          async.elapse(
+            DuelPlayCubit.revealDelay + const Duration(milliseconds: 100),
+          );
+        }
+        async.flushMicrotasks();
 
-        expect(cubit.state, isA<DuelPlayEnded>());
         final result = (cubit.state as DuelPlayEnded).result;
-        expect(
-          result.playerRoundsWon + result.opponentRoundsWon,
-          lessThanOrEqualTo(5),
-        );
-        // The player never answered a single round in this test, so they
-        // cannot have won any of them.
-        expect(result.playerRoundsWon, 0);
-        expect(result.isVictory, isFalse);
-        expect(result.rewardCoins, DuelPlayCubit.rewardCoinsDefeat);
+        expect(result.playerRoundsWon, DuelPlayCubit.totalRounds);
+        expect(result.isVictory || result.isDraw, isTrue);
 
         unawaited(cubit.close());
         async.flushMicrotasks();
       });
     });
 
+    test(
+      'completes all ${DuelPlayCubit.totalRounds} questions and ends on DuelPlayEnded',
+      () {
+        stubQuestions();
+        fakeAsync((async) {
+          final cubit = DuelPlayCubit(repository, random: Random(4));
+          unawaited(
+            cubit.start(fastBot, me: me, topic: topic, languageCode: 'en'),
+          );
+          async.flushMicrotasks();
+
+          // Every question's 15s clock runs out, plus the ~1.8s reveal pause,
+          // ten times over, with slack.
+          async.elapse(const Duration(seconds: 190));
+
+          expect(cubit.state, isA<DuelPlayEnded>());
+          final result = (cubit.state as DuelPlayEnded).result;
+          // Points are one per correct answer, so each side scores at most
+          // one per question.
+          expect(result.playerRoundsWon, lessThanOrEqualTo(10));
+          expect(result.opponentRoundsWon, lessThanOrEqualTo(10));
+          // The player never answered a single question in this test, so
+          // they cannot have scored.
+          expect(result.playerRoundsWon, 0);
+          expect(result.isVictory, isFalse);
+          expect(result.rewardCoins, DuelPlayCubit.rewardCoinsDefeat);
+          // The real player and topic ride through to the result — no mock
+          // ELO: the fallback estimate starts from `me.elo`.
+          expect(result.me, me);
+          expect(result.topic, topic);
+          expect(result.isBot, isTrue);
+          expect(result.eloBefore, me.elo);
+
+          unawaited(cubit.close());
+          async.flushMicrotasks();
+        });
+      },
+    );
+
     test('a second answer from the player is ignored once locked in', () {
       stubQuestions();
       fakeAsync((async) {
         final cubit = DuelPlayCubit(repository, random: Random(5));
-        unawaited(cubit.start(slowBot, languageCode: 'en'));
+        unawaited(
+          cubit.start(slowBot, me: me, topic: topic, languageCode: 'en'),
+        );
         async.flushMicrotasks();
 
         cubit.answer(0);
@@ -218,45 +326,46 @@ void main() {
       });
     });
 
-    test(
-      'newly-earned badge ids from submitBotDuel pass through unchanged '
-      'onto the emitted DuelResult',
-      () {
-        when(
-          () => repository.fetchRoundQuestions(
-            languageCode: any(named: 'languageCode'),
-          ),
-        ).thenAnswer((_) async => questions);
-        when(
-          () => repository.submitBotDuel(
-            opponentElo: any(named: 'opponentElo'),
-            playerRoundsWon: any(named: 'playerRoundsWon'),
-            opponentRoundsWon: any(named: 'opponentRoundsWon'),
-            rounds: any(named: 'rounds'),
-          ),
-        ).thenAnswer(
-          (_) async => const BotDuelRecord(
-            eloBefore: 1200,
-            eloAfter: 1218,
-            coinsEarned: 200,
-            newlyEarnedBadgeIds: ['badge_duelist'],
-          ),
+    test('newly-earned badge ids from submitBotDuel pass through unchanged '
+        'onto the emitted DuelResult', () {
+      when(
+        () => repository.fetchRoundQuestions(
+          subcategoryId: any(named: 'subcategoryId'),
+          languageCode: any(named: 'languageCode'),
+        ),
+      ).thenAnswer((_) async => questions);
+      when(
+        () => repository.submitBotDuel(
+          opponentElo: any(named: 'opponentElo'),
+          playerRoundsWon: any(named: 'playerRoundsWon'),
+          opponentRoundsWon: any(named: 'opponentRoundsWon'),
+          rounds: any(named: 'rounds'),
+          subcategoryId: any(named: 'subcategoryId'),
+        ),
+      ).thenAnswer(
+        (_) async => const BotDuelRecord(
+          eloBefore: 1200,
+          eloAfter: 1218,
+          coinsEarned: 200,
+          newlyEarnedBadgeIds: ['badge_duelist'],
+        ),
+      );
+
+      fakeAsync((async) {
+        final cubit = DuelPlayCubit(repository, random: Random(4));
+        unawaited(
+          cubit.start(fastBot, me: me, topic: topic, languageCode: 'en'),
         );
+        async.flushMicrotasks();
 
-        fakeAsync((async) {
-          final cubit = DuelPlayCubit(repository, random: Random(4));
-          unawaited(cubit.start(fastBot, languageCode: 'en'));
-          async.flushMicrotasks();
+        async.elapse(const Duration(seconds: 190));
 
-          async.elapse(const Duration(seconds: 95));
+        final result = (cubit.state as DuelPlayEnded).result;
+        expect(result.newlyEarnedBadgeIds, ['badge_duelist']);
 
-          final result = (cubit.state as DuelPlayEnded).result;
-          expect(result.newlyEarnedBadgeIds, ['badge_duelist']);
-
-          unawaited(cubit.close());
-          async.flushMicrotasks();
-        });
-      },
-    );
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+      });
+    });
   });
 }

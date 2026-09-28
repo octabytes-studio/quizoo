@@ -10,6 +10,8 @@ import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
+import 'package:quizoo/features/duel/data/duel_realtime.dart';
+import 'package:quizoo/features/duel/data/server_clock.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/settings/data/settings_repository.dart';
@@ -28,12 +30,18 @@ class FakeQuizPlayApi extends Mock implements QuizPlayApi {}
 
 class FakeContentLanguageApi extends Mock implements ContentLanguageApi {}
 
+/// A stand-in for the app-root `DuelRealtime` (plan 017). Duel screen tests
+/// inject a mocked repository or Bloc instead of opening real channels, so
+/// nothing is stubbed here by default.
+class FakeDuelRealtime extends Mock implements DuelRealtime {}
+
 /// Pumps a screen with the same app-root providers the real app gives it.
 ///
-/// Screens read five things off the root — `SessionCubit`, `AuthRepository`,
-/// `QuizPlayRepository`, `SettingsRepository` (plan 007) and (plan 004)
-/// `ConnectivityCubit` — so a widget test that pumps one without them is
-/// testing a different widget than the one that ships.
+/// Screens read these off the root — `SessionCubit`, `AuthRepository`,
+/// `QuizPlayRepository`, `SettingsRepository` (plan 007), (plan 004)
+/// `ConnectivityCubit`, and (plan 017) `DuelRealtime` + `ServerClock` — so a
+/// widget test that pumps one without them is testing a different widget
+/// than the one that ships.
 ///
 /// A [GoRouter] is stood up too, because these screens navigate: `context.pop`
 /// and `context.push` need a router above them, and a bare `MaterialApp` has
@@ -50,6 +58,8 @@ extension PumpScreen on WidgetTester {
     SettingsRepository? settingsRepository,
     ConnectivityCubit? connectivity,
     ContentLanguageCubit? contentLanguage,
+    DuelRealtime? duelRealtime,
+    ServerClock? serverClock,
   }) async {
     final auth = authRepository ?? await _fakeAuthRepository();
     // `QuizPlayScreen` builds a real `StoredAudioTtsService` inline (it isn't
@@ -79,6 +89,12 @@ extension PumpScreen on WidgetTester {
           ),
           RepositoryProvider<ContentLanguageRepository>.value(
             value: contentLanguageRepository,
+          ),
+          RepositoryProvider<DuelRealtime>.value(
+            value: duelRealtime ?? FakeDuelRealtime(),
+          ),
+          RepositoryProvider<ServerClock>.value(
+            value: serverClock ?? ServerClock(),
           ),
         ],
         child: MultiBlocProvider(
