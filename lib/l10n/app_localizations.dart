@@ -176,78 +176,6 @@ abstract class AppLocalizations {
   /// **'You'**
   String get tabYou;
 
-  /// S-38 play sheet heading.
-  ///
-  /// In en, this message translates to:
-  /// **'Play'**
-  String get playSheetTitle;
-
-  /// S-38 play sheet body.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick how you want to play right now.'**
-  String get playSheetSubtitle;
-
-  /// S-38 row 1 title.
-  ///
-  /// In en, this message translates to:
-  /// **'1v1 Duel'**
-  String get playSheetDuel;
-
-  /// S-38 row 1 caption.
-  ///
-  /// In en, this message translates to:
-  /// **'5 questions · winner takes 200 🪙'**
-  String get playSheetDuelMeta;
-
-  /// S-38 row 2 title.
-  ///
-  /// In en, this message translates to:
-  /// **'Quick Play'**
-  String get playSheetQuickPlay;
-
-  /// S-38 row 2 caption.
-  ///
-  /// In en, this message translates to:
-  /// **'A random level at your skill tier'**
-  String get playSheetQuickPlayMeta;
-
-  /// S-38 row 3 title.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily Challenge'**
-  String get playSheetDaily;
-
-  /// S-38 row 3 caption.
-  ///
-  /// In en, this message translates to:
-  /// **'Not played yet · 4h 12m left'**
-  String get playSheetDailyMeta;
-
-  /// S-38 row 4 title.
-  ///
-  /// In en, this message translates to:
-  /// **'Challenge a friend'**
-  String get playSheetFriend;
-
-  /// S-38 row 4 caption.
-  ///
-  /// In en, this message translates to:
-  /// **'Danish M. is online now'**
-  String get playSheetFriendMeta;
-
-  /// S-38 primary row trailing affordance.
-  ///
-  /// In en, this message translates to:
-  /// **'Go →'**
-  String get playSheetGo;
-
-  /// Semantic label for the FAB while the play sheet is open.
-  ///
-  /// In en, this message translates to:
-  /// **'Close play menu'**
-  String get playSheetClose;
-
   /// S-11 question screen HUD counter.
   ///
   /// In en, this message translates to:
@@ -2270,16 +2198,10 @@ abstract class AppLocalizations {
   /// **'Searching for {seconds}s · widening range in {next}s'**
   String duelSearchingStatus(int seconds, int next);
 
-  /// S-39 button, on screen from frame one per plan 004's Research findings.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel — play a bot instead'**
-  String get duelCancelPlayBot;
-
   /// S-40 round counter under the timer ring.
   ///
   /// In en, this message translates to:
-  /// **'ROUND {current}/{total}'**
+  /// **'QUESTION {current}/{total}'**
   String duelRoundLabel(int current, int total);
 
   /// S-40 status chip once a side has locked an answer.
@@ -2306,10 +2228,10 @@ abstract class AppLocalizations {
   /// **'Good game'**
   String get duelResultDefeatTitle;
 
-  /// S-41 stat card row label.
+  /// S-41 stat card row label — each player's points (one per correct answer).
   ///
   /// In en, this message translates to:
-  /// **'Rounds won'**
+  /// **'Correct answers'**
   String get duelResultRoundsWon;
 
   /// S-41 stat card row label.
@@ -2347,6 +2269,576 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Find a new opponent'**
   String get duelResultFindNew;
+
+  /// S-38 arena top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Duel Arena'**
+  String get duelArenaTitle;
+
+  /// S-38 presence pill — players currently on the arena screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in the arena'**
+  String duelArenaOnline(int count);
+
+  /// S-38 chip replacing the presence pill while the live feed reconnects.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnecting…'**
+  String get duelArenaReconnecting;
+
+  /// S-38 ✕ button semantics label.
+  ///
+  /// In en, this message translates to:
+  /// **'Close arena'**
+  String get duelArenaCloseLabel;
+
+  /// S-38 Quick match hero card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick match'**
+  String get duelQuickMatchTitle;
+
+  /// S-38 Quick match hero card body.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-paired with a player near your level'**
+  String get duelQuickMatchBody;
+
+  /// S-38 Quick match hero card button.
+  ///
+  /// In en, this message translates to:
+  /// **'Find match'**
+  String get duelQuickMatchCta;
+
+  /// S-38 feed section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Live challenges'**
+  String get duelLiveChallengesHeader;
+
+  /// S-38 empty feed title.
+  ///
+  /// In en, this message translates to:
+  /// **'No live challenges yet'**
+  String get duelFeedEmptyTitle;
+
+  /// S-38 empty feed body.
+  ///
+  /// In en, this message translates to:
+  /// **'Throw down the first one — players in the same topic see it instantly.'**
+  String get duelFeedEmptyBody;
+
+  /// S-38 empty feed call to action.
+  ///
+  /// In en, this message translates to:
+  /// **'Create challenge'**
+  String get duelFeedEmptyCta;
+
+  /// S-38 pill shown when new challenges arrive while scrolled up.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new challenge} other{{count} new challenges}}'**
+  String duelFeedNewPill(int count);
+
+  /// S-38 rejoin banner title.
+  ///
+  /// In en, this message translates to:
+  /// **'You have a duel in progress'**
+  String get duelRejoinTitle;
+
+  /// S-38 rejoin banner button.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejoin'**
+  String get duelRejoinCta;
+
+  /// S-38 challenge card reward line.
+  ///
+  /// In en, this message translates to:
+  /// **'{rounds} questions · winner +{coins} 🪙'**
+  String duelCardReward(int rounds, int coins);
+
+  /// S-38 challenge card join button.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get duelCardJoin;
+
+  /// S-38 challenge card while the viewer's request is queued behind others.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent · {ahead} ahead'**
+  String duelCardQueued(int ahead);
+
+  /// S-38 challenge card right after the viewer requested to join.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent'**
+  String get duelCardSent;
+
+  /// S-38 challenge card while the creator decides on the viewer's request.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is deciding…'**
+  String duelCardDeciding(String name);
+
+  /// S-38 challenge card briefly after a decline or no answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Not this time'**
+  String get duelCardNotThisTime;
+
+  /// S-38 challenge card retry cool-down.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again in {seconds}s'**
+  String duelCardRetryIn(int seconds);
+
+  /// S-38 challenge card chip while the creator is off the arena.
+  ///
+  /// In en, this message translates to:
+  /// **'Away'**
+  String get duelCardAway;
+
+  /// S-38 in-progress challenge card live marker.
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE'**
+  String get duelCardLive;
+
+  /// S-38 in-progress challenge card caption.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress · vs {name}'**
+  String duelCardInProgress(String name);
+
+  /// S-38 the viewer's own challenge card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your challenge'**
+  String get duelCardYours;
+
+  /// S-38 the viewer's own open challenge card status.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a challenger…'**
+  String get duelCardWaiting;
+
+  /// S-38 the viewer's own challenge card while they are away.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused while you\'re away'**
+  String get duelCardPaused;
+
+  /// S-38 the viewer's own challenge card cancel button.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get duelCardCancel;
+
+  /// S-38 fairness hint: ELO difference within 100.
+  ///
+  /// In en, this message translates to:
+  /// **'Even match'**
+  String get duelFairnessEven;
+
+  /// S-38 fairness hint: opponent 150+ ELO above the viewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Tough one'**
+  String get duelFairnessTough;
+
+  /// S-38 fairness hint: opponent 150+ ELO below the viewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourable'**
+  String get duelFairnessFavourable;
+
+  /// Display name for a guest player (no username).
+  ///
+  /// In en, this message translates to:
+  /// **'Guest {tag}'**
+  String duelGuestName(String tag);
+
+  /// A player's level in the duel's topic.
+  ///
+  /// In en, this message translates to:
+  /// **'Lv {level}'**
+  String duelTopicLevel(int level);
+
+  /// S-38 challenge card accessibility label.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge from {name}, {league}, {elo} ELO, {topic}, {time} left'**
+  String duelCardSemantics(
+    String name,
+    String league,
+    int elo,
+    String topic,
+    String time,
+  );
+
+  /// S-38 composer button.
+  ///
+  /// In en, this message translates to:
+  /// **'Create challenge'**
+  String get duelComposerCreate;
+
+  /// S-38 composer during the creation cool-off.
+  ///
+  /// In en, this message translates to:
+  /// **'New challenge in {time}'**
+  String duelComposerCooldown(String time);
+
+  /// S-38 composer while the viewer's own challenge is open.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {topic} challenge · {time} left'**
+  String duelComposerOpen(String topic, String time);
+
+  /// S-38 composer for guests.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to create challenges'**
+  String get duelComposerSignIn;
+
+  /// S-38 composer while the viewer is in a duel.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re in a duel'**
+  String get duelComposerInDuel;
+
+  /// S-38 incoming join request banner title.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to duel!'**
+  String duelIncomingTitle(String name);
+
+  /// S-38 incoming join request banner meta line.
+  ///
+  /// In en, this message translates to:
+  /// **'{league} · {elo} ELO · {topic} Lv {level}'**
+  String duelIncomingMeta(String league, int elo, String topic, int level);
+
+  /// S-38 incoming join request accept button.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get duelIncomingAccept;
+
+  /// S-38 incoming join request decline button.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get duelIncomingDecline;
+
+  /// S-38 incoming banner: more requests queued behind this one.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} waiting'**
+  String duelIncomingMore(int count);
+
+  /// Topic picker title when creating a challenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your battleground'**
+  String get duelPickerTitleCreate;
+
+  /// Topic picker title when matchmaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Match in which topic?'**
+  String get duelPickerTitleMatch;
+
+  /// Topic picker body.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll only face players in the same topic.'**
+  String get duelPickerBody;
+
+  /// Topic picker activity chip: players matchmaking in this topic.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} searching'**
+  String duelPickerSearching(int count);
+
+  /// Topic picker activity chip: open challenges in this topic.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} open'**
+  String duelPickerOpen(int count);
+
+  /// Topic picker empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'No duel topics in this language yet.'**
+  String get duelPickerEmpty;
+
+  /// Arena snackbar: challenge creation cool-off.
+  ///
+  /// In en, this message translates to:
+  /// **'You can create another challenge in {time}'**
+  String duelNoticeCooldown(String time);
+
+  /// Arena snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a live challenge'**
+  String get duelNoticeAlreadyOpen;
+
+  /// Arena snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily challenge limit reached — try Quick match'**
+  String get duelNoticeDailyCap;
+
+  /// Arena snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'You can wait on up to {max} challenges at once'**
+  String duelNoticeTooManyRequests(int max);
+
+  /// Arena snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Slow down a little — try again in a moment'**
+  String get duelNoticeRateLimited;
+
+  /// Arena snackbar: the challenge's creator left the arena.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} stepped away'**
+  String duelNoticeCreatorAway(String name);
+
+  /// Arena snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'That challenge is no longer available'**
+  String get duelNoticeChallengeGone;
+
+  /// Arena snackbar: the creator declined the viewer's request.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} passed this time'**
+  String duelNoticeDeclined(String name);
+
+  /// Arena snackbar: the creator let the request lapse.
+  ///
+  /// In en, this message translates to:
+  /// **'No answer from {name}'**
+  String duelNoticeNoResponse(String name);
+
+  /// Arena snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} started a duel with someone else'**
+  String duelNoticeTakenByOther(String name);
+
+  /// Arena snackbar: the requester the viewer accepted is already busy.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} just started another duel'**
+  String duelNoticeRequesterBusy(String name);
+
+  /// Snackbar when a live duel is abandoned because the opponent never loaded it.
+  ///
+  /// In en, this message translates to:
+  /// **'Your opponent didn\'t show up'**
+  String get duelNoticeOpponentNoShow;
+
+  /// Arena snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'That topic isn\'t available for duels right now'**
+  String get duelNoticeTopicUnavailable;
+
+  /// Arena snackbar: a guest tried to create a challenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to create challenges'**
+  String get duelNoticeSignInRequired;
+
+  /// Arena snackbar: any other failure.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong — please try again'**
+  String get duelNoticeGeneric;
+
+  /// S-39 VS row caption under the searching side.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching… {min} – {max} ELO'**
+  String duelSearchingBand(int min, int max);
+
+  /// S-39 bot offer card title.
+  ///
+  /// In en, this message translates to:
+  /// **'No one\'s around in {topic} right now'**
+  String duelBotOfferTitle(String topic);
+
+  /// S-39 bot offer card body.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a practice bot — clearly labelled, results count at half ELO.'**
+  String get duelBotOfferBody;
+
+  /// S-39 bot offer primary button.
+  ///
+  /// In en, this message translates to:
+  /// **'🤖 Play a bot'**
+  String get duelBotOfferPlay;
+
+  /// S-39 bot offer secondary button.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep searching'**
+  String get duelKeepSearching;
+
+  /// Label on a practice bot's avatar/name.
+  ///
+  /// In en, this message translates to:
+  /// **'BOT'**
+  String get duelBotBadge;
+
+  /// S-39 ✕ button semantics label.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop searching'**
+  String get duelLeaveQueueLabel;
+
+  /// S-39 VS row caption under the player's own avatar: league (emoji + name) and formatted ELO.
+  ///
+  /// In en, this message translates to:
+  /// **'{league} · {elo} ELO'**
+  String duelLeagueEloCaption(String league, String elo);
+
+  /// S-40 intro chip: this duel moves ELO.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranked'**
+  String get duelIntroRanked;
+
+  /// S-40 intro chip: this duel does not move ELO.
+  ///
+  /// In en, this message translates to:
+  /// **'Unranked'**
+  String get duelIntroUnranked;
+
+  /// S-40 intro countdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting in {seconds}'**
+  String duelIntroStartsIn(int seconds);
+
+  /// S-40 intro while the opponent loads.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name}…'**
+  String duelWaitingFor(String name);
+
+  /// S-40 question card placeholder while the question loads.
+  ///
+  /// In en, this message translates to:
+  /// **'Get ready…'**
+  String get duelGetReady;
+
+  /// S-40 chip while the opponent's connection is down.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} reconnecting… {seconds}s'**
+  String duelOpponentReconnecting(String name, int seconds);
+
+  /// S-40 quit dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the duel?'**
+  String get duelQuitTitle;
+
+  /// S-40 quit dialog body.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaving gives your opponent the remaining questions.'**
+  String get duelQuitBody;
+
+  /// S-40 quit dialog confirm button.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get duelQuitConfirm;
+
+  /// S-40 quit dialog cancel button.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get duelQuitStay;
+
+  /// S-40 ✕ button semantics label.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave duel'**
+  String get duelQuitLabel;
+
+  /// S-41 draw headline.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s a draw'**
+  String get duelResultDrawTitle;
+
+  /// S-41 note when the pair's ranked cap was reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Unranked — you\'ve played {name} {count} times today'**
+  String duelResultUnranked(String name, int count);
+
+  /// S-41 note when the duel did not count for ELO.
+  ///
+  /// In en, this message translates to:
+  /// **'Unranked — ELO unchanged'**
+  String get duelResultUnrankedShort;
+
+  /// S-41 caption when the opponent forfeited.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} left — the remaining questions count for you'**
+  String duelResultOpponentForfeit(String name);
+
+  /// S-41 caption when the player forfeited.
+  ///
+  /// In en, this message translates to:
+  /// **'You left the duel'**
+  String get duelResultYouForfeited;
+
+  /// S-41 stat card row label.
+  ///
+  /// In en, this message translates to:
+  /// **'XP'**
+  String get duelResultXp;
+
+  /// S-41 rematch button while waiting for the opponent.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name}…'**
+  String duelRematchWaiting(String name);
+
+  /// S-41 rematch prompt when the opponent asked first.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants a rematch!'**
+  String duelRematchOffered(String name);
+
+  /// S-41 rematch accept button.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept rematch'**
+  String get duelRematchAccept;
+
+  /// S-41 rematch button once the rematch window closed.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has left'**
+  String duelRematchUnavailable(String name);
 
   /// S-42 top bar title.
   ///

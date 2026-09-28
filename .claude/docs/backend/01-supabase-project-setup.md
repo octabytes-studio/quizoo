@@ -134,10 +134,28 @@ select jobname, schedule, active from cron.job;
 ```
 
 You should see `refresh-lb-weekly` (`*/2 * * * *`) and `daily-rollover`
-(`0 0 * * *`). If `pg_cron` isn't available on your plan/region, check
+(`0 0 * * *`), plus `refresh-featured-quizzes` (hourly) and — since plan
+017 — `duel-sweeper` (`10 seconds`), the backstop that expires duel
+challenges/join requests, drops stale matchmaking rows, and resolves stuck
+rounds / disconnect forfeits. Second-granularity schedules need pg_cron
+≥ 1.5. If `pg_cron` isn't available on your plan/region, check
 **Database → Extensions** — it's enabled by the migration's
 `create extension if not exists pg_cron`, but some self-hosted or very
 old Supabase projects need it turned on from the dashboard first.
+
+### Duel Realtime authorization (plan 017)
+
+Live duels use **Realtime Broadcast from the database** (`realtime.send`),
+not Postgres Changes — no table is added to the `supabase_realtime`
+publication. Clients join private channels (`duel-lobby:<lang>`,
+`duel-user:<uid>`, `duel:<duelId>`), and RLS policies on
+`realtime.messages` (`duel_lobby_receive`, `duel_lobby_presence`,
+`duel_inbox_receive`, `duel_room_receive`, `duel_room_presence`) let them
+receive broadcasts and track presence but never publish. Check with:
+
+```sql
+select policyname from pg_policies where schemaname = 'realtime';
+```
 
 ## 7. Get your API keys
 

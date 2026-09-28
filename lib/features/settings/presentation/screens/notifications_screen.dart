@@ -12,8 +12,6 @@ import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/simple_top_bar.dart';
 import 'package:quizoo/core/widgets/skeleton_box.dart';
-import 'package:quizoo/features/duel/domain/duel_opponent.dart';
-import 'package:quizoo/features/duel/presentation/screens/duel_play_screen.dart';
 import 'package:quizoo/features/settings/data/notifications_api.dart';
 import 'package:quizoo/features/settings/data/notifications_repository.dart';
 import 'package:quizoo/features/settings/domain/app_notification.dart';
@@ -22,10 +20,10 @@ import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-44 — Notifications.
 ///
-/// "Accepting a duel from here must never require a second screen" (bible,
-/// quoted in plan 004's Research findings): "Accept" pushes straight into
-/// S-40 with the challenger pre-filled as the opponent, skipping S-39's
-/// matchmaking entirely — this is a friend challenge, not a fresh search.
+/// A duel-challenge notification's "Accept" opens the Duel Arena, where live
+/// challenges are accepted: direct friend challenges are out of scope for
+/// real duels (plan 017, which replaced the fake opponent this used to
+/// build from duel internals).
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
@@ -45,17 +43,9 @@ class _NotificationsView extends StatelessWidget {
 
   void _accept(BuildContext context, AppNotification notification) {
     context.read<NotificationsCubit>().acceptChallenge(notification.id);
-    final opponent = DuelOpponent(
-      id: 'friend_${notification.id}',
-      name: notification.challengerName ?? 'Friend',
-      avatarEmoji: notification.challengerAvatarEmoji ?? '🦁',
-      elo: notification.challengerElo ?? 1200,
-      isBot: false,
-    );
-    context.push(
-      AppRoutes.duelPlayPath(opponent.id),
-      extra: DuelPlayArgs(opponent: opponent),
-    );
+    // Friend challenges are out of scope for real duels (plan 017) — the
+    // arena is where live challenges are accepted.
+    context.push(AppRoutes.duelArena);
   }
 
   @override

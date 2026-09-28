@@ -35,10 +35,17 @@ The Shop feature (`lib/features/shop/`) was deleted outright rather than fixed: 
 
 ---
 
-## `duel` — no real matchmaking or opponent
+## `duel` — ~~no real matchmaking or opponent~~ (fixed by plan 017)
 
 | File:Line | What's mocked | Impact |
 |---|---|---|
+| ~~`data/duel_api.dart` (`fetchBotOpponent`)~~ | **Fixed by plan 017.** Real player-vs-player duels now run on the server (`LiveDuelApi` + Postgres RPCs + Realtime Broadcast). The bot roster remains only as the clearly labelled practice bot Quick match offers after 30 s with nobody around. | — |
+| ~~`presentation/bloc/matchmaking_cubit.dart` (always-bot search)~~ | **Fixed by plan 017.** `MatchmakingCubit` queues server-side per topic, pairs on ELO with a widening band (topic level as a secondary weight), and only offers the labelled bot after 30 s — the player can keep searching instead. | — |
+| ~~`presentation/screens/matchmaking_screen.dart` (`playerElo` constant `1240`)~~ | **Fixed by plan 017.** The player's real ELO/league/avatar come from the server's `_duel_player_json`. | — |
+| ~~`duel_play_screen.dart` / `matchmaking_screen.dart` (`MockPlayer.avatarEmoji`)~~ | **Fixed by plan 017.** Every duel surface shows the real player's avatar (`DuelPlayer.avatarEmoji`). | — |
+| ~~`data/duel_api.dart` (Football-only questions)~~ | **Fixed by plan 017.** Duels are fought in a picked topic, and the picker only lists topics with enough live questions in the player's content language (only English has duel-able topics today — a content gap, not a code stub). | — |
+
+---|---|---|
 | `data/duel_api.dart:9-18,27-48` (`fetchBotOpponent`) | Explicitly commented: *"There is still no real matchmaking server... keeps dealing a bot, explicitly labelled as one, from the same small fixed roster."* A 6-name bot roster with a randomized ELO offset. | **High** — "Duel" never matches against another real player; every duel is vs. a bot. |
 | `presentation/bloc/matchmaking_cubit.dart:32-70` | The search UI always ends by calling `fetchBotOpponent` — either on a 20s auto-timeout or an explicit "play a bot instead" tap. There is no code path that finds a human opponent. | High — same root issue as above; the "searching for opponent" UX is theater. |
 | `presentation/screens/matchmaking_screen.dart:28` | `playerElo` is a hardcoded constant (`1240`), not the real player's `profiles.elo`. | Medium — self-flagged in `duel_api.dart`'s own comment as a follow-up. |
@@ -104,6 +111,6 @@ Real by contrast: `notifications_api.dart` (in-app notification list, mark-read,
 
 1. ~~**Shop/monetization is entirely non-functional**~~ — **the Shop feature was deleted outright (plan 013)**, not fixed; coin packs, "Remove Ads", and power-up purchases no longer exist as a surface at all.
 2. ~~**Quiz Play's in-game economy is disconnected from the wallet**~~ — **fixed by plan 013**: power-ups are now granted once per level and spent from that pool, and "watch ad for heart" is a real `google_mobile_ads` rewarded ad rather than a `Timer`.
-3. **Duel has no real matchmaking** — every duel is scripted against one of 6 named bots; "searching for opponent" always resolves to a bot.
+3. ~~**Duel has no real matchmaking**~~ — **fixed by plan 017**: a realtime Duel Arena (challenges + join requests), server-side matchmaking and server-refereed live duels; the bot is now only a labelled practice fallback.
 4. **Delete Account doesn't delete anything** — it signs out to guest and shows a success message.
 5. **Home's top bar shows a fixed level/streak** for every signed-in user, even though the real values are already computed correctly in the Profile feature one tap away.

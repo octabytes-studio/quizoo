@@ -52,30 +52,6 @@
   "tabYou": "You",
   "@tabYou": { "description": "Shell tab 5." },
 
-  "playSheetTitle": "Play",
-  "@playSheetTitle": { "description": "S-38 play sheet heading." },
-  "playSheetSubtitle": "Pick how you want to play right now.",
-  "@playSheetSubtitle": { "description": "S-38 play sheet body." },
-  "playSheetDuel": "1v1 Duel",
-  "@playSheetDuel": { "description": "S-38 row 1 title." },
-  "playSheetDuelMeta": "5 questions · winner takes 200 🪙",
-  "@playSheetDuelMeta": { "description": "S-38 row 1 caption." },
-  "playSheetQuickPlay": "Quick Play",
-  "@playSheetQuickPlay": { "description": "S-38 row 2 title." },
-  "playSheetQuickPlayMeta": "A random level at your skill tier",
-  "@playSheetQuickPlayMeta": { "description": "S-38 row 2 caption." },
-  "playSheetDaily": "Daily Challenge",
-  "@playSheetDaily": { "description": "S-38 row 3 title." },
-  "playSheetDailyMeta": "Not played yet · 4h 12m left",
-  "@playSheetDailyMeta": { "description": "S-38 row 3 caption." },
-  "playSheetFriend": "Challenge a friend",
-  "@playSheetFriend": { "description": "S-38 row 4 title." },
-  "playSheetFriendMeta": "Danish M. is online now",
-  "@playSheetFriendMeta": { "description": "S-38 row 4 caption." },
-  "playSheetGo": "Go →",
-  "@playSheetGo": { "description": "S-38 primary row trailing affordance." },
-  "playSheetClose": "Close play menu",
-  "@playSheetClose": { "description": "Semantic label for the FAB while the play sheet is open." },
 
   "questionCounter": "Question {current} of {total}",
   "@questionCounter": {
@@ -1161,9 +1137,7 @@
       "next": { "type": "int", "example": "4" }
     }
   },
-  "duelCancelPlayBot": "Cancel — play a bot instead",
-  "@duelCancelPlayBot": { "description": "S-39 button, on screen from frame one per plan 004's Research findings." },
-  "duelRoundLabel": "ROUND {current}/{total}",
+  "duelRoundLabel": "QUESTION {current}/{total}",
   "@duelRoundLabel": {
     "description": "S-40 round counter under the timer ring.",
     "placeholders": {
@@ -1182,8 +1156,8 @@
   "@duelResultVictoryTitle": { "description": "S-41 victory headline." },
   "duelResultDefeatTitle": "Good game",
   "@duelResultDefeatTitle": { "description": "S-41 defeat headline." },
-  "duelResultRoundsWon": "Rounds won",
-  "@duelResultRoundsWon": { "description": "S-41 stat card row label." },
+  "duelResultRoundsWon": "Correct answers",
+  "@duelResultRoundsWon": { "description": "S-41 stat card row label — each player's points (one per correct answer)." },
   "duelResultAvgTime": "Average answer time",
   "@duelResultAvgTime": { "description": "S-41 stat card row label." },
   "duelResultAvgTimeValue": "{player}s vs {opponent}s",
@@ -1202,6 +1176,300 @@
   "@duelResultRematch": { "description": "S-41 primary action." },
   "duelResultFindNew": "Find a new opponent",
   "@duelResultFindNew": { "description": "S-41 secondary action." },
+
+  "duelArenaTitle": "Duel Arena",
+  "@duelArenaTitle": { "description": "S-38 arena top bar title." },
+  "duelArenaOnline": "{count} in the arena",
+  "@duelArenaOnline": {
+    "description": "S-38 presence pill — players currently on the arena screen.",
+    "placeholders": { "count": { "type": "int", "example": "23" } }
+  },
+  "duelArenaReconnecting": "Reconnecting…",
+  "@duelArenaReconnecting": { "description": "S-38 chip replacing the presence pill while the live feed reconnects." },
+  "duelArenaCloseLabel": "Close arena",
+  "@duelArenaCloseLabel": { "description": "S-38 ✕ button semantics label." },
+  "duelQuickMatchTitle": "Quick match",
+  "@duelQuickMatchTitle": { "description": "S-38 Quick match hero card title." },
+  "duelQuickMatchBody": "Auto-paired with a player near your level",
+  "@duelQuickMatchBody": { "description": "S-38 Quick match hero card body." },
+  "duelQuickMatchCta": "Find match",
+  "@duelQuickMatchCta": { "description": "S-38 Quick match hero card button." },
+  "duelLiveChallengesHeader": "Live challenges",
+  "@duelLiveChallengesHeader": { "description": "S-38 feed section header." },
+  "duelFeedEmptyTitle": "No live challenges yet",
+  "@duelFeedEmptyTitle": { "description": "S-38 empty feed title." },
+  "duelFeedEmptyBody": "Throw down the first one — players in the same topic see it instantly.",
+  "@duelFeedEmptyBody": { "description": "S-38 empty feed body." },
+  "duelFeedEmptyCta": "Create challenge",
+  "@duelFeedEmptyCta": { "description": "S-38 empty feed call to action." },
+  "duelFeedNewPill": "{count, plural, =1{1 new challenge} other{{count} new challenges}}",
+  "@duelFeedNewPill": {
+    "description": "S-38 pill shown when new challenges arrive while scrolled up.",
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "duelRejoinTitle": "You have a duel in progress",
+  "@duelRejoinTitle": { "description": "S-38 rejoin banner title." },
+  "duelRejoinCta": "Rejoin",
+  "@duelRejoinCta": { "description": "S-38 rejoin banner button." },
+  "duelCardReward": "{rounds} questions · winner +{coins} 🪙",
+  "@duelCardReward": {
+    "description": "S-38 challenge card reward line.",
+    "placeholders": { "rounds": { "type": "int", "example": "5" }, "coins": { "type": "int", "example": "200" } }
+  },
+  "duelCardJoin": "Join",
+  "@duelCardJoin": { "description": "S-38 challenge card join button." },
+  "duelCardQueued": "Request sent · {ahead} ahead",
+  "@duelCardQueued": {
+    "description": "S-38 challenge card while the viewer's request is queued behind others.",
+    "placeholders": { "ahead": { "type": "int", "example": "2" } }
+  },
+  "duelCardSent": "Request sent",
+  "@duelCardSent": { "description": "S-38 challenge card right after the viewer requested to join." },
+  "duelCardDeciding": "{name} is deciding…",
+  "@duelCardDeciding": {
+    "description": "S-38 challenge card while the creator decides on the viewer's request.",
+    "placeholders": { "name": { "type": "String", "example": "Ayesha" } }
+  },
+  "duelCardNotThisTime": "Not this time",
+  "@duelCardNotThisTime": { "description": "S-38 challenge card briefly after a decline or no answer." },
+  "duelCardRetryIn": "Try again in {seconds}s",
+  "@duelCardRetryIn": {
+    "description": "S-38 challenge card retry cool-down.",
+    "placeholders": { "seconds": { "type": "int", "example": "13" } }
+  },
+  "duelCardAway": "Away",
+  "@duelCardAway": { "description": "S-38 challenge card chip while the creator is off the arena." },
+  "duelCardLive": "LIVE",
+  "@duelCardLive": { "description": "S-38 in-progress challenge card live marker." },
+  "duelCardInProgress": "In progress · vs {name}",
+  "@duelCardInProgress": {
+    "description": "S-38 in-progress challenge card caption.",
+    "placeholders": { "name": { "type": "String", "example": "Zara N." } }
+  },
+  "duelCardYours": "Your challenge",
+  "@duelCardYours": { "description": "S-38 the viewer's own challenge card title." },
+  "duelCardWaiting": "Waiting for a challenger…",
+  "@duelCardWaiting": { "description": "S-38 the viewer's own open challenge card status." },
+  "duelCardPaused": "Paused while you're away",
+  "@duelCardPaused": { "description": "S-38 the viewer's own challenge card while they are away." },
+  "duelCardCancel": "Cancel",
+  "@duelCardCancel": { "description": "S-38 the viewer's own challenge card cancel button." },
+  "duelFairnessEven": "Even match",
+  "@duelFairnessEven": { "description": "S-38 fairness hint: ELO difference within 100." },
+  "duelFairnessTough": "Tough one",
+  "@duelFairnessTough": { "description": "S-38 fairness hint: opponent 150+ ELO above the viewer." },
+  "duelFairnessFavourable": "Favourable",
+  "@duelFairnessFavourable": { "description": "S-38 fairness hint: opponent 150+ ELO below the viewer." },
+  "duelGuestName": "Guest {tag}",
+  "@duelGuestName": {
+    "description": "Display name for a guest player (no username).",
+    "placeholders": { "tag": { "type": "String", "example": "4821" } }
+  },
+  "duelTopicLevel": "Lv {level}",
+  "@duelTopicLevel": {
+    "description": "A player's level in the duel's topic.",
+    "placeholders": { "level": { "type": "int", "example": "4" } }
+  },
+  "duelCardSemantics": "Challenge from {name}, {league}, {elo} ELO, {topic}, {time} left",
+  "@duelCardSemantics": {
+    "description": "S-38 challenge card accessibility label.",
+    "placeholders": { "name": { "type": "String", "example": "Ayesha K." }, "league": { "type": "String", "example": "Gold" }, "elo": { "type": "int", "example": "1412" }, "topic": { "type": "String", "example": "Football" }, "time": { "type": "String", "example": "4:12" } }
+  },
+  "duelComposerCreate": "Create challenge",
+  "@duelComposerCreate": { "description": "S-38 composer button." },
+  "duelComposerCooldown": "New challenge in {time}",
+  "@duelComposerCooldown": {
+    "description": "S-38 composer during the creation cool-off.",
+    "placeholders": { "time": { "type": "String", "example": "1:42" } }
+  },
+  "duelComposerOpen": "Your {topic} challenge · {time} left",
+  "@duelComposerOpen": {
+    "description": "S-38 composer while the viewer's own challenge is open.",
+    "placeholders": { "topic": { "type": "String", "example": "Football" }, "time": { "type": "String", "example": "3:02" } }
+  },
+  "duelComposerSignIn": "Sign in to create challenges",
+  "@duelComposerSignIn": { "description": "S-38 composer for guests." },
+  "duelComposerInDuel": "You're in a duel",
+  "@duelComposerInDuel": { "description": "S-38 composer while the viewer is in a duel." },
+  "duelIncomingTitle": "{name} wants to duel!",
+  "@duelIncomingTitle": {
+    "description": "S-38 incoming join request banner title.",
+    "placeholders": { "name": { "type": "String", "example": "Danish M." } }
+  },
+  "duelIncomingMeta": "{league} · {elo} ELO · {topic} Lv {level}",
+  "@duelIncomingMeta": {
+    "description": "S-38 incoming join request banner meta line.",
+    "placeholders": { "league": { "type": "String", "example": "Silver" }, "elo": { "type": "int", "example": "1380" }, "topic": { "type": "String", "example": "Football" }, "level": { "type": "int", "example": "4" } }
+  },
+  "duelIncomingAccept": "Accept",
+  "@duelIncomingAccept": { "description": "S-38 incoming join request accept button." },
+  "duelIncomingDecline": "Decline",
+  "@duelIncomingDecline": { "description": "S-38 incoming join request decline button." },
+  "duelIncomingMore": "+{count} waiting",
+  "@duelIncomingMore": {
+    "description": "S-38 incoming banner: more requests queued behind this one.",
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "duelPickerTitleCreate": "Pick your battleground",
+  "@duelPickerTitleCreate": { "description": "Topic picker title when creating a challenge." },
+  "duelPickerTitleMatch": "Match in which topic?",
+  "@duelPickerTitleMatch": { "description": "Topic picker title when matchmaking." },
+  "duelPickerBody": "You'll only face players in the same topic.",
+  "@duelPickerBody": { "description": "Topic picker body." },
+  "duelPickerSearching": "{count} searching",
+  "@duelPickerSearching": {
+    "description": "Topic picker activity chip: players matchmaking in this topic.",
+    "placeholders": { "count": { "type": "int", "example": "3" } }
+  },
+  "duelPickerOpen": "{count} open",
+  "@duelPickerOpen": {
+    "description": "Topic picker activity chip: open challenges in this topic.",
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "duelPickerEmpty": "No duel topics in this language yet.",
+  "@duelPickerEmpty": { "description": "Topic picker empty state." },
+  "duelNoticeCooldown": "You can create another challenge in {time}",
+  "@duelNoticeCooldown": {
+    "description": "Arena snackbar: challenge creation cool-off.",
+    "placeholders": { "time": { "type": "String", "example": "1:42" } }
+  },
+  "duelNoticeAlreadyOpen": "You already have a live challenge",
+  "@duelNoticeAlreadyOpen": { "description": "Arena snackbar." },
+  "duelNoticeDailyCap": "Daily challenge limit reached — try Quick match",
+  "@duelNoticeDailyCap": { "description": "Arena snackbar." },
+  "duelNoticeTooManyRequests": "You can wait on up to {max} challenges at once",
+  "@duelNoticeTooManyRequests": {
+    "description": "Arena snackbar.",
+    "placeholders": { "max": { "type": "int", "example": "3" } }
+  },
+  "duelNoticeRateLimited": "Slow down a little — try again in a moment",
+  "@duelNoticeRateLimited": { "description": "Arena snackbar." },
+  "duelNoticeCreatorAway": "{name} stepped away",
+  "@duelNoticeCreatorAway": {
+    "description": "Arena snackbar: the challenge's creator left the arena.",
+    "placeholders": { "name": { "type": "String", "example": "Ayesha" } }
+  },
+  "duelNoticeChallengeGone": "That challenge is no longer available",
+  "@duelNoticeChallengeGone": { "description": "Arena snackbar." },
+  "duelNoticeDeclined": "{name} passed this time",
+  "@duelNoticeDeclined": {
+    "description": "Arena snackbar: the creator declined the viewer's request.",
+    "placeholders": { "name": { "type": "String", "example": "Ayesha" } }
+  },
+  "duelNoticeNoResponse": "No answer from {name}",
+  "@duelNoticeNoResponse": {
+    "description": "Arena snackbar: the creator let the request lapse.",
+    "placeholders": { "name": { "type": "String", "example": "Ayesha" } }
+  },
+  "duelNoticeTakenByOther": "{name} started a duel with someone else",
+  "@duelNoticeTakenByOther": {
+    "description": "Arena snackbar.",
+    "placeholders": { "name": { "type": "String", "example": "Ayesha" } }
+  },
+  "duelNoticeRequesterBusy": "{name} just started another duel",
+  "@duelNoticeRequesterBusy": {
+    "description": "Arena snackbar: the requester the viewer accepted is already busy.",
+    "placeholders": { "name": { "type": "String", "example": "Danish" } }
+  },
+  "duelNoticeOpponentNoShow": "Your opponent didn't show up",
+  "@duelNoticeOpponentNoShow": { "description": "Snackbar when a live duel is abandoned because the opponent never loaded it." },
+  "duelNoticeTopicUnavailable": "That topic isn't available for duels right now",
+  "@duelNoticeTopicUnavailable": { "description": "Arena snackbar." },
+  "duelNoticeSignInRequired": "Sign in to create challenges",
+  "@duelNoticeSignInRequired": { "description": "Arena snackbar: a guest tried to create a challenge." },
+  "duelNoticeGeneric": "Something went wrong — please try again",
+  "@duelNoticeGeneric": { "description": "Arena snackbar: any other failure." },
+  "duelSearchingBand": "Searching… {min} – {max} ELO",
+  "@duelSearchingBand": {
+    "description": "S-39 VS row caption under the searching side.",
+    "placeholders": { "min": { "type": "int", "example": "1312" }, "max": { "type": "int", "example": "1512" } }
+  },
+  "duelBotOfferTitle": "No one's around in {topic} right now",
+  "@duelBotOfferTitle": {
+    "description": "S-39 bot offer card title.",
+    "placeholders": { "topic": { "type": "String", "example": "⚽ Football" } }
+  },
+  "duelBotOfferBody": "Play a practice bot — clearly labelled, results count at half ELO.",
+  "@duelBotOfferBody": { "description": "S-39 bot offer card body." },
+  "duelBotOfferPlay": "🤖 Play a bot",
+  "@duelBotOfferPlay": { "description": "S-39 bot offer primary button." },
+  "duelKeepSearching": "Keep searching",
+  "@duelKeepSearching": { "description": "S-39 bot offer secondary button." },
+  "duelBotBadge": "BOT",
+  "@duelBotBadge": { "description": "Label on a practice bot's avatar/name." },
+  "duelLeaveQueueLabel": "Stop searching",
+  "@duelLeaveQueueLabel": { "description": "S-39 ✕ button semantics label." },
+  "duelLeagueEloCaption": "{league} · {elo} ELO",
+  "@duelLeagueEloCaption": {
+    "description": "S-39 VS row caption under the player's own avatar: league (emoji + name) and formatted ELO.",
+    "placeholders": { "league": { "type": "String", "example": "🥇 Gold" }, "elo": { "type": "String", "example": "1,412" } }
+  },
+  "duelIntroRanked": "Ranked",
+  "@duelIntroRanked": { "description": "S-40 intro chip: this duel moves ELO." },
+  "duelIntroUnranked": "Unranked",
+  "@duelIntroUnranked": { "description": "S-40 intro chip: this duel does not move ELO." },
+  "duelIntroStartsIn": "Starting in {seconds}",
+  "@duelIntroStartsIn": {
+    "description": "S-40 intro countdown.",
+    "placeholders": { "seconds": { "type": "int", "example": "3" } }
+  },
+  "duelWaitingFor": "Waiting for {name}…",
+  "@duelWaitingFor": {
+    "description": "S-40 intro while the opponent loads.",
+    "placeholders": { "name": { "type": "String", "example": "Danish" } }
+  },
+  "duelGetReady": "Get ready…",
+  "@duelGetReady": { "description": "S-40 question card placeholder while the question loads." },
+  "duelOpponentReconnecting": "{name} reconnecting… {seconds}s",
+  "@duelOpponentReconnecting": {
+    "description": "S-40 chip while the opponent's connection is down.",
+    "placeholders": { "name": { "type": "String", "example": "Danish" }, "seconds": { "type": "int", "example": "24" } }
+  },
+  "duelQuitTitle": "Leave the duel?",
+  "@duelQuitTitle": { "description": "S-40 quit dialog title." },
+  "duelQuitBody": "Leaving gives your opponent the remaining questions.",
+  "@duelQuitBody": { "description": "S-40 quit dialog body." },
+  "duelQuitConfirm": "Leave",
+  "@duelQuitConfirm": { "description": "S-40 quit dialog confirm button." },
+  "duelQuitStay": "Stay",
+  "@duelQuitStay": { "description": "S-40 quit dialog cancel button." },
+  "duelQuitLabel": "Leave duel",
+  "@duelQuitLabel": { "description": "S-40 ✕ button semantics label." },
+  "duelResultDrawTitle": "It's a draw",
+  "@duelResultDrawTitle": { "description": "S-41 draw headline." },
+  "duelResultUnranked": "Unranked — you've played {name} {count} times today",
+  "@duelResultUnranked": {
+    "description": "S-41 note when the pair's ranked cap was reached.",
+    "placeholders": { "name": { "type": "String", "example": "Danish" }, "count": { "type": "int", "example": "3" } }
+  },
+  "duelResultUnrankedShort": "Unranked — ELO unchanged",
+  "@duelResultUnrankedShort": { "description": "S-41 note when the duel did not count for ELO." },
+  "duelResultOpponentForfeit": "{name} left — the remaining questions count for you",
+  "@duelResultOpponentForfeit": {
+    "description": "S-41 caption when the opponent forfeited.",
+    "placeholders": { "name": { "type": "String", "example": "Danish" } }
+  },
+  "duelResultYouForfeited": "You left the duel",
+  "@duelResultYouForfeited": { "description": "S-41 caption when the player forfeited." },
+  "duelResultXp": "XP",
+  "@duelResultXp": { "description": "S-41 stat card row label." },
+  "duelRematchWaiting": "Waiting for {name}…",
+  "@duelRematchWaiting": {
+    "description": "S-41 rematch button while waiting for the opponent.",
+    "placeholders": { "name": { "type": "String", "example": "Danish" } }
+  },
+  "duelRematchOffered": "{name} wants a rematch!",
+  "@duelRematchOffered": {
+    "description": "S-41 rematch prompt when the opponent asked first.",
+    "placeholders": { "name": { "type": "String", "example": "Danish" } }
+  },
+  "duelRematchAccept": "Accept rematch",
+  "@duelRematchAccept": { "description": "S-41 rematch accept button." },
+  "duelRematchUnavailable": "{name} has left",
+  "@duelRematchUnavailable": {
+    "description": "S-41 rematch button once the rematch window closed.",
+    "placeholders": { "name": { "type": "String", "example": "Danish" } }
+  },
 
   "settingsTitle": "Settings",
   "@settingsTitle": { "description": "S-42 top bar title." },

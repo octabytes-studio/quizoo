@@ -70,7 +70,7 @@ void main() {
       (l10n) => l10n.tabDaily,
       (l10n) => l10n.tabYou,
       (l10n) => l10n.questionSample,
-      (l10n) => l10n.playSheetTitle,
+      (l10n) => l10n.tabPlay,
     ]) {
       expect(read(urdu), isNot(read(english)));
     }

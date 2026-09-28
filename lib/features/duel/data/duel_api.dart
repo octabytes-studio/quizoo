@@ -1,28 +1,27 @@
 import 'dart:math';
 
 import 'package:quizoo/core/network/api_exception.dart';
-import 'package:quizoo/features/duel/domain/duel_opponent.dart';
+import 'package:quizoo/features/duel/domain/duel_player.dart';
 import 'package:quizoo/features/duel/domain/duel_round.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// The real duel endpoints.
+/// The labelled practice-bot duel's endpoints.
 ///
-/// There is still no real matchmaking server (plan 006, Assumption #3) —
-/// [fetchBotOpponent] keeps dealing a bot, explicitly labelled as one, from
-/// the same small fixed roster; only [fetchRoundQuestions] and
-/// [submitBotDuel] talk to Supabase now. `playerElo` here still comes from
-/// whatever the caller passes in (`matchmaking_screen.dart`'s constant) —
-/// threading `profiles.elo` all the way up into that screen's construction
-/// is flagged as a follow-up, not resolved by this rewrite, to keep this
-/// change contained to the data layer.
+/// Real player-vs-player duels run on the server (`LiveDuelApi`, plan 017);
+/// this is only the fallback Quick match offers after 30 s with nobody
+/// around. [fetchBotOpponent] deals a bot — always labelled as one (bible
+/// §14) — from a small fixed roster near the player's real ELO;
+/// [fetchRoundQuestions] draws the chosen topic's questions, and
+/// [submitBotDuel] settles the result server-side.
 class DuelApi {
   DuelApi(this._client);
 
   final SupabaseClient _client;
 
-  /// Best-of-5 (§14).
-  static const int roundCount = 5;
+  /// Questions per duel — the same count as a live duel
+  /// (`duel_config.rounds`).
+  static const int roundCount = 10;
 
   static const List<(String name, String emoji)> _botRoster = [
     ('Fennec', '🦊'),
@@ -33,46 +32,38 @@ class DuelApi {
     ('Talon', '🦅'),
   ];
 
-  /// A bot within roughly ±120 of [playerElo] — still a scripted opponent,
-  /// not a real matchmaking search (plan 006, Assumption #3).
-  Future<DuelOpponent> fetchBotOpponent({required int playerElo}) async {
+  /// A bot within roughly ±120 of [playerElo] — a scripted, explicitly
+  /// labelled opponent, never a secret one.
+  Future<DuelPlayer> fetchBotOpponent({required int playerElo}) async {
     final random = Random();
     final (name, emoji) = _botRoster[random.nextInt(_botRoster.length)];
     final elo = (playerElo + random.nextInt(241) - 120).clamp(400, 2400);
-    return DuelOpponent(
+    return DuelPlayer(
       id: 'bot_${DateTime.now().microsecondsSinceEpoch}',
       name: name,
       avatarEmoji: emoji,
       elo: elo,
+      isBot: true,
     );
   }
 
-  /// Five live questions for the duel — the same content pool
-  /// `start_level_attempt` draws from, reused rather than duplicated. Only
-  /// Football has seeded content today, so this pulls from there directly
-  /// until more topics exist (plan 006, Design overview); Football only
-  /// exists under the English category today, so a non-English duel
-  /// currently finds no subcategory and deals nothing, same as any other
-  /// as-yet-unauthored topic.
+  /// Five live questions from the duel's topic ([subcategoryId]) — the same
+  /// content pool `start_level_attempt` draws from. The bot duel is
+  /// simulated locally, so it needs `correct_index`; a live duel never reads
+  /// this table (plan 017, A8/A9).
   Future<List<Question>> fetchRoundQuestions({
+    required String subcategoryId,
     required String languageCode,
   }) async {
     try {
-      final subcategoryRow = await _client
-          .from('subcategories')
-          .select('id, categories!inner(language_code)')
-          .eq('slug', 'football')
-          .eq('categories.language_code', languageCode)
-          .maybeSingle();
-      if (subcategoryRow == null) return const [];
-
       final rows = await _client
           .from('questions')
           .select(
             'id, subcategory_id, difficulty, kind, media_url, '
-            'prompt, options, correct_index, explanation',
+            'prompt, options, correct_index, explanation, '
+            'audio_url, tts_excluded',
           )
-          .eq('subcategory_id', subcategoryRow['id'] as String)
+          .eq('subcategory_id', subcategoryId)
           .eq('status', 'live')
           .eq('language_code', languageCode);
 
@@ -92,6 +83,7 @@ class DuelApi {
     required int playerRoundsWon,
     required int opponentRoundsWon,
     required List<DuelRoundRecord> rounds,
+    String? subcategoryId,
   }) async {
     try {
       final response = await _client.rpc<Map<String, dynamic>>(
@@ -108,6 +100,7 @@ class DuelApi {
                 'playerAnswerSeconds': round.playerAnswerSeconds,
               },
           ],
+          'p_subcategory_id': ?subcategoryId,
         },
       );
       return BotDuelRecord(
@@ -133,6 +126,8 @@ class DuelApi {
     explanation: row['explanation'] as String,
     hasImage: row['kind'] == 'image',
     imageAsset: row['media_url'] as String?,
+    audioUrl: row['audio_url'] as String?,
+    ttsExcluded: row['tts_excluded'] as bool? ?? false,
   );
 }
 
