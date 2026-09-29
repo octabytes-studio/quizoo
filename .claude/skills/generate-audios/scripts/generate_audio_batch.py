@@ -3,10 +3,18 @@
 each clip to a Supabase Storage bucket.
 
 Invoked by the generate-audios skill, never run standalone with hardcoded
-secrets: every credential is a *file path* passed in --input, read once into
-memory here, and never printed/logged. Only structural results (question ids,
-resulting public URLs, error strings) are written to --output for the calling
-agent to read back.
+secrets: every credential is a *file path* passed in --input (or
+--keys-json), read once into memory here, and never printed/logged. Only
+structural results (question ids, resulting public URLs, error strings,
+language codes) are written to --output for the calling agent to read back.
+
+Two modes:
+  --list-languages --keys-json <path> --output <path>
+      Reads elevenlabs_keys.json and reports, per language, how many usable
+      key/voice pairs exist (and which entries were malformed, by index
+      only). Never reveals an api_key or voice_id value.
+  --input <path> --output <path>
+      The main batch-generation run.
 
 Uses only the Python standard library (urllib) so no extra install step is
 needed before this script can run.
@@ -54,6 +62,53 @@ def load_key(path_str: str) -> str | None:
     except OSError:
         return None
     return value or None
+
+
+def load_keys_config(
+    path_str: str,
+) -> tuple[dict[str, list[dict]] | None, list[dict], str | None]:
+    """Reads elevenlabs_keys.json and groups entries by language, preserving
+    file order within each language (that order is the rotation sequence).
+
+    Returns (grouped, malformed_entries, error). On any fatal problem
+    (unreadable file, invalid JSON, not a JSON array), grouped is None and
+    error explains why.
+    """
+    path = Path(path_str).expanduser()
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except OSError as error:
+        return None, [], f"Cannot read keys JSON file at {path_str!r}: {error}"
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as error:
+        return None, [], f"Keys JSON file at {path_str!r} is not valid JSON: {error}"
+
+    if not isinstance(data, list):
+        return None, [], f"Keys JSON file at {path_str!r} must contain a JSON array."
+
+    grouped: dict[str, list[dict]] = {}
+    malformed: list[dict] = []
+    for i, entry in enumerate(data):
+        language = entry.get("language") if isinstance(entry, dict) else None
+        voice_id = entry.get("voice_id") if isinstance(entry, dict) else None
+        api_key = entry.get("api_key") if isinstance(entry, dict) else None
+        if (
+            not isinstance(language, str)
+            or not language.strip()
+            or not isinstance(voice_id, str)
+            or not voice_id.strip()
+            or not isinstance(api_key, str)
+            or not api_key.strip()
+        ):
+            malformed.append({"index": i})
+            continue
+        grouped.setdefault(language.strip(), []).append(
+            {"voice_id": voice_id.strip(), "api_key": api_key.strip()}
+        )
+
+    return grouped, malformed, None
 
 
 def is_quota_or_auth_failure(status: int, body: bytes) -> bool:
@@ -120,13 +175,25 @@ def upload_to_storage(
         return 0, str(error).encode("utf-8")
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--input", required=True)
-    parser.add_argument("--output", required=True)
-    args = parser.parse_args()
+def run_list_languages(keys_json_path: str, output_path: str) -> int:
+    grouped, malformed, error = load_keys_config(keys_json_path)
+    if error is not None:
+        Path(output_path).write_text(
+            json.dumps({"error": error, "languages": {}, "malformed_entries": []}, indent=2),
+            encoding="utf-8",
+        )
+        return 1
 
-    config = json.loads(Path(args.input).read_text(encoding="utf-8"))
+    out = {
+        "languages": {lang: len(pairs) for lang, pairs in grouped.items()},
+        "malformed_entries": malformed,
+    }
+    Path(output_path).write_text(json.dumps(out, indent=2), encoding="utf-8")
+    return 0
+
+
+def run_batch(input_path: str, output_path: str) -> int:
+    config = json.loads(Path(input_path).read_text(encoding="utf-8"))
 
     project_url: str = config["project_url"]
     bucket: str = config["bucket"]
@@ -138,6 +205,7 @@ def main() -> int:
         "generated": [],
         "failed": [],
         "key_events": [],
+        "languages_exhausted": [],
         "stopped_early": False,
         "stop_reason": None,
     }
@@ -149,40 +217,70 @@ def main() -> int:
             f"Cannot read service_role key file at "
             f"{config['service_role_key_path']!r}."
         )
-        Path(args.output).write_text(json.dumps(result, indent=2), encoding="utf-8")
+        Path(output_path).write_text(json.dumps(result, indent=2), encoding="utf-8")
         return 1
 
-    usable_keys: list[str] = []
-    for i, key_path in enumerate(config["elevenlabs_key_paths"]):
-        key = load_key(key_path)
-        if key is None:
-            result["key_events"].append(
-                {"index": i, "path": key_path, "event": "unreadable"}
-            )
-        else:
-            usable_keys.append(key)
-
-    if not usable_keys:
+    grouped, malformed, error = load_keys_config(config["keys_json_path"])
+    if error is not None:
         result["stopped_early"] = True
-        result["stop_reason"] = "No usable ElevenLabs API key files were found."
-        Path(args.output).write_text(json.dumps(result, indent=2), encoding="utf-8")
+        result["stop_reason"] = error
+        Path(output_path).write_text(json.dumps(result, indent=2), encoding="utf-8")
         return 1
 
-    key_index = 0
+    for entry in malformed:
+        result["key_events"].append({"event": "malformed_entry", **entry})
+
+    if not grouped:
+        result["stopped_early"] = True
+        result["stop_reason"] = (
+            f"No usable key/voice entries found in "
+            f"{config['keys_json_path']!r}."
+        )
+        Path(output_path).write_text(json.dumps(result, indent=2), encoding="utf-8")
+        return 1
+
+    key_index: dict[str, int] = {lang: 0 for lang in grouped}
+    exhausted_languages: set[str] = set()
 
     for question in questions:
         qid = question["id"]
         prompt = question["prompt"]
         language_code = question["language_code"]
-        voice_id = question["voice_id"]
+
+        if language_code not in grouped:
+            result["failed"].append(
+                {
+                    "id": qid,
+                    "stage": "no_keys_for_language",
+                    "error": f"No key/voice entries for language {language_code!r}.",
+                }
+            )
+            continue
+
+        if language_code in exhausted_languages:
+            result["failed"].append(
+                {
+                    "id": qid,
+                    "stage": "language_exhausted",
+                    "error": (
+                        f"All key/voice pairs for language {language_code!r} "
+                        "were exhausted earlier in this run."
+                    ),
+                }
+            )
+            continue
 
         transient_attempts = 0
+        audio_bytes: bytes | None = None
 
         while True:
-            api_key = usable_keys[key_index]
+            pairs = grouped[language_code]
+            idx = key_index[language_code]
+            pair = pairs[idx]
+
             status, body = call_elevenlabs(
-                voice_id=voice_id,
-                api_key=api_key,
+                voice_id=pair["voice_id"],
+                api_key=pair["api_key"],
                 text=prompt,
                 language_code=language_code,
                 model_id=model_id,
@@ -196,23 +294,29 @@ def main() -> int:
             if is_quota_or_auth_failure(status, body):
                 result["key_events"].append(
                     {
-                        "index": key_index,
+                        "language": language_code,
+                        "index": idx,
                         "event": "exhausted_or_rejected",
                         "http_status": status,
                     }
                 )
-                key_index += 1
-                if key_index >= len(usable_keys):
-                    result["stopped_early"] = True
-                    result["stop_reason"] = (
-                        "All ElevenLabs API keys are exhausted or rejected "
-                        f"(last HTTP status {status})."
+                key_index[language_code] += 1
+                if key_index[language_code] >= len(pairs):
+                    exhausted_languages.add(language_code)
+                    result["failed"].append(
+                        {
+                            "id": qid,
+                            "stage": "elevenlabs",
+                            "error": (
+                                f"All {len(pairs)} key/voice pairs for language "
+                                f"{language_code!r} are exhausted or rejected "
+                                f"(last HTTP status {status})."
+                            ),
+                        }
                     )
-                    Path(args.output).write_text(
-                        json.dumps(result, indent=2), encoding="utf-8"
-                    )
-                    return 0
-                continue  # retry same question with the next key
+                    audio_bytes = None
+                    break
+                continue  # retry same question with the next pair
 
             transient_attempts += 1
             if transient_attempts > MAX_TRANSIENT_RETRIES:
@@ -254,8 +358,27 @@ def main() -> int:
 
         time.sleep(SLEEP_BETWEEN_REQUESTS_SECONDS)
 
-    Path(args.output).write_text(json.dumps(result, indent=2), encoding="utf-8")
+    result["languages_exhausted"] = sorted(exhausted_languages)
+    Path(output_path).write_text(json.dumps(result, indent=2), encoding="utf-8")
     return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input")
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--list-languages", action="store_true")
+    parser.add_argument("--keys-json")
+    args = parser.parse_args()
+
+    if args.list_languages:
+        if not args.keys_json:
+            parser.error("--list-languages requires --keys-json")
+        return run_list_languages(args.keys_json, args.output)
+
+    if not args.input:
+        parser.error("--input is required unless --list-languages is set")
+    return run_batch(args.input, args.output)
 
 
 if __name__ == "__main__":
