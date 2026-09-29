@@ -69,13 +69,18 @@ class ChallengeCard extends StatelessWidget {
     final creator = challenge.creator;
     final remaining = _remaining(challenge.expiresAt, now);
 
-    final semanticsLabel = l10n.duelCardSemantics(
-      creator.displayName(l10n),
-      creator.leagueName,
-      creator.elo,
-      challenge.topic.name,
-      remaining.clockLabel(l10n.localeName),
-    );
+    final semanticsLabel = cardState is ChallengeCardEnded
+        ? l10n.duelCardEndedSemantics(
+            creator.displayName(l10n),
+            challenge.topic.name,
+          )
+        : l10n.duelCardSemantics(
+            creator.displayName(l10n),
+            creator.leagueName,
+            creator.elo,
+            challenge.topic.name,
+            remaining.clockLabel(l10n.localeName),
+          );
 
     final Widget card = switch (cardState) {
       ChallengeCardOwn(:final paused) => _OwnCard(
@@ -91,6 +96,10 @@ class ChallengeCard extends StatelessWidget {
           opponentLabel:
               opponentName ?? l10n.duelGuestName(opponentGuestTag ?? ''),
         ),
+      ChallengeCardEnded(:final endReason) => _EndedCard(
+        challenge: challenge,
+        endReason: endReason,
+      ),
       ChallengeCardOpen() ||
       ChallengeCardQueued() ||
       ChallengeCardPending() ||
@@ -303,7 +312,8 @@ class _JoinActionArea extends StatelessWidget {
       ),
       // Rendered by their own card widgets, never here.
       ChallengeCardOwn() ||
-      ChallengeCardInProgress() => const SizedBox.shrink(),
+      ChallengeCardInProgress() ||
+      ChallengeCardEnded() => const SizedBox.shrink(),
     };
   }
 }
@@ -571,6 +581,48 @@ class _InProgressCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// -------------------------------------------------------------- ended card
+
+/// A cancelled, expired or finished challenge, kept in the feed for 7 days
+/// (plan: challenge history) before the server purges it. Dimmed like the
+/// away state, no join/cancel affordance.
+class _EndedCard extends StatelessWidget {
+  const _EndedCard({required this.challenge, required this.endReason});
+
+  final DuelChallenge challenge;
+  final String? endReason;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final label = switch (endReason) {
+      'cancelled' => l10n.duelCardEndedCancelled,
+      'expired' => l10n.duelCardEndedExpired,
+      'completed' => l10n.duelCardEndedCompleted,
+      'abandoned' => l10n.duelCardEndedAbandoned,
+      _ => l10n.duelCardEndedGeneric,
+    };
+
+    final plate = _CardPlate(
+      child: ExcludeSemantics(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _CreatorHeader(
+              player: challenge.creator,
+              trailing: _CardChip(emoji: '🏁', label: label),
+            ),
+            SizedBox(height: AppSpacing.sm.h),
+            _TopicLine(topic: challenge.topic),
+          ],
+        ),
+      ),
+    );
+
+    return Opacity(opacity: ChallengeCard.awayOpacity, child: plate);
   }
 }
 

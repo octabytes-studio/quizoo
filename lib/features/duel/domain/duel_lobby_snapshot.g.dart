@@ -17,6 +17,11 @@ _DuelLobbySnapshot _$DuelLobbySnapshotFromJson(
           ?.map((e) => DuelChallenge.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
+  recentlyEnded:
+      (json['recentlyEnded'] as List<dynamic>?)
+          ?.map((e) => DuelChallenge.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
   myRequests:
       (json['myRequests'] as List<dynamic>?)
           ?.map((e) => OutgoingJoinRequest.fromJson(e as Map<String, dynamic>))
@@ -33,6 +38,7 @@ Map<String, dynamic> _$DuelLobbySnapshotToJson(_DuelLobbySnapshot instance) =>
       'config': instance.config,
       'me': instance.me,
       'challenges': instance.challenges,
+      'recentlyEnded': instance.recentlyEnded,
       'myRequests': instance.myRequests,
       'incoming': instance.incoming,
     };

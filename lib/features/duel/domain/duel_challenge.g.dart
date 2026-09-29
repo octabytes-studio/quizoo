@@ -18,6 +18,10 @@ _DuelChallenge _$DuelChallengeFromJson(Map<String, dynamic> json) =>
       opponentName: json['opponentName'] as String?,
       opponentGuestTag: json['opponentGuestTag'] as String?,
       duelId: json['duelId'] as String?,
+      endReason: json['endReason'] as String?,
+      endedAt: json['endedAt'] == null
+          ? null
+          : DateTime.parse(json['endedAt'] as String),
     );
 
 Map<String, dynamic> _$DuelChallengeToJson(_DuelChallenge instance) =>
@@ -32,9 +36,12 @@ Map<String, dynamic> _$DuelChallengeToJson(_DuelChallenge instance) =>
       'opponentName': instance.opponentName,
       'opponentGuestTag': instance.opponentGuestTag,
       'duelId': instance.duelId,
+      'endReason': instance.endReason,
+      'endedAt': instance.endedAt?.toIso8601String(),
     };
 
 const _$ChallengeStatusEnumMap = {
   ChallengeStatus.open: 'open',
   ChallengeStatus.matched: 'matched',
+  ChallengeStatus.ended: 'ended',
 };

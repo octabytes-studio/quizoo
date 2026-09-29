@@ -249,6 +249,7 @@ class DuelArenaBloc extends Bloc<DuelArenaEvent, DuelArenaState> {
       config: snapshot.config,
       me: snapshot.me,
       challenges: _ordered(snapshot.challenges, snapshot.me.player.id),
+      recentlyEnded: snapshot.recentlyEnded.take(feedLimit).toList(),
       outgoing: outgoing,
       incoming: unanswered,
       now: _clock.now(),
@@ -384,12 +385,24 @@ class DuelArenaBloc extends Bloc<DuelArenaEvent, DuelArenaState> {
     if (removed == null) return;
 
     final isMineOpen = current.me.openChallengeId == challengeId;
+    // Optimistic: the card lingers as "ended" using what is already known
+    // about it, reconciled by the next snapshot fetch (which has the
+    // server's actual endReason).
+    final endedEntry = removed.copyWith(
+      status: ChallengeStatus.ended,
+      endedAt: _clock.now(),
+    );
     emit(
       current.copyWith(
         challenges: [
           for (final c in current.challenges)
             if (c.id != challengeId) c,
         ],
+        recentlyEnded: [
+          endedEntry,
+          for (final c in current.recentlyEnded)
+            if (c.id != challengeId) c,
+        ].take(feedLimit).toList(),
         outgoing: Map.of(current.outgoing)..remove(challengeId),
         notThisTimeUntil: Map.of(current.notThisTimeUntil)..remove(challengeId),
         me: isMineOpen
@@ -643,6 +656,15 @@ class DuelArenaBloc extends Bloc<DuelArenaEvent, DuelArenaState> {
           for (final c in latest.challenges)
             if (c.id != own.id) c,
         ],
+        recentlyEnded: [
+          own.copyWith(
+            status: ChallengeStatus.ended,
+            endReason: 'cancelled',
+            endedAt: _clock.now(),
+          ),
+          for (final c in latest.recentlyEnded)
+            if (c.id != own.id) c,
+        ].take(feedLimit).toList(),
         me: latest.me.copyWith(openChallengeId: null),
         clearIncoming: latest.incoming?.challengeId == own.id,
       ),

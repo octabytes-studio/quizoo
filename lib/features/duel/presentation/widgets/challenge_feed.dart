@@ -76,7 +76,7 @@ class _ChallengeFeedState extends State<ChallengeFeed> {
   @override
   void initState() {
     super.initState();
-    _seen.addAll(_ids(widget.ready?.challenges));
+    _seen.addAll(_ids(widget.ready?.feedItems));
     _controller.addListener(_onScroll);
   }
 
@@ -88,13 +88,13 @@ class _ChallengeFeedState extends State<ChallengeFeed> {
     if (ready == null) return;
     if (oldReady == null) {
       // The first snapshot: nothing in it is "new".
-      _seen.addAll(_ids(ready.challenges));
+      _seen.addAll(_ids(ready.feedItems));
       return;
     }
 
-    final previousNewest = oldReady.challenges.lastOrNull?.createdAt;
+    final previousNewest = oldReady.feedItems.lastOrNull?.createdAt;
     var appended = 0;
-    for (final challenge in ready.challenges) {
+    for (final challenge in ready.feedItems) {
       if (!_seen.add(challenge.id)) continue;
       _toAnimate.add(challenge.id);
       if (previousNewest == null ||
@@ -146,7 +146,7 @@ class _ChallengeFeedState extends State<ChallengeFeed> {
     final ready = widget.ready;
     if (ready == null) return const _FeedSkeleton();
 
-    final challenges = ready.challenges;
+    final challenges = ready.feedItems;
     if (challenges.isEmpty) {
       return _FeedEmpty(
         onCreate: ready.composerState is ComposerCreate
@@ -158,7 +158,7 @@ class _ChallengeFeedState extends State<ChallengeFeed> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _FeedHeader(count: challenges.length),
+        _FeedHeader(count: ready.challenges.length),
         Expanded(
           child: Stack(
             children: [

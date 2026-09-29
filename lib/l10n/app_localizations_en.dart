@@ -1482,6 +1482,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String duelCardEndedSemantics(String name, String topic) {
+    return 'Ended challenge from $name, $topic';
+  }
+
+  @override
+  String get duelCardEndedCancelled => 'Cancelled';
+
+  @override
+  String get duelCardEndedExpired => 'Expired';
+
+  @override
+  String get duelCardEndedCompleted => 'Completed';
+
+  @override
+  String get duelCardEndedAbandoned => 'Abandoned';
+
+  @override
+  String get duelCardEndedGeneric => 'Ended';
+
+  @override
   String get duelComposerCreate => 'Create challenge';
 
   @override

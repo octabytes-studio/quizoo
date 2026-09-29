@@ -1291,6 +1291,21 @@
     "description": "S-38 challenge card accessibility label.",
     "placeholders": { "name": { "type": "String", "example": "Ayesha K." }, "league": { "type": "String", "example": "Gold" }, "elo": { "type": "int", "example": "1412" }, "topic": { "type": "String", "example": "Football" }, "time": { "type": "String", "example": "4:12" } }
   },
+  "duelCardEndedSemantics": "Ended challenge from {name}, {topic}",
+  "@duelCardEndedSemantics": {
+    "description": "S-38 ended challenge card accessibility label.",
+    "placeholders": { "name": { "type": "String", "example": "Ayesha K." }, "topic": { "type": "String", "example": "Football" } }
+  },
+  "duelCardEndedCancelled": "Cancelled",
+  "@duelCardEndedCancelled": { "description": "S-38 ended challenge card chip: the creator cancelled it." },
+  "duelCardEndedExpired": "Expired",
+  "@duelCardEndedExpired": { "description": "S-38 ended challenge card chip: nobody joined in time." },
+  "duelCardEndedCompleted": "Completed",
+  "@duelCardEndedCompleted": { "description": "S-38 ended challenge card chip: the duel was played out." },
+  "duelCardEndedAbandoned": "Abandoned",
+  "@duelCardEndedAbandoned": { "description": "S-38 ended challenge card chip: the duel was abandoned (no-show or both disconnected)." },
+  "duelCardEndedGeneric": "Ended",
+  "@duelCardEndedGeneric": { "description": "S-38 ended challenge card chip fallback for an unrecognised reason." },
   "duelComposerCreate": "Create challenge",
   "@duelComposerCreate": { "description": "S-38 composer button." },
   "duelComposerCooldown": "New challenge in {time}",

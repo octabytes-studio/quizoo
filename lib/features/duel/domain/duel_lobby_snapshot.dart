@@ -13,7 +13,10 @@ part 'duel_lobby_snapshot.g.dart';
 /// deltas applied on top in between (plan 017, "Snapshot + deltas").
 ///
 /// [challenges] are ordered oldest first, which is the chat-style feed's
-/// order (newest at the bottom).
+/// order (newest at the bottom). [recentlyEnded] (cancelled, expired or
+/// finished within the last 7 days) is newest-ended-first and has no
+/// Realtime deltas of its own — it is only ever refreshed by re-fetching the
+/// snapshot.
 @freezed
 abstract class DuelLobbySnapshot with _$DuelLobbySnapshot {
   const factory DuelLobbySnapshot({
@@ -21,6 +24,7 @@ abstract class DuelLobbySnapshot with _$DuelLobbySnapshot {
     required DuelConfig config,
     required DuelLobbyMe me,
     @Default([]) List<DuelChallenge> challenges,
+    @Default([]) List<DuelChallenge> recentlyEnded,
     @Default([]) List<OutgoingJoinRequest> myRequests,
     IncomingJoinRequest? incoming,
   }) = _DuelLobbySnapshot;
