@@ -250,5 +250,77 @@ void main() {
       await pumpCard(tester, const ChallengeCardOwn(paused: true));
       expect(find.text("💤 Paused while you're away"), findsOneWidget);
     });
+
+    testWidgets('ended: dimmed, reason chip, no Join/Cancel', (tester) async {
+      await pumpCard(
+        tester,
+        const ChallengeCardEnded(endReason: 'completed'),
+        challenge: _challenge.copyWith(status: ChallengeStatus.ended),
+        onJoin: () {},
+        onCancel: () {},
+      );
+
+      expect(find.text('Completed'), findsOneWidget);
+      expect(find.text('Ayesha K.'), findsOneWidget);
+      expect(find.text('Football · Sports'), findsOneWidget);
+      expect(find.text('Join'), findsNothing);
+      expect(find.text('Cancel'), findsNothing);
+      final opacity = tester.widget<Opacity>(
+        find.ancestor(
+          of: find.text('Completed'),
+          matching: find.byType(Opacity),
+        ),
+      );
+      expect(opacity.opacity, ChallengeCard.awayOpacity);
+    });
+
+    testWidgets('ended reasons map to their own labels', (tester) async {
+      final challenge = _challenge.copyWith(status: ChallengeStatus.ended);
+
+      await pumpCard(
+        tester,
+        const ChallengeCardEnded(endReason: 'cancelled'),
+        challenge: challenge,
+      );
+      expect(find.text('Cancelled'), findsOneWidget);
+
+      await pumpCard(
+        tester,
+        const ChallengeCardEnded(endReason: 'expired'),
+        challenge: challenge,
+      );
+      expect(find.text('Expired'), findsOneWidget);
+
+      await pumpCard(
+        tester,
+        const ChallengeCardEnded(endReason: 'abandoned'),
+        challenge: challenge,
+      );
+      expect(find.text('Abandoned'), findsOneWidget);
+
+      await pumpCard(
+        tester,
+        const ChallengeCardEnded(),
+        challenge: challenge,
+      );
+      expect(find.text('Ended'), findsOneWidget);
+    });
+
+    testWidgets('ended card has its own semantics label, no time-left', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpCard(
+        tester,
+        const ChallengeCardEnded(endReason: 'completed'),
+        challenge: _challenge.copyWith(status: ChallengeStatus.ended),
+      );
+
+      expect(
+        find.bySemanticsLabel('Ended challenge from Ayesha K., Football'),
+        findsOneWidget,
+      );
+      semantics.dispose();
+    });
   });
 }

@@ -68,6 +68,7 @@ DuelChallenge challenge(
 
 DuelLobbySnapshot snapshot({
   List<DuelChallenge> challenges = const [],
+  List<DuelChallenge> recentlyEnded = const [],
   bool isGuest = false,
   DateTime? cooldownEndsAt,
   IncomingJoinRequest? incoming,
@@ -80,6 +81,7 @@ DuelLobbySnapshot snapshot({
     cooldownEndsAt: cooldownEndsAt,
   ),
   challenges: challenges,
+  recentlyEnded: recentlyEnded,
   incoming: incoming,
 );
 
@@ -186,11 +188,40 @@ void main() {
 
         events.add(const ChallengeRemoved('c0'));
         await pumpEventQueue();
-        expect(readyOf(bloc).challenges.map((c) => c.id), ['c1']);
+        final afterRemove = readyOf(bloc);
+        expect(afterRemove.challenges.map((c) => c.id), ['c1']);
+        // Optimistic: it lingers as history, reason unknown until the next
+        // snapshot fetch.
+        expect(afterRemove.recentlyEnded.map((c) => c.id), ['c0']);
+        expect(
+          afterRemove.cardStateFor(afterRemove.recentlyEnded.single),
+          const ChallengeCardEnded(),
+        );
 
         await bloc.close();
       },
     );
+
+    test('snapshot fetch/refresh carries recentlyEnded through', () async {
+      final ended = challenge(
+        'old',
+        status: ChallengeStatus.ended,
+      ).copyWith(endReason: 'expired');
+      when(
+        () => repository.fetchLobby(any()),
+      ).thenAnswer((_) async => snapshot(recentlyEnded: [ended]));
+
+      final bloc = buildBloc()..add(const ArenaOpened());
+      await pumpEventQueue();
+
+      expect(readyOf(bloc).recentlyEnded.map((c) => c.id), ['old']);
+      expect(
+        readyOf(bloc).cardStateFor(ended),
+        const ChallengeCardEnded(endReason: 'expired'),
+      );
+
+      await bloc.close();
+    });
 
     test('create → a cooldown notice on challenge_cooldown', () async {
       when(() => repository.fetchLobby(any())).thenAnswer(
@@ -552,12 +583,14 @@ void main() {
   group('DuelArenaReady derived getters', () {
     DuelArenaReady ready({
       List<DuelChallenge> challenges = const [],
+      List<DuelChallenge> recentlyEnded = const [],
       DuelLobbyMe? lobbyMe,
       String? activeDuelId,
     }) => DuelArenaReady(
       config: const DuelConfig(),
       me: lobbyMe ?? DuelLobbyMe(player: me),
       challenges: challenges,
+      recentlyEnded: recentlyEnded,
       now: start,
       activeDuelId: activeDuelId,
     );
@@ -598,6 +631,29 @@ void main() {
         const ChallengeCardAway(),
       );
       expect(state.cardStateFor(challenge('d')), const ChallengeCardOpen());
+      expect(
+        state.cardStateFor(
+          challenge(
+            'e',
+            status: ChallengeStatus.ended,
+          ).copyWith(endReason: 'cancelled'),
+        ),
+        const ChallengeCardEnded(endReason: 'cancelled'),
+      );
+    });
+
+    test('feedItems merges challenges and recentlyEnded, oldest first', () {
+      final live = challenge('live', createdAgo: const Duration(minutes: 1));
+      final ended = challenge(
+        'ended',
+        createdAgo: const Duration(minutes: 5),
+        status: ChallengeStatus.ended,
+      );
+      final state = ready(challenges: [live], recentlyEnded: [ended]);
+
+      expect(state.feedItems.map((c) => c.id), ['ended', 'live']);
+      // No recentlyEnded: just the live list, unchanged.
+      expect(ready(challenges: [live]).feedItems, [live]);
     });
 
     test('composer: in duel, sign in, own open, cool-off, create', () {

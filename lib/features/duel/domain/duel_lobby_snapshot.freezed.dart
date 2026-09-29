@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DuelLobbySnapshot {
 
- DateTime get serverNow; DuelConfig get config; DuelLobbyMe get me; List<DuelChallenge> get challenges; List<OutgoingJoinRequest> get myRequests; IncomingJoinRequest? get incoming;
+ DateTime get serverNow; DuelConfig get config; DuelLobbyMe get me; List<DuelChallenge> get challenges; List<DuelChallenge> get recentlyEnded; List<OutgoingJoinRequest> get myRequests; IncomingJoinRequest? get incoming;
 /// Create a copy of DuelLobbySnapshot
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DuelLobbySnapshotCopyWith<DuelLobbySnapshot> get copyWith => _$DuelLobbySnapsho
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelLobbySnapshot&&(identical(other.serverNow, serverNow) || other.serverNow == serverNow)&&(identical(other.config, config) || other.config == config)&&(identical(other.me, me) || other.me == me)&&const DeepCollectionEquality().equals(other.challenges, challenges)&&const DeepCollectionEquality().equals(other.myRequests, myRequests)&&(identical(other.incoming, incoming) || other.incoming == incoming));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelLobbySnapshot&&(identical(other.serverNow, serverNow) || other.serverNow == serverNow)&&(identical(other.config, config) || other.config == config)&&(identical(other.me, me) || other.me == me)&&const DeepCollectionEquality().equals(other.challenges, challenges)&&const DeepCollectionEquality().equals(other.recentlyEnded, recentlyEnded)&&const DeepCollectionEquality().equals(other.myRequests, myRequests)&&(identical(other.incoming, incoming) || other.incoming == incoming));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,serverNow,config,me,const DeepCollectionEquality().hash(challenges),const DeepCollectionEquality().hash(myRequests),incoming);
+int get hashCode => Object.hash(runtimeType,serverNow,config,me,const DeepCollectionEquality().hash(challenges),const DeepCollectionEquality().hash(recentlyEnded),const DeepCollectionEquality().hash(myRequests),incoming);
 
 @override
 String toString() {
-  return 'DuelLobbySnapshot(serverNow: $serverNow, config: $config, me: $me, challenges: $challenges, myRequests: $myRequests, incoming: $incoming)';
+  return 'DuelLobbySnapshot(serverNow: $serverNow, config: $config, me: $me, challenges: $challenges, recentlyEnded: $recentlyEnded, myRequests: $myRequests, incoming: $incoming)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $DuelLobbySnapshotCopyWith<$Res>  {
   factory $DuelLobbySnapshotCopyWith(DuelLobbySnapshot value, $Res Function(DuelLobbySnapshot) _then) = _$DuelLobbySnapshotCopyWithImpl;
 @useResult
 $Res call({
- DateTime serverNow, DuelConfig config, DuelLobbyMe me, List<DuelChallenge> challenges, List<OutgoingJoinRequest> myRequests, IncomingJoinRequest? incoming
+ DateTime serverNow, DuelConfig config, DuelLobbyMe me, List<DuelChallenge> challenges, List<DuelChallenge> recentlyEnded, List<OutgoingJoinRequest> myRequests, IncomingJoinRequest? incoming
 });
 
 
@@ -65,12 +65,13 @@ class _$DuelLobbySnapshotCopyWithImpl<$Res>
 
 /// Create a copy of DuelLobbySnapshot
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? serverNow = null,Object? config = null,Object? me = null,Object? challenges = null,Object? myRequests = null,Object? incoming = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? serverNow = null,Object? config = null,Object? me = null,Object? challenges = null,Object? recentlyEnded = null,Object? myRequests = null,Object? incoming = freezed,}) {
   return _then(_self.copyWith(
 serverNow: null == serverNow ? _self.serverNow : serverNow // ignore: cast_nullable_to_non_nullable
 as DateTime,config: null == config ? _self.config : config // ignore: cast_nullable_to_non_nullable
 as DuelConfig,me: null == me ? _self.me : me // ignore: cast_nullable_to_non_nullable
 as DuelLobbyMe,challenges: null == challenges ? _self.challenges : challenges // ignore: cast_nullable_to_non_nullable
+as List<DuelChallenge>,recentlyEnded: null == recentlyEnded ? _self.recentlyEnded : recentlyEnded // ignore: cast_nullable_to_non_nullable
 as List<DuelChallenge>,myRequests: null == myRequests ? _self.myRequests : myRequests // ignore: cast_nullable_to_non_nullable
 as List<OutgoingJoinRequest>,incoming: freezed == incoming ? _self.incoming : incoming // ignore: cast_nullable_to_non_nullable
 as IncomingJoinRequest?,
@@ -188,10 +189,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime serverNow,  DuelConfig config,  DuelLobbyMe me,  List<DuelChallenge> challenges,  List<OutgoingJoinRequest> myRequests,  IncomingJoinRequest? incoming)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime serverNow,  DuelConfig config,  DuelLobbyMe me,  List<DuelChallenge> challenges,  List<DuelChallenge> recentlyEnded,  List<OutgoingJoinRequest> myRequests,  IncomingJoinRequest? incoming)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DuelLobbySnapshot() when $default != null:
-return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.myRequests,_that.incoming);case _:
+return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.recentlyEnded,_that.myRequests,_that.incoming);case _:
   return orElse();
 
 }
@@ -209,10 +210,10 @@ return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.myR
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime serverNow,  DuelConfig config,  DuelLobbyMe me,  List<DuelChallenge> challenges,  List<OutgoingJoinRequest> myRequests,  IncomingJoinRequest? incoming)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime serverNow,  DuelConfig config,  DuelLobbyMe me,  List<DuelChallenge> challenges,  List<DuelChallenge> recentlyEnded,  List<OutgoingJoinRequest> myRequests,  IncomingJoinRequest? incoming)  $default,) {final _that = this;
 switch (_that) {
 case _DuelLobbySnapshot():
-return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.myRequests,_that.incoming);case _:
+return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.recentlyEnded,_that.myRequests,_that.incoming);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -229,10 +230,10 @@ return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.myR
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime serverNow,  DuelConfig config,  DuelLobbyMe me,  List<DuelChallenge> challenges,  List<OutgoingJoinRequest> myRequests,  IncomingJoinRequest? incoming)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime serverNow,  DuelConfig config,  DuelLobbyMe me,  List<DuelChallenge> challenges,  List<DuelChallenge> recentlyEnded,  List<OutgoingJoinRequest> myRequests,  IncomingJoinRequest? incoming)?  $default,) {final _that = this;
 switch (_that) {
 case _DuelLobbySnapshot() when $default != null:
-return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.myRequests,_that.incoming);case _:
+return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.recentlyEnded,_that.myRequests,_that.incoming);case _:
   return null;
 
 }
@@ -244,7 +245,7 @@ return $default(_that.serverNow,_that.config,_that.me,_that.challenges,_that.myR
 @JsonSerializable()
 
 class _DuelLobbySnapshot implements DuelLobbySnapshot {
-  const _DuelLobbySnapshot({required this.serverNow, required this.config, required this.me, final  List<DuelChallenge> challenges = const [], final  List<OutgoingJoinRequest> myRequests = const [], this.incoming}): _challenges = challenges,_myRequests = myRequests;
+  const _DuelLobbySnapshot({required this.serverNow, required this.config, required this.me, final  List<DuelChallenge> challenges = const [], final  List<DuelChallenge> recentlyEnded = const [], final  List<OutgoingJoinRequest> myRequests = const [], this.incoming}): _challenges = challenges,_recentlyEnded = recentlyEnded,_myRequests = myRequests;
   factory _DuelLobbySnapshot.fromJson(Map<String, dynamic> json) => _$DuelLobbySnapshotFromJson(json);
 
 @override final  DateTime serverNow;
@@ -255,6 +256,13 @@ class _DuelLobbySnapshot implements DuelLobbySnapshot {
   if (_challenges is EqualUnmodifiableListView) return _challenges;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_challenges);
+}
+
+ final  List<DuelChallenge> _recentlyEnded;
+@override@JsonKey() List<DuelChallenge> get recentlyEnded {
+  if (_recentlyEnded is EqualUnmodifiableListView) return _recentlyEnded;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_recentlyEnded);
 }
 
  final  List<OutgoingJoinRequest> _myRequests;
@@ -279,16 +287,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelLobbySnapshot&&(identical(other.serverNow, serverNow) || other.serverNow == serverNow)&&(identical(other.config, config) || other.config == config)&&(identical(other.me, me) || other.me == me)&&const DeepCollectionEquality().equals(other._challenges, _challenges)&&const DeepCollectionEquality().equals(other._myRequests, _myRequests)&&(identical(other.incoming, incoming) || other.incoming == incoming));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelLobbySnapshot&&(identical(other.serverNow, serverNow) || other.serverNow == serverNow)&&(identical(other.config, config) || other.config == config)&&(identical(other.me, me) || other.me == me)&&const DeepCollectionEquality().equals(other._challenges, _challenges)&&const DeepCollectionEquality().equals(other._recentlyEnded, _recentlyEnded)&&const DeepCollectionEquality().equals(other._myRequests, _myRequests)&&(identical(other.incoming, incoming) || other.incoming == incoming));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,serverNow,config,me,const DeepCollectionEquality().hash(_challenges),const DeepCollectionEquality().hash(_myRequests),incoming);
+int get hashCode => Object.hash(runtimeType,serverNow,config,me,const DeepCollectionEquality().hash(_challenges),const DeepCollectionEquality().hash(_recentlyEnded),const DeepCollectionEquality().hash(_myRequests),incoming);
 
 @override
 String toString() {
-  return 'DuelLobbySnapshot(serverNow: $serverNow, config: $config, me: $me, challenges: $challenges, myRequests: $myRequests, incoming: $incoming)';
+  return 'DuelLobbySnapshot(serverNow: $serverNow, config: $config, me: $me, challenges: $challenges, recentlyEnded: $recentlyEnded, myRequests: $myRequests, incoming: $incoming)';
 }
 
 
@@ -299,7 +307,7 @@ abstract mixin class _$DuelLobbySnapshotCopyWith<$Res> implements $DuelLobbySnap
   factory _$DuelLobbySnapshotCopyWith(_DuelLobbySnapshot value, $Res Function(_DuelLobbySnapshot) _then) = __$DuelLobbySnapshotCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime serverNow, DuelConfig config, DuelLobbyMe me, List<DuelChallenge> challenges, List<OutgoingJoinRequest> myRequests, IncomingJoinRequest? incoming
+ DateTime serverNow, DuelConfig config, DuelLobbyMe me, List<DuelChallenge> challenges, List<DuelChallenge> recentlyEnded, List<OutgoingJoinRequest> myRequests, IncomingJoinRequest? incoming
 });
 
 
@@ -316,12 +324,13 @@ class __$DuelLobbySnapshotCopyWithImpl<$Res>
 
 /// Create a copy of DuelLobbySnapshot
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? serverNow = null,Object? config = null,Object? me = null,Object? challenges = null,Object? myRequests = null,Object? incoming = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? serverNow = null,Object? config = null,Object? me = null,Object? challenges = null,Object? recentlyEnded = null,Object? myRequests = null,Object? incoming = freezed,}) {
   return _then(_DuelLobbySnapshot(
 serverNow: null == serverNow ? _self.serverNow : serverNow // ignore: cast_nullable_to_non_nullable
 as DateTime,config: null == config ? _self.config : config // ignore: cast_nullable_to_non_nullable
 as DuelConfig,me: null == me ? _self.me : me // ignore: cast_nullable_to_non_nullable
 as DuelLobbyMe,challenges: null == challenges ? _self._challenges : challenges // ignore: cast_nullable_to_non_nullable
+as List<DuelChallenge>,recentlyEnded: null == recentlyEnded ? _self._recentlyEnded : recentlyEnded // ignore: cast_nullable_to_non_nullable
 as List<DuelChallenge>,myRequests: null == myRequests ? _self._myRequests : myRequests // ignore: cast_nullable_to_non_nullable
 as List<OutgoingJoinRequest>,incoming: freezed == incoming ? _self.incoming : incoming // ignore: cast_nullable_to_non_nullable
 as IncomingJoinRequest?,

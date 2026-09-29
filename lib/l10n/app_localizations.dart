@@ -2528,6 +2528,42 @@ abstract class AppLocalizations {
     String time,
   );
 
+  /// S-38 ended challenge card accessibility label.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended challenge from {name}, {topic}'**
+  String duelCardEndedSemantics(String name, String topic);
+
+  /// S-38 ended challenge card chip: the creator cancelled it.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get duelCardEndedCancelled;
+
+  /// S-38 ended challenge card chip: nobody joined in time.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get duelCardEndedExpired;
+
+  /// S-38 ended challenge card chip: the duel was played out.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get duelCardEndedCompleted;
+
+  /// S-38 ended challenge card chip: the duel was abandoned (no-show or both disconnected).
+  ///
+  /// In en, this message translates to:
+  /// **'Abandoned'**
+  String get duelCardEndedAbandoned;
+
+  /// S-38 ended challenge card chip fallback for an unrecognised reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended'**
+  String get duelCardEndedGeneric;
+
   /// S-38 composer button.
   ///
   /// In en, this message translates to:

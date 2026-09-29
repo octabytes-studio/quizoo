@@ -30,6 +30,7 @@ final class DuelArenaReady extends DuelArenaState {
     required this.me,
     required this.challenges,
     required this.now,
+    this.recentlyEnded = const [],
     this.outgoing = const {},
     this.incoming,
     this.onlineCount = 0,
@@ -47,6 +48,12 @@ final class DuelArenaReady extends DuelArenaState {
 
   /// Oldest first — the chat-style feed renders the newest at the bottom.
   final List<DuelChallenge> challenges;
+
+  /// Cancelled, expired or finished within the last 7 days, newest-ended
+  /// first. Only ever refreshed by re-fetching the snapshot (no Realtime
+  /// deltas), except for the optimistic entry [_remove] adds the moment a
+  /// live card disappears.
+  final List<DuelChallenge> recentlyEnded;
 
   /// The viewer's own join requests, by challenge id.
   final Map<String, OutgoingJoinRequest> outgoing;
@@ -100,8 +107,24 @@ final class DuelArenaReady extends DuelArenaState {
   bool get needsHeartbeat =>
       ownOpenChallenge != null || outgoing.values.any((r) => r.isActive);
 
+  /// [challenges] plus [recentlyEnded], oldest first — the feed's single
+  /// chronological timeline. Ended cards render further back (dimmed,
+  /// non-interactive) rather than in their own section.
+  List<DuelChallenge> get feedItems {
+    if (recentlyEnded.isEmpty) return challenges;
+    final combined = [...recentlyEnded, ...challenges]
+      ..sort((a, b) {
+        final byTime = a.createdAt.compareTo(b.createdAt);
+        return byTime != 0 ? byTime : a.id.compareTo(b.id);
+      });
+    return combined;
+  }
+
   /// The card state for [challenge] (plan 017's card-state table).
   ChallengeCardState cardStateFor(DuelChallenge challenge) {
+    if (challenge.status == ChallengeStatus.ended) {
+      return ChallengeCardEnded(endReason: challenge.endReason);
+    }
     if (_isMine(challenge)) {
       return ChallengeCardOwn(paused: !challenge.creatorPresent);
     }
@@ -160,6 +183,7 @@ final class DuelArenaReady extends DuelArenaState {
     DuelConfig? config,
     DuelLobbyMe? me,
     List<DuelChallenge>? challenges,
+    List<DuelChallenge>? recentlyEnded,
     Map<String, OutgoingJoinRequest>? outgoing,
     IncomingJoinRequest? incoming,
     bool clearIncoming = false,
@@ -178,6 +202,7 @@ final class DuelArenaReady extends DuelArenaState {
     config: config ?? this.config,
     me: me ?? this.me,
     challenges: challenges ?? this.challenges,
+    recentlyEnded: recentlyEnded ?? this.recentlyEnded,
     outgoing: outgoing ?? this.outgoing,
     incoming: clearIncoming ? null : (incoming ?? this.incoming),
     onlineCount: onlineCount ?? this.onlineCount,
@@ -198,6 +223,7 @@ final class DuelArenaReady extends DuelArenaState {
     config,
     me,
     challenges,
+    recentlyEnded,
     outgoing,
     incoming,
     onlineCount,

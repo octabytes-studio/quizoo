@@ -81,3 +81,16 @@ final class ChallengeCardOwn extends ChallengeCardState {
   @override
   List<Object?> get props => [paused];
 }
+
+/// The challenge ended (cancelled, expired, or its duel finished) and is
+/// shown as history — retained server-side for 7 days, then purged.
+/// [endReason] is one of `cancelled`/`expired`/`completed`/`abandoned`, or
+/// null if the server sent none it recognised.
+final class ChallengeCardEnded extends ChallengeCardState {
+  const ChallengeCardEnded({this.endReason});
+
+  final String? endReason;
+
+  @override
+  List<Object?> get props => [endReason];
+}

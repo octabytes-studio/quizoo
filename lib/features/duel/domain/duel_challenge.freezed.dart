@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DuelChallenge {
 
- String get id; ChallengeStatus get status; bool get creatorPresent; DateTime get createdAt; DateTime get expiresAt; DuelPlayer get creator; DuelTopic get topic; String? get opponentName; String? get opponentGuestTag; String? get duelId;
+ String get id; ChallengeStatus get status; bool get creatorPresent; DateTime get createdAt; DateTime get expiresAt; DuelPlayer get creator; DuelTopic get topic; String? get opponentName; String? get opponentGuestTag; String? get duelId;/// Why an `ended` card ended: `cancelled`, `expired`, `completed` or
+/// `abandoned`. Null for a live card.
+ String? get endReason;/// When an `ended` card was archived. Null for a live card.
+ DateTime? get endedAt;
 /// Create a copy of DuelChallenge
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +31,16 @@ $DuelChallengeCopyWith<DuelChallenge> get copyWith => _$DuelChallengeCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelChallenge&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.creatorPresent, creatorPresent) || other.creatorPresent == creatorPresent)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.opponentName, opponentName) || other.opponentName == opponentName)&&(identical(other.opponentGuestTag, opponentGuestTag) || other.opponentGuestTag == opponentGuestTag)&&(identical(other.duelId, duelId) || other.duelId == duelId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelChallenge&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.creatorPresent, creatorPresent) || other.creatorPresent == creatorPresent)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.opponentName, opponentName) || other.opponentName == opponentName)&&(identical(other.opponentGuestTag, opponentGuestTag) || other.opponentGuestTag == opponentGuestTag)&&(identical(other.duelId, duelId) || other.duelId == duelId)&&(identical(other.endReason, endReason) || other.endReason == endReason)&&(identical(other.endedAt, endedAt) || other.endedAt == endedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,status,creatorPresent,createdAt,expiresAt,creator,topic,opponentName,opponentGuestTag,duelId);
+int get hashCode => Object.hash(runtimeType,id,status,creatorPresent,createdAt,expiresAt,creator,topic,opponentName,opponentGuestTag,duelId,endReason,endedAt);
 
 @override
 String toString() {
-  return 'DuelChallenge(id: $id, status: $status, creatorPresent: $creatorPresent, createdAt: $createdAt, expiresAt: $expiresAt, creator: $creator, topic: $topic, opponentName: $opponentName, opponentGuestTag: $opponentGuestTag, duelId: $duelId)';
+  return 'DuelChallenge(id: $id, status: $status, creatorPresent: $creatorPresent, createdAt: $createdAt, expiresAt: $expiresAt, creator: $creator, topic: $topic, opponentName: $opponentName, opponentGuestTag: $opponentGuestTag, duelId: $duelId, endReason: $endReason, endedAt: $endedAt)';
 }
 
 
@@ -48,7 +51,7 @@ abstract mixin class $DuelChallengeCopyWith<$Res>  {
   factory $DuelChallengeCopyWith(DuelChallenge value, $Res Function(DuelChallenge) _then) = _$DuelChallengeCopyWithImpl;
 @useResult
 $Res call({
- String id, ChallengeStatus status, bool creatorPresent, DateTime createdAt, DateTime expiresAt, DuelPlayer creator, DuelTopic topic, String? opponentName, String? opponentGuestTag, String? duelId
+ String id, ChallengeStatus status, bool creatorPresent, DateTime createdAt, DateTime expiresAt, DuelPlayer creator, DuelTopic topic, String? opponentName, String? opponentGuestTag, String? duelId, String? endReason, DateTime? endedAt
 });
 
 
@@ -65,7 +68,7 @@ class _$DuelChallengeCopyWithImpl<$Res>
 
 /// Create a copy of DuelChallenge
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? status = null,Object? creatorPresent = null,Object? createdAt = null,Object? expiresAt = null,Object? creator = null,Object? topic = null,Object? opponentName = freezed,Object? opponentGuestTag = freezed,Object? duelId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? status = null,Object? creatorPresent = null,Object? createdAt = null,Object? expiresAt = null,Object? creator = null,Object? topic = null,Object? opponentName = freezed,Object? opponentGuestTag = freezed,Object? duelId = freezed,Object? endReason = freezed,Object? endedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
@@ -77,7 +80,9 @@ as DuelPlayer,topic: null == topic ? _self.topic : topic // ignore: cast_nullabl
 as DuelTopic,opponentName: freezed == opponentName ? _self.opponentName : opponentName // ignore: cast_nullable_to_non_nullable
 as String?,opponentGuestTag: freezed == opponentGuestTag ? _self.opponentGuestTag : opponentGuestTag // ignore: cast_nullable_to_non_nullable
 as String?,duelId: freezed == duelId ? _self.duelId : duelId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,endReason: freezed == endReason ? _self.endReason : endReason // ignore: cast_nullable_to_non_nullable
+as String?,endedAt: freezed == endedAt ? _self.endedAt : endedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 /// Create a copy of DuelChallenge
@@ -180,10 +185,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  ChallengeStatus status,  bool creatorPresent,  DateTime createdAt,  DateTime expiresAt,  DuelPlayer creator,  DuelTopic topic,  String? opponentName,  String? opponentGuestTag,  String? duelId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  ChallengeStatus status,  bool creatorPresent,  DateTime createdAt,  DateTime expiresAt,  DuelPlayer creator,  DuelTopic topic,  String? opponentName,  String? opponentGuestTag,  String? duelId,  String? endReason,  DateTime? endedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DuelChallenge() when $default != null:
-return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that.expiresAt,_that.creator,_that.topic,_that.opponentName,_that.opponentGuestTag,_that.duelId);case _:
+return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that.expiresAt,_that.creator,_that.topic,_that.opponentName,_that.opponentGuestTag,_that.duelId,_that.endReason,_that.endedAt);case _:
   return orElse();
 
 }
@@ -201,10 +206,10 @@ return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  ChallengeStatus status,  bool creatorPresent,  DateTime createdAt,  DateTime expiresAt,  DuelPlayer creator,  DuelTopic topic,  String? opponentName,  String? opponentGuestTag,  String? duelId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  ChallengeStatus status,  bool creatorPresent,  DateTime createdAt,  DateTime expiresAt,  DuelPlayer creator,  DuelTopic topic,  String? opponentName,  String? opponentGuestTag,  String? duelId,  String? endReason,  DateTime? endedAt)  $default,) {final _that = this;
 switch (_that) {
 case _DuelChallenge():
-return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that.expiresAt,_that.creator,_that.topic,_that.opponentName,_that.opponentGuestTag,_that.duelId);case _:
+return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that.expiresAt,_that.creator,_that.topic,_that.opponentName,_that.opponentGuestTag,_that.duelId,_that.endReason,_that.endedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -221,10 +226,10 @@ return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  ChallengeStatus status,  bool creatorPresent,  DateTime createdAt,  DateTime expiresAt,  DuelPlayer creator,  DuelTopic topic,  String? opponentName,  String? opponentGuestTag,  String? duelId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  ChallengeStatus status,  bool creatorPresent,  DateTime createdAt,  DateTime expiresAt,  DuelPlayer creator,  DuelTopic topic,  String? opponentName,  String? opponentGuestTag,  String? duelId,  String? endReason,  DateTime? endedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _DuelChallenge() when $default != null:
-return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that.expiresAt,_that.creator,_that.topic,_that.opponentName,_that.opponentGuestTag,_that.duelId);case _:
+return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that.expiresAt,_that.creator,_that.topic,_that.opponentName,_that.opponentGuestTag,_that.duelId,_that.endReason,_that.endedAt);case _:
   return null;
 
 }
@@ -236,7 +241,7 @@ return $default(_that.id,_that.status,_that.creatorPresent,_that.createdAt,_that
 @JsonSerializable()
 
 class _DuelChallenge implements DuelChallenge {
-  const _DuelChallenge({required this.id, required this.status, required this.creatorPresent, required this.createdAt, required this.expiresAt, required this.creator, required this.topic, this.opponentName, this.opponentGuestTag, this.duelId});
+  const _DuelChallenge({required this.id, required this.status, required this.creatorPresent, required this.createdAt, required this.expiresAt, required this.creator, required this.topic, this.opponentName, this.opponentGuestTag, this.duelId, this.endReason, this.endedAt});
   factory _DuelChallenge.fromJson(Map<String, dynamic> json) => _$DuelChallengeFromJson(json);
 
 @override final  String id;
@@ -249,6 +254,11 @@ class _DuelChallenge implements DuelChallenge {
 @override final  String? opponentName;
 @override final  String? opponentGuestTag;
 @override final  String? duelId;
+/// Why an `ended` card ended: `cancelled`, `expired`, `completed` or
+/// `abandoned`. Null for a live card.
+@override final  String? endReason;
+/// When an `ended` card was archived. Null for a live card.
+@override final  DateTime? endedAt;
 
 /// Create a copy of DuelChallenge
 /// with the given fields replaced by the non-null parameter values.
@@ -263,16 +273,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelChallenge&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.creatorPresent, creatorPresent) || other.creatorPresent == creatorPresent)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.opponentName, opponentName) || other.opponentName == opponentName)&&(identical(other.opponentGuestTag, opponentGuestTag) || other.opponentGuestTag == opponentGuestTag)&&(identical(other.duelId, duelId) || other.duelId == duelId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelChallenge&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.creatorPresent, creatorPresent) || other.creatorPresent == creatorPresent)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.topic, topic) || other.topic == topic)&&(identical(other.opponentName, opponentName) || other.opponentName == opponentName)&&(identical(other.opponentGuestTag, opponentGuestTag) || other.opponentGuestTag == opponentGuestTag)&&(identical(other.duelId, duelId) || other.duelId == duelId)&&(identical(other.endReason, endReason) || other.endReason == endReason)&&(identical(other.endedAt, endedAt) || other.endedAt == endedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,status,creatorPresent,createdAt,expiresAt,creator,topic,opponentName,opponentGuestTag,duelId);
+int get hashCode => Object.hash(runtimeType,id,status,creatorPresent,createdAt,expiresAt,creator,topic,opponentName,opponentGuestTag,duelId,endReason,endedAt);
 
 @override
 String toString() {
-  return 'DuelChallenge(id: $id, status: $status, creatorPresent: $creatorPresent, createdAt: $createdAt, expiresAt: $expiresAt, creator: $creator, topic: $topic, opponentName: $opponentName, opponentGuestTag: $opponentGuestTag, duelId: $duelId)';
+  return 'DuelChallenge(id: $id, status: $status, creatorPresent: $creatorPresent, createdAt: $createdAt, expiresAt: $expiresAt, creator: $creator, topic: $topic, opponentName: $opponentName, opponentGuestTag: $opponentGuestTag, duelId: $duelId, endReason: $endReason, endedAt: $endedAt)';
 }
 
 
@@ -283,7 +293,7 @@ abstract mixin class _$DuelChallengeCopyWith<$Res> implements $DuelChallengeCopy
   factory _$DuelChallengeCopyWith(_DuelChallenge value, $Res Function(_DuelChallenge) _then) = __$DuelChallengeCopyWithImpl;
 @override @useResult
 $Res call({
- String id, ChallengeStatus status, bool creatorPresent, DateTime createdAt, DateTime expiresAt, DuelPlayer creator, DuelTopic topic, String? opponentName, String? opponentGuestTag, String? duelId
+ String id, ChallengeStatus status, bool creatorPresent, DateTime createdAt, DateTime expiresAt, DuelPlayer creator, DuelTopic topic, String? opponentName, String? opponentGuestTag, String? duelId, String? endReason, DateTime? endedAt
 });
 
 
@@ -300,7 +310,7 @@ class __$DuelChallengeCopyWithImpl<$Res>
 
 /// Create a copy of DuelChallenge
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? status = null,Object? creatorPresent = null,Object? createdAt = null,Object? expiresAt = null,Object? creator = null,Object? topic = null,Object? opponentName = freezed,Object? opponentGuestTag = freezed,Object? duelId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? status = null,Object? creatorPresent = null,Object? createdAt = null,Object? expiresAt = null,Object? creator = null,Object? topic = null,Object? opponentName = freezed,Object? opponentGuestTag = freezed,Object? duelId = freezed,Object? endReason = freezed,Object? endedAt = freezed,}) {
   return _then(_DuelChallenge(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
@@ -312,7 +322,9 @@ as DuelPlayer,topic: null == topic ? _self.topic : topic // ignore: cast_nullabl
 as DuelTopic,opponentName: freezed == opponentName ? _self.opponentName : opponentName // ignore: cast_nullable_to_non_nullable
 as String?,opponentGuestTag: freezed == opponentGuestTag ? _self.opponentGuestTag : opponentGuestTag // ignore: cast_nullable_to_non_nullable
 as String?,duelId: freezed == duelId ? _self.duelId : duelId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,endReason: freezed == endReason ? _self.endReason : endReason // ignore: cast_nullable_to_non_nullable
+as String?,endedAt: freezed == endedAt ? _self.endedAt : endedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
