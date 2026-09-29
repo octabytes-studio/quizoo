@@ -17,24 +17,41 @@ update this file.
 | `tts_excluded` | boolean | Rows with `tts_excluded = true` are permanently skipped — per plan 011's own design note, these are expected to never get an `audio_url` (they lean on visuals a voice can't describe). |
 | `audio_url` | text, nullable | The column this skill fills in. `NULL` = "needs audio, eligible" (until Hard Rule 4/5 language gating narrows that further). Never overwritten if already non-`NULL` — that's what makes reruns only pick up the remainder. |
 
-## Table: `languages` — the voice_id gate (Hard Rules 4 & 5)
+## `elevenlabs_keys.json` — the key/voice gate (Hard Rules 4 & 5)
 
-| Column | Relevance |
+As of 2026-09-29 this skill no longer reads `languages.voice_id` for
+anything (that column may still exist in Supabase for app-level purposes,
+but this skill neither reads nor writes it). Instead, key and voice
+selection is entirely driven by a local JSON file, always expected one
+directory above the project root:
+
+`/Users/waleed/Documents/projects/elevenlabs_keys.json`
+
+Format — a JSON array of objects, one per key/voice pair:
+
+```json
+[
+  {"language": "en", "voice_id": "MN7bvz2v9Z55XnbHzEk4", "api_key": "sk_..."},
+  {"language": "en", "voice_id": "AnotherVoiceIdHere",   "api_key": "sk_..."},
+  {"language": "ur", "voice_id": "o85TqPN3F4P7dWae2paA", "api_key": "sk_..."}
+]
+```
+
+| Field | Relevance |
 |---|---|
-| `code` | Joins to `questions.language_code`. |
-| `voice_id` | The ElevenLabs voice id to use for every question in that language. `NULL` ⇒ **skip every question of that language entirely** for this run — do not guess or fall back to another language's voice. |
+| `language` | Matches `questions.language_code`. A language with zero entries anywhere in the array ⇒ **skip every question of that language entirely** for this run — do not guess or fall back to another language's voice/key. |
+| `voice_id` | The ElevenLabs voice id for this specific key/voice pair. |
+| `api_key` | The ElevenLabs API key paired with that `voice_id`. Always used together — never mix a `voice_id` from one entry with an `api_key` from another. |
 
-Snapshot as of 2026-09-18 (always re-query live — this row set changes as
-languages are added/activated):
+A language may have any number of entries. When a language has multiple
+entries, they are tried **in file order** as the rotation sequence for that
+language (see "Key-failure handling" below) — each rotation step swaps in
+the *next entry's* `api_key` **and** `voice_id` together, not just the key.
 
-| `code` | name | `voice_id` |
-|---|---|---|
-| `en` | English | `MN7bvz2v9Z55XnbHzEk4` |
-| `ur` | Urdu | `o85TqPN3F4P7dWae2paA` |
-| `hi` | Hindi | `NULL` — not yet provisioned |
-| `ar` | Arabic | `NULL` |
-| `fr` | French | `NULL` |
-| `es` | Spanish | `NULL` |
+An entry missing/empty `language`, `voice_id`, or `api_key` is malformed and
+is skipped when the batch script loads the file (reported by index, never by
+value, so no partial secret ever surfaces in a transcript). A malformed
+entry does not invalidate the rest of the file.
 
 ## Storage: `question-audio` bucket
 
@@ -83,14 +100,23 @@ ElevenLabs signals quota exhaustion and auth failure both via 4xx status
 codes, most commonly:
 - `401` — either an expired/invalid key *or* a quota-exceeded key (the JSON
   body's `detail.status` distinguishes them, but this skill treats **both
-  the same way**: rotate to the next key). Looping requests against a key
-  that will never succeed is worse than rotating one key too eagerly.
+  the same way**: rotate to the next key/voice pair *for that language*).
+  Looping requests against a key that will never succeed is worse than
+  rotating one pair too eagerly.
 - `429` — rate-limited / over quota.
 
 Any other status (400 bad request, 5xx, network timeout) is treated as a
 per-question failure, not a key failure — retried a couple of times, then
 that single question is marked failed and the run moves on to the next
-question with the *same* key still active.
+question with the *same* key/voice pair still active.
+
+Rotation is scoped **per language**, since each language has its own
+independent list of key/voice pairs from `elevenlabs_keys.json`. Exhausting
+every pair for one language (e.g. all 10 English pairs failing) stops
+generation for that language only — the run continues normally with other
+languages, each tracking rotation state independently. This is a deliberate
+change from a single project-wide key list: with per-language pairs, one
+language's exhaustion carries no information about another's.
 
 ## Supabase Storage upload contract
 
@@ -112,34 +138,45 @@ object with the same bytes and proceeds to retry the `UPDATE`).
 
 ## Candidate-selection SQL (Hard Rules 2, 4, 5)
 
-Eligible candidates (feed to the batch script, `LIMIT` = the effective cap):
+`<ELIGIBLE_LANGUAGES>` is the set of language codes that have at least one
+entry in `elevenlabs_keys.json`, from Step 1 of `SKILL.md` — e.g.
+`'en', 'ur'`. No join to the `languages` table is needed for this purpose
+anymore.
+
+Eligible candidates (feed to the batch script, `LIMIT` = the effective
+count — default 100, or whatever `-n <count>` requested, with no upper
+limit):
 
 ```sql
-select q.id, q.prompt, q.language_code, l.voice_id
+select q.id, q.prompt, q.language_code
 from questions q
-join languages l on l.code = q.language_code
 where q.audio_url is null
   and q.status = 'live'
   and q.tts_excluded = false
-  and l.voice_id is not null
+  and q.language_code in (<ELIGIBLE_LANGUAGES>)
 order by q.created_at asc
-limit <EFFECTIVE_CAP>;
+limit <EFFECTIVE_COUNT>;
 ```
 
-Languages skipped entirely for lacking a `voice_id` (report these by name in
-the final summary, per Hard Rule 5):
+Languages skipped entirely for lacking any `elevenlabs_keys.json` entry
+(report these by name in the final summary, per Hard Rule 5):
 
 ```sql
 select q.language_code, count(*) as missing_count
 from questions q
-join languages l on l.code = q.language_code
 where q.audio_url is null
   and q.status = 'live'
   and q.tts_excluded = false
-  and l.voice_id is null
+  and q.language_code not in (<ELIGIBLE_LANGUAGES>)
 group by q.language_code
 order by q.language_code;
 ```
+
+If `<ELIGIBLE_LANGUAGES>` is empty (no language has any entry in
+`elevenlabs_keys.json` at all), drop the `not in (...)` clause entirely
+(an empty `IN`/`NOT IN` list is invalid SQL) and just group every
+otherwise-eligible question by `language_code` — all of them are skipped
+this run.
 
 Remaining eligible count after a run (re-run the first query's `where`
 clause as a bare `count(*)`, no `limit`) — report this so the user knows
