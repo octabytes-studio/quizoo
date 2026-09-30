@@ -311,7 +311,7 @@ abstract class AppLocalizations {
   /// S-02 Onboarding card 2 heading.
   ///
   /// In en, this message translates to:
-  /// **'Climb 20 levels\nin every topic'**
+  /// **'Climb 30 levels\nin every topic'**
   String get onboardingClimbTitle;
 
   /// S-02 Onboarding card 2 body.
@@ -590,35 +590,23 @@ abstract class AppLocalizations {
   /// **'PICK UP WHERE YOU LEFT'**
   String get categoryResumeEyebrow;
 
-  /// Levels 1–5 difficulty band (§19).
+  /// Levels 1–10 difficulty tier (§19).
   ///
   /// In en, this message translates to:
   /// **'Easy'**
   String get difficultyEasy;
 
-  /// Levels 6–10 difficulty band.
+  /// Levels 11–20 difficulty tier.
   ///
   /// In en, this message translates to:
   /// **'Medium'**
   String get difficultyMedium;
 
-  /// Levels 11–15 difficulty band.
+  /// Levels 21–30 difficulty tier.
   ///
   /// In en, this message translates to:
   /// **'Hard'**
   String get difficultyHard;
-
-  /// Levels 16–20 difficulty band.
-  ///
-  /// In en, this message translates to:
-  /// **'Expert'**
-  String get difficultyExpert;
-
-  /// Levels 41–50 difficulty band.
-  ///
-  /// In en, this message translates to:
-  /// **'Master'**
-  String get difficultyMaster;
 
   /// S-08 subcategory header card caption.
   ///
@@ -644,11 +632,11 @@ abstract class AppLocalizations {
   /// **'RANK'**
   String get levelMapRank;
 
-  /// S-08 difficulty band divider.
+  /// S-08 difficulty band divider's caption line — the difficulty name itself renders as its own bold line above this.
   ///
   /// In en, this message translates to:
-  /// **'{difficulty} · {seconds}s PER QUESTION'**
-  String levelMapBand(String difficulty, int seconds);
+  /// **'{questions} QUESTIONS · {seconds}s EACH'**
+  String levelMapBandMeta(int questions, int seconds);
 
   /// S-08 flag above the current node.
   ///
@@ -709,6 +697,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Leaderboard'**
   String get levelMapLeaderboard;
+
+  /// Topic Mastered (plan 020): pill on a fully-cleared topic's level map, reopening the mastery screen.
+  ///
+  /// In en, this message translates to:
+  /// **'🏆 Mastered'**
+  String get levelMapMastered;
 
   /// S-09 level brief sheet heading.
   ///
@@ -1052,11 +1046,11 @@ abstract class AppLocalizations {
   /// **'Clean run — no power-ups'**
   String get resultBreakdownCleanRun;
 
-  /// S-21 breakdown row.
+  /// S-21 breakdown row (plan 020: parameterized by the level's own question count).
   ///
   /// In en, this message translates to:
-  /// **'Flawless — 20 of 20'**
-  String get resultBreakdownFlawless;
+  /// **'Flawless — {count} of {count}'**
+  String resultBreakdownFlawless(int count);
 
   /// S-21 breakdown row.
   ///
@@ -1129,6 +1123,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to map'**
   String get resultBackToMap;
+
+  /// Topic Mastered (plan 020): S-21 primary CTA on a level-30 first clear, in place of "Next level".
+  ///
+  /// In en, this message translates to:
+  /// **'See your trophy 🏆'**
+  String get resultSeeTrophy;
 
   /// Semantic label for S-21's share button.
   ///
@@ -3277,6 +3277,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quizoo — the quiz that plays like a game.'**
   String get shareDemoPreview;
+
+  /// Topic Mastered (plan 020): screen eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'✦ TOPIC MASTERED ✦'**
+  String get masteryEyebrow;
+
+  /// Topic Mastered (plan 020): screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'{topic} Mastered!'**
+  String masteryTitle(String topic);
+
+  /// Topic Mastered (plan 020): screen subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You conquered every level — Easy, Medium and Hard.'**
+  String get masterySubtitle;
+
+  /// Topic Mastered (plan 020): the ribbon under the medallion.
+  ///
+  /// In en, this message translates to:
+  /// **'{cleared} / {total} LEVELS'**
+  String masteryLevelsRibbon(int cleared, int total);
+
+  /// Topic Mastered (plan 020): stats grid caption.
+  ///
+  /// In en, this message translates to:
+  /// **'STARS'**
+  String get masteryStatStars;
+
+  /// Topic Mastered (plan 020): stats grid caption.
+  ///
+  /// In en, this message translates to:
+  /// **'PERFECT LEVELS'**
+  String get masteryStatPerfect;
+
+  /// Topic Mastered (plan 020): stats grid caption.
+  ///
+  /// In en, this message translates to:
+  /// **'TOTAL SCORE'**
+  String get masteryStatScore;
+
+  /// Topic Mastered (plan 020): stats grid caption, pluralized.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{DAY TO MASTER} other{DAYS TO MASTER}}'**
+  String masteryStatDays(int count);
+
+  /// Topic Mastered (plan 020): stats grid caption shown instead of days-to-master when there is no startedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'LEVELS CLEARED'**
+  String get masteryStatLevels;
+
+  /// Topic Mastered (plan 020): nudge line when the topic is not flawless.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 star still up for grabs — replay a level to perfect this topic.} other{{count} stars still up for grabs — replay any level to perfect this topic.}}'**
+  String masteryMissingStars(int count);
+
+  /// Topic Mastered (plan 020): nudge line when every star is earned.
+  ///
+  /// In en, this message translates to:
+  /// **'Every single star collected. Flawless mastery 💎'**
+  String get masteryFlawless;
+
+  /// Topic Mastered (plan 020): primary CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get masteryContinue;
+
+  /// Topic Mastered (plan 020): secondary CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Share my trophy'**
+  String get masteryShare;
+
+  /// Topic Mastered (plan 020): share sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your mastery'**
+  String get masteryShareTitle;
 }
 
 class _AppLocalizationsDelegate

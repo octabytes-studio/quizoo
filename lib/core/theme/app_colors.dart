@@ -55,6 +55,29 @@ abstract final class AppColors {
   /// Scrim behind sheets and dialogs — `rgba(27,20,56,.5)`.
   static const Color lightOv = Color(0x801B1438);
 
+  // ------------------------------------------ Topic Mastered wash (plan 020)
+  // Identical in both themes, like the other full-bleed celebration
+  // surfaces (S-23, league promotion) — there is no dark-mode twin to keep
+  // in sync because the screen never reads the active brightness.
+  /// Deep royal violet, one step darker than [lightG].
+  static const Color masteryWashTop = Color(0xFF3A1C9E);
+
+  /// The same value as [darkS0], so the wash sinks into the night.
+  static const Color masteryWashBottom = Color(0xFF120D25);
+
+  /// The gold sunburst rays behind the medallion, drawn at low alpha.
+  static const Color masteryRay = Color(0xFFFFC61A);
+
+  /// The confetti burst's colour set.
+  static const List<Color> masteryConfetti = [
+    lightGold,
+    lightOk,
+    lightInfo,
+    lightP,
+    lightBad,
+    Color(0xFFFFFFFF),
+  ];
+
   // ----------------------------------------------------------------- dark
   static const Color darkS0 = Color(0xFF120D25);
   static const Color darkS1 = Color(0xFF201941);

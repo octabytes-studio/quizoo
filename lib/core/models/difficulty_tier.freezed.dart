@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DifficultyTier {
 
- String get code; String get label; int get secondsPerQuestion; int get levelStart; int get levelEnd;
+ String get code; String get label; int get secondsPerQuestion; int get levelStart; int get levelEnd;/// The resolved questions-per-level for this tier: its own
+/// `override_questions_per_level` if set, else the global
+/// `app_settings.questions_per_level` default.
+ int get questionsPerLevel;
 /// Create a copy of DifficultyTier
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +31,16 @@ $DifficultyTierCopyWith<DifficultyTier> get copyWith => _$DifficultyTierCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DifficultyTier&&(identical(other.code, code) || other.code == code)&&(identical(other.label, label) || other.label == label)&&(identical(other.secondsPerQuestion, secondsPerQuestion) || other.secondsPerQuestion == secondsPerQuestion)&&(identical(other.levelStart, levelStart) || other.levelStart == levelStart)&&(identical(other.levelEnd, levelEnd) || other.levelEnd == levelEnd));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DifficultyTier&&(identical(other.code, code) || other.code == code)&&(identical(other.label, label) || other.label == label)&&(identical(other.secondsPerQuestion, secondsPerQuestion) || other.secondsPerQuestion == secondsPerQuestion)&&(identical(other.levelStart, levelStart) || other.levelStart == levelStart)&&(identical(other.levelEnd, levelEnd) || other.levelEnd == levelEnd)&&(identical(other.questionsPerLevel, questionsPerLevel) || other.questionsPerLevel == questionsPerLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,code,label,secondsPerQuestion,levelStart,levelEnd);
+int get hashCode => Object.hash(runtimeType,code,label,secondsPerQuestion,levelStart,levelEnd,questionsPerLevel);
 
 @override
 String toString() {
-  return 'DifficultyTier(code: $code, label: $label, secondsPerQuestion: $secondsPerQuestion, levelStart: $levelStart, levelEnd: $levelEnd)';
+  return 'DifficultyTier(code: $code, label: $label, secondsPerQuestion: $secondsPerQuestion, levelStart: $levelStart, levelEnd: $levelEnd, questionsPerLevel: $questionsPerLevel)';
 }
 
 
@@ -48,7 +51,7 @@ abstract mixin class $DifficultyTierCopyWith<$Res>  {
   factory $DifficultyTierCopyWith(DifficultyTier value, $Res Function(DifficultyTier) _then) = _$DifficultyTierCopyWithImpl;
 @useResult
 $Res call({
- String code, String label, int secondsPerQuestion, int levelStart, int levelEnd
+ String code, String label, int secondsPerQuestion, int levelStart, int levelEnd, int questionsPerLevel
 });
 
 
@@ -65,13 +68,14 @@ class _$DifficultyTierCopyWithImpl<$Res>
 
 /// Create a copy of DifficultyTier
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? code = null,Object? label = null,Object? secondsPerQuestion = null,Object? levelStart = null,Object? levelEnd = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? code = null,Object? label = null,Object? secondsPerQuestion = null,Object? levelStart = null,Object? levelEnd = null,Object? questionsPerLevel = null,}) {
   return _then(_self.copyWith(
 code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
 as String,secondsPerQuestion: null == secondsPerQuestion ? _self.secondsPerQuestion : secondsPerQuestion // ignore: cast_nullable_to_non_nullable
 as int,levelStart: null == levelStart ? _self.levelStart : levelStart // ignore: cast_nullable_to_non_nullable
 as int,levelEnd: null == levelEnd ? _self.levelEnd : levelEnd // ignore: cast_nullable_to_non_nullable
+as int,questionsPerLevel: null == questionsPerLevel ? _self.questionsPerLevel : questionsPerLevel // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -157,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String code,  String label,  int secondsPerQuestion,  int levelStart,  int levelEnd)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String code,  String label,  int secondsPerQuestion,  int levelStart,  int levelEnd,  int questionsPerLevel)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DifficultyTier() when $default != null:
-return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart,_that.levelEnd);case _:
+return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart,_that.levelEnd,_that.questionsPerLevel);case _:
   return orElse();
 
 }
@@ -178,10 +182,10 @@ return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String code,  String label,  int secondsPerQuestion,  int levelStart,  int levelEnd)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String code,  String label,  int secondsPerQuestion,  int levelStart,  int levelEnd,  int questionsPerLevel)  $default,) {final _that = this;
 switch (_that) {
 case _DifficultyTier():
-return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart,_that.levelEnd);case _:
+return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart,_that.levelEnd,_that.questionsPerLevel);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +202,10 @@ return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String code,  String label,  int secondsPerQuestion,  int levelStart,  int levelEnd)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String code,  String label,  int secondsPerQuestion,  int levelStart,  int levelEnd,  int questionsPerLevel)?  $default,) {final _that = this;
 switch (_that) {
 case _DifficultyTier() when $default != null:
-return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart,_that.levelEnd);case _:
+return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart,_that.levelEnd,_that.questionsPerLevel);case _:
   return null;
 
 }
@@ -213,7 +217,7 @@ return $default(_that.code,_that.label,_that.secondsPerQuestion,_that.levelStart
 @JsonSerializable()
 
 class _DifficultyTier implements DifficultyTier {
-  const _DifficultyTier({required this.code, required this.label, required this.secondsPerQuestion, required this.levelStart, required this.levelEnd});
+  const _DifficultyTier({required this.code, required this.label, required this.secondsPerQuestion, required this.levelStart, required this.levelEnd, required this.questionsPerLevel});
   factory _DifficultyTier.fromJson(Map<String, dynamic> json) => _$DifficultyTierFromJson(json);
 
 @override final  String code;
@@ -221,6 +225,10 @@ class _DifficultyTier implements DifficultyTier {
 @override final  int secondsPerQuestion;
 @override final  int levelStart;
 @override final  int levelEnd;
+/// The resolved questions-per-level for this tier: its own
+/// `override_questions_per_level` if set, else the global
+/// `app_settings.questions_per_level` default.
+@override final  int questionsPerLevel;
 
 /// Create a copy of DifficultyTier
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DifficultyTier&&(identical(other.code, code) || other.code == code)&&(identical(other.label, label) || other.label == label)&&(identical(other.secondsPerQuestion, secondsPerQuestion) || other.secondsPerQuestion == secondsPerQuestion)&&(identical(other.levelStart, levelStart) || other.levelStart == levelStart)&&(identical(other.levelEnd, levelEnd) || other.levelEnd == levelEnd));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DifficultyTier&&(identical(other.code, code) || other.code == code)&&(identical(other.label, label) || other.label == label)&&(identical(other.secondsPerQuestion, secondsPerQuestion) || other.secondsPerQuestion == secondsPerQuestion)&&(identical(other.levelStart, levelStart) || other.levelStart == levelStart)&&(identical(other.levelEnd, levelEnd) || other.levelEnd == levelEnd)&&(identical(other.questionsPerLevel, questionsPerLevel) || other.questionsPerLevel == questionsPerLevel));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,code,label,secondsPerQuestion,levelStart,levelEnd);
+int get hashCode => Object.hash(runtimeType,code,label,secondsPerQuestion,levelStart,levelEnd,questionsPerLevel);
 
 @override
 String toString() {
-  return 'DifficultyTier(code: $code, label: $label, secondsPerQuestion: $secondsPerQuestion, levelStart: $levelStart, levelEnd: $levelEnd)';
+  return 'DifficultyTier(code: $code, label: $label, secondsPerQuestion: $secondsPerQuestion, levelStart: $levelStart, levelEnd: $levelEnd, questionsPerLevel: $questionsPerLevel)';
 }
 
 
@@ -255,7 +263,7 @@ abstract mixin class _$DifficultyTierCopyWith<$Res> implements $DifficultyTierCo
   factory _$DifficultyTierCopyWith(_DifficultyTier value, $Res Function(_DifficultyTier) _then) = __$DifficultyTierCopyWithImpl;
 @override @useResult
 $Res call({
- String code, String label, int secondsPerQuestion, int levelStart, int levelEnd
+ String code, String label, int secondsPerQuestion, int levelStart, int levelEnd, int questionsPerLevel
 });
 
 
@@ -272,13 +280,14 @@ class __$DifficultyTierCopyWithImpl<$Res>
 
 /// Create a copy of DifficultyTier
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? code = null,Object? label = null,Object? secondsPerQuestion = null,Object? levelStart = null,Object? levelEnd = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? code = null,Object? label = null,Object? secondsPerQuestion = null,Object? levelStart = null,Object? levelEnd = null,Object? questionsPerLevel = null,}) {
   return _then(_DifficultyTier(
 code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
 as String,secondsPerQuestion: null == secondsPerQuestion ? _self.secondsPerQuestion : secondsPerQuestion // ignore: cast_nullable_to_non_nullable
 as int,levelStart: null == levelStart ? _self.levelStart : levelStart // ignore: cast_nullable_to_non_nullable
 as int,levelEnd: null == levelEnd ? _self.levelEnd : levelEnd // ignore: cast_nullable_to_non_nullable
+as int,questionsPerLevel: null == questionsPerLevel ? _self.questionsPerLevel : questionsPerLevel // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/format/difficulty_label.dart';
 import 'package:quizoo/core/models/level.dart';
+import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/level_node.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
-/// `.lvmap` — the vertical serpentine path of twenty level nodes.
+/// `.lvmap` — the vertical serpentine path of level nodes.
 ///
 /// Three things make this the shape it is, all read off the bible's own CSS:
 ///
@@ -14,10 +16,13 @@ import 'package:quizoo/l10n/app_localizations.dart';
 ///   bible's own frame offsets levels 10–14 by −66, +56, 0, −62, +58 px, which
 ///   is centre → left → right repeating on `number % 3`. A strict left/right
 ///   alternation reads as a ladder; the centre beat is what makes it a path.
-/// * **Links are dashed and turn mint once cleared** (`.lvlink.done`), so the
-///   route already walked is legible at a glance.
+/// * **Links are dashed, curved and turn mint once cleared** (`.lvlink.done`),
+///   so the route already walked is legible at a glance and the path reads
+///   as one continuous trail rather than a column of disconnected dashes.
 /// * **Bands are dividers, not headers** (`.band`) — a hairline either side of
-///   the label, mango when the band holds the current level.
+///   a colored pill naming the tier, its question count and its clock. Each
+///   tier keeps its own accent (mint/mango/raspberry) regardless of which one
+///   is current, so every band reads clearly rather than only the active one.
 class SerpentinePath extends StatelessWidget {
   const SerpentinePath({
     required this.levels,
@@ -60,12 +65,17 @@ class SerpentinePath extends StatelessWidget {
           _BandDivider(
             band: level.difficultyBand,
             secondsPerQuestion: level.secondsPerQuestion,
+            questionCount: level.questionCount,
             isActive: level.difficultyBand == activeBand,
           ),
         );
       } else if (index > 0) {
         children.add(
-          _PathLink(isCleared: levels[index - 1].status == LevelStatus.done),
+          _PathLink(
+            isCleared: levels[index - 1].status == LevelStatus.done,
+            fromNumber: levels[index - 1].number,
+            toNumber: level.number,
+          ),
         );
       }
 
@@ -230,57 +240,170 @@ class _FlagPointPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
-/// `.lvlink` — the 3×20 dashed connector, mint once the level above it is
-/// cleared.
+/// `.lvlink` — a dashed curve tracing the actual path between the level
+/// above and the level below, mint once the level above it is cleared.
+///
+/// Replaces the old plain vertical dashes (CLAUDE.md: a UI fix, not a
+/// reinterpretation of the ladder) — those never actually followed the
+/// zigzag the nodes sit on, since they were painted straight down the
+/// serpentine's centre regardless of [SerpentinePath.offsetFor]. This curve
+/// starts and ends at the exact offsets the nodes above and below it sit at,
+/// so the path reads as one continuous trail through the zigzag instead of a
+/// column of disconnected marks.
 class _PathLink extends StatelessWidget {
-  const _PathLink({required this.isCleared});
+  const _PathLink({
+    required this.isCleared,
+    required this.fromNumber,
+    required this.toNumber,
+  });
 
   final bool isCleared;
 
-  /// `.lvlink` — 3 wide, 20 tall, dashes of 5 on 5 off.
-  static const double width = 3;
-  static const double height = 20;
-  static const double dash = 5;
+  /// The level number above this link, whose offset the curve starts from.
+  final int fromNumber;
+
+  /// The level number below this link, whose offset the curve ends at.
+  final int toNumber;
+
+  /// Taller than the old straight dashes (20) so the curve has room to read
+  /// as a curve rather than a steep diagonal.
+  static const double height = 34;
+  static const double strokeWidth = 3.5;
+  static const double dash = 6;
+  static const double gap = 5;
 
   @override
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
     final color = isCleared ? quizoo.ok : quizoo.ln;
 
+    // A curve can swing between the widest two offsets
+    // (`SerpentinePath.offsets`), so the paint surface needs to be wider than
+    // the node column itself. `OverflowBox` lets it paint past its own
+    // layout footprint — the same trick `Transform.translate` already
+    // relies on for the nodes themselves — without widening the `Column`
+    // every step sits in.
+    final span =
+        (SerpentinePath.offsets.reduce((a, b) => a > b ? a : b) -
+                SerpentinePath.offsets.reduce((a, b) => a < b ? a : b))
+            .w +
+        40.w;
+
     return SizedBox(
-      width: width.w,
       height: height.h,
-      child: Column(
-        children: [
-          for (var segment = 0; segment * dash * 2 < height; segment++)
-            Padding(
-              padding: EdgeInsets.only(bottom: dash.h),
-              child: Container(
-                width: width.w,
-                height: dash.h,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-            ),
-        ],
+      child: OverflowBox(
+        minWidth: 0,
+        maxWidth: span,
+        child: CustomPaint(
+          size: Size(span, height.h),
+          painter: _CurvedLinkPainter(
+            color: color,
+            startX: SerpentinePath.offsetFor(fromNumber).w,
+            endX: SerpentinePath.offsetFor(toNumber).w,
+            strokeWidth: strokeWidth.w,
+            dash: dash.w,
+            gap: gap.w,
+          ),
+        ),
       ),
     );
   }
 }
 
-/// `.band` — a difficulty divider: a hairline, the label, a hairline.
+class _CurvedLinkPainter extends CustomPainter {
+  const _CurvedLinkPainter({
+    required this.color,
+    required this.startX,
+    required this.endX,
+    required this.strokeWidth,
+    required this.dash,
+    required this.gap,
+  });
+
+  final Color color;
+  final double startX;
+  final double endX;
+  final double strokeWidth;
+  final double dash;
+  final double gap;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centerX = size.width / 2;
+    final start = Offset(centerX + startX, 0);
+    final end = Offset(centerX + endX, size.height);
+
+    // A single S-curve between the two offsets: the control points sit at
+    // each end's own x but half-way down, which is what makes it leave each
+    // node travelling vertically rather than kinking sideways immediately.
+    final path = Path()
+      ..moveTo(start.dx, start.dy)
+      ..cubicTo(
+        start.dx,
+        size.height * 0.5,
+        end.dx,
+        size.height * 0.5,
+        end.dx,
+        end.dy,
+      );
+
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      var drawing = true;
+      while (distance < metric.length) {
+        final next = distance + (drawing ? dash : gap);
+        if (drawing) {
+          canvas.drawPath(
+            metric.extractPath(distance, next.clamp(0, metric.length)),
+            paint,
+          );
+        }
+        distance = next;
+        drawing = !drawing;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CurvedLinkPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.startX != startX ||
+      oldDelegate.endX != endX;
+}
+
+/// `.band` — a difficulty divider: a hairline either side of a colored pill
+/// naming the tier, how many questions its levels hold, and its clock.
+///
+/// Each tier keeps a fixed accent (mint/mango/raspberry, escalating the same
+/// way the tiers themselves escalate) rather than only the currently-active
+/// band getting color and every other one fading to gray — that was what
+/// made the dividers hard to read at a glance. The active band's pill is
+/// filled solid; the others are a light tint of the same color, so the
+/// "you are here" tier still stands out without the rest going invisible.
 class _BandDivider extends StatelessWidget {
   const _BandDivider({
     required this.band,
     required this.secondsPerQuestion,
+    required this.questionCount,
     required this.isActive,
   });
 
   final DifficultyBand band;
   final int secondsPerQuestion;
+  final int questionCount;
   final bool isActive;
+
+  Color _accentFor(QuizooColors quizoo) => switch (band) {
+    DifficultyBand.warmUp => quizoo.ok,
+    DifficultyBand.steady => quizoo.p,
+    DifficultyBand.sharp => quizoo.bad,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -288,13 +411,17 @@ class _BandDivider extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
 
-    final color = isActive ? quizoo.p : quizoo.tx3;
-    final ruleColor = isActive ? quizoo.p.withValues(alpha: 0.42) : quizoo.ln;
+    final accent = _accentFor(quizoo);
+    final ruleColor = accent.withValues(alpha: isActive ? 0.5 : 0.28);
+    final titleColor = isActive ? Colors.white : accent;
+    final metaColor = isActive
+        ? Colors.white.withValues(alpha: 0.88)
+        : accent.withValues(alpha: 0.8);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.screenMargin.w,
-        14.h,
+        16.h,
         AppSpacing.screenMargin.w,
         AppSpacing.md.h,
       ),
@@ -302,17 +429,39 @@ class _BandDivider extends StatelessWidget {
         children: [
           Expanded(child: Divider(color: ruleColor, height: 1, thickness: 1)),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.w),
-            child: Text(
-              l10n.levelMapBand(
-                difficultyLabel(l10n, band).toUpperCase(),
-                secondsPerQuestion,
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm.w),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md.w,
+                vertical: 6.h,
               ),
-              style: textTheme.labelSmall!.copyWith(
-                fontSize: 9.5.sp,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.05,
-                color: color,
+              decoration: BoxDecoration(
+                color: isActive ? accent : accent.withValues(alpha: 0.12),
+                borderRadius: AppRadius.pillAll,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    difficultyLabel(l10n, band).toUpperCase(),
+                    style: textTheme.labelSmall!.copyWith(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.1,
+                      color: titleColor,
+                    ),
+                  ),
+                  SizedBox(height: 1.h),
+                  Text(
+                    l10n.levelMapBandMeta(questionCount, secondsPerQuestion),
+                    style: textTheme.labelSmall!.copyWith(
+                      fontSize: 8.5.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                      color: metaColor,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -322,13 +471,3 @@ class _BandDivider extends StatelessWidget {
     );
   }
 }
-
-/// §19's band names, resolved from the enum the taxonomy stores.
-String difficultyLabel(AppLocalizations l10n, DifficultyBand band) =>
-    switch (band) {
-      DifficultyBand.warmUp => l10n.difficultyEasy,
-      DifficultyBand.steady => l10n.difficultyMedium,
-      DifficultyBand.sharp => l10n.difficultyHard,
-      DifficultyBand.brutal => l10n.difficultyExpert,
-      DifficultyBand.master => l10n.difficultyMaster,
-    };

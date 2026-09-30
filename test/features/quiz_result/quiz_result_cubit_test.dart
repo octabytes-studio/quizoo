@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/auth/data/auth_api.dart';
@@ -10,12 +11,25 @@ import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/domain/scoring.dart';
 import 'package:quizoo/features/quiz_result/data/quiz_result_api.dart';
 import 'package:quizoo/features/quiz_result/data/quiz_result_repository.dart';
+import 'package:quizoo/features/quiz_result/domain/level_result.dart';
 import 'package:quizoo/features/quiz_result/presentation/bloc/quiz_result_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockQuizResultApi extends Mock implements QuizResultApi {}
 
 class _MockAuthApi extends Mock implements AuthApi {}
+
+class _MockLadderConfigRepository extends Mock
+    implements LadderConfigRepository {}
+
+/// A ladder config stubbed at the real 30-level ladder — every test level
+/// number here (12) sits well below it, so `isFinalLevel` is false unless a
+/// test explicitly builds a level-30 run.
+LadderConfigRepository buildLadderConfig() {
+  final ladderConfig = _MockLadderConfigRepository();
+  when(() => ladderConfig.totalLevels).thenReturn(30);
+  return ladderConfig;
+}
 
 /// A `RunRecord` computed the same way `submit_level_attempt` would, from
 /// the run being submitted — a real server double, not a fixed fixture, so
@@ -111,7 +125,7 @@ void main() {
       _MockAuthApi(),
       await SharedPreferences.getInstance(),
     );
-    repository = QuizResultRepository(api, authRepository);
+    repository = QuizResultRepository(api, authRepository, buildLadderConfig());
 
     when(() => api.submit(any())).thenAnswer(
       (invocation) async => recordFor(
@@ -210,7 +224,7 @@ void main() {
           _MockAuthApi(),
           await SharedPreferences.getInstance(),
         )..markLevelCompleted();
-        final repository = QuizResultRepository(api, auth);
+        final repository = QuizResultRepository(api, auth, buildLadderConfig());
 
         final result = await repository.submit(
           buildRun(correct: 8, answered: 12, ending: ending),
@@ -249,6 +263,72 @@ void main() {
         isGuest: false,
       );
       expect(result.shouldOfferSaveProgress, isFalse);
+    });
+  });
+
+  group('isFinalLevel / unlocksMastery (plan 020)', () {
+    Future<LevelResult> submitAt(
+      int levelNumber, {
+      required bool isFirstClear,
+      int correct = 20,
+      int answered = 20,
+      RunEnding ending = RunEnding.finished,
+    }) async {
+      final api = _MockQuizResultApi();
+      when(() => api.submit(any())).thenAnswer(
+        (invocation) async => recordFor(
+          invocation.positionalArguments.first as QuizRun,
+          isFirstClear: isFirstClear,
+        ),
+      );
+      final repository = QuizResultRepository(
+        api,
+        AuthRepository(_MockAuthApi(), await SharedPreferences.getInstance()),
+        buildLadderConfig(),
+      );
+      return repository.submit(
+        buildRun(
+          correct: correct,
+          answered: answered,
+          ending: ending,
+          levelNumber: levelNumber,
+        ),
+        isGuest: true,
+      );
+    }
+
+    test('a level 5 completion is neither final nor mastery', () async {
+      final result = await submitAt(5, isFirstClear: true);
+      expect(result.isFinalLevel, isFalse);
+      expect(result.unlocksMastery, isFalse);
+    });
+
+    test('a level 30 first clear is final and unlocks mastery', () async {
+      final result = await submitAt(30, isFirstClear: true);
+      expect(result.isFinalLevel, isTrue);
+      expect(result.unlocksMastery, isTrue);
+    });
+
+    test(
+      'a level 30 replay is final but does not unlock mastery again',
+      () async {
+        final result = await submitAt(30, isFirstClear: false);
+        expect(result.isFinalLevel, isTrue);
+        expect(result.unlocksMastery, isFalse);
+      },
+    );
+
+    test('level 30 out of hearts (not complete) is final but never unlocks '
+        'mastery', () async {
+      final result = await submitAt(
+        30,
+        isFirstClear: true,
+        correct: 8,
+        answered: 12,
+        ending: RunEnding.outOfHearts,
+      );
+      expect(result.isFinalLevel, isTrue);
+      expect(result.unlocksMastery, isFalse);
     });
   });
 

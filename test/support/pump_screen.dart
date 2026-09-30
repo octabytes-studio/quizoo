@@ -7,6 +7,9 @@ import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/content_language/content_language_api.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
+import 'package:quizoo/core/ladder/ladder_config_api.dart';
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
+import 'package:quizoo/core/models/difficulty_tier.dart';
 import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
@@ -29,6 +32,11 @@ class FakeAuthApi extends Mock implements AuthApi {}
 class FakeQuizPlayApi extends Mock implements QuizPlayApi {}
 
 class FakeContentLanguageApi extends Mock implements ContentLanguageApi {}
+
+/// A stand-in for the real `LadderConfigApi`, stubbed to the seeded 30-level,
+/// 3-tier ladder (plan 020) so any screen that reads `LadderConfigRepository`
+/// sees the same tiers the live app does.
+class FakeLadderConfigApi extends Mock implements LadderConfigApi {}
 
 /// A stand-in for the app-root `DuelRealtime` (plan 017). Duel screen tests
 /// inject a mocked repository or Bloc instead of opening real channels, so
@@ -60,6 +68,7 @@ extension PumpScreen on WidgetTester {
     ContentLanguageCubit? contentLanguage,
     DuelRealtime? duelRealtime,
     ServerClock? serverClock,
+    LadderConfigRepository? ladderConfig,
   }) async {
     final auth = authRepository ?? await _fakeAuthRepository();
     // `QuizPlayScreen` builds a real `StoredAudioTtsService` inline (it isn't
@@ -95,6 +104,9 @@ extension PumpScreen on WidgetTester {
           ),
           RepositoryProvider<ServerClock>.value(
             value: serverClock ?? ServerClock(),
+          ),
+          RepositoryProvider<LadderConfigRepository>.value(
+            value: ladderConfig ?? _fakeLadderConfigRepository(),
           ),
         ],
         child: MultiBlocProvider(
@@ -133,6 +145,48 @@ Future<ContentLanguageRepository> _fakeContentLanguageRepository() async {
     FakeContentLanguageApi(),
     await SharedPreferences.getInstance(),
   );
+}
+
+/// A `LadderConfigRepository` over the seeded 30-level, 3-tier ladder (plan
+/// 020), so a widget that calls `ensureLoaded()` resolves to the same tiers
+/// the live app does rather than erroring against an unstubbed mock.
+LadderConfigRepository _fakeLadderConfigRepository() {
+  final api = FakeLadderConfigApi();
+  when(
+    () => api.fetchTiers(
+      defaultQuestionsPerLevel: any(named: 'defaultQuestionsPerLevel'),
+    ),
+  ).thenAnswer(
+    (_) async => const [
+      DifficultyTier(
+        code: 'easy',
+        label: 'Easy',
+        secondsPerQuestion: 20,
+        levelStart: 1,
+        levelEnd: 10,
+        questionsPerLevel: 10,
+      ),
+      DifficultyTier(
+        code: 'medium',
+        label: 'Medium',
+        secondsPerQuestion: 15,
+        levelStart: 11,
+        levelEnd: 20,
+        questionsPerLevel: 15,
+      ),
+      DifficultyTier(
+        code: 'hard',
+        label: 'Hard',
+        secondsPerQuestion: 10,
+        levelStart: 21,
+        levelEnd: 30,
+        questionsPerLevel: 20,
+      ),
+    ],
+  );
+  when(() => api.fetchBossLevelInterval()).thenAnswer((_) async => 10);
+  when(() => api.fetchDefaultQuestionsPerLevel()).thenAnswer((_) async => 20);
+  return LadderConfigRepository(api);
 }
 
 /// A minimal router so the screen under test can navigate without a real one.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/format/difficulty_label.dart';
 import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/level.dart';
 import 'package:quizoo/core/models/subcategory.dart';
@@ -15,7 +16,6 @@ import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/features/catalog/domain/level_map.dart';
-import 'package:quizoo/features/catalog/presentation/widgets/serpentine_path.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 

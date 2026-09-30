@@ -92,6 +92,12 @@ void main() {
 
       expect(find.text(l10n.levelBriefStart(12)), findsOneWidget);
       expect(find.text(l10n.contentErrorTitle), findsNothing);
+
+      // Level 12 sits in Medium (plan 020: 11-20), which serves 15
+      // questions — the sheet must show the level's own count, not a
+      // hardcoded 20.
+      expect(level.questionCount, 15);
+      expect(find.text('15'), findsOneWidget);
     });
   });
 }

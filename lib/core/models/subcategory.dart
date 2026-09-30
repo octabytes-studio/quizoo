@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 
 part 'subcategory.freezed.dart';
 part 'subcategory.g.dart';
@@ -26,7 +27,7 @@ abstract class Subcategory with _$Subcategory {
 
     /// Levels the player has finished, of [levelCount].
     @Default(0) int levelsCleared,
-    @Default(50) int levelCount,
+    @Default(LadderConfigRepository.fallbackTotalLevels) int levelCount,
     @Default(0) int bestScore,
 
     /// Stars earned across every level, of `levelCount * 3`.

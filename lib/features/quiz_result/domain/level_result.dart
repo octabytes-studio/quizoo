@@ -37,6 +37,14 @@ abstract class LevelResult with _$LevelResult {
     /// True when S-24 is allowed to appear after this run: a successful first
     /// level, a guest, and not already offered.
     @Default(false) bool shouldOfferSaveProgress,
+
+    /// True when this run was played on the ladder's last level (30), so
+    /// there is no next level to offer.
+    @Default(false) bool isFinalLevel,
+
+    /// True when this run just mastered the topic: the final level, cleared,
+    /// for the first time. Drives the Topic Mastered push (plan 020).
+    @Default(false) bool unlocksMastery,
   }) = _LevelResult;
 
   const LevelResult._();

@@ -134,7 +134,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Fourteen categories and hundreds of topics. Start with the one you would argue about.';
 
   @override
-  String get onboardingClimbTitle => 'Climb 20 levels\nin every topic';
+  String get onboardingClimbTitle => 'Climb 30 levels\nin every topic';
 
   @override
   String get onboardingClimbBody =>
@@ -325,12 +325,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get difficultyHard => 'Hard';
 
   @override
-  String get difficultyExpert => 'Expert';
-
-  @override
-  String get difficultyMaster => 'Master';
-
-  @override
   String levelMapSubtitle(int questions, int levels) {
     return '$questions questions · $levels levels';
   }
@@ -345,8 +339,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get levelMapRank => 'RANK';
 
   @override
-  String levelMapBand(String difficulty, int seconds) {
-    return '$difficulty · ${seconds}s PER QUESTION';
+  String levelMapBandMeta(int questions, int seconds) {
+    return '$questions QUESTIONS · ${seconds}s EACH';
   }
 
   @override
@@ -386,6 +380,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get levelMapLeaderboard => 'Leaderboard';
+
+  @override
+  String get levelMapMastered => '🏆 Mastered';
 
   @override
   String levelBriefTitle(int level) {
@@ -591,7 +588,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resultBreakdownCleanRun => 'Clean run — no power-ups';
 
   @override
-  String get resultBreakdownFlawless => 'Flawless — 20 of 20';
+  String resultBreakdownFlawless(int count) {
+    return 'Flawless — $count of $count';
+  }
 
   @override
   String resultBreakdownHearts(int count) {
@@ -638,6 +637,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resultBackToMap => 'Back to map';
+
+  @override
+  String get resultSeeTrophy => 'See your trophy 🏆';
 
   @override
   String get resultShare => 'Share';
@@ -1927,4 +1929,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareDemoPreview => 'Quizoo — the quiz that plays like a game.';
+
+  @override
+  String get masteryEyebrow => '✦ TOPIC MASTERED ✦';
+
+  @override
+  String masteryTitle(String topic) {
+    return '$topic Mastered!';
+  }
+
+  @override
+  String get masterySubtitle =>
+      'You conquered every level — Easy, Medium and Hard.';
+
+  @override
+  String masteryLevelsRibbon(int cleared, int total) {
+    return '$cleared / $total LEVELS';
+  }
+
+  @override
+  String get masteryStatStars => 'STARS';
+
+  @override
+  String get masteryStatPerfect => 'PERFECT LEVELS';
+
+  @override
+  String get masteryStatScore => 'TOTAL SCORE';
+
+  @override
+  String masteryStatDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'DAYS TO MASTER',
+      one: 'DAY TO MASTER',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get masteryStatLevels => 'LEVELS CLEARED';
+
+  @override
+  String masteryMissingStars(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count stars still up for grabs — replay any level to perfect this topic.',
+      one: '1 star still up for grabs — replay a level to perfect this topic.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get masteryFlawless =>
+      'Every single star collected. Flawless mastery 💎';
+
+  @override
+  String get masteryContinue => 'Continue';
+
+  @override
+  String get masteryShare => 'Share my trophy';
+
+  @override
+  String get masteryShareTitle => 'Share your mastery';
 }

@@ -108,6 +108,14 @@ abstract final class AppRoutes {
   /// S-26 League promotion.
   static const String leaguePromotion = '/league-promotion';
 
+  /// Topic Mastered — the congratulations screen after a topic's final level
+  /// (plan 020). Not one of the bible's 54 IDs, so it has no `sXX` alias.
+  static const String topicMastered =
+      '/category/:categoryId/subcategory/:subcategoryId/mastered';
+
+  static String topicMasteredPath(String categoryId, String subcategoryId) =>
+      '/category/$categoryId/subcategory/$subcategoryId/mastered';
+
   // ------------------------------------------------------------- daily
   /// S-27 Daily tab — shell tab 4.
   static const String daily = '/daily';

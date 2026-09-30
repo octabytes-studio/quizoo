@@ -15,7 +15,7 @@ abstract final class Scoring {
   /// `+250` for finishing without firing a power-up.
   static const int cleanRunBonus = 250;
 
-  /// `+1,000` for 20 of 20.
+  /// `+1,000` for a flawless level.
   static const int flawlessBonus = 1000;
 
   /// `+150` per heart still in hand at the end.
@@ -24,7 +24,7 @@ abstract final class Scoring {
   /// `100 × longest streak`.
   static const int streakBonusPerStep = 100;
 
-  /// Levels 5, 10, 15 and 20 pay double.
+  /// Boss levels (every tenth) pay double.
   static const int bossMultiplier = 2;
 
   /// `speedBonus = round(100 × secondsLeft / secondsTotal)`, 0…100.
@@ -33,7 +33,7 @@ abstract final class Scoring {
     return (100 * secondsLeft / secondsTotal).round().clamp(0, 100);
   }
 
-  /// `diffMult = 1 + (level − 1) × 0.05` — L1 = 1.00 … L20 = 1.95.
+  /// `diffMult = 1 + (level − 1) × 0.05` — L1 = 1.00 … L30 = 2.45.
   static double difficultyMultiplier(int levelNumber) =>
       1 + (levelNumber - 1) * 0.05;
 

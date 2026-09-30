@@ -9,7 +9,9 @@ class LadderConfigApi {
 
   final SupabaseClient _client;
 
-  Future<List<DifficultyTier>> fetchTiers() async {
+  Future<List<DifficultyTier>> fetchTiers({
+    required int defaultQuestionsPerLevel,
+  }) async {
     try {
       final rows = await _client
           .from('difficulty_tiers')
@@ -23,6 +25,9 @@ class LadderConfigApi {
             secondsPerQuestion: row['seconds_per_question'] as int,
             levelStart: row['level_start'] as int,
             levelEnd: row['level_end'] as int,
+            questionsPerLevel:
+                (row['override_questions_per_level'] as int?) ??
+                defaultQuestionsPerLevel,
           ),
       ];
     } catch (error) {
@@ -41,6 +46,23 @@ class LadderConfigApi {
           .maybeSingle();
       final value = row?['value'];
       return value is num ? value.toInt() : 10;
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  /// The global fallback questions-per-level, used by any tier with no
+  /// `override_questions_per_level`. Falls back to 20 (the seeded default)
+  /// if the row is ever missing.
+  Future<int> fetchDefaultQuestionsPerLevel() async {
+    try {
+      final row = await _client
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'questions_per_level')
+          .maybeSingle();
+      final value = row?['value'];
+      return value is num ? value.toInt() : 20;
     } catch (error) {
       throw ApiException.fromSupabase(error);
     }

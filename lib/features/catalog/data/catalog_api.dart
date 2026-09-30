@@ -26,6 +26,7 @@ class CatalogApi {
     required String locale,
   }) async {
     try {
+      await _ladderConfig.ensureLoaded();
       final categoryRow = await _client
           .from('categories')
           .select()
@@ -209,7 +210,7 @@ class CatalogApi {
   }
 
   /// One row per player per level in [subcategoryIds] — small enough (at
-  /// most 20 rows per topic for the one player asking) to aggregate in Dart
+  /// most 30 rows per topic for the one player asking) to aggregate in Dart
   /// rather than a second round trip per topic.
   Future<Map<String, _TopicProgress>> _levelProgressBySubcategory(
     List<String> subcategoryIds,
@@ -276,7 +277,7 @@ class CatalogApi {
     questionCount: row['question_count'] as int? ?? 0,
   );
 
-  static Subcategory _subcategoryFromRow(
+  Subcategory _subcategoryFromRow(
     Map<String, dynamic> row, {
     required String name,
     required _TopicProgress progress,
@@ -289,6 +290,7 @@ class CatalogApi {
     plateColor: row['plate_color'] as String,
     questionCount: row['question_count'] as int? ?? 0,
     levelsCleared: progress.levelsCleared,
+    levelCount: _ladderConfig.totalLevels,
     bestScore: progress.bestScore,
     starsEarned: progress.starsEarned,
     isNew: row['is_new'] as bool? ?? false,
@@ -314,8 +316,9 @@ class CatalogApi {
       id: MockCatalog.levelId(subcategory.id, number),
       subcategoryId: subcategory.id,
       number: number,
-      difficultyBand: _bandForTierCode(_ladderConfig.tierFor(number).code),
+      difficultyBand: bandForTierCode(_ladderConfig.tierFor(number).code),
       secondsPerQuestion: _ladderConfig.secondsFor(number),
+      questionCount: _ladderConfig.questionsFor(number),
       status: isCleared
           ? LevelStatus.done
           : isCurrent
@@ -326,14 +329,6 @@ class CatalogApi {
       bestScore: cleared?.bestScore ?? 0,
     );
   }
-
-  static DifficultyBand _bandForTierCode(String code) => switch (code) {
-    'easy' => DifficultyBand.warmUp,
-    'medium' => DifficultyBand.steady,
-    'hard' => DifficultyBand.sharp,
-    'expert' => DifficultyBand.brutal,
-    _ => DifficultyBand.master,
-  };
 }
 
 /// One topic's aggregated `level_progress` — how many levels are cleared, the

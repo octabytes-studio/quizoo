@@ -22,6 +22,8 @@ _LevelResult _$LevelResultFromJson(Map<String, dynamic> json) => _LevelResult(
           .toList() ??
       const [],
   shouldOfferSaveProgress: json['shouldOfferSaveProgress'] as bool? ?? false,
+  isFinalLevel: json['isFinalLevel'] as bool? ?? false,
+  unlocksMastery: json['unlocksMastery'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$LevelResultToJson(_LevelResult instance) =>
@@ -37,4 +39,6 @@ Map<String, dynamic> _$LevelResultToJson(_LevelResult instance) =>
       'isFirstClear': instance.isFirstClear,
       'newlyEarnedBadgeIds': instance.newlyEarnedBadgeIds,
       'shouldOfferSaveProgress': instance.shouldOfferSaveProgress,
+      'isFinalLevel': instance.isFinalLevel,
+      'unlocksMastery': instance.unlocksMastery,
     };

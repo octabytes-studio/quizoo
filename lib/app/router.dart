@@ -49,6 +49,7 @@ import 'package:quizoo/features/settings/presentation/screens/notifications_scre
 import 'package:quizoo/features/settings/presentation/screens/privacy_settings_screen.dart';
 import 'package:quizoo/features/settings/presentation/screens/settings_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
+import 'package:quizoo/features/topic_mastery/presentation/screens/topic_mastered_screen.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// The app's one and only [GoRouter].
@@ -222,6 +223,16 @@ abstract final class AppRouter {
           path: AppRoutes.leaguePromotion,
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const LeaguePromotionScreen(),
+        ),
+        // Topic Mastered — the congratulations screen after a topic's final
+        // level (plan 020).
+        GoRoute(
+          path: AppRoutes.topicMastered,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => TopicMasteredScreen(
+            categoryId: state.pathParameters['categoryId']!,
+            subcategoryId: state.pathParameters['subcategoryId']!,
+          ),
         ),
 
         // Daily

@@ -104,12 +104,15 @@ while generating (Step 6).
 
 ## Step 3 — which difficulty?
 
-Ask the user to choose one of the 5 tiers by name: **Easy, Medium, Hard,
-Expert, Master**. Map it via `reference/schema-and-samples.md`'s
-`difficulty_tiers` table to get the tier `code`, the legacy `difficulty` int,
-level range, and seconds/question — you'll need the `code` and int for
-generation and SQL, and the level range/seconds are useful to mention back to
-the user for context.
+Ask the user to choose one of the 3 tiers: **Easy, Medium, Hard**. Map it via
+`reference/schema-and-samples.md`'s `difficulty_tiers` table to get the tier
+`code`, the legacy `difficulty` int, level range, seconds/question, and
+questions/level — you'll need the `code` and int for generation and SQL, and
+the level range/seconds/questions-per-level are useful to mention back to the
+user for context. A "minimum useful batch" is 3× that tier's
+questions-per-level (matching `v_thin_question_pools`' own thin-pool
+threshold): 30 for Easy, 45 for Medium, 60 for Hard — suggest that as a
+starting point if the user hasn't given a count yet.
 
 ## Step 4 — which language?
 
@@ -194,7 +197,7 @@ against that file's difficulty samples for the chosen tier. In particular:
   badges — ا ب ج د — for `ur`/`ar`).
 - Difficulty actually matches the chosen tier's calibration, not just its
   label — an "Easy" question must be answerable from common knowledge; a
-  "Master" question should be genuinely obscure, per the samples.
+  "Hard" question should be genuinely obscure or technical, per the samples.
 
 ## Step 7 — write the two output files
 
@@ -221,7 +224,7 @@ per batch, named:
 
 - `<subcategory-name>`: the sub-category's display name, lowercased and
   slugified (spaces/punctuation → single hyphens), e.g. `solar-system`.
-- `<difficulty>`: the tier `code` (`easy`/`medium`/`hard`/`expert`/`master`).
+- `<difficulty>`: the tier `code` (`easy`/`medium`/`hard`).
 - `<language-code>`: the ISO code, e.g. `en`, `ur`.
 - Timestamp: the actual current date/time from your environment, e.g. via a
   `date +%Y%m%d-%H%M%S` shell call — never a hardcoded date from this file.
