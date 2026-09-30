@@ -24,9 +24,10 @@ import 'package:quizoo/features/auth/presentation/widgets/country_picker_sheet.d
 import 'package:quizoo/features/auth/presentation/widgets/language_picker_sheet.dart';
 import 'package:quizoo/features/auth/presentation/widgets/profile_field.dart';
 import 'package:quizoo/features/home/presentation/widgets/home_top_bar.dart';
-import 'package:quizoo/features/onboarding/data/languages_api.dart';
-import 'package:quizoo/features/onboarding/data/languages_repository.dart';
-import 'package:quizoo/features/onboarding/domain/language_option.dart';
+import 'package:quizoo/core/content_language/languages_api.dart';
+import 'package:quizoo/core/content_language/languages_repository.dart';
+import 'package:quizoo/core/content_language/language_flags.dart';
+import 'package:quizoo/core/content_language/language_option.dart';
 import 'package:quizoo/features/onboarding/presentation/bloc/language_picker_cubit.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 

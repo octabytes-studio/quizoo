@@ -25,12 +25,14 @@ class AppChip extends StatelessWidget {
     this.isSelected = false,
     this.onTap,
     this.variant = AppChipVariant.category,
+    this.semanticLabel,
   });
 
   const AppChip.status({required this.label, super.key, this.leading})
     : isSelected = false,
       onTap = null,
-      variant = AppChipVariant.status;
+      variant = AppChipVariant.status,
+      semanticLabel = null;
 
   final String label;
 
@@ -40,6 +42,12 @@ class AppChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback? onTap;
   final AppChipVariant variant;
+
+  /// What a screen reader announces instead of [label] on a tappable chip —
+  /// e.g. Home's language pills spell out "Show quizzes in Urdu" rather than
+  /// reading the native-script name (plan 021). When set, the visible text is
+  /// excluded from semantics so it isn't read twice.
+  final String? semanticLabel;
 
   /// `.cat` — 36.
   static const double categoryHeight = 36;
@@ -102,11 +110,11 @@ class AppChip extends StatelessWidget {
     return Semantics(
       button: true,
       selected: isSelected,
-      label: label,
+      label: semanticLabel ?? label,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: chip,
+        child: semanticLabel == null ? chip : ExcludeSemantics(child: chip),
       ),
     );
   }

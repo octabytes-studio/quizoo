@@ -134,6 +134,24 @@ abstract class AppLocalizations {
   /// **'See all'**
   String get homeSeeAll;
 
+  /// Screen-reader label for a Home content-language pill (plan 021). The pill itself shows the language's native name.
+  ///
+  /// In en, this message translates to:
+  /// **'Show quizzes in {language}'**
+  String homeLanguageTabSemantics(String language);
+
+  /// Home empty-state title when the selected content language has no categories yet (plan 021).
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes are on the way'**
+  String get homeLanguageEmptyTitle;
+
+  /// Home empty-state body when the selected content language has no categories yet — points at the language pill row above.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in this language yet. Pick another one above to keep playing.'**
+  String get homeLanguageEmptyBody;
+
   /// S-04 subcategory tile progress caption.
   ///
   /// In en, this message translates to:

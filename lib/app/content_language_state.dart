@@ -4,14 +4,22 @@ part of 'content_language_cubit.dart';
 /// only concrete subclass: [ContentLanguageRepository.current] is a
 /// synchronous read, so there is nothing for this Cubit to be "loading".
 sealed class ContentLanguageState extends Equatable {
-  const ContentLanguageState(this.code);
+  const ContentLanguageState(this.code, this.leadCode);
 
   final String code;
 
+  /// The language Home's pill row pins first for this process (plan 021).
+  /// Frozen across Home pill taps ([ContentLanguageCubit.switchTo]) so the row
+  /// never reorders under the player's finger; re-pinned by every explicit
+  /// default change ([ContentLanguageCubit.select],
+  /// [ContentLanguageCubit.adoptFromBackend]) and on each cold start.
+  final String leadCode;
+
   @override
-  List<Object?> get props => [code];
+  List<Object?> get props => [code, leadCode];
 }
 
 final class ContentLanguageLoaded extends ContentLanguageState {
-  const ContentLanguageLoaded(super.code);
+  const ContentLanguageLoaded(String code, {String? leadCode})
+    : super(code, leadCode ?? code);
 }

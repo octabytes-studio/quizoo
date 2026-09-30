@@ -7,6 +7,7 @@ import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/domain/auth_user.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
 import 'package:quizoo/features/home/presentation/screens/home_screen.dart';
+import 'package:quizoo/features/home/presentation/widgets/home_language_bar.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -82,6 +83,19 @@ void main() {
       expect(find.byType(ErrorStateView), findsOneWidget);
       final l10n = AppLocalizations.of(tester.element(find.byType(HomeScreen)));
       expect(find.text(l10n.commonRetry), findsOneWidget);
+    });
+
+    testWidgets('pins the language row under the top bar from frame one', (
+      tester,
+    ) async {
+      await tester.pumpScreen(const HomeScreen());
+
+      expect(find.byType(HomeLanguageBar), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 2));
+      // Still there once the content load has settled (here, into an error):
+      // the row is chrome, not part of any one state's body (plan 021).
+      expect(find.byType(HomeLanguageBar), findsOneWidget);
     });
 
     testWidgets('renders in dark theme without overflowing', (tester) async {

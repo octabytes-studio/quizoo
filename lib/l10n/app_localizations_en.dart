@@ -31,6 +31,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSeeAll => 'See all';
 
   @override
+  String homeLanguageTabSemantics(String language) {
+    return 'Show quizzes in $language';
+  }
+
+  @override
+  String get homeLanguageEmptyTitle => 'Quizzes are on the way';
+
+  @override
+  String get homeLanguageEmptyBody =>
+      'Nothing in this language yet. Pick another one above to keep playing.';
+
+  @override
   String homeLevelProgress(int cleared, int total) {
     return 'Lv $cleared/$total';
   }

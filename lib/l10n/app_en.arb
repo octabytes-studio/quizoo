@@ -30,6 +30,15 @@
   "@homeDailyChallenge": { "description": "S-04 Home daily banner heading." },
   "homeSeeAll": "See all",
   "@homeSeeAll": { "description": "Trailing link on a Home section header." },
+  "homeLanguageTabSemantics": "Show quizzes in {language}",
+  "@homeLanguageTabSemantics": {
+    "description": "Screen-reader label for a Home content-language pill (plan 021). The pill itself shows the language's native name.",
+    "placeholders": { "language": { "type": "String", "example": "Urdu" } }
+  },
+  "homeLanguageEmptyTitle": "Quizzes are on the way",
+  "@homeLanguageEmptyTitle": { "description": "Home empty-state title when the selected content language has no categories yet (plan 021)." },
+  "homeLanguageEmptyBody": "Nothing in this language yet. Pick another one above to keep playing.",
+  "@homeLanguageEmptyBody": { "description": "Home empty-state body when the selected content language has no categories yet — points at the language pill row above." },
   "homeLevelProgress": "Lv {cleared}/{total}",
   "@homeLevelProgress": {
     "description": "S-04 subcategory tile progress caption.",
