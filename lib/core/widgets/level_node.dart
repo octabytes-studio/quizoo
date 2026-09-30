@@ -11,7 +11,7 @@ import 'package:quizoo/core/theme/quizoo_colors.dart';
 ///
 /// Four looks driven by [LevelStatus] plus [isBoss]: done (mint, with the
 /// stars it earned), current (mango, scaled 1.12 with a soft ring so the eye
-/// lands on it first), locked (sunken with a padlock), and boss — every fifth
+/// lands on it first), locked (sunken with a padlock), and boss — every tenth
 /// level, which wears a crown.
 ///
 /// Like every pressable surface it sits on a 4px ledge.

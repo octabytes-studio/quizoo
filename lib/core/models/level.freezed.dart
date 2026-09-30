@@ -17,7 +17,7 @@ mixin _$Level {
 
  String get id; String get subcategoryId;/// 1-based position on the level map.
  int get number; DifficultyBand get difficultyBand;/// The per-question clock, which tightens with the band.
- int get secondsPerQuestion; LevelStatus get status;/// Every fifth level, which wears a crown on the map.
+ int get secondsPerQuestion; LevelStatus get status;/// Every tenth level, which wears a crown on the map.
  bool get isBoss; int get questionCount;/// 0…3.
  int get starsEarned; int get bestScore;
 /// Create a copy of Level
@@ -222,7 +222,7 @@ return $default(_that.id,_that.subcategoryId,_that.number,_that.difficultyBand,_
 @JsonSerializable()
 
 class _Level implements Level {
-  const _Level({required this.id, required this.subcategoryId, required this.number, required this.difficultyBand, required this.secondsPerQuestion, required this.status, this.isBoss = false, this.questionCount = 20, this.starsEarned = 0, this.bestScore = 0});
+  const _Level({required this.id, required this.subcategoryId, required this.number, required this.difficultyBand, required this.secondsPerQuestion, required this.status, this.isBoss = false, this.questionCount = 10, this.starsEarned = 0, this.bestScore = 0});
   factory _Level.fromJson(Map<String, dynamic> json) => _$LevelFromJson(json);
 
 @override final  String id;
@@ -233,7 +233,7 @@ class _Level implements Level {
 /// The per-question clock, which tightens with the band.
 @override final  int secondsPerQuestion;
 @override final  LevelStatus status;
-/// Every fifth level, which wears a crown on the map.
+/// Every tenth level, which wears a crown on the map.
 @override@JsonKey() final  bool isBoss;
 @override@JsonKey() final  int questionCount;
 /// 0…3.

@@ -106,7 +106,7 @@ void main() {
     });
 
     blocTest<LevelMapCubit, LevelMapState>(
-      'success path: loads fifty levels with one marked current',
+      'success path: loads thirty levels with one marked current',
       setUp: () {
         when(
           () => repository.fetchLevelMap(
@@ -125,7 +125,7 @@ void main() {
       expect: () => [
         isA<LevelMapLoading>(),
         isA<LevelMapLoaded>()
-            .having((state) => state.map.levels, 'levels', hasLength(50))
+            .having((state) => state.map.levels, 'levels', hasLength(30))
             .having(
               (state) => state.map.currentLevel.number,
               'current',
@@ -230,25 +230,24 @@ void main() {
   });
 
   group('MockCatalog level generation', () {
-    test('follows the 50-level ladder: bands, clocks and every '
-        'tenth level a boss', () {
+    test('follows the 30-level, 3-tier ladder: bands, clocks, question '
+        'counts and every tenth level a boss', () {
       final levels = MockCatalog.levelsFor(football);
 
-      expect(levels, hasLength(50));
+      expect(levels, hasLength(30));
       expect(levels[0].difficultyBand, DifficultyBand.warmUp);
-      expect(levels[0].secondsPerQuestion, 30);
+      expect(levels[0].secondsPerQuestion, 20);
+      expect(levels[0].questionCount, 10);
       expect(levels[15].difficultyBand, DifficultyBand.steady);
-      expect(levels[15].secondsPerQuestion, 25);
+      expect(levels[15].secondsPerQuestion, 15);
+      expect(levels[15].questionCount, 15);
       expect(levels[25].difficultyBand, DifficultyBand.sharp);
-      expect(levels[25].secondsPerQuestion, 20);
-      expect(levels[35].difficultyBand, DifficultyBand.brutal);
-      expect(levels[35].secondsPerQuestion, 15);
-      expect(levels[45].difficultyBand, DifficultyBand.master);
-      expect(levels[45].secondsPerQuestion, 10);
+      expect(levels[25].secondsPerQuestion, 10);
+      expect(levels[25].questionCount, 20);
 
       expect(
         levels.where((level) => level.isBoss).map((level) => level.number),
-        [10, 20, 30, 40, 50],
+        [10, 20, 30],
       );
 
       // Exactly one node is "you are here".

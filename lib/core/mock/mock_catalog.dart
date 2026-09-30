@@ -388,12 +388,12 @@ abstract final class MockCatalog {
   static Subcategory subcategoryById(String id) =>
       subcategories.firstWhere((subcategory) => subcategory.id == id);
 
-  /// The fifty levels behind [subcategory], built from the 50-level ladder.
+  /// The thirty levels behind [subcategory], built from the 30-level ladder.
   ///
-  /// Bands, clocks and boss placement are derived rather than typed out fifty
-  /// times: levels 1–10 are Easy at 30s, 11–20 Medium at 25s, 21–30 Hard at
-  /// 20s, 31–40 Expert at 15s, 41–50 Master at 10s, and every tenth level is
-  /// a boss.
+  /// Bands, clocks, question counts and boss placement are derived rather
+  /// than typed out thirty times: levels 1–10 are Easy at 20s/10 questions,
+  /// 11–20 Medium at 15s/15 questions, 21–30 Hard at 10s/20 questions, and
+  /// every tenth level is a boss.
   static List<Level> levelsFor(Subcategory subcategory) => [
     for (var number = 1; number <= subcategory.levelCount; number++)
       _level(subcategory, number),
@@ -408,6 +408,7 @@ abstract final class MockCatalog {
       number: number,
       difficultyBand: bandFor(number),
       secondsPerQuestion: secondsFor(number),
+      questionCount: questionsFor(number),
       status: cleared
           ? LevelStatus.done
           : isCurrent
@@ -431,22 +432,25 @@ abstract final class MockCatalog {
     return (parts.first, int.tryParse(parts.last) ?? 1);
   }
 
-  /// The 50-level, 5-tier ladder (`difficulty_tiers`): 1–10 Easy, 11–20
-  /// Medium, 21–30 Hard, 31–40 Expert, 41–50 Master.
+  /// The 30-level, 3-tier ladder (`difficulty_tiers`): 1–10 Easy, 11–20
+  /// Medium, 21–30 Hard.
   static DifficultyBand bandFor(int levelNumber) => switch (levelNumber) {
     <= 10 => DifficultyBand.warmUp,
     <= 20 => DifficultyBand.steady,
-    <= 30 => DifficultyBand.sharp,
-    <= 40 => DifficultyBand.brutal,
-    _ => DifficultyBand.master,
+    _ => DifficultyBand.sharp,
   };
 
-  /// The clock tightens with the band: 30 → 25 → 20 → 15 → 10 seconds.
+  /// The clock tightens with the band: 20 → 15 → 10 seconds.
   static int secondsFor(int levelNumber) => switch (bandFor(levelNumber)) {
-    DifficultyBand.warmUp => 30,
-    DifficultyBand.steady => 25,
+    DifficultyBand.warmUp => 20,
+    DifficultyBand.steady => 15,
+    DifficultyBand.sharp => 10,
+  };
+
+  /// Questions per level grow with the band: 10 → 15 → 20.
+  static int questionsFor(int levelNumber) => switch (bandFor(levelNumber)) {
+    DifficultyBand.warmUp => 10,
+    DifficultyBand.steady => 15,
     DifficultyBand.sharp => 20,
-    DifficultyBand.brutal => 15,
-    DifficultyBand.master => 10,
   };
 }

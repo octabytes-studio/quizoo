@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
+import 'package:quizoo/core/format/difficulty_label.dart';
 import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/models/level.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
@@ -397,6 +398,18 @@ class _SubcategoryHeaderCard extends StatelessWidget {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
+                          if (subcategory.levelsCleared >=
+                              subcategory.levelCount) ...[
+                            SizedBox(width: AppSpacing.xs.w),
+                            _MasteredPill(
+                              onTap: () => context.push(
+                                AppRoutes.topicMasteredPath(
+                                  map.category.id,
+                                  subcategory.id,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ],
@@ -436,6 +449,43 @@ class _SubcategoryHeaderCard extends StatelessWidget {
   }
 }
 
+/// The small gold "🏆 Mastered" pill next to a fully-cleared topic's level
+/// count, reopening the Topic Mastered screen (plan 020).
+class _MasteredPill extends StatelessWidget {
+  const _MasteredPill({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final quizoo = context.quizoo;
+    final l10n = AppLocalizations.of(context);
+    final textTheme = Theme.of(context).textTheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs.w,
+          vertical: 2.h,
+        ),
+        decoration: BoxDecoration(
+          color: quizoo.gold.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(AppRadius.pill.r),
+        ),
+        child: Text(
+          l10n.levelMapMastered,
+          style: textTheme.labelSmall!.copyWith(
+            fontSize: 9.sp,
+            fontWeight: FontWeight.w800,
+            color: quizoo.gold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// `.bar.thin.ok` — the mint progress track.
 class _ProgressBar extends StatelessWidget {
   const _ProgressBar({required this.value});
@@ -454,7 +504,13 @@ class _ProgressBar extends StatelessWidget {
           children: [
             Positioned.fill(child: ColoredBox(color: quizoo.s3)),
             FractionallySizedBox(
+              // Both factors: `heightFactor` matters here because the fill
+              // has no child of its own to give it a height — without it, a
+              // `DecoratedBox` with no child and loose height constraints
+              // collapses to zero height, so the bar always painted empty
+              // regardless of `value`.
               widthFactor: value.clamp(0, 1),
+              heightFactor: 1,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

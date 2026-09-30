@@ -68,7 +68,11 @@ class ScoreBreakdownCard extends StatelessWidget {
                 children: [
                   for (var index = 0; index < lines.length; index++)
                     _BreakdownRow(
-                      label: _labelFor(l10n, lines[index]),
+                      label: _labelFor(
+                        l10n,
+                        lines[index],
+                        result.run.questionCount,
+                      ),
                       value: AppFormat.number(lines[index].value, localeName),
                       index: index,
                     ),
@@ -109,20 +113,23 @@ class ScoreBreakdownCard extends StatelessWidget {
     );
   }
 
-  static String _labelFor(AppLocalizations l10n, ScoreLine line) =>
-      switch (line.kind) {
-        ScoreLineKind.correct => l10n.resultBreakdownCorrect(line.value ~/ 100),
-        ScoreLineKind.speed => l10n.resultBreakdownSpeed,
-        ScoreLineKind.streak => l10n.resultBreakdownStreak(
-          line.value ~/ Scoring.streakBonusPerStep,
-        ),
-        ScoreLineKind.cleanRun => l10n.resultBreakdownCleanRun,
-        ScoreLineKind.flawless => l10n.resultBreakdownFlawless,
-        ScoreLineKind.hearts => l10n.resultBreakdownHearts(
-          line.value ~/ Scoring.heartBonus,
-        ),
-        ScoreLineKind.boss => l10n.resultBreakdownBoss,
-      };
+  static String _labelFor(
+    AppLocalizations l10n,
+    ScoreLine line,
+    int questionCount,
+  ) => switch (line.kind) {
+    ScoreLineKind.correct => l10n.resultBreakdownCorrect(line.value ~/ 100),
+    ScoreLineKind.speed => l10n.resultBreakdownSpeed,
+    ScoreLineKind.streak => l10n.resultBreakdownStreak(
+      line.value ~/ Scoring.streakBonusPerStep,
+    ),
+    ScoreLineKind.cleanRun => l10n.resultBreakdownCleanRun,
+    ScoreLineKind.flawless => l10n.resultBreakdownFlawless(questionCount),
+    ScoreLineKind.hearts => l10n.resultBreakdownHearts(
+      line.value ~/ Scoring.heartBonus,
+    ),
+    ScoreLineKind.boss => l10n.resultBreakdownBoss,
+  };
 }
 
 /// `.brk div` — one row, staggering in 60 ms after the one above it.

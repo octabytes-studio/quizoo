@@ -13,6 +13,7 @@ _DifficultyTier _$DifficultyTierFromJson(Map<String, dynamic> json) =>
       secondsPerQuestion: (json['secondsPerQuestion'] as num).toInt(),
       levelStart: (json['levelStart'] as num).toInt(),
       levelEnd: (json['levelEnd'] as num).toInt(),
+      questionsPerLevel: (json['questionsPerLevel'] as num).toInt(),
     );
 
 Map<String, dynamic> _$DifficultyTierToJson(_DifficultyTier instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$DifficultyTierToJson(_DifficultyTier instance) =>
       'secondsPerQuestion': instance.secondsPerQuestion,
       'levelStart': instance.levelStart,
       'levelEnd': instance.levelEnd,
+      'questionsPerLevel': instance.questionsPerLevel,
     };

@@ -127,7 +127,7 @@
   "@onboardingPickTitle": { "description": "S-02 Onboarding card 1 heading." },
   "onboardingPickBody": "Fourteen categories and hundreds of topics. Start with the one you would argue about.",
   "@onboardingPickBody": { "description": "S-02 Onboarding card 1 body." },
-  "onboardingClimbTitle": "Climb 20 levels\nin every topic",
+  "onboardingClimbTitle": "Climb 30 levels\nin every topic",
   "@onboardingClimbTitle": { "description": "S-02 Onboarding card 2 heading." },
   "onboardingClimbBody": "Each level is harder and faster than the last. Three stars means you truly know it.",
   "@onboardingClimbBody": { "description": "S-02 Onboarding card 2 body." },
@@ -308,15 +308,11 @@
   "@categoryResumeEyebrow": { "description": "S-07 resume card eyebrow label." },
 
   "difficultyEasy": "Easy",
-  "@difficultyEasy": { "description": "Levels 1–5 difficulty band (§19)." },
+  "@difficultyEasy": { "description": "Levels 1–10 difficulty tier (§19)." },
   "difficultyMedium": "Medium",
-  "@difficultyMedium": { "description": "Levels 6–10 difficulty band." },
+  "@difficultyMedium": { "description": "Levels 11–20 difficulty tier." },
   "difficultyHard": "Hard",
-  "@difficultyHard": { "description": "Levels 11–15 difficulty band." },
-  "difficultyExpert": "Expert",
-  "@difficultyExpert": { "description": "Levels 16–20 difficulty band." },
-  "difficultyMaster": "Master",
-  "@difficultyMaster": { "description": "Levels 41–50 difficulty band." },
+  "@difficultyHard": { "description": "Levels 21–30 difficulty tier." },
 
   "levelMapSubtitle": "{questions} questions · {levels} levels",
   "@levelMapSubtitle": {
@@ -332,11 +328,11 @@
   "@levelMapStars": { "description": "S-08 header stat label." },
   "levelMapRank": "RANK",
   "@levelMapRank": { "description": "S-08 header stat label." },
-  "levelMapBand": "{difficulty} · {seconds}s PER QUESTION",
-  "@levelMapBand": {
-    "description": "S-08 difficulty band divider.",
+  "levelMapBandMeta": "{questions} QUESTIONS · {seconds}s EACH",
+  "@levelMapBandMeta": {
+    "description": "S-08 difficulty band divider's caption line — the difficulty name itself renders as its own bold line above this.",
     "placeholders": {
-      "difficulty": { "type": "String", "example": "HARD" },
+      "questions": { "type": "int", "example": "15" },
       "seconds": { "type": "int", "example": "20" }
     }
   },
@@ -379,6 +375,8 @@
   },
   "levelMapLeaderboard": "Leaderboard",
   "@levelMapLeaderboard": { "description": "Semantic label for S-08's trophy button." },
+  "levelMapMastered": "🏆 Mastered",
+  "@levelMapMastered": { "description": "Topic Mastered (plan 020): pill on a fully-cleared topic's level map, reopening the mastery screen." },
 
   "levelBriefTitle": "Level {level}",
   "@levelBriefTitle": {
@@ -562,8 +560,11 @@
   },
   "resultBreakdownCleanRun": "Clean run — no power-ups",
   "@resultBreakdownCleanRun": { "description": "S-21 breakdown row." },
-  "resultBreakdownFlawless": "Flawless — 20 of 20",
-  "@resultBreakdownFlawless": { "description": "S-21 breakdown row." },
+  "resultBreakdownFlawless": "Flawless — {count} of {count}",
+  "@resultBreakdownFlawless": {
+    "description": "S-21 breakdown row (plan 020: parameterized by the level's own question count).",
+    "placeholders": { "count": { "type": "int" } }
+  },
   "resultBreakdownHearts": "{count} hearts unspent",
   "@resultBreakdownHearts": {
     "description": "S-21 breakdown row.",
@@ -606,6 +607,8 @@
   "@resultReplay": { "description": "S-21 secondary CTA, only when three stars are still unearned." },
   "resultBackToMap": "Back to map",
   "@resultBackToMap": { "description": "S-21 / S-22 return action." },
+  "resultSeeTrophy": "See your trophy 🏆",
+  "@resultSeeTrophy": { "description": "Topic Mastered (plan 020): S-21 primary CTA on a level-30 first clear, in place of \"Next level\"." },
   "resultShare": "Share",
   "@resultShare": { "description": "Semantic label for S-21's share button." },
 
@@ -1648,5 +1651,49 @@
   "shareDemoTitle": "Share",
   "@shareDemoTitle": { "description": "S-53's own reserved path, reached with no real result to share." },
   "shareDemoPreview": "Quizoo — the quiz that plays like a game.",
-  "@shareDemoPreview": { "description": "S-53 demo preview card body." }
+  "@shareDemoPreview": { "description": "S-53 demo preview card body." },
+
+  "masteryEyebrow": "✦ TOPIC MASTERED ✦",
+  "@masteryEyebrow": { "description": "Topic Mastered (plan 020): screen eyebrow." },
+  "masteryTitle": "{topic} Mastered!",
+  "@masteryTitle": {
+    "description": "Topic Mastered (plan 020): screen title.",
+    "placeholders": { "topic": { "type": "String", "example": "Football" } }
+  },
+  "masterySubtitle": "You conquered every level — Easy, Medium and Hard.",
+  "@masterySubtitle": { "description": "Topic Mastered (plan 020): screen subtitle." },
+  "masteryLevelsRibbon": "{cleared} / {total} LEVELS",
+  "@masteryLevelsRibbon": {
+    "description": "Topic Mastered (plan 020): the ribbon under the medallion.",
+    "placeholders": {
+      "cleared": { "type": "int", "example": "30" },
+      "total": { "type": "int", "example": "30" }
+    }
+  },
+  "masteryStatStars": "STARS",
+  "@masteryStatStars": { "description": "Topic Mastered (plan 020): stats grid caption." },
+  "masteryStatPerfect": "PERFECT LEVELS",
+  "@masteryStatPerfect": { "description": "Topic Mastered (plan 020): stats grid caption." },
+  "masteryStatScore": "TOTAL SCORE",
+  "@masteryStatScore": { "description": "Topic Mastered (plan 020): stats grid caption." },
+  "masteryStatDays": "{count, plural, =1{DAY TO MASTER} other{DAYS TO MASTER}}",
+  "@masteryStatDays": {
+    "description": "Topic Mastered (plan 020): stats grid caption, pluralized.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "masteryStatLevels": "LEVELS CLEARED",
+  "@masteryStatLevels": { "description": "Topic Mastered (plan 020): stats grid caption shown instead of days-to-master when there is no startedAt." },
+  "masteryMissingStars": "{count, plural, =1{1 star still up for grabs — replay a level to perfect this topic.} other{{count} stars still up for grabs — replay any level to perfect this topic.}}",
+  "@masteryMissingStars": {
+    "description": "Topic Mastered (plan 020): nudge line when the topic is not flawless.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "masteryFlawless": "Every single star collected. Flawless mastery 💎",
+  "@masteryFlawless": { "description": "Topic Mastered (plan 020): nudge line when every star is earned." },
+  "masteryContinue": "Continue",
+  "@masteryContinue": { "description": "Topic Mastered (plan 020): primary CTA." },
+  "masteryShare": "Share my trophy",
+  "@masteryShare": { "description": "Topic Mastered (plan 020): secondary CTA." },
+  "masteryShareTitle": "Share your mastery",
+  "@masteryShareTitle": { "description": "Topic Mastered (plan 020): share sheet title." }
 }

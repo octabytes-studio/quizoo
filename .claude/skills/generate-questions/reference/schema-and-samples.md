@@ -26,15 +26,13 @@ changes, update this file — don't silently drift from it.
 | `media_url`, `figure_svg`, `valid_until` | — | Leave `NULL` / omit — not used by `kind = 'text'`. |
 | `seen_count`, `correct_count`, `avg_answer_ms`, `created_at` | — | Leave to column defaults — omit from the INSERT column list. |
 
-## Table: `difficulty_tiers` (5 fixed rows) — the Easy…Master mapping
+## Table: `difficulty_tiers` (3 fixed rows) — the Easy/Medium/Hard mapping
 
-| `code` | `label` | seconds/question | levels | legacy `difficulty` int |
-|---|---|---|---|---|
-| `easy` | Easy | 30 | 1–10 | 1 |
-| `medium` | Medium | 25 | 11–20 | 2 |
-| `hard` | Hard | 20 | 21–30 | 3 |
-| `expert` | Expert | 15 | 31–40 | 4 |
-| `master` | Master | 10 | 41–50 | 5 |
+| `code` | `label` | seconds/question | levels | questions/level | legacy `difficulty` int |
+|---|---|---|---|---|---|
+| `easy` | Easy | 20 | 1–10 | 10 | 1 |
+| `medium` | Medium | 15 | 11–20 | 15 | 2 |
+| `hard` | Hard | 10 | 21–30 | 20 | 3 |
 
 ## Table: `languages` — fallback snapshot only (prefer a live query when possible)
 
@@ -112,26 +110,21 @@ database.
 3. "Which country hosted the 1994 FIFA World Cup?" — A) Mexico **B) USA ✓** C) Italy D) France
    *The USA. It still holds the highest average attendance of any World Cup, nearly 69,000 a game.*
 
-### Hard (`hard`) — dedicated-enthusiast recall: specific dates, named events, records
+### Hard (`hard`) — the top tier: dedicated-enthusiast recall through niche/technical
+facts — specific dates, named events, records, precise numbers, rules, and
+terminology up through genuinely obscure trivia. Since Hard is now the summit
+of the ladder (plan 020 retired the old Expert/Master tiers into it), its
+range is wider than Easy/Medium's: draw from the full span below rather than
+only its easiest end.
 1. "Who won the first ever Premier League season, in 1992–93?" — **A) Manchester United ✓** B) Arsenal C) Blackburn Rovers D) Aston Villa
    *Manchester United, ending a 26-year wait for a league title. They'd go on to win 13 of the first 21.*
 2. "What is awarded to the top scorer at a World Cup?" — A) Golden Ball **B) Golden Boot ✓** C) Golden Glove D) Bronze Ball
    *The Golden Boot. The Golden Ball goes to the best player and the Golden Glove to the best goalkeeper.*
 3. "In which city is the Maracanã stadium?" — A) São Paulo B) Buenos Aires **C) Rio de Janeiro ✓** D) Lisbon
    *Rio de Janeiro. Its 1950 World Cup final drew a crowd officially recorded at 173,850.*
-
-### Expert (`expert`) — niche/technical facts, precise numbers, rules, terminology
-1. "Which club plays its home games at the Camp Nou?" — A) Real Madrid **B) Barcelona ✓** C) Valencia D) Sevilla
-   *Barcelona. It is Europe's largest stadium, seating just under 100,000.*
-2. "What does VAR stand for?" — **A) Video Assistant Referee ✓** B) Verified Action Review C) Visual Angle Replay D) Video Appeal Ruling
+4. "What does VAR stand for?" — **A) Video Assistant Referee ✓** B) Verified Action Review C) Visual Angle Replay D) Video Appeal Ruling
    *Video Assistant Referee, first used at a World Cup in 2018.*
-3. "How far is the penalty spot from the goal line?" — A) 10 yards B) 11 yards **C) 12 yards ✓** D) 14 yards
-   *Twelve yards, about 11 metres — unchanged since the penalty kick was introduced in 1891.*
-
-### Master (`master`) — obscure trivia, precise definitions, easily-confused options
-1. "A \"continental treble\" means winning which three in one season?" — **A) League, domestic cup, continental cup ✓** B) League, super cup, world cup C) Three consecutive leagues D) Cup, super cup, shield
+5. "A \"continental treble\" means winning which three in one season?" — **A) League, domestic cup, continental cup ✓** B) League, super cup, world cup C) Three consecutive leagues D) Cup, super cup, shield
    *The league, the main domestic cup and the continental competition — all in a single season.*
-2. "Where may a goalkeeper legally handle the ball?" — A) Anywhere in their own half **B) Inside their own penalty area ✓** C) Inside the six-yard box only D) Anywhere on the pitch
+6. "Where may a goalkeeper legally handle the ball?" — A) Anywhere in their own half **B) Inside their own penalty area ✓** C) Inside the six-yard box only D) Anywhere on the pitch
    *Only inside their own penalty area. Handling it outside is a free kick, and often a red card.*
-3. "What type of star is the Sun?" — A) Red giant B) White dwarf **C) Yellow dwarf ✓** D) Blue supergiant
-   *A yellow dwarf, or G-type main-sequence star — about halfway through its life.*

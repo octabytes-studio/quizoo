@@ -298,11 +298,7 @@ void main() {
       );
       expect(find.text('Abandoned'), findsOneWidget);
 
-      await pumpCard(
-        tester,
-        const ChallengeCardEnded(),
-        challenge: challenge,
-      );
+      await pumpCard(tester, const ChallengeCardEnded(), challenge: challenge);
       expect(find.text('Ended'), findsOneWidget);
     });
 

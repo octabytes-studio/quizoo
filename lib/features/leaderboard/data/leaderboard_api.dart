@@ -1,4 +1,5 @@
 import 'package:quizoo/core/format/country_directory.dart';
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/leaderboard/domain/friend.dart';
 import 'package:quizoo/features/leaderboard/domain/leaderboard_entry.dart';
@@ -173,7 +174,7 @@ class LeaderboardApi {
             avatarEmoji: profiles[row['user_id']]?.$2 ?? '🐼',
             score: row['points'] as int,
             levelsCleared: clearedByUser[row['user_id']] ?? 0,
-            levelCount: 20,
+            levelCount: LadderConfigRepository.fallbackTotalLevels,
             starsEarned: starsByUser[row['user_id']] ?? 0,
           ),
       ];

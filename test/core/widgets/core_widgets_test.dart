@@ -335,7 +335,7 @@ void main() {
     Subcategory topicWith({
       String name = 'Football',
       int levelsCleared = 0,
-      int levelCount = 50,
+      int levelCount = 30,
       int starsEarned = 0,
       bool isLocked = false,
     }) => Subcategory(
@@ -370,9 +370,9 @@ void main() {
                 Expanded(
                   child: SubcategoryCard.forTopic(
                     topicWith(
-                      levelsCleared: 50,
-                      levelCount: 50,
-                      starsEarned: 150,
+                      levelsCleared: 30,
+                      levelCount: 30,
+                      starsEarned: 90,
                     ),
                     l10n,
                   ),

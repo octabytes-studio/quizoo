@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:quizoo/core/ladder/ladder_config_api.dart';
 import 'package:quizoo/core/models/difficulty_tier.dart';
 
@@ -24,7 +26,11 @@ class LadderConfigRepository {
 
   Future<void> _load() async {
     try {
-      _tiers = await _api.fetchTiers();
+      final defaultQuestionsPerLevel = await _api
+          .fetchDefaultQuestionsPerLevel();
+      _tiers = await _api.fetchTiers(
+        defaultQuestionsPerLevel: defaultQuestionsPerLevel,
+      );
       _bossLevelInterval = await _api.fetchBossLevelInterval();
     } catch (_) {
       // Don't cache a failed fetch forever — the next caller (a fresh
@@ -48,14 +54,28 @@ class LadderConfigRepository {
 
   int secondsFor(int level) => tierFor(level).secondsPerQuestion;
 
+  int questionsFor(int level) => tierFor(level).questionsPerLevel;
+
   bool isBoss(int level) =>
       _bossLevelInterval > 0 && level % _bossLevelInterval == 0;
+
+  /// The top of the ladder — the highest `levelEnd` across every tier.
+  /// Falls back to [fallbackTotalLevels] before [ensureLoaded] resolves.
+  int get totalLevels => _tiers.isEmpty
+      ? fallbackTotalLevels
+      : _tiers.map((tier) => tier.levelEnd).reduce(max);
+
+  /// Mirrors the seeded 30-level ladder. Used before [ensureLoaded] resolves
+  /// and by display sites that don't have this repository (Home tiles,
+  /// Profile, Leaderboard).
+  static const int fallbackTotalLevels = 30;
 
   static const _fallbackTier = DifficultyTier(
     code: 'easy',
     label: 'Easy',
-    secondsPerQuestion: 30,
+    secondsPerQuestion: 20,
     levelStart: 1,
-    levelEnd: 50,
+    levelEnd: 30,
+    questionsPerLevel: 10,
   );
 }

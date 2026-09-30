@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
@@ -41,6 +42,7 @@ class QuizResultScreen extends StatelessWidget {
         QuizResultRepository(
           QuizResultApi(supabase),
           context.read<AuthRepository>(),
+          context.read<LadderConfigRepository>(),
         ),
       )..submit(run, isGuest: context.read<SessionCubit>().isGuest),
       child: BlocBuilder<QuizResultCubit, QuizResultState>(

@@ -23,10 +23,11 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// up over 900 ms, then the breakdown rows stagger in at 60 ms each.
 ///
 /// **The chain after this screen** is decided by [QuizResultCubit] and
-/// executed here as route pushes only — first S-23 if a badge was earned,
-/// then S-24 if an account is worth offering. Nothing here imports another
-/// feature's code, so plan 003 landing later changes only what those routes
-/// resolve to.
+/// executed here as route pushes only — first the Topic Mastered screen if
+/// this run just mastered the topic (plan 020), then S-23 if a badge was
+/// earned, then S-24 if an account is worth offering. Nothing here imports
+/// another feature's code, so plan 003 (or `features/topic_mastery`) landing
+/// later changes only what those routes resolve to.
 class LevelCompleteScreen extends StatefulWidget {
   const LevelCompleteScreen({required this.state, super.key});
 
@@ -38,6 +39,11 @@ class LevelCompleteScreen extends StatefulWidget {
 
 class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
   bool _hasRunChain = false;
+
+  /// Set once the Topic Mastered screen has been opened, whether by the
+  /// chain or by the player tapping "See your trophy 🏆" during the payout —
+  /// so the chain never pushes it twice.
+  bool _masteryShown = false;
 
   @override
   void initState() {
@@ -55,6 +61,11 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
     await Future<void>.delayed(const Duration(milliseconds: 2600));
     if (!mounted) return;
 
+    if (widget.state.result.unlocksMastery) {
+      await _openMastery();
+      if (!mounted) return;
+    }
+
     await celebrateBadges(context, widget.state.result.newlyEarnedBadgeIds);
     if (!mounted) return;
 
@@ -70,6 +81,17 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
         ),
       );
     }
+  }
+
+  /// A route push only — no import of `features/topic_mastery`, the same way
+  /// S-23's badge celebration is reached.
+  Future<void> _openMastery() async {
+    if (_masteryShown) return;
+    _masteryShown = true;
+    final run = widget.state.result.run;
+    await context.push(
+      AppRoutes.topicMasteredPath(run.categoryId, run.subcategoryId),
+    );
   }
 
   // A `pop`, not a `go` — the play screen reached this one via
@@ -92,22 +114,47 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
       onClose: _close,
       onShare: () => context.push(AppRoutes.share),
       actions: [
-        ChunkyButton(
-          label: l10n.resultNextLevel,
-          onPressed: () => context.pushReplacement(
-            AppRoutes.countdownPath(
-              MockCatalog.levelId(run.subcategoryId, run.levelNumber + 1),
+        if (result.unlocksMastery) ...[
+          ChunkyButton.gold(
+            label: l10n.resultSeeTrophy,
+            onPressed: _openMastery,
+          ),
+          if (result.stars < 3) ...[
+            SizedBox(height: 9.h),
+            ChunkyButton.line(
+              label: l10n.resultReplay,
+              onPressed: () =>
+                  context.pushReplacement(AppRoutes.countdownPath(run.levelId)),
+            ),
+          ],
+        ] else if (result.isFinalLevel) ...[
+          ChunkyButton(label: l10n.resultBackToMap, onPressed: _close),
+          if (result.stars < 3) ...[
+            SizedBox(height: 9.h),
+            ChunkyButton.line(
+              label: l10n.resultReplay,
+              onPressed: () =>
+                  context.pushReplacement(AppRoutes.countdownPath(run.levelId)),
+            ),
+          ],
+        ] else ...[
+          ChunkyButton(
+            label: l10n.resultNextLevel,
+            onPressed: () => context.pushReplacement(
+              AppRoutes.countdownPath(
+                MockCatalog.levelId(run.subcategoryId, run.levelNumber + 1),
+              ),
             ),
           ),
-        ),
-        // Offered only when there is still a star to win.
-        if (result.stars < 3) ...[
-          SizedBox(height: 9.h),
-          ChunkyButton.line(
-            label: l10n.resultReplay,
-            onPressed: () =>
-                context.pushReplacement(AppRoutes.countdownPath(run.levelId)),
-          ),
+          // Offered only when there is still a star to win.
+          if (result.stars < 3) ...[
+            SizedBox(height: 9.h),
+            ChunkyButton.line(
+              label: l10n.resultReplay,
+              onPressed: () =>
+                  context.pushReplacement(AppRoutes.countdownPath(run.levelId)),
+            ),
+          ],
         ],
       ],
       child: Column(

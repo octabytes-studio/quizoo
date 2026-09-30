@@ -23,7 +23,11 @@ mixin _$LevelResult {
 /// (plan 001's no-cross-feature-orchestration rule).
  List<String> get newlyEarnedBadgeIds;/// True when S-24 is allowed to appear after this run: a successful first
 /// level, a guest, and not already offered.
- bool get shouldOfferSaveProgress;
+ bool get shouldOfferSaveProgress;/// True when this run was played on the ladder's last level (30), so
+/// there is no next level to offer.
+ bool get isFinalLevel;/// True when this run just mastered the topic: the final level, cleared,
+/// for the first time. Drives the Topic Mastered push (plan 020).
+ bool get unlocksMastery;
 /// Create a copy of LevelResult
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -36,16 +40,16 @@ $LevelResultCopyWith<LevelResult> get copyWith => _$LevelResultCopyWithImpl<Leve
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LevelResult&&(identical(other.run, run) || other.run == run)&&(identical(other.stars, stars) || other.stars == stars)&&(identical(other.finalScore, finalScore) || other.finalScore == finalScore)&&(identical(other.coinsEarned, coinsEarned) || other.coinsEarned == coinsEarned)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel)&&(identical(other.xpIntoLevel, xpIntoLevel) || other.xpIntoLevel == xpIntoLevel)&&(identical(other.xpToNextLevel, xpToNextLevel) || other.xpToNextLevel == xpToNextLevel)&&(identical(other.isFirstClear, isFirstClear) || other.isFirstClear == isFirstClear)&&const DeepCollectionEquality().equals(other.newlyEarnedBadgeIds, newlyEarnedBadgeIds)&&(identical(other.shouldOfferSaveProgress, shouldOfferSaveProgress) || other.shouldOfferSaveProgress == shouldOfferSaveProgress));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LevelResult&&(identical(other.run, run) || other.run == run)&&(identical(other.stars, stars) || other.stars == stars)&&(identical(other.finalScore, finalScore) || other.finalScore == finalScore)&&(identical(other.coinsEarned, coinsEarned) || other.coinsEarned == coinsEarned)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel)&&(identical(other.xpIntoLevel, xpIntoLevel) || other.xpIntoLevel == xpIntoLevel)&&(identical(other.xpToNextLevel, xpToNextLevel) || other.xpToNextLevel == xpToNextLevel)&&(identical(other.isFirstClear, isFirstClear) || other.isFirstClear == isFirstClear)&&const DeepCollectionEquality().equals(other.newlyEarnedBadgeIds, newlyEarnedBadgeIds)&&(identical(other.shouldOfferSaveProgress, shouldOfferSaveProgress) || other.shouldOfferSaveProgress == shouldOfferSaveProgress)&&(identical(other.isFinalLevel, isFinalLevel) || other.isFinalLevel == isFinalLevel)&&(identical(other.unlocksMastery, unlocksMastery) || other.unlocksMastery == unlocksMastery));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,run,stars,finalScore,coinsEarned,xpEarned,playerLevel,xpIntoLevel,xpToNextLevel,isFirstClear,const DeepCollectionEquality().hash(newlyEarnedBadgeIds),shouldOfferSaveProgress);
+int get hashCode => Object.hash(runtimeType,run,stars,finalScore,coinsEarned,xpEarned,playerLevel,xpIntoLevel,xpToNextLevel,isFirstClear,const DeepCollectionEquality().hash(newlyEarnedBadgeIds),shouldOfferSaveProgress,isFinalLevel,unlocksMastery);
 
 @override
 String toString() {
-  return 'LevelResult(run: $run, stars: $stars, finalScore: $finalScore, coinsEarned: $coinsEarned, xpEarned: $xpEarned, playerLevel: $playerLevel, xpIntoLevel: $xpIntoLevel, xpToNextLevel: $xpToNextLevel, isFirstClear: $isFirstClear, newlyEarnedBadgeIds: $newlyEarnedBadgeIds, shouldOfferSaveProgress: $shouldOfferSaveProgress)';
+  return 'LevelResult(run: $run, stars: $stars, finalScore: $finalScore, coinsEarned: $coinsEarned, xpEarned: $xpEarned, playerLevel: $playerLevel, xpIntoLevel: $xpIntoLevel, xpToNextLevel: $xpToNextLevel, isFirstClear: $isFirstClear, newlyEarnedBadgeIds: $newlyEarnedBadgeIds, shouldOfferSaveProgress: $shouldOfferSaveProgress, isFinalLevel: $isFinalLevel, unlocksMastery: $unlocksMastery)';
 }
 
 
@@ -56,7 +60,7 @@ abstract mixin class $LevelResultCopyWith<$Res>  {
   factory $LevelResultCopyWith(LevelResult value, $Res Function(LevelResult) _then) = _$LevelResultCopyWithImpl;
 @useResult
 $Res call({
- QuizRun run, int stars, int finalScore, int coinsEarned, int xpEarned, int playerLevel, int xpIntoLevel, int xpToNextLevel, bool isFirstClear, List<String> newlyEarnedBadgeIds, bool shouldOfferSaveProgress
+ QuizRun run, int stars, int finalScore, int coinsEarned, int xpEarned, int playerLevel, int xpIntoLevel, int xpToNextLevel, bool isFirstClear, List<String> newlyEarnedBadgeIds, bool shouldOfferSaveProgress, bool isFinalLevel, bool unlocksMastery
 });
 
 
@@ -73,7 +77,7 @@ class _$LevelResultCopyWithImpl<$Res>
 
 /// Create a copy of LevelResult
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? run = null,Object? stars = null,Object? finalScore = null,Object? coinsEarned = null,Object? xpEarned = null,Object? playerLevel = null,Object? xpIntoLevel = null,Object? xpToNextLevel = null,Object? isFirstClear = null,Object? newlyEarnedBadgeIds = null,Object? shouldOfferSaveProgress = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? run = null,Object? stars = null,Object? finalScore = null,Object? coinsEarned = null,Object? xpEarned = null,Object? playerLevel = null,Object? xpIntoLevel = null,Object? xpToNextLevel = null,Object? isFirstClear = null,Object? newlyEarnedBadgeIds = null,Object? shouldOfferSaveProgress = null,Object? isFinalLevel = null,Object? unlocksMastery = null,}) {
   return _then(_self.copyWith(
 run: null == run ? _self.run : run // ignore: cast_nullable_to_non_nullable
 as QuizRun,stars: null == stars ? _self.stars : stars // ignore: cast_nullable_to_non_nullable
@@ -86,6 +90,8 @@ as int,xpToNextLevel: null == xpToNextLevel ? _self.xpToNextLevel : xpToNextLeve
 as int,isFirstClear: null == isFirstClear ? _self.isFirstClear : isFirstClear // ignore: cast_nullable_to_non_nullable
 as bool,newlyEarnedBadgeIds: null == newlyEarnedBadgeIds ? _self.newlyEarnedBadgeIds : newlyEarnedBadgeIds // ignore: cast_nullable_to_non_nullable
 as List<String>,shouldOfferSaveProgress: null == shouldOfferSaveProgress ? _self.shouldOfferSaveProgress : shouldOfferSaveProgress // ignore: cast_nullable_to_non_nullable
+as bool,isFinalLevel: null == isFinalLevel ? _self.isFinalLevel : isFinalLevel // ignore: cast_nullable_to_non_nullable
+as bool,unlocksMastery: null == unlocksMastery ? _self.unlocksMastery : unlocksMastery // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -180,10 +186,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( QuizRun run,  int stars,  int finalScore,  int coinsEarned,  int xpEarned,  int playerLevel,  int xpIntoLevel,  int xpToNextLevel,  bool isFirstClear,  List<String> newlyEarnedBadgeIds,  bool shouldOfferSaveProgress)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( QuizRun run,  int stars,  int finalScore,  int coinsEarned,  int xpEarned,  int playerLevel,  int xpIntoLevel,  int xpToNextLevel,  bool isFirstClear,  List<String> newlyEarnedBadgeIds,  bool shouldOfferSaveProgress,  bool isFinalLevel,  bool unlocksMastery)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LevelResult() when $default != null:
-return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.xpEarned,_that.playerLevel,_that.xpIntoLevel,_that.xpToNextLevel,_that.isFirstClear,_that.newlyEarnedBadgeIds,_that.shouldOfferSaveProgress);case _:
+return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.xpEarned,_that.playerLevel,_that.xpIntoLevel,_that.xpToNextLevel,_that.isFirstClear,_that.newlyEarnedBadgeIds,_that.shouldOfferSaveProgress,_that.isFinalLevel,_that.unlocksMastery);case _:
   return orElse();
 
 }
@@ -201,10 +207,10 @@ return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.x
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( QuizRun run,  int stars,  int finalScore,  int coinsEarned,  int xpEarned,  int playerLevel,  int xpIntoLevel,  int xpToNextLevel,  bool isFirstClear,  List<String> newlyEarnedBadgeIds,  bool shouldOfferSaveProgress)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( QuizRun run,  int stars,  int finalScore,  int coinsEarned,  int xpEarned,  int playerLevel,  int xpIntoLevel,  int xpToNextLevel,  bool isFirstClear,  List<String> newlyEarnedBadgeIds,  bool shouldOfferSaveProgress,  bool isFinalLevel,  bool unlocksMastery)  $default,) {final _that = this;
 switch (_that) {
 case _LevelResult():
-return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.xpEarned,_that.playerLevel,_that.xpIntoLevel,_that.xpToNextLevel,_that.isFirstClear,_that.newlyEarnedBadgeIds,_that.shouldOfferSaveProgress);case _:
+return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.xpEarned,_that.playerLevel,_that.xpIntoLevel,_that.xpToNextLevel,_that.isFirstClear,_that.newlyEarnedBadgeIds,_that.shouldOfferSaveProgress,_that.isFinalLevel,_that.unlocksMastery);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -221,10 +227,10 @@ return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.x
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( QuizRun run,  int stars,  int finalScore,  int coinsEarned,  int xpEarned,  int playerLevel,  int xpIntoLevel,  int xpToNextLevel,  bool isFirstClear,  List<String> newlyEarnedBadgeIds,  bool shouldOfferSaveProgress)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( QuizRun run,  int stars,  int finalScore,  int coinsEarned,  int xpEarned,  int playerLevel,  int xpIntoLevel,  int xpToNextLevel,  bool isFirstClear,  List<String> newlyEarnedBadgeIds,  bool shouldOfferSaveProgress,  bool isFinalLevel,  bool unlocksMastery)?  $default,) {final _that = this;
 switch (_that) {
 case _LevelResult() when $default != null:
-return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.xpEarned,_that.playerLevel,_that.xpIntoLevel,_that.xpToNextLevel,_that.isFirstClear,_that.newlyEarnedBadgeIds,_that.shouldOfferSaveProgress);case _:
+return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.xpEarned,_that.playerLevel,_that.xpIntoLevel,_that.xpToNextLevel,_that.isFirstClear,_that.newlyEarnedBadgeIds,_that.shouldOfferSaveProgress,_that.isFinalLevel,_that.unlocksMastery);case _:
   return null;
 
 }
@@ -236,7 +242,7 @@ return $default(_that.run,_that.stars,_that.finalScore,_that.coinsEarned,_that.x
 @JsonSerializable()
 
 class _LevelResult extends LevelResult {
-  const _LevelResult({required this.run, required this.stars, required this.finalScore, required this.coinsEarned, required this.xpEarned, required this.playerLevel, required this.xpIntoLevel, required this.xpToNextLevel, this.isFirstClear = false, final  List<String> newlyEarnedBadgeIds = const [], this.shouldOfferSaveProgress = false}): _newlyEarnedBadgeIds = newlyEarnedBadgeIds,super._();
+  const _LevelResult({required this.run, required this.stars, required this.finalScore, required this.coinsEarned, required this.xpEarned, required this.playerLevel, required this.xpIntoLevel, required this.xpToNextLevel, this.isFirstClear = false, final  List<String> newlyEarnedBadgeIds = const [], this.shouldOfferSaveProgress = false, this.isFinalLevel = false, this.unlocksMastery = false}): _newlyEarnedBadgeIds = newlyEarnedBadgeIds,super._();
   factory _LevelResult.fromJson(Map<String, dynamic> json) => _$LevelResultFromJson(json);
 
 @override final  QuizRun run;
@@ -267,6 +273,12 @@ class _LevelResult extends LevelResult {
 /// True when S-24 is allowed to appear after this run: a successful first
 /// level, a guest, and not already offered.
 @override@JsonKey() final  bool shouldOfferSaveProgress;
+/// True when this run was played on the ladder's last level (30), so
+/// there is no next level to offer.
+@override@JsonKey() final  bool isFinalLevel;
+/// True when this run just mastered the topic: the final level, cleared,
+/// for the first time. Drives the Topic Mastered push (plan 020).
+@override@JsonKey() final  bool unlocksMastery;
 
 /// Create a copy of LevelResult
 /// with the given fields replaced by the non-null parameter values.
@@ -281,16 +293,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LevelResult&&(identical(other.run, run) || other.run == run)&&(identical(other.stars, stars) || other.stars == stars)&&(identical(other.finalScore, finalScore) || other.finalScore == finalScore)&&(identical(other.coinsEarned, coinsEarned) || other.coinsEarned == coinsEarned)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel)&&(identical(other.xpIntoLevel, xpIntoLevel) || other.xpIntoLevel == xpIntoLevel)&&(identical(other.xpToNextLevel, xpToNextLevel) || other.xpToNextLevel == xpToNextLevel)&&(identical(other.isFirstClear, isFirstClear) || other.isFirstClear == isFirstClear)&&const DeepCollectionEquality().equals(other._newlyEarnedBadgeIds, _newlyEarnedBadgeIds)&&(identical(other.shouldOfferSaveProgress, shouldOfferSaveProgress) || other.shouldOfferSaveProgress == shouldOfferSaveProgress));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LevelResult&&(identical(other.run, run) || other.run == run)&&(identical(other.stars, stars) || other.stars == stars)&&(identical(other.finalScore, finalScore) || other.finalScore == finalScore)&&(identical(other.coinsEarned, coinsEarned) || other.coinsEarned == coinsEarned)&&(identical(other.xpEarned, xpEarned) || other.xpEarned == xpEarned)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel)&&(identical(other.xpIntoLevel, xpIntoLevel) || other.xpIntoLevel == xpIntoLevel)&&(identical(other.xpToNextLevel, xpToNextLevel) || other.xpToNextLevel == xpToNextLevel)&&(identical(other.isFirstClear, isFirstClear) || other.isFirstClear == isFirstClear)&&const DeepCollectionEquality().equals(other._newlyEarnedBadgeIds, _newlyEarnedBadgeIds)&&(identical(other.shouldOfferSaveProgress, shouldOfferSaveProgress) || other.shouldOfferSaveProgress == shouldOfferSaveProgress)&&(identical(other.isFinalLevel, isFinalLevel) || other.isFinalLevel == isFinalLevel)&&(identical(other.unlocksMastery, unlocksMastery) || other.unlocksMastery == unlocksMastery));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,run,stars,finalScore,coinsEarned,xpEarned,playerLevel,xpIntoLevel,xpToNextLevel,isFirstClear,const DeepCollectionEquality().hash(_newlyEarnedBadgeIds),shouldOfferSaveProgress);
+int get hashCode => Object.hash(runtimeType,run,stars,finalScore,coinsEarned,xpEarned,playerLevel,xpIntoLevel,xpToNextLevel,isFirstClear,const DeepCollectionEquality().hash(_newlyEarnedBadgeIds),shouldOfferSaveProgress,isFinalLevel,unlocksMastery);
 
 @override
 String toString() {
-  return 'LevelResult(run: $run, stars: $stars, finalScore: $finalScore, coinsEarned: $coinsEarned, xpEarned: $xpEarned, playerLevel: $playerLevel, xpIntoLevel: $xpIntoLevel, xpToNextLevel: $xpToNextLevel, isFirstClear: $isFirstClear, newlyEarnedBadgeIds: $newlyEarnedBadgeIds, shouldOfferSaveProgress: $shouldOfferSaveProgress)';
+  return 'LevelResult(run: $run, stars: $stars, finalScore: $finalScore, coinsEarned: $coinsEarned, xpEarned: $xpEarned, playerLevel: $playerLevel, xpIntoLevel: $xpIntoLevel, xpToNextLevel: $xpToNextLevel, isFirstClear: $isFirstClear, newlyEarnedBadgeIds: $newlyEarnedBadgeIds, shouldOfferSaveProgress: $shouldOfferSaveProgress, isFinalLevel: $isFinalLevel, unlocksMastery: $unlocksMastery)';
 }
 
 
@@ -301,7 +313,7 @@ abstract mixin class _$LevelResultCopyWith<$Res> implements $LevelResultCopyWith
   factory _$LevelResultCopyWith(_LevelResult value, $Res Function(_LevelResult) _then) = __$LevelResultCopyWithImpl;
 @override @useResult
 $Res call({
- QuizRun run, int stars, int finalScore, int coinsEarned, int xpEarned, int playerLevel, int xpIntoLevel, int xpToNextLevel, bool isFirstClear, List<String> newlyEarnedBadgeIds, bool shouldOfferSaveProgress
+ QuizRun run, int stars, int finalScore, int coinsEarned, int xpEarned, int playerLevel, int xpIntoLevel, int xpToNextLevel, bool isFirstClear, List<String> newlyEarnedBadgeIds, bool shouldOfferSaveProgress, bool isFinalLevel, bool unlocksMastery
 });
 
 
@@ -318,7 +330,7 @@ class __$LevelResultCopyWithImpl<$Res>
 
 /// Create a copy of LevelResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? run = null,Object? stars = null,Object? finalScore = null,Object? coinsEarned = null,Object? xpEarned = null,Object? playerLevel = null,Object? xpIntoLevel = null,Object? xpToNextLevel = null,Object? isFirstClear = null,Object? newlyEarnedBadgeIds = null,Object? shouldOfferSaveProgress = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? run = null,Object? stars = null,Object? finalScore = null,Object? coinsEarned = null,Object? xpEarned = null,Object? playerLevel = null,Object? xpIntoLevel = null,Object? xpToNextLevel = null,Object? isFirstClear = null,Object? newlyEarnedBadgeIds = null,Object? shouldOfferSaveProgress = null,Object? isFinalLevel = null,Object? unlocksMastery = null,}) {
   return _then(_LevelResult(
 run: null == run ? _self.run : run // ignore: cast_nullable_to_non_nullable
 as QuizRun,stars: null == stars ? _self.stars : stars // ignore: cast_nullable_to_non_nullable
@@ -331,6 +343,8 @@ as int,xpToNextLevel: null == xpToNextLevel ? _self.xpToNextLevel : xpToNextLeve
 as int,isFirstClear: null == isFirstClear ? _self.isFirstClear : isFirstClear // ignore: cast_nullable_to_non_nullable
 as bool,newlyEarnedBadgeIds: null == newlyEarnedBadgeIds ? _self._newlyEarnedBadgeIds : newlyEarnedBadgeIds // ignore: cast_nullable_to_non_nullable
 as List<String>,shouldOfferSaveProgress: null == shouldOfferSaveProgress ? _self.shouldOfferSaveProgress : shouldOfferSaveProgress // ignore: cast_nullable_to_non_nullable
+as bool,isFinalLevel: null == isFinalLevel ? _self.isFinalLevel : isFinalLevel // ignore: cast_nullable_to_non_nullable
+as bool,unlocksMastery: null == unlocksMastery ? _self.unlocksMastery : unlocksMastery // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

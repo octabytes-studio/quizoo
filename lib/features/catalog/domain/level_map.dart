@@ -6,8 +6,8 @@ import 'package:quizoo/core/models/subcategory.dart';
 part 'level_map.freezed.dart';
 part 'level_map.g.dart';
 
-/// Everything S-08 renders: the topic, its parent category, its twenty
-/// levels, and the player's rank in it.
+/// Everything S-08 renders: the topic, its parent category, its levels, and
+/// the player's rank in it.
 @freezed
 abstract class LevelMap with _$LevelMap {
   const factory LevelMap({
@@ -33,7 +33,7 @@ abstract class LevelMap with _$LevelMap {
     orElse: () => levels.isEmpty ? _placeholder : levels.first,
   );
 
-  /// Stars earned of the 60 available across twenty levels (§19).
+  /// Stars earned of `levels.length * 3` available (§19).
   int get starsAvailable => levels.length * 3;
 
   static const Level _placeholder = Level(
@@ -41,7 +41,7 @@ abstract class LevelMap with _$LevelMap {
     subcategoryId: '',
     number: 1,
     difficultyBand: DifficultyBand.warmUp,
-    secondsPerQuestion: 30,
+    secondsPerQuestion: 20,
     status: LevelStatus.current,
   );
 }

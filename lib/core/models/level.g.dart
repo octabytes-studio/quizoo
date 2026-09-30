@@ -14,7 +14,7 @@ _Level _$LevelFromJson(Map<String, dynamic> json) => _Level(
   secondsPerQuestion: (json['secondsPerQuestion'] as num).toInt(),
   status: $enumDecode(_$LevelStatusEnumMap, json['status']),
   isBoss: json['isBoss'] as bool? ?? false,
-  questionCount: (json['questionCount'] as num?)?.toInt() ?? 20,
+  questionCount: (json['questionCount'] as num?)?.toInt() ?? 10,
   starsEarned: (json['starsEarned'] as num?)?.toInt() ?? 0,
   bestScore: (json['bestScore'] as num?)?.toInt() ?? 0,
 );
@@ -36,8 +36,6 @@ const _$DifficultyBandEnumMap = {
   DifficultyBand.warmUp: 'warmUp',
   DifficultyBand.steady: 'steady',
   DifficultyBand.sharp: 'sharp',
-  DifficultyBand.brutal: 'brutal',
-  DifficultyBand.master: 'master',
 };
 
 const _$LevelStatusEnumMap = {

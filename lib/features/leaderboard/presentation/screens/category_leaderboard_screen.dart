@@ -112,7 +112,11 @@ class _CategoryLoaded extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final localeName = Localizations.localeOf(context).toLanguageTag();
     final category = MockCatalog.categoryById(subcategory.categoryId);
-    final nextLevel = subcategory.levelsCleared + 1;
+    final isMastered = subcategory.levelsCleared >= subcategory.levelCount;
+    final nextLevel = (subcategory.levelsCleared + 1).clamp(
+      1,
+      subcategory.levelCount,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -209,14 +213,24 @@ class _CategoryLoaded extends StatelessWidget {
             AppSpacing.screenMargin.w,
             AppSpacing.sm.h,
           ),
-          child: ChunkyButton(
-            label: l10n.categoryLeaderboardPlay(subcategory.name, nextLevel),
-            onPressed: () => context.push(
-              AppRoutes.countdownPath(
-                MockCatalog.levelId(subcategory.id, nextLevel),
-              ),
-            ),
-          ),
+          child: isMastered
+              ? ChunkyButton(
+                  label: l10n.resultBackToMap,
+                  onPressed: () => context.push(
+                    AppRoutes.levelMapPath(category.id, subcategory.id),
+                  ),
+                )
+              : ChunkyButton(
+                  label: l10n.categoryLeaderboardPlay(
+                    subcategory.name,
+                    nextLevel,
+                  ),
+                  onPressed: () => context.push(
+                    AppRoutes.countdownPath(
+                      MockCatalog.levelId(subcategory.id, nextLevel),
+                    ),
+                  ),
+                ),
         ),
       ],
     );

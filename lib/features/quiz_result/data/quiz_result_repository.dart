@@ -1,3 +1,4 @@
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/domain/scoring.dart';
@@ -12,12 +13,16 @@ import 'package:quizoo/features/quiz_result/domain/level_result.dart';
 /// this repository is about *which* number becomes the one shown on the
 /// result screen, not about the formulas disagreeing.
 class QuizResultRepository {
-  QuizResultRepository(this._api, this._authRepository);
+  QuizResultRepository(this._api, this._authRepository, this._ladderConfig);
 
   final QuizResultApi _api;
 
   /// Consulted for the save-progress rules, and told when a level is cleared.
   final AuthRepository _authRepository;
+
+  /// Tells us where the ladder ends, so the last level can hide "Next level"
+  /// and open the Topic Mastered screen instead (plan 020).
+  final LadderConfigRepository _ladderConfig;
 
   Future<LevelResult> submit(QuizRun run, {required bool isGuest}) async {
     final record = await _api.submit(run);
@@ -34,6 +39,7 @@ class QuizResultRepository {
         _authRepository.shouldOfferSaveProgress(isGuest: isGuest);
 
     final progress = Scoring.levelProgress(record.totalXp);
+    final isFinalLevel = run.levelNumber >= _ladderConfig.totalLevels;
 
     return LevelResult(
       run: run,
@@ -47,6 +53,8 @@ class QuizResultRepository {
       isFirstClear: record.isFirstClear,
       newlyEarnedBadgeIds: record.newlyEarnedBadgeIds,
       shouldOfferSaveProgress: shouldOffer,
+      isFinalLevel: isFinalLevel,
+      unlocksMastery: run.isComplete && isFinalLevel && record.isFirstClear,
     );
   }
 

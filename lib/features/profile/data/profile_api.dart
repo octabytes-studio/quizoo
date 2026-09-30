@@ -1,4 +1,5 @@
 import 'package:quizoo/core/format/country_directory.dart';
+import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/badge.dart';
 import 'package:quizoo/core/models/xp_curve.dart';
@@ -175,7 +176,9 @@ class ProfileApi {
 
     final attemptRows = await _client
         .from('level_attempts')
-        .select('subcategory_id, level, correct_count, answers')
+        .select(
+          'subcategory_id, level, correct_count, answers, seconds_per_question',
+        )
         .eq('user_id', userId)
         .eq('ending', 'finished');
 
@@ -294,7 +297,7 @@ class ProfileApi {
           emoji: subcategoryRow['emoji'] as String,
           plateColor: subcategoryRow['plate_color'] as String,
           levelsCleared: bySubcategory[id]!.cleared,
-          levelCount: 20,
+          levelCount: LadderConfigRepository.fallbackTotalLevels,
           starsEarned: bySubcategory[id]!.stars,
           accuracyPercent: _accuracyFromAttempts(attempts),
         ),
@@ -377,7 +380,9 @@ class ProfileApi {
 
     for (final row in attemptRows) {
       final level = row['level'] as int;
-      final secondsPerQuestion = MockCatalog.secondsFor(level);
+      final secondsPerQuestion =
+          (row['seconds_per_question'] as int?) ??
+          MockCatalog.secondsFor(level);
       final answers = (row['answers'] as List).cast<Map<String, dynamic>>();
       final answered = [
         for (final answer in answers)
