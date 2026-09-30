@@ -1,9 +1,10 @@
 import 'package:quizoo/core/network/api_exception.dart';
-import 'package:quizoo/features/onboarding/domain/language_option.dart';
+import 'package:quizoo/core/content_language/language_option.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// S-03's real endpoint: every language flipped live, in the order the
-/// picker should list them.
+/// Every language flipped live, in `sort_order` — shared by onboarding's
+/// S-03, S-25's sheet, Edit Profile and Home's language pills (moved to
+/// `core/` in plan 021).
 class LanguagesApi {
   LanguagesApi(this._client);
 

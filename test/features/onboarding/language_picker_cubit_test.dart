@@ -2,8 +2,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/network/api_exception.dart';
-import 'package:quizoo/features/onboarding/data/languages_repository.dart';
-import 'package:quizoo/features/onboarding/domain/language_option.dart';
+import 'package:quizoo/core/content_language/languages_repository.dart';
+import 'package:quizoo/core/content_language/language_option.dart';
 import 'package:quizoo/features/onboarding/presentation/bloc/language_picker_cubit.dart';
 
 class _MockLanguagesRepository extends Mock implements LanguagesRepository {}

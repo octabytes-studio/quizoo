@@ -8,24 +8,10 @@ import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/list_row_tile.dart';
-import 'package:quizoo/features/onboarding/domain/language_option.dart';
+import 'package:quizoo/core/content_language/language_flags.dart';
+import 'package:quizoo/core/content_language/language_option.dart';
 import 'package:quizoo/features/onboarding/presentation/bloc/language_picker_cubit.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
-
-/// Flag emoji per language code — cosmetic, not part of the `languages`
-/// table, so it stays a small local lookup (same call as onboarding's own
-/// `LanguagePickerScreen`, which can't be imported here since it's private
-/// to that file). Exposed (not `_`-prefixed) so S-25's own field can show the
-/// same flag for its currently-picked language without a second copy of this
-/// map.
-const Map<String, String> languageFlags = {
-  'en': '🇬🇧',
-  'ur': '🇵🇰',
-  'ar': '🇸🇦',
-  'hi': '🇮🇳',
-  'es': '🇪🇸',
-  'fr': '🇫🇷',
-};
 
 /// S-25's content-language shortcut — the same live `languages` list
 /// onboarding's S-03 offers, sourced through the shared

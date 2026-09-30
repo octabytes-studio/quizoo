@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizoo/core/network/api_exception.dart';
-import 'package:quizoo/features/onboarding/data/languages_repository.dart';
-import 'package:quizoo/features/onboarding/domain/language_option.dart';
+import 'package:quizoo/core/content_language/languages_repository.dart';
+import 'package:quizoo/core/content_language/language_option.dart';
 
 part 'language_picker_state.dart';
 

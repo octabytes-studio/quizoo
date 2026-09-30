@@ -12,10 +12,11 @@ import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/list_row_tile.dart';
-import 'package:quizoo/features/onboarding/data/languages_api.dart';
-import 'package:quizoo/features/onboarding/data/languages_repository.dart';
+import 'package:quizoo/core/content_language/languages_api.dart';
+import 'package:quizoo/core/content_language/languages_repository.dart';
 import 'package:quizoo/features/onboarding/data/onboarding_repository.dart';
-import 'package:quizoo/features/onboarding/domain/language_option.dart';
+import 'package:quizoo/core/content_language/language_flags.dart';
+import 'package:quizoo/core/content_language/language_option.dart';
 import 'package:quizoo/features/onboarding/presentation/bloc/language_picker_cubit.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
@@ -43,16 +44,6 @@ class LanguagePickerScreen extends StatelessWidget {
     );
   }
 }
-
-/// Flag emoji per language code. No entry falls back to a globe.
-const Map<String, String> _flags = {
-  'en': '🇬🇧',
-  'ur': '🇵🇰',
-  'ar': '🇸🇦',
-  'hi': '🇮🇳',
-  'es': '🇪🇸',
-  'fr': '🇫🇷',
-};
 
 /// Display-only quiz counts — an honest-signal estimate, not a live count
 /// column on `languages`. No entry falls back to omitting the row's count.
@@ -208,7 +199,7 @@ class _LanguageList extends StatelessWidget {
                 subtitle: isLatinScript
                     ? l10n.languageQuizCount(count)
                     : l10n.languageQuizCountNamed(language.name, count),
-                leadingEmoji: _flags[language.code] ?? '🌐',
+                leadingEmoji: languageFlags[language.code] ?? '🌐',
                 accentColor: isSelected ? quizoo.g : null,
                 onTap: () => onSelect(language.code),
                 trailing: isSelected

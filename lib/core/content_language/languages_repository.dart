@@ -1,5 +1,5 @@
-import 'package:quizoo/features/onboarding/data/languages_api.dart';
-import 'package:quizoo/features/onboarding/domain/language_option.dart';
+import 'package:quizoo/core/content_language/languages_api.dart';
+import 'package:quizoo/core/content_language/language_option.dart';
 
 /// The only thing that talks to [LanguagesApi].
 class LanguagesRepository {
