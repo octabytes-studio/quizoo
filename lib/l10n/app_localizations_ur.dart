@@ -31,6 +31,18 @@ class AppLocalizationsUr extends AppLocalizations {
   String get homeSeeAll => 'سب دیکھیں';
 
   @override
+  String homeLanguageTabSemantics(String language) {
+    return '$language میں کوئز دکھائیں';
+  }
+
+  @override
+  String get homeLanguageEmptyTitle => 'کوئز جلد آ رہے ہیں';
+
+  @override
+  String get homeLanguageEmptyBody =>
+      'اس زبان میں ابھی کچھ نہیں۔ کھیلتے رہنے کے لیے اوپر سے کوئی اور زبان چنیں۔';
+
+  @override
   String homeLevelProgress(int cleared, int total) {
     return 'لیول $cleared/$total';
   }

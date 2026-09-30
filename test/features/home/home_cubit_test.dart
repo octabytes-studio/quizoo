@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -118,6 +120,127 @@ void main() {
             ),
       ],
     );
+
+    group('per-language cache and stale guard (plan 021)', () {
+      const urdu = HomeContent(categories: [], subcategories: []);
+      late Completer<HomeContent> slowUrdu;
+
+      void stubCached(String code, HomeContent content) => when(
+        () => repository.fetchCachedHome(
+          isSignedIn: any(named: 'isSignedIn'),
+          languageCode: code,
+        ),
+      ).thenAnswer((_) async => content);
+
+      setUp(
+        () => when(
+          () => repository.fetchPopularRail(any()),
+        ).thenAnswer((_) async => const []),
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'loaded states carry the language they were fetched for',
+        setUp: () => stubCached('en', cached),
+        build: () => HomeCubit(repository),
+        act: (cubit) => cubit.load(isSignedIn: false, languageCode: 'en'),
+        expect: () => [
+          const HomeLoading(),
+          isA<HomeLoaded>().having((s) => s.languageCode, 'code', 'en'),
+          isA<HomeLoaded>().having((s) => s.languageCode, 'code', 'en'),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'revisiting a loaded language emits once from cache, no refetch',
+        setUp: () {
+          stubCached('en', cached);
+          stubCached('ur', urdu);
+        },
+        build: () => HomeCubit(repository),
+        act: (cubit) async {
+          await cubit.load(isSignedIn: false, languageCode: 'en');
+          await cubit.load(isSignedIn: false, languageCode: 'ur');
+          await cubit.load(isSignedIn: false, languageCode: 'en');
+        },
+        skip: 6,
+        expect: () => [const HomeLoaded(languageCode: 'en', content: cached)],
+        verify: (_) => verify(
+          () =>
+              repository.fetchCachedHome(isSignedIn: false, languageCode: 'en'),
+        ).called(1),
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'a switch keeps the previous content on the loading state',
+        setUp: () {
+          stubCached('en', cached);
+          stubCached('ur', urdu);
+        },
+        build: () => HomeCubit(repository),
+        act: (cubit) async {
+          await cubit.load(isSignedIn: false, languageCode: 'en');
+          await cubit.load(isSignedIn: false, languageCode: 'ur');
+        },
+        skip: 3,
+        expect: () => [
+          isA<HomeLoading>().having((s) => s.previous, 'previous', cached),
+          isA<HomeLoaded>().having((s) => s.languageCode, 'code', 'ur'),
+          isA<HomeLoaded>().having((s) => s.languageCode, 'code', 'ur'),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'a slow earlier language never emits after a later tap',
+        setUp: () {
+          slowUrdu = Completer<HomeContent>();
+          when(
+            () => repository.fetchCachedHome(
+              isSignedIn: any(named: 'isSignedIn'),
+              languageCode: 'ur',
+            ),
+          ).thenAnswer((_) => slowUrdu.future);
+          stubCached('hi', cached);
+        },
+        build: () => HomeCubit(repository),
+        act: (cubit) async {
+          unawaited(cubit.load(isSignedIn: false, languageCode: 'ur'));
+          await cubit.load(isSignedIn: false, languageCode: 'hi');
+          slowUrdu.complete(urdu);
+          await Future<void>.delayed(Duration.zero);
+        },
+        // The second `HomeLoading()` equals the first, so Bloc dedupes it.
+        expect: () => [
+          const HomeLoading(),
+          isA<HomeLoaded>().having((s) => s.languageCode, 'code', 'hi'),
+          isA<HomeLoaded>().having((s) => s.languageCode, 'code', 'hi'),
+        ],
+        verify: (cubit) =>
+            expect((cubit.state as HomeLoaded).languageCode, 'hi'),
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'an error on a second language carries the previous content',
+        setUp: () {
+          stubCached('en', cached);
+          when(
+            () => repository.fetchCachedHome(
+              isSignedIn: any(named: 'isSignedIn'),
+              languageCode: 'ur',
+            ),
+          ).thenAnswer((_) async => throw const ApiException.network());
+        },
+        build: () => HomeCubit(repository),
+        act: (cubit) async {
+          await cubit.load(isSignedIn: false, languageCode: 'en');
+          await cubit.load(isSignedIn: false, languageCode: 'ur');
+        },
+        skip: 3,
+        expect: () => [
+          isA<HomeLoading>(),
+          isA<HomeError>().having((s) => s.previous, 'previous', cached),
+        ],
+      );
+    });
   });
 
   group('HomeContent.sections', () {

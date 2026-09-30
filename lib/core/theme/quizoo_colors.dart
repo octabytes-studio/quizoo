@@ -38,6 +38,8 @@ class QuizooColors extends ThemeExtension<QuizooColors> {
     required this.gold,
     required this.goldShadow,
     required this.ov,
+    required this.skeleton,
+    required this.skeletonHighlight,
     required this.shadow,
     required this.shadowLarge,
   });
@@ -111,6 +113,13 @@ class QuizooColors extends ThemeExtension<QuizooColors> {
   /// Scrim behind sheets and dialogs — `--ov`.
   final Color ov;
 
+  /// Skeleton sweep base — a dedicated pair because `--s3` vanishes on light
+  /// `--s0` (plan 021).
+  final Color skeleton;
+
+  /// Skeleton sweep highlight — see [skeleton].
+  final Color skeletonHighlight;
+
   /// Card / tile elevation — `--sh`.
   final List<BoxShadow> shadow;
 
@@ -183,6 +192,8 @@ class QuizooColors extends ThemeExtension<QuizooColors> {
     gold: AppColors.lightGold,
     goldShadow: AppColors.lightGoldSh,
     ov: AppColors.lightOv,
+    skeleton: AppColors.lightSkeleton,
+    skeletonHighlight: AppColors.lightSkeletonHighlight,
     shadow: _lightShadow,
     shadowLarge: _lightShadowLarge,
   );
@@ -211,6 +222,8 @@ class QuizooColors extends ThemeExtension<QuizooColors> {
     gold: AppColors.darkGold,
     goldShadow: AppColors.darkGoldSh,
     ov: AppColors.darkOv,
+    skeleton: AppColors.darkSkeleton,
+    skeletonHighlight: AppColors.darkSkeletonHighlight,
     shadow: _darkShadow,
     shadowLarge: _darkShadowLarge,
   );
@@ -240,6 +253,8 @@ class QuizooColors extends ThemeExtension<QuizooColors> {
     Color? gold,
     Color? goldShadow,
     Color? ov,
+    Color? skeleton,
+    Color? skeletonHighlight,
     List<BoxShadow>? shadow,
     List<BoxShadow>? shadowLarge,
   }) {
@@ -267,6 +282,8 @@ class QuizooColors extends ThemeExtension<QuizooColors> {
       gold: gold ?? this.gold,
       goldShadow: goldShadow ?? this.goldShadow,
       ov: ov ?? this.ov,
+      skeleton: skeleton ?? this.skeleton,
+      skeletonHighlight: skeletonHighlight ?? this.skeletonHighlight,
       shadow: shadow ?? this.shadow,
       shadowLarge: shadowLarge ?? this.shadowLarge,
     );
@@ -299,6 +316,12 @@ class QuizooColors extends ThemeExtension<QuizooColors> {
       gold: Color.lerp(gold, other.gold, t)!,
       goldShadow: Color.lerp(goldShadow, other.goldShadow, t)!,
       ov: Color.lerp(ov, other.ov, t)!,
+      skeleton: Color.lerp(skeleton, other.skeleton, t)!,
+      skeletonHighlight: Color.lerp(
+        skeletonHighlight,
+        other.skeletonHighlight,
+        t,
+      )!,
       shadow: BoxShadow.lerpList(shadow, other.shadow, t)!,
       shadowLarge: BoxShadow.lerpList(shadowLarge, other.shadowLarge, t)!,
     );

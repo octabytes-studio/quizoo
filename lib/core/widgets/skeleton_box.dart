@@ -31,12 +31,14 @@ class SkeletonBox extends StatefulWidget {
   /// immediately, which is what a widget test usually wants.
   final Duration appearAfter;
 
-  /// Overrides the sweep's outer colour. Defaults to `quizoo.s3` — only
+  /// Overrides the sweep's outer colour. Defaults to `quizoo.skeleton` (plan
+  /// 021 — `quizoo.s3` vanished on the light background) — only
   /// needed when the skeleton sits on a background (e.g. a gradient header)
   /// that the theme's neutral surface tones don't read against.
   final Color? baseColor;
 
-  /// Overrides the sweep's highlight colour. Defaults to `quizoo.s2`.
+  /// Overrides the sweep's highlight colour. Defaults to
+  /// `quizoo.skeletonHighlight`.
   final Color? highlightColor;
 
   @override
@@ -87,8 +89,8 @@ class _SkeletonBoxState extends State<SkeletonBox>
     final quizoo = context.quizoo;
     final radius =
         widget.borderRadius ?? BorderRadius.circular(AppRadius.skeleton.r);
-    final base = widget.baseColor ?? quizoo.s3;
-    final highlight = widget.highlightColor ?? quizoo.s2;
+    final base = widget.baseColor ?? quizoo.skeleton;
+    final highlight = widget.highlightColor ?? quizoo.skeletonHighlight;
 
     if (!_isVisible) {
       return SizedBox(width: widget.width, height: widget.height);

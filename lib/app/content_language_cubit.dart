@@ -13,10 +13,25 @@ class ContentLanguageCubit extends Cubit<ContentLanguageState> {
 
   final ContentLanguageRepository _repository;
 
+  /// An explicit "change my default" (Settings, onboarding S-03, Edit
+  /// Profile) — persists [code] and re-pins it as Home's lead pill. Picking
+  /// the current language while [ContentLanguageState.leadCode] differs (after
+  /// Home pill switches) still re-pins it.
   Future<void> select(String code) async {
-    if (code == state.code) return;
+    if (code == state.code && code == state.leadCode) return;
     await _repository.select(code);
     if (!isClosed) emit(ContentLanguageLoaded(code));
+  }
+
+  /// Home's pill tap. Persists exactly like [select] (so the next cold
+  /// launch leads with [code]) but leaves [ContentLanguageState.leadCode]
+  /// alone, so the row does not reorder under the player's finger (plan 021).
+  Future<void> switchTo(String code) async {
+    if (code == state.code) return;
+    await _repository.select(code);
+    if (!isClosed) {
+      emit(ContentLanguageLoaded(code, leadCode: state.leadCode));
+    }
   }
 
   /// Adopts the backend's `profiles.locale` when it differs from the local

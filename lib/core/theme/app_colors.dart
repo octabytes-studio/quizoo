@@ -26,6 +26,16 @@ abstract final class AppColors {
   static const Color lightTx3 = Color(0xFF9E97B8);
   static const Color lightLn = Color(0xFFE7E2F5);
 
+  /// Skeleton sweep base (plan 021). The bible's `.sk` uses `--s3`, which
+  /// sits at ~1.07:1 against the light `--s0` background and so all but
+  /// vanishes; this is ~1.26:1 — visibly a placeholder, still quieter than
+  /// [lightTx3].
+  static const Color lightSkeleton = Color(0xFFDDD5F2);
+
+  /// Skeleton sweep highlight — lighter than [lightSkeleton] but still darker
+  /// than [lightS0], so the shimmer never reads as a hole in the page.
+  static const Color lightSkeletonHighlight = Color(0xFFECE7FA);
+
   /// Mango — primary CTA, FAB, timer ring, level "now" node.
   static const Color lightP = Color(0xFFFF8A24);
   static const Color lightPd = Color(0xFFF06E00);
@@ -88,6 +98,14 @@ abstract final class AppColors {
   static const Color darkTx2 = Color(0xFFADA4CC);
   static const Color darkTx3 = Color(0xFF7B7399);
   static const Color darkLn = Color(0xFF332968);
+
+  /// Skeleton sweep base — identical to [darkS3], the bible's `.sk` value,
+  /// which already reads fine on [darkS0]. A separate token only because
+  /// the light value had to diverge (plan 021).
+  static const Color darkSkeleton = Color(0xFF181233);
+
+  /// Skeleton sweep highlight — identical to [darkS2].
+  static const Color darkSkeletonHighlight = Color(0xFF2A2154);
 
   static const Color darkP = Color(0xFFFF9A3D);
   static const Color darkPd = Color(0xFFFF8A24);

@@ -95,6 +95,36 @@ void main() {
       expect(light.p, isNot(dark.p));
     });
 
+    group('skeleton tokens (plan 021)', () {
+      double contrast(Color a, Color b) {
+        final la = a.computeLuminance();
+        final lb = b.computeLuminance();
+        final (hi, lo) = la > lb ? (la, lb) : (lb, la);
+        return (hi + 0.05) / (lo + 0.05);
+      }
+
+      test('both themes expose a skeleton pair', () {
+        final light = AppTheme.light.extension<QuizooColors>()!;
+        final dark = AppTheme.dark.extension<QuizooColors>()!;
+        expect(light.skeleton, AppColors.lightSkeleton);
+        expect(light.skeletonHighlight, AppColors.lightSkeletonHighlight);
+        expect(dark.skeleton, AppColors.darkSkeleton);
+        expect(dark.skeletonHighlight, AppColors.darkSkeletonHighlight);
+      });
+
+      test('dark is unchanged from the bible\'s --s3/--s2 sweep', () {
+        expect(AppColors.darkSkeleton, AppColors.darkS3);
+        expect(AppColors.darkSkeletonHighlight, AppColors.darkS2);
+      });
+
+      test('the light skeleton is visible against the --s0 background', () {
+        expect(
+          contrast(AppColors.lightSkeleton, AppColors.lightS0),
+          greaterThanOrEqualTo(1.2),
+        );
+      });
+    });
+
     test('localize swaps to Nastaliq for Urdu and leaves English alone', () {
       final english = AppTheme.localize(AppTheme.light, const Locale('en'));
       expect(

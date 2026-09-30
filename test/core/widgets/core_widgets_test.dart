@@ -214,6 +214,26 @@ void main() {
     });
   });
 
+  group('AppChip.semanticLabel (plan 021)', () {
+    testWidgets('announces the semantic label instead of the visible text', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpApp(
+        AppChip(
+          label: 'اردو',
+          leading: '🇵🇰',
+          semanticLabel: 'Show quizzes in Urdu',
+          onTap: () {},
+        ),
+      );
+
+      expect(find.bySemanticsLabel('Show quizzes in Urdu'), findsOneWidget);
+      expect(find.bySemanticsLabel('اردو'), findsNothing);
+      handle.dispose();
+    });
+  });
+
   group('SegmentedTabs', () {
     testWidgets('renders in both themes and reports taps', (tester) async {
       var selected = 0;
@@ -568,6 +588,30 @@ void main() {
         },
       );
       // Stop the infinite shimmer so the tester can settle.
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('defaults to the dedicated skeleton tokens (plan 021)', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const SkeletonBox(width: 100, height: 20, appearAfter: Duration.zero),
+      );
+      final quizoo = QuizooColors.light;
+      final box = tester.widget<DecoratedBox>(
+        find.descendant(
+          of: find.byType(SkeletonBox),
+          matching: find.byType(DecoratedBox),
+        ),
+      );
+      final gradient =
+          (box.decoration as BoxDecoration).gradient! as LinearGradient;
+      expect(gradient.colors, [
+        quizoo.skeleton,
+        quizoo.skeletonHighlight,
+        quizoo.skeleton,
+      ]);
+
       await tester.pumpWidget(const SizedBox.shrink());
     });
 
