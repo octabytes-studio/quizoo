@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/ads_cubit.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -10,6 +12,7 @@ import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/features/auth/presentation/widgets/save_progress_sheet.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
+import 'package:quizoo/core/widgets/native_ad_tile.dart';
 import 'package:quizoo/core/widgets/result_wash.dart';
 import 'package:quizoo/features/quiz_result/domain/level_result.dart';
 import 'package:quizoo/features/quiz_result/presentation/bloc/quiz_result_cubit.dart';
@@ -44,6 +47,10 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
   /// chain or by the player tapping "See your trophy 🏆" during the payout —
   /// so the chain never pushes it twice.
   bool _masteryShown = false;
+
+  /// True while an exit is in flight (an interstitial may be up) — a second
+  /// tap on any exit button is ignored. Ephemeral UI state, never rendered.
+  bool _isLeaving = false;
 
   @override
   void initState() {
@@ -99,7 +106,34 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
   // stack. `go` would rebuild the stack from this location alone, dropping
   // the category/level-map history and leaving nothing for a later back
   // press to pop.
-  void _close() => context.pop();
+  void _close() => _leave(() => context.pop());
+
+  void _play(String levelId) =>
+      _leave(() => context.pushReplacement(AppRoutes.countdownPath(levelId)));
+
+  /// Every way off this screen that ends the run — next level, replay, back
+  /// to the map, ✕ — is a natural break, so it offers `AdsCubit` the chance
+  /// to show an interstitial first (plan 022, I1). The game clock only starts
+  /// inside the route [navigate] opens, so an ad here costs the player
+  /// nothing; with no ad due this completes at once.
+  ///
+  /// A run that just earned mastery, a badge or the save-progress offer is a
+  /// celebration and never shows one.
+  Future<void> _leave(VoidCallback navigate) async {
+    if (_isLeaving) return;
+    _isLeaving = true;
+    final result = widget.state.result;
+    await context.read<AdsCubit>().showInterstitialIfDue(
+      AdPlacement.levelCompleteBreak,
+      isCelebration:
+          result.unlocksMastery ||
+          result.newlyEarnedBadgeIds.isNotEmpty ||
+          result.shouldOfferSaveProgress,
+    );
+    if (!mounted) return;
+    _isLeaving = false;
+    navigate();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,8 +157,7 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
             SizedBox(height: 9.h),
             ChunkyButton.line(
               label: l10n.resultReplay,
-              onPressed: () =>
-                  context.pushReplacement(AppRoutes.countdownPath(run.levelId)),
+              onPressed: () => _play(run.levelId),
             ),
           ],
         ] else if (result.isFinalLevel) ...[
@@ -133,17 +166,14 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
             SizedBox(height: 9.h),
             ChunkyButton.line(
               label: l10n.resultReplay,
-              onPressed: () =>
-                  context.pushReplacement(AppRoutes.countdownPath(run.levelId)),
+              onPressed: () => _play(run.levelId),
             ),
           ],
         ] else ...[
           ChunkyButton(
             label: l10n.resultNextLevel,
-            onPressed: () => context.pushReplacement(
-              AppRoutes.countdownPath(
-                MockCatalog.levelId(run.subcategoryId, run.levelNumber + 1),
-              ),
+            onPressed: () => _play(
+              MockCatalog.levelId(run.subcategoryId, run.levelNumber + 1),
             ),
           ),
           // Offered only when there is still a star to win.
@@ -151,8 +181,7 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
             SizedBox(height: 9.h),
             ChunkyButton.line(
               label: l10n.resultReplay,
-              onPressed: () =>
-                  context.pushReplacement(AppRoutes.countdownPath(run.levelId)),
+              onPressed: () => _play(run.levelId),
             ),
           ],
         ],
@@ -183,6 +212,10 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
           ),
           SizedBox(height: AppSpacing.base.h),
           ScoreBreakdownCard(result: result),
+          NativeAdTile(
+            placement: AdPlacement.levelCompleteNative,
+            padding: EdgeInsets.only(top: AppSpacing.base.h),
+          ),
           SizedBox(height: AppSpacing.xl.h),
         ],
       ),

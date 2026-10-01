@@ -1,16 +1,28 @@
 import 'dart:async';
 
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:quizoo/app/ads_cubit.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/app/locale_cubit.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/app/theme_cubit.dart';
+import 'package:quizoo/core/ads/admob_inline_ad_service.dart';
+import 'package:quizoo/core/ads/admob_interstitial_ad_service.dart';
+import 'package:quizoo/core/ads/ads_config_api.dart';
+import 'package:quizoo/core/ads/ads_config_repository.dart';
+import 'package:quizoo/core/ads/ads_pacing_store.dart';
+import 'package:quizoo/core/ads/inline_ad_service.dart';
+import 'package:quizoo/core/ads/interstitial_pacer.dart';
+import 'package:quizoo/core/ads/ump_ad_consent_service.dart';
 import 'package:quizoo/core/breakpoints.dart';
 import 'package:quizoo/core/content_language/content_language_api.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
@@ -59,11 +71,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// the same `duel-user:<uid>` inbox channel (ref-counted, so it is joined
 /// once) and all show countdowns that must agree with the server, so both
 /// live above any one of them — one channel per topic, one clock offset.
+///
+/// Plan 022 adds [AdsCubit] and the [InlineAdService] it sits beside: every
+/// tab and seven features host a banner, a native ad or an interstitial
+/// break, and all of them must share one consent result, one remote config
+/// and one pacing clock — a per-screen Cubit would let two screens show
+/// interstitials back to back. Consent and the ad SDK start from here,
+/// un-awaited, so neither is on the startup path.
 class QuizooApp extends StatefulWidget {
-  const QuizooApp({required this.preferences, super.key, this.router});
+  const QuizooApp({
+    required this.preferences,
+    super.key,
+    this.router,
+    this.adsCubit,
+  });
 
   /// Overridable so a test can pump the app against its own router.
   final GoRouter? router;
+
+  /// Overridable so a test never reaches the ad SDK, Remote Config or UMP.
+  /// When null the app builds the real one and starts it.
+  final AdsCubit? adsCubit;
 
   /// Backs [OnboardingRepository] and [AuthRepository]'s device-local flags.
   /// Obtained once in `main()`, before `runApp`, since loading it is async.
@@ -101,6 +129,30 @@ class _QuizooAppState extends State<QuizooApp> {
   late final SessionCubit _sessionCubit = SessionCubit(_authRepository);
   late final DuelRealtime _duelRealtime = DuelRealtime(supabase);
   late final ServerClock _serverClock = ServerClock();
+  late final InlineAdService _inlineAdService = AdMobInlineAdService();
+  late final AdsCubit _adsCubit = widget.adsCubit ?? _createAdsCubit();
+
+  AdsCubit _createAdsCubit() => AdsCubit(
+    consent: UmpAdConsentService(),
+    config: AdsConfigRepository(AdsConfigApi(FirebaseRemoteConfig.instance)),
+    interstitial: AdMobInterstitialAdService(
+      isMuted: () => !_settingsRepository.current.soundOn,
+    ),
+    pacer: InterstitialPacer(AdsPacingStore(widget.preferences)),
+    initializeSdk: _initializeAdsSdk,
+    isSupportedPlatform:
+        !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS),
+  );
+
+  /// Runs only once consent allows ad requests (see [AdsCubit.initialize]).
+  static Future<void> _initializeAdsSdk() async {
+    await MobileAds.instance.updateRequestConfiguration(
+      RequestConfiguration(maxAdContentRating: MaxAdContentRating.pg),
+    );
+    await MobileAds.instance.initialize();
+  }
 
   @override
   void initState() {
@@ -126,11 +178,16 @@ class _QuizooAppState extends State<QuizooApp> {
     // needs it next calls `ensureLoaded()` again and surfaces its own error
     // state, the same way every other content fetch already does.
     unawaited(_ladderConfigRepository.ensureLoaded().catchError((_) {}));
+    // Consent first, then the ad SDK — never awaited, so a slow consent
+    // round trip cannot hold up the first frame. An injected Cubit is the
+    // test's to drive.
+    if (widget.adsCubit == null) unawaited(_adsCubit.initialize());
   }
 
   @override
   void dispose() {
     unawaited(_sessionCubit.close());
+    if (widget.adsCubit == null) unawaited(_adsCubit.close());
     super.dispose();
   }
 
@@ -156,6 +213,7 @@ class _QuizooAppState extends State<QuizooApp> {
         ),
         RepositoryProvider<DuelRealtime>.value(value: _duelRealtime),
         RepositoryProvider<ServerClock>.value(value: _serverClock),
+        RepositoryProvider<InlineAdService>.value(value: _inlineAdService),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -166,6 +224,7 @@ class _QuizooAppState extends State<QuizooApp> {
           BlocProvider<ContentLanguageCubit>.value(
             value: _contentLanguageCubit,
           ),
+          BlocProvider<AdsCubit>.value(value: _adsCubit),
         ],
         child: BlocListener<SessionCubit, SessionState>(
           // Reconciles a *returning* signed-in identity's own

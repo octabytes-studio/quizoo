@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quizoo/app/app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../support/fake_ads.dart';
 import '../support/pump_app.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/app/theme_cubit.dart';
@@ -45,6 +46,7 @@ void main() {
       QuizooApp(
         router: router,
         preferences: await SharedPreferences.getInstance(),
+        adsCubit: FakeAdsCubit(),
       ),
     );
     await tester.pumpAndSettle();
@@ -60,6 +62,7 @@ void main() {
       QuizooApp(
         router: router,
         preferences: await SharedPreferences.getInstance(),
+        adsCubit: FakeAdsCubit(),
       ),
     );
     await tester.pumpAndSettle();

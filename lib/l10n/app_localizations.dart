@@ -3379,6 +3379,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share your mastery'**
   String get masteryShareTitle;
+
+  /// Plan 022: small caption above an in-content banner or native ad.
+  ///
+  /// In en, this message translates to:
+  /// **'Advertisement'**
+  String get adLabel;
+
+  /// Plan 022: Privacy settings row that re-opens Google's ad consent / privacy options form.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad privacy choices'**
+  String get privacyAdChoices;
 }
 
 class _AppLocalizationsDelegate

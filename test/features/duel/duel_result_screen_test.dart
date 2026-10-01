@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/network/api_exception.dart';
+import 'package:quizoo/core/widgets/inline_ad_view.dart';
+import 'package:quizoo/core/widgets/native_ad_tile.dart';
+import 'package:quizoo/core/widgets/result_wash.dart';
 import 'package:quizoo/features/duel/domain/duel_player.dart';
 import 'package:quizoo/features/duel/domain/duel_result.dart';
 import 'package:quizoo/features/duel/domain/duel_topic.dart';
@@ -11,6 +17,7 @@ import 'package:quizoo/features/duel/presentation/bloc/duel_rematch_cubit.dart';
 import 'package:quizoo/features/duel/presentation/screens/duel_result_screen.dart';
 import 'package:quizoo/features/duel/presentation/widgets/duel_topic_picker_sheet.dart';
 
+import '../../support/fake_ads.dart';
 import '../../support/pump_screen.dart';
 
 class _MockDuelRematchCubit extends MockCubit<DuelRematchState>
@@ -465,6 +472,162 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('pushed:/home'), findsOneWidget);
+    });
+  });
+
+  group('DuelResultScreen ads (plan 022)', () {
+    testWidgets('Find a new opponent waits for the interstitial break', (
+      tester,
+    ) async {
+      final ads = FakeAdsCubit.ready()..interstitialGate = Completer<void>();
+      await tester.pumpScreen(
+        DuelResultScreen(result: _liveResult(), rematchCubit: rematch),
+        ads: ads,
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Find a new opponent'));
+      await tester.pump();
+      await tester.tap(find.text('Find a new opponent'));
+      await tester.pump();
+
+      expect(ads.breaks, [
+        (placement: AdPlacement.duelResultBreak, isCelebration: false),
+      ]);
+      expect(find.text('pushed:/duel/matchmaking'), findsNothing);
+
+      ads.interstitialGate!.complete();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('pushed:/duel/matchmaking'), findsOneWidget);
+    });
+
+    testWidgets('✕ is a break', (tester) async {
+      final ads = FakeAdsCubit.ready();
+      await tester.pumpScreen(
+        DuelResultScreen(result: _liveResult(), rematchCubit: rematch),
+        ads: ads,
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('✕'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(ads.breaks.single.placement, AdPlacement.duelResultBreak);
+      expect(find.text('pushed:/home'), findsOneWidget);
+    });
+
+    testWidgets('a dismissed topic picker is not a break', (tester) async {
+      final ads = FakeAdsCubit.ready();
+      await tester.pumpScreen(
+        DuelResultScreen(
+          result: _liveResult(topic: null),
+          rematchCubit: rematch,
+        ),
+        ads: ads,
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Find a new opponent'));
+      await dismissPickerIfShown(tester);
+
+      expect(ads.breaks, isEmpty);
+    });
+
+    testWidgets('a live rematch never shows an ad on the way in', (
+      tester,
+    ) async {
+      final ads = FakeAdsCubit.ready();
+      whenListen(
+        rematch,
+        Stream<DuelRematchState>.fromIterable(const [
+          RematchStarting('duel_2'),
+        ]),
+        initialState: const RematchIdle(),
+      );
+      await tester.pumpScreen(
+        DuelResultScreen(result: _liveResult(), rematchCubit: rematch),
+        ads: ads,
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('pushed:/duel/duel_2'), findsOneWidget);
+      expect(ads.breaks, isEmpty);
+    });
+
+    testWidgets('a bot rematch never shows an ad on the way in', (
+      tester,
+    ) async {
+      final ads = FakeAdsCubit.ready();
+      whenListen(
+        botRematch,
+        Stream<BotRematchState>.fromIterable([
+          const BotRematchLoading(),
+          BotRematchFound(
+            me: _me.copyWith(elo: 1406),
+            opponent: _bot,
+            topic: _topic,
+          ),
+        ]),
+        initialState: const BotRematchIdle(),
+      );
+      await tester.pumpScreen(
+        DuelResultScreen(result: _botResult(), botRematchCubit: botRematch),
+        ads: ads,
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('pushed:/duel/bot'), findsOneWidget);
+      expect(ads.breaks, isEmpty);
+    });
+
+    testWidgets('a result that earned a badge is flagged as a celebration', (
+      tester,
+    ) async {
+      final ads = FakeAdsCubit.ready();
+      await tester.pumpScreen(
+        DuelResultScreen(
+          result: _liveResult().copyWith(newlyEarnedBadgeIds: ['duelist']),
+          rematchCubit: rematch,
+        ),
+        ads: ads,
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // The badge celebration is on top by now, so ✕ is invoked directly.
+      tester
+          .widget<ResultWash>(find.byType(ResultWash, skipOffstage: false))
+          .onClose();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(ads.breaks.single.isCelebration, isTrue);
+    });
+
+    testWidgets('shows a native tile under the stats card', (tester) async {
+      final inlineAds = FakeInlineAdService(fills: true);
+      await tester.pumpScreen(
+        DuelResultScreen(result: _liveResult(), rematchCubit: rematch),
+        ads: FakeAdsCubit.ready(),
+        inlineAds: inlineAds,
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.descendant(
+          of: find.byType(NativeAdTile),
+          matching: find.byType(InlineAdView),
+        ),
+        findsOneWidget,
+      );
+      expect(inlineAds.requests.single.placement, AdPlacement.duelResultNative);
+      expect(tester.takeException(), isNull);
     });
   });
 }

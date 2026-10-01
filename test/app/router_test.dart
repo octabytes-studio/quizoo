@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/app.dart';
 
+import '../support/fake_ads.dart';
 import '../support/pump_app.dart';
 import 'package:quizoo/app/router.dart';
 import 'package:quizoo/core/breakpoints.dart';
@@ -40,7 +41,11 @@ void main() {
   Future<GoRouter> pumpAppAt(WidgetTester tester, String location) async {
     final router = AppRouter.create()..go(location);
     await tester.pumpWidget(
-      QuizooApp(router: router, preferences: await testPreferences()),
+      QuizooApp(
+        router: router,
+        preferences: await testPreferences(),
+        adsCubit: FakeAdsCubit(),
+      ),
     );
     await tester.pumpAndSettle();
     return router;
@@ -107,7 +112,12 @@ void main() {
     testWidgets('boots on the splash route and hands off to onboarding', (
       tester,
     ) async {
-      await tester.pumpWidget(QuizooApp(preferences: await testPreferences()));
+      await tester.pumpWidget(
+        QuizooApp(
+          preferences: await testPreferences(),
+          adsCubit: FakeAdsCubit(),
+        ),
+      );
       await tester.pump();
 
       expect(find.byType(SplashScreen), findsOneWidget);
@@ -244,7 +254,11 @@ void main() {
       await tester.pumpWidget(
         MediaQuery(
           data: const MediaQueryData(platformBrightness: Brightness.light),
-          child: QuizooApp(router: router, preferences: preferences),
+          child: QuizooApp(
+            router: router,
+            preferences: preferences,
+            adsCubit: FakeAdsCubit(),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -253,7 +267,11 @@ void main() {
       await tester.pumpWidget(
         MediaQuery(
           data: const MediaQueryData(platformBrightness: Brightness.dark),
-          child: QuizooApp(router: router, preferences: preferences),
+          child: QuizooApp(
+            router: router,
+            preferences: preferences,
+            adsCubit: FakeAdsCubit(),
+          ),
         ),
       );
       await tester.pumpAndSettle();

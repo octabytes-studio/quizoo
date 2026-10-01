@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/format/difficulty_label.dart';
 import 'package:quizoo/core/ladder/ladder_config_repository.dart';
@@ -16,6 +17,7 @@ import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
+import 'package:quizoo/core/widgets/anchored_banner_ad.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
@@ -141,6 +143,18 @@ class _LevelMapViewState extends State<_LevelMapView> with RouteAware {
               map: map,
               initialBriefLevelNumber: _initialBriefLevelNumber,
             ),
+          },
+        ),
+      ),
+      // Stays mounted across `didPopNext`'s Loading → Loaded reload, so
+      // returning from a level neither requests a new ad nor moves the Play
+      // button. Never beside an error or an empty map (plan 022, B1).
+      bottomNavigationBar: BlocBuilder<LevelMapCubit, LevelMapState>(
+        builder: (context, state) => AnchoredBannerAd(
+          placement: AdPlacement.levelMapBanner,
+          isVisible: switch (state) {
+            LevelMapInitial() || LevelMapLoading() || LevelMapLoaded() => true,
+            LevelMapError() || LevelMapEmpty() => false,
           },
         ),
       ),

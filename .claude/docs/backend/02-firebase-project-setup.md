@@ -67,6 +67,21 @@ repo, so register it even if Flutter Web isn't an active target yet):
   | `duel_loser_coins` | `40` | `resolve_duel()`'s payout |
   | `coin_pack_ids` | `["pack_small","pack_medium","pack_large"]` | `CoinPack` catalog — see doc 03 |
   | `save_progress_prompt_enabled` | `true` | S-24 gating |
+  | `ads_enabled` | `true` | Master switch for interstitial / banner / native ads (plan 022). The rewarded heart ad is unaffected |
+  | `ads_disabled_placements` | `""` | Comma-separated `AdPlacement.id`s to switch off (e.g. `ranks_feed_native,level_complete_native`) — ids in `lib/core/ads/ad_placement.dart` |
+  | `ads_interstitial_grace_breaks` | `2` | Breaks after install with no interstitial |
+  | `ads_interstitial_every_n_breaks` | `2` | At most one interstitial per N eligible breaks |
+  | `ads_interstitial_min_gap_seconds` | `120` | Cooldown since any full-screen ad, rewarded included |
+  | `ads_interstitial_session_cap` | `8` | Max interstitials per app process |
+  | `ads_home_native_first_section` | `2` | First Home native ad after this many category sections |
+  | `ads_home_native_every_sections` | `5` | Then one per this many sections |
+  | `ads_home_native_max` | `2` | Max native rows on Home |
+  | `ads_ranks_native_after_row` | `5` | Ranks native ad after this many list rows |
+
+  The ten `ads_*` keys are read once, when ads start up at launch, so a
+  console change takes effect on the launch after it has been fetched. The
+  same defaults are registered in `lib/main.dart` and in `AdsConfig`
+  (`lib/core/ads/ads_config.dart`); keep the three in step.
 
   Keeping these in Remote Config rather than hardcoding them a second time
   in the Flutter app is the whole point — a balance change ships without an

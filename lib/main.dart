@@ -6,7 +6,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:quizoo/app/app.dart';
 import 'package:quizoo/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,8 +16,6 @@ const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await MobileAds.instance.initialize();
 
   await Supabase.initialize(
     url: _supabaseUrl,
@@ -86,6 +83,17 @@ Future<void> main() async {
     'duel_loser_coins': 40,
     'coin_pack_ids': '["pack_small","pack_medium","pack_large"]',
     'save_progress_prompt_enabled': true,
+    // Ads (plan 022) — the same values as `AdsConfig`'s own defaults.
+    'ads_enabled': true,
+    'ads_disabled_placements': '',
+    'ads_interstitial_grace_breaks': 2,
+    'ads_interstitial_every_n_breaks': 2,
+    'ads_interstitial_min_gap_seconds': 120,
+    'ads_interstitial_session_cap': 8,
+    'ads_home_native_first_section': 2,
+    'ads_home_native_every_sections': 5,
+    'ads_home_native_max': 2,
+    'ads_ranks_native_after_row': 5,
   });
   unawaited(remoteConfig.fetchAndActivate());
 
