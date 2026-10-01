@@ -69,6 +69,7 @@ class _DuelPlayView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final arena = context.arena;
+    final languageCode = context.read<ContentLanguageCubit>().state.code;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -102,6 +103,7 @@ class _DuelPlayView extends StatelessWidget {
                   ),
                   DuelPlayEnded() => const _Spinner(),
                   final DuelPlayRound round => DuelRoundView(
+                    languageCode: languageCode,
                     me: round.me,
                     opponent: round.opponent,
                     myScore: round.playerRoundsWon,
