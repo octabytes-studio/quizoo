@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
-import 'package:quizoo/core/models/player_currency.dart';
-import 'package:quizoo/core/widgets/currency_pill.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// `.tb` — Home's top bar, in its two forms.
 ///
 /// The bible's two variants differ in more than a name: a guest gets a 22px
 /// title and a search button, a signed-in player gets an avatar, a 19px
-/// title, a streak line and the wallet. Two purpose-built widgets rather than
-/// one with flags (CLAUDE.md §7).
+/// title, a streak line and the same search button. Two purpose-built widgets
+/// rather than one with flags (CLAUDE.md §7).
 class GuestTopBar extends StatelessWidget {
   const GuestTopBar({required this.onSearchPressed, super.key});
 
@@ -55,12 +52,11 @@ class GuestTopBar extends StatelessWidget {
   }
 }
 
-/// S-05's top bar: avatar, greeting, streak line, wallet pills.
+/// S-05's top bar: avatar, greeting, streak line, search.
 class PlayerTopBar extends StatelessWidget {
   const PlayerTopBar({
     required this.name,
     required this.avatarEmoji,
-    required this.currency,
     required this.dayStreak,
     required this.playerLevel,
     required this.onSearchPressed,
@@ -70,7 +66,6 @@ class PlayerTopBar extends StatelessWidget {
 
   final String name;
   final String avatarEmoji;
-  final PlayerCurrency currency;
   final int dayStreak;
   final int playerLevel;
   final VoidCallback onSearchPressed;
@@ -86,7 +81,6 @@ class PlayerTopBar extends StatelessWidget {
     final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final localeName = Localizations.localeOf(context).toLanguageTag();
 
     return _TopBarFrame(
       children: [
@@ -139,16 +133,6 @@ class PlayerTopBar extends StatelessWidget {
           glyph: '🔍',
           semanticLabel: l10n.homeSearchLabel,
           onTap: onSearchPressed,
-        ),
-        SizedBox(width: AppSpacing.sm.w),
-        CurrencyPill(
-          kind: CurrencyKind.coin,
-          value: AppFormat.number(currency.coins, localeName),
-        ),
-        SizedBox(width: 7.w),
-        CurrencyPill(
-          kind: CurrencyKind.life,
-          value: AppFormat.plain(currency.hearts, localeName),
         ),
       ],
     );

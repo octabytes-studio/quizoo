@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quizoo/core/models/player_currency.dart';
 import 'package:quizoo/features/home/presentation/widgets/home_top_bar.dart';
 
 import '../../support/pump_app.dart';
@@ -15,7 +14,6 @@ void main() {
         PlayerTopBar(
           name: 'Waleed',
           avatarEmoji: '🐼',
-          currency: const PlayerCurrency(),
           dayStreak: 3,
           playerLevel: 4,
           onSearchPressed: () {},

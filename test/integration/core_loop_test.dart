@@ -8,13 +8,13 @@ import 'package:quizoo/app/router.dart';
 import 'package:quizoo/core/breakpoints.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
-import 'package:quizoo/core/widgets/currency_pill.dart';
 import 'package:quizoo/features/achievements/presentation/screens/badge_unlocked_screen.dart';
 import 'package:quizoo/features/auth/presentation/widgets/save_progress_sheet.dart';
 import 'package:quizoo/features/catalog/presentation/screens/level_map_screen.dart';
 import 'package:quizoo/features/catalog/presentation/widgets/level_brief_sheet.dart';
 import 'package:quizoo/features/home/presentation/screens/home_screen.dart';
 import 'package:quizoo/features/home/presentation/widgets/continue_row.dart';
+import 'package:quizoo/features/home/presentation/widgets/home_top_bar.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/feedback_banner.dart';
@@ -291,8 +291,8 @@ void main() {
   ) async {
     final router = await bootToHome(tester);
 
-    // Home starts as S-04: a guest has earned nothing, so there is no wallet.
-    expect(find.byType(CurrencyPill), findsNothing);
+    // Home starts as S-04: the guest-shaped top bar.
+    expect(find.byType(PlayerTopBar), findsNothing);
 
     // S-24, reached directly — the sheet is a route so it stays deep-linkable.
     router.push(AppRoutes.saveProgress);
@@ -307,9 +307,10 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
 
-    // Home is now S-05: wallet pills, a real greeting and the Continue rail.
+    // Home is now S-05: the player top bar, a real greeting and the Continue
+    // rail.
     expect(find.byType(HomeScreen), findsOneWidget);
-    expect(find.byType(CurrencyPill), findsNWidgets(2));
+    expect(find.byType(PlayerTopBar), findsOneWidget);
     expect(find.byType(ContinueRow), findsOneWidget);
     expect(find.text(l10n.homePlayingAsGuest), findsNothing);
   }, skip: true);
