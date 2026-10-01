@@ -6,7 +6,6 @@ import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
-import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/content_language/languages_api.dart';
 import 'package:quizoo/core/content_language/languages_repository.dart';
 import 'package:quizoo/core/models/subcategory.dart';
@@ -202,11 +201,11 @@ class _HomeView extends StatelessWidget {
 /// Home's top bar, hoisted out of the per-state bodies (plan 021) so it stays
 /// mounted across language switches.
 ///
-/// Shows the real wallet from the current — or, mid-switch, the previous —
-/// content. A signed-in player with no content yet (the pre-first-fetch
-/// flash) sees the placeholder wallet with an honest 0 streak/level (plan
-/// 019, Design overview Part B); a signed-in session whose content has no
-/// currency falls back to the guest-shaped bar, as before.
+/// Shows the real streak/level from the current — or, mid-switch, the
+/// previous — content. A signed-in player with no content yet (the
+/// pre-first-fetch flash) sees an honest 0 streak/level (plan 019, Design
+/// overview Part B); a signed-in session whose content has no currency falls
+/// back to the guest-shaped bar, as before.
 class _HomeTopBar extends StatelessWidget {
   const _HomeTopBar({
     required this.session,
@@ -234,18 +233,16 @@ class _HomeTopBar extends StatelessWidget {
         return PlayerTopBar(
           name: user.displayName,
           avatarEmoji: user.avatarEmoji,
-          currency: MockPlayer.currency,
           dayStreak: 0,
           playerLevel: 0,
           onSearchPressed: onSearchPressed,
           onAvatarTap: openEditProfile,
         );
       }
-      if (content.currency case final currency?) {
+      if (content.currency != null) {
         return PlayerTopBar(
           name: user.displayName,
           avatarEmoji: user.avatarEmoji,
-          currency: currency,
           dayStreak: content.dayStreak,
           playerLevel: content.playerLevel,
           onSearchPressed: onSearchPressed,
