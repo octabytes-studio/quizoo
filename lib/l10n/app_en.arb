@@ -1704,5 +1704,9 @@
   "masteryShare": "Share my trophy",
   "@masteryShare": { "description": "Topic Mastered (plan 020): secondary CTA." },
   "masteryShareTitle": "Share your mastery",
-  "@masteryShareTitle": { "description": "Topic Mastered (plan 020): share sheet title." }
+  "@masteryShareTitle": { "description": "Topic Mastered (plan 020): share sheet title." },
+  "adLabel": "Advertisement",
+  "@adLabel": { "description": "Plan 022: small caption above an in-content banner or native ad." },
+  "privacyAdChoices": "Ad privacy choices",
+  "@privacyAdChoices": { "description": "Plan 022: Privacy settings row that re-opens Google's ad consent / privacy options form." }
 }

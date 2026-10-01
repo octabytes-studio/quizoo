@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
+import 'package:quizoo/core/widgets/anchored_banner_ad.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/empty_state_view.dart';
@@ -104,6 +106,18 @@ class _AchievementsViewState extends State<_AchievementsView> {
               ),
             ),
           ],
+        ),
+      ),
+      // Only beside real content (plan 022, B4).
+      bottomNavigationBar: BlocBuilder<AchievementsCubit, AchievementsState>(
+        builder: (context, state) => AnchoredBannerAd(
+          placement: AdPlacement.achievementsBanner,
+          isVisible: switch (state) {
+            AchievementsLoaded() => true,
+            AchievementsInitial() ||
+            AchievementsLoading() ||
+            AchievementsError() => false,
+          },
         ),
       ),
     );

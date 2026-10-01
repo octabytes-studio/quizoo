@@ -2006,4 +2006,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get masteryShareTitle => 'Share your mastery';
+
+  @override
+  String get adLabel => 'Advertisement';
+
+  @override
+  String get privacyAdChoices => 'Ad privacy choices';
 }

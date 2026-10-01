@@ -1,17 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:quizoo/core/ads/ad_unit_ids.dart';
 import 'package:quizoo/features/quiz_play/data/rewarded_ad_service.dart';
 
 /// The real AdMob-backed [RewardedAdService] — this app's first genuine ad
-/// SDK integration. Uses Google's public **test** rewarded ad unit IDs,
-/// matching the test App IDs already configured natively on both platforms.
+/// SDK integration. Its ad unit id comes from [AdUnitIds], which currently
+/// holds Google's public **test** ids, matching the test App IDs configured
+/// natively on both platforms.
 class AdMobRewardedAdService implements RewardedAdService {
-  static final String _adUnitId = Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/5224354917'
-      : 'ca-app-pub-3940256099942544/1712485313';
-
   RewardedAd? _ad;
 
   @override
@@ -22,7 +19,7 @@ class AdMobRewardedAdService implements RewardedAdService {
       // fire later, from a separate native callback, which is what the
       // completer above actually waits on.
       await RewardedAd.load(
-        adUnitId: _adUnitId,
+        adUnitId: AdUnitIds.rewardedHeart,
         request: const AdRequest(),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           onAdLoaded: (ad) {

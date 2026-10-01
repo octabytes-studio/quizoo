@@ -8,6 +8,7 @@ import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
+import '../support/fake_ads.dart';
 import '../support/pump_app.dart';
 
 /// Exercises the RTL proof of concept from plan 001's Assumption 5: English
@@ -48,7 +49,11 @@ void main() {
 
     final router = AppRouter.create()..go(location);
     await tester.pumpWidget(
-      QuizooApp(router: router, preferences: await testPreferences()),
+      QuizooApp(
+        router: router,
+        preferences: await testPreferences(),
+        adsCubit: FakeAdsCubit(),
+      ),
     );
     await tester.pumpAndSettle();
   }

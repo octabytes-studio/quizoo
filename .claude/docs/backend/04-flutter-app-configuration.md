@@ -115,7 +115,60 @@ the newly added packages require (usually iOS 13+; Firebase and some ad SDKs
 have moved to 15+ in recent releases) and raise it if `pod install` or the
 Xcode build complains.
 
-## 7. Verify before handing off to plan 005/006
+## 7. AdMob (plan 022)
+
+The app shows a rewarded ad (out-of-lives dialog), interstitials at three
+"run finished" break points, adaptive banners, a 300×250 rectangle and native
+ads. Everything ships on **Google's public test ids** until the steps below
+are done — test ads always fill and never earn.
+
+**Where the ids live**
+
+| What | Where |
+|---|---|
+| Ad unit ids (six per platform) | `lib/core/ads/ad_unit_ids.dart` — the only Dart file with an ad unit id |
+| iOS App ID | `ios/Runner/Info.plist` → `GADApplicationIdentifier` |
+| Android App ID | `android/app/src/main/AndroidManifest.xml` → `com.google.android.gms.ads.APPLICATION_ID` |
+
+**Ad units to create** (once per platform):
+
+| Unit name | Format | Constant in `AdUnitIds` | Used by |
+|---|---|---|---|
+| `interstitial_break` | Interstitial | `interstitial` | Level Complete, Duel Result, Daily Result exits |
+| `banner_anchored` | Banner (adaptive) | `anchoredBanner` | Level Map, Category Detail, Stats, Achievements |
+| `banner_rectangle` | Banner (300×250) | `rectangleBanner` | Daily tab |
+| `native_feed` | Native advanced | `nativeFeed` | Home feed, Ranks list |
+| `native_result` | Native advanced | `nativeResult` | Level Complete, Duel Result, Daily Result |
+| `rewarded_heart` | Rewarded | `rewardedHeart` | Out-of-lives dialog |
+
+**Console checklist** (none of this can be done from code):
+
+1. AdMob: create the iOS and Android apps and the twelve ad units; paste the
+   ids into the three places above.
+2. AdMob → Privacy & messaging: publish a **European regulations (GDPR)**
+   message, a **US states** message if targeting the US, and an **IDFA
+   explainer** for iOS. Without published messages the consent form never
+   appears (and the ATT prompt is never triggered).
+3. AdMob → Blocking controls: block sensitive categories (gambling, dating,
+   alcohol, …). The app itself requests a max ad content rating of **PG**
+   (`_initializeAdsSdk` in `lib/app/app.dart`).
+4. AdMob → `interstitial_break`: add a frequency cap as a server-side
+   backstop (e.g. 1 impression per 2 minutes per user).
+5. AdMob → `banner_anchored`: leave refresh at Google-optimised or 60 s —
+   never under 30 s.
+6. Link the AdMob apps to the Firebase project.
+7. Host an `app-ads.txt` on the developer website named in both store
+   listings.
+8. Play Console: declare the advertising ID and update Data safety. App Store
+   Connect: update the App Privacy answers for advertising data.
+9. Compare `SKAdNetworkItems` in `Info.plist` with Google's current list.
+10. Firebase Remote Config: add the ten `ads_*` keys (doc 02 §3).
+
+**Kill switches:** `ads_enabled=false` turns off every interstitial, banner
+and native ad on the next launch; `ads_disabled_placements` turns off single
+placements. Neither affects the rewarded heart ad.
+
+## 8. Verify before handing off to plan 005/006
 
 Once steps 1-6 are done:
 

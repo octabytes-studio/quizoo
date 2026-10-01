@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:quizoo/app/ads_cubit.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/ads/inline_ad_service.dart';
 import 'package:quizoo/core/content_language/content_language_api.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/ladder/ladder_config_api.dart';
@@ -20,6 +22,7 @@ import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/settings/data/settings_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_ads.dart';
 import 'pump_app.dart';
 
 /// A no-op stand-in for the real `AuthApi`/`QuizPlayApi`/`ContentLanguageApi`,
@@ -47,9 +50,13 @@ class FakeDuelRealtime extends Mock implements DuelRealtime {}
 ///
 /// Screens read these off the root — `SessionCubit`, `AuthRepository`,
 /// `QuizPlayRepository`, `SettingsRepository` (plan 007), (plan 004)
-/// `ConnectivityCubit`, and (plan 017) `DuelRealtime` + `ServerClock` — so a
-/// widget test that pumps one without them is testing a different widget
-/// than the one that ships.
+/// `ConnectivityCubit`, (plan 017) `DuelRealtime` + `ServerClock`, and (plan
+/// 022) `AdsCubit` + `InlineAdService` — so a widget test that pumps one
+/// without them is testing a different widget than the one that ships.
+///
+/// Ads default to **off** ([FakeAdsCubit] in `AdsDisabled`), so a screen
+/// renders exactly as it did before ads existed; pass `ads:
+/// FakeAdsCubit.ready()` to exercise a screen's ad slots and breaks.
 ///
 /// A [GoRouter] is stood up too, because these screens navigate: `context.pop`
 /// and `context.push` need a router above them, and a bare `MaterialApp` has
@@ -69,6 +76,8 @@ extension PumpScreen on WidgetTester {
     DuelRealtime? duelRealtime,
     ServerClock? serverClock,
     LadderConfigRepository? ladderConfig,
+    AdsCubit? ads,
+    InlineAdService? inlineAds,
   }) async {
     final auth = authRepository ?? await _fakeAuthRepository();
     // `QuizPlayScreen` builds a real `StoredAudioTtsService` inline (it isn't
@@ -108,6 +117,9 @@ extension PumpScreen on WidgetTester {
           RepositoryProvider<LadderConfigRepository>.value(
             value: ladderConfig ?? _fakeLadderConfigRepository(),
           ),
+          RepositoryProvider<InlineAdService>.value(
+            value: inlineAds ?? FakeInlineAdService(),
+          ),
         ],
         child: MultiBlocProvider(
           providers: [
@@ -120,6 +132,7 @@ extension PumpScreen on WidgetTester {
             BlocProvider<ContentLanguageCubit>.value(
               value: contentLanguageCubit,
             ),
+            BlocProvider<AdsCubit>.value(value: ads ?? FakeAdsCubit()),
           ],
           child: _RouterHost(child: screen),
         ),

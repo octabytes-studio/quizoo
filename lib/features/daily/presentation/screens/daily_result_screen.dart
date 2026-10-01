@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/ads_cubit.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -10,6 +13,7 @@ import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/distribution_chart.dart';
+import 'package:quizoo/core/widgets/native_ad_card.dart';
 import 'package:quizoo/core/widgets/result_wash.dart';
 import 'package:quizoo/core/widgets/share_sheet.dart';
 import 'package:quizoo/features/daily/domain/daily_result.dart';
@@ -32,6 +36,10 @@ class DailyResultScreen extends StatefulWidget {
 }
 
 class _DailyResultScreenState extends State<DailyResultScreen> {
+  /// True while the exit is in flight (an interstitial may be up) — a second
+  /// tap is ignored. Ephemeral UI state, never rendered.
+  bool _isLeaving = false;
+
   @override
   void initState() {
     super.initState();
@@ -42,15 +50,32 @@ class _DailyResultScreenState extends State<DailyResultScreen> {
     await celebrateBadges(context, widget.result.newlyEarnedBadgeIds);
   }
 
+  /// The day's run is over, so leaving is a natural break for an
+  /// interstitial (plan 022, I3) — never on a day that just earned a badge.
+  Future<void> _leave() async {
+    if (_isLeaving) return;
+    _isLeaving = true;
+    await context.read<AdsCubit>().showInterstitialIfDue(
+      AdPlacement.dailyResultBreak,
+      isCelebration: widget.result.newlyEarnedBadgeIds.isNotEmpty,
+    );
+    if (!mounted) return;
+    _isLeaving = false;
+    context.pop();
+  }
+
   @override
   Widget build(BuildContext context) =>
-      _DailyResultLoadedView(result: widget.result);
+      _DailyResultLoadedView(result: widget.result, onLeave: _leave);
 }
 
 class _DailyResultLoadedView extends StatelessWidget {
-  const _DailyResultLoadedView({required this.result});
+  const _DailyResultLoadedView({required this.result, required this.onLeave});
 
   final DailyResult result;
+
+  /// ✕ and "Back to daily".
+  final VoidCallback onLeave;
 
   void _share(BuildContext context) {
     AppBottomSheet.show<void>(
@@ -97,7 +122,7 @@ class _DailyResultLoadedView extends StatelessWidget {
 
     return ResultWash(
       accent: quizoo.g,
-      onClose: context.pop,
+      onClose: onLeave,
       onShare: () => _share(context),
       actions: [
         ChunkyButton.secondary(
@@ -107,7 +132,7 @@ class _DailyResultLoadedView extends StatelessWidget {
         SizedBox(height: 9.h),
         ChunkyButton.line(
           label: l10n.dailyResultBackToDaily,
-          onPressed: context.pop,
+          onPressed: onLeave,
         ),
       ],
       child: Column(
@@ -169,6 +194,10 @@ class _DailyResultLoadedView extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          NativeAdCard(
+            placement: AdPlacement.dailyResultNative,
+            padding: EdgeInsets.only(top: AppSpacing.base.h),
           ),
           SizedBox(height: AppSpacing.xl.h),
         ],

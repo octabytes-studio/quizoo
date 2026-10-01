@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -16,6 +17,7 @@ import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
+import 'package:quizoo/core/widgets/medium_rectangle_ad.dart';
 import 'package:quizoo/core/widgets/section_header.dart';
 import 'package:quizoo/core/widgets/skeleton_box.dart';
 import 'package:quizoo/features/daily/data/daily_api.dart';
@@ -146,6 +148,10 @@ class _DailyContent extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
           child: _StreakCard(streak: state.streak),
+        ),
+        MediumRectangleAd(
+          placement: AdPlacement.dailyTabRectangle,
+          padding: EdgeInsets.only(top: AppSpacing.xl.h),
         ),
         SizedBox(height: AppSpacing.xl.h),
         SectionHeader(title: l10n.dailyMilestones),

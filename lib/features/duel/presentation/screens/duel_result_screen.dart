@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/ads_cubit.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -12,6 +14,7 @@ import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
+import 'package:quizoo/core/widgets/native_ad_tile.dart';
 import 'package:quizoo/core/widgets/result_wash.dart';
 import 'package:quizoo/features/duel/data/duel_api.dart';
 import 'package:quizoo/features/duel/data/duel_realtime.dart';
@@ -179,7 +182,10 @@ class _DuelResultScreenState extends State<DuelResultScreen> {
 
 /// The result itself — headline, scoreline, captions and stats — over the
 /// rematch control a provider above supplied.
-class _DuelResultView extends StatelessWidget {
+///
+/// A `StatefulWidget` only for [_DuelResultViewState._isLeaving], the
+/// re-entrancy guard on its two exits.
+class _DuelResultView extends StatefulWidget {
   const _DuelResultView({required this.result, required this.rematch});
 
   final DuelResult result;
@@ -187,7 +193,30 @@ class _DuelResultView extends StatelessWidget {
   /// Null when there is nothing to rematch.
   final Widget? rematch;
 
-  void _close(BuildContext context) {
+  @override
+  State<_DuelResultView> createState() => _DuelResultViewState();
+}
+
+class _DuelResultViewState extends State<_DuelResultView> {
+  /// True while an exit is in flight (an interstitial may be up) — a second
+  /// tap on either exit is ignored. Ephemeral UI state, never rendered.
+  bool _isLeaving = false;
+
+  /// The match is over and nothing is time-critical yet, so leaving is a
+  /// natural break for an interstitial (plan 022, I2). **Rematches never
+  /// come through here**: a live rematch has a server-side window and a
+  /// synced clock, so nothing full-screen may sit in its way.
+  Future<void> _showBreakAd() => context.read<AdsCubit>().showInterstitialIfDue(
+    AdPlacement.duelResultBreak,
+    isCelebration: widget.result.newlyEarnedBadgeIds.isNotEmpty,
+  );
+
+  Future<void> _close() async {
+    if (_isLeaving) return;
+    _isLeaving = true;
+    await _showBreakAd();
+    if (!mounted) return;
+    _isLeaving = false;
     if (context.canPop()) {
       context.pop();
     } else {
@@ -197,19 +226,30 @@ class _DuelResultView extends StatelessWidget {
 
   /// Matchmaking in the same topic; a result without one asks first, and a
   /// dismissed picker stays here.
-  Future<void> _findNewOpponent(BuildContext context) async {
+  Future<void> _findNewOpponent() async {
+    if (_isLeaving) return;
+    _isLeaving = true;
     final topic =
-        result.topic ??
+        widget.result.topic ??
         await DuelTopicPickerSheet.show(
           context,
           purpose: DuelTopicPurpose.matchmake,
         );
-    if (topic == null || !context.mounted) return;
+    if (!mounted) return;
+    if (topic == null) {
+      _isLeaving = false;
+      return;
+    }
+    await _showBreakAd();
+    if (!mounted) return;
+    _isLeaving = false;
     context.pushReplacement(AppRoutes.duelMatchmaking, extra: topic);
   }
 
   @override
   Widget build(BuildContext context) {
+    final result = widget.result;
+    final rematch = widget.rematch;
     final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
@@ -230,7 +270,7 @@ class _DuelResultView extends StatelessWidget {
 
     return ResultWash(
       accent: accent,
-      onClose: () => _close(context),
+      onClose: _close,
       actions: [
         if (rematchControl != null) ...[
           rematchControl,
@@ -238,7 +278,7 @@ class _DuelResultView extends StatelessWidget {
         ],
         ChunkyButton.line(
           label: l10n.duelResultFindNew,
-          onPressed: () => _findNewOpponent(context),
+          onPressed: _findNewOpponent,
         ),
       ],
       child: Column(
@@ -325,6 +365,10 @@ class _DuelResultView extends StatelessWidget {
                 ],
               ],
             ),
+          ),
+          NativeAdTile(
+            placement: AdPlacement.duelResultNative,
+            padding: EdgeInsets.only(top: AppSpacing.base.h),
           ),
           SizedBox(height: AppSpacing.xl.h),
         ],

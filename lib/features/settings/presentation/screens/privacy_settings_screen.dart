@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/app/ads_cubit.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/simple_top_bar.dart';
+import 'package:quizoo/features/settings/presentation/widgets/settings_row.dart';
 import 'package:quizoo/features/settings/presentation/widgets/settings_toggle_row.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
@@ -28,6 +31,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
+    // Google requires a way back into its privacy options form wherever that
+    // form applies (plan 022) — and nowhere else, so the row is conditional.
+    final showAdChoices = context.select<AdsCubit, bool>(
+      (cubit) => switch (cubit.state) {
+        AdsReady(:final privacyOptionsRequired) => privacyOptionsRequired,
+        AdsInitial() || AdsDisabled() => false,
+      },
+    );
 
     return Scaffold(
       backgroundColor: quizoo.s0,
@@ -55,6 +66,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                     onChanged: (value) =>
                         setState(() => _showActivityToFriends = value),
                   ),
+                  if (showAdChoices) ...[
+                    SizedBox(height: AppSpacing.sm.h),
+                    SettingsRow(
+                      title: l10n.privacyAdChoices,
+                      onTap: () =>
+                          context.read<AdsCubit>().showPrivacyOptions(),
+                    ),
+                  ],
                 ],
               ),
             ),

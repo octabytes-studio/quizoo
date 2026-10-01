@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/ads_cubit.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -12,6 +14,7 @@ import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/list_row_tile.dart';
+import 'package:quizoo/core/widgets/native_ad_tile.dart';
 import 'package:quizoo/core/widgets/segmented_tabs.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
 import 'package:quizoo/features/leaderboard/data/leaderboard_api.dart';
@@ -171,6 +174,17 @@ class _LeaderboardRoster extends StatelessWidget {
     final podium = state.podium;
     final rows = state.remainingRows;
     final localeName = Localizations.localeOf(context).toLanguageTag();
+    // The native row sits this many rows down the list — clear of the podium
+    // above and the pinned self row below (plan 022, N2). Null: no ad.
+    final adAfterRow = context.select<AdsCubit, int?>(
+      (cubit) => switch (cubit.state) {
+        AdsReady(:final config)
+            when cubit.isPlacementEnabled(AdPlacement.ranksFeedNative) &&
+                rows.length > config.ranksNativeAfterRow =>
+          config.ranksNativeAfterRow,
+        AdsInitial() || AdsDisabled() || AdsReady() => null,
+      },
+    );
 
     if (state.roster.isEmpty) {
       final l10n = AppLocalizations.of(context);
@@ -195,11 +209,17 @@ class _LeaderboardRoster extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
           child: Column(
             children: [
-              for (final entry in rows)
+              for (final (index, entry) in rows.indexed) ...[
+                if (index == adAfterRow)
+                  NativeAdTile(
+                    placement: AdPlacement.ranksFeedNative,
+                    padding: EdgeInsets.only(bottom: AppSpacing.sm.h),
+                  ),
                 Padding(
                   padding: EdgeInsets.only(bottom: AppSpacing.sm.h),
                   child: _LeaderboardRow(entry: entry, localeName: localeName),
                 ),
+              ],
             ],
           ),
         ),

@@ -2004,4 +2004,10 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get masteryShareTitle => 'Share your mastery';
+
+  @override
+  String get adLabel => 'اشتہار';
+
+  @override
+  String get privacyAdChoices => 'اشتہارات کی رازداری کے اختیارات';
 }

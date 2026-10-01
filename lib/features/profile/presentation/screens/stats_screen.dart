@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
+import 'package:quizoo/core/widgets/anchored_banner_ad.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
@@ -75,6 +77,16 @@ class _StatsView extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+      // Only beside real content (plan 022, B3).
+      bottomNavigationBar: BlocBuilder<StatsCubit, StatsState>(
+        builder: (context, state) => AnchoredBannerAd(
+          placement: AdPlacement.statsBanner,
+          isVisible: switch (state) {
+            StatsLoaded() => true,
+            StatsInitial() || StatsLoading() || StatsError() => false,
+          },
         ),
       ),
     );

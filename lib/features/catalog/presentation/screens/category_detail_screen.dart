@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/models/category.dart';
@@ -15,6 +16,7 @@ import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
+import 'package:quizoo/core/widgets/anchored_banner_ad.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/section_header.dart';
@@ -69,6 +71,19 @@ class _CategoryDetailView extends StatelessWidget {
           ),
         },
       ),
+      // Only beside real content (plan 022, B2).
+      bottomNavigationBar:
+          BlocBuilder<CategoryDetailCubit, CategoryDetailState>(
+            builder: (context, state) => AnchoredBannerAd(
+              placement: AdPlacement.categoryDetailBanner,
+              isVisible: switch (state) {
+                CategoryDetailLoaded() => true,
+                CategoryDetailInitial() ||
+                CategoryDetailLoading() ||
+                CategoryDetailError() => false,
+              },
+            ),
+          ),
     );
   }
 }

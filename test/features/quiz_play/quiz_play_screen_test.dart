@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
@@ -7,10 +8,12 @@ import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
+import 'package:quizoo/core/widgets/inline_ad_slot.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
+import 'package:quizoo/features/quiz_play/presentation/bloc/heart_ad_cubit.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/feedback_banner.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/out_of_lives_dialog.dart';
@@ -22,6 +25,7 @@ import 'package:quizoo/features/quiz_play/presentation/widgets/timer_ring.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/fake_ads.dart';
 import '../../support/pump_app.dart';
 import '../../support/pump_screen.dart';
 
@@ -402,5 +406,52 @@ void main() {
         await tester.pump(const Duration(seconds: 30));
       },
     );
+
+    testWidgets('plan 022: the play surface never hosts or requests an ad', (
+      tester,
+    ) async {
+      final ads = FakeAdsCubit.ready();
+      final inlineAds = FakeInlineAdService(fills: true);
+      await tester.pumpScreen(
+        QuizPlayScreen(levelId: levelId),
+        quizPlayRepository: fakeQuizPlayRepository(),
+        ads: ads,
+        inlineAds: inlineAds,
+      );
+      // Through the countdown and into a live question.
+      for (var second = 0; second < 5; second++) {
+        await tester.pump(const Duration(seconds: 1));
+      }
+
+      expect(find.byType(AnswerOption), findsNWidgets(4));
+      expect(find.byType(InlineAdSlot), findsNothing);
+      expect(inlineAds.requests, isEmpty);
+      expect(ads.breaks, isEmpty);
+
+      await tester.pump(const Duration(seconds: 30));
+    });
+
+    testWidgets('plan 022: a rewarded ad that starts playing is reported to '
+        'the interstitial pacer', (tester) async {
+      final ads = FakeAdsCubit.ready();
+      await tester.pumpScreen(
+        QuizPlayScreen(levelId: levelId, entry: QuizPlayEntry.outOfLives),
+        quizPlayRepository: fakeQuizPlayRepository(),
+        ads: ads,
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+
+      tester
+          .element(find.byType(OutOfLivesDialog))
+          .read<HeartAdCubit>()
+          .emit(const HeartAdPlaying());
+      await tester.pump();
+
+      expect(ads.fullScreenAdsNoted, 1);
+      expect(ads.breaks, isEmpty);
+
+      await tester.pump(const Duration(seconds: 30));
+    });
   });
 }

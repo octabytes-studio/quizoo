@@ -23,6 +23,7 @@ import 'package:quizoo/features/quiz_result/presentation/screens/level_failed_sc
 import 'package:quizoo/features/quiz_result/presentation/widgets/stars_row.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
+import '../support/fake_ads.dart';
 import '../support/pump_app.dart';
 
 /// The literal "core loop" the whole design bible is built around:
@@ -64,7 +65,11 @@ void main() {
   Future<GoRouter> bootToHome(WidgetTester tester) async {
     final router = AppRouter.create()..go(AppRoutes.home);
     await tester.pumpWidget(
-      QuizooApp(router: router, preferences: await testPreferences()),
+      QuizooApp(
+        router: router,
+        preferences: await testPreferences(),
+        adsCubit: FakeAdsCubit(),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.byType(HomeScreen), findsOneWidget);

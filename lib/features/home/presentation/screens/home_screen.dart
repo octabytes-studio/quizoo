@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/ads_cubit.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/core/ads/ad_placement.dart';
+import 'package:quizoo/core/ads/inline_ad_layout.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/content_language/languages_api.dart';
@@ -20,6 +23,7 @@ import 'package:quizoo/core/widgets/category_section_header.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
+import 'package:quizoo/core/widgets/native_ad_tile.dart';
 import 'package:quizoo/core/widgets/section_header.dart';
 import 'package:quizoo/core/widgets/subcategory_card.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
@@ -456,6 +460,28 @@ class _HomeContentView extends StatelessWidget {
         ),
     ];
 
+    // Native ad rows sit between category sections, never inside one (plan
+    // 022, N1). Where they go is remote config; with ads off, or this
+    // placement switched off, the feed is sections only.
+    final rows = context.select<AdsCubit, List<int?>>(
+      (cubit) => switch (cubit.state) {
+        AdsReady(:final config)
+            when cubit.isPlacementEnabled(AdPlacement.homeFeedNative) =>
+          interleaveAdRows(
+            itemCount: sections.length,
+            firstAfter: config.homeNativeFirstSection,
+            every: config.homeNativeEverySections,
+            max: config.homeNativeMax,
+          ),
+        AdsInitial() || AdsDisabled() || AdsReady() => interleaveAdRows(
+          itemCount: sections.length,
+          firstAfter: 0,
+          every: 0,
+          max: 0,
+        ),
+      },
+    );
+
     // A builder, not a literal children list: fourteen sections each holding
     // their own horizontal rail is Home's real performance risk, so
     // off-screen sections must not be built at all.
@@ -463,13 +489,25 @@ class _HomeContentView extends StatelessWidget {
       // Each language keeps its own scroll offset; a new one starts at the top.
       key: PageStorageKey<String>('home-content-${state.languageCode}'),
       padding: EdgeInsets.only(bottom: AppSpacing.xl.h),
-      itemCount: leading.length + sections.length,
+      itemCount: leading.length + rows.length,
       itemBuilder: (context, index) {
         if (index < leading.length) return leading[index];
-        final section = sections[index - leading.length];
+        final contentIndex = rows[index - leading.length];
+        if (contentIndex == null) {
+          return NativeAdTile(
+            placement: AdPlacement.homeFeedNative,
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.screenMargin.w,
+              AppSpacing.md.h,
+              AppSpacing.screenMargin.w,
+              0,
+            ),
+          );
+        }
+        final section = sections[contentIndex];
         return _CategorySection(
           section: section,
-          isFirst: index == leading.length,
+          isFirst: contentIndex == 0,
           onHeaderTap: () =>
               context.push(AppRoutes.categoryDetailPath(section.category.id)),
           onTopicTap: onSubcategoryTap,
