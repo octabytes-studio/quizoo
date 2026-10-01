@@ -154,6 +154,7 @@ class _LiveDuelViewState extends State<_LiveDuelView>
   @override
   Widget build(BuildContext context) {
     final arena = context.arena;
+    final languageCode = context.read<ContentLanguageCubit>().state.code;
     final bloc = context.read<LiveDuelBloc>();
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -193,6 +194,7 @@ class _LiveDuelViewState extends State<_LiveDuelView>
                       onQuit: _onQuitRequested,
                     ),
                     final LiveDuelRound round => DuelRoundView(
+                      languageCode: languageCode,
                       me: round.me,
                       opponent: round.opponent,
                       myScore: round.myScore,

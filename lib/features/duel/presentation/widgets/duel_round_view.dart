@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/content_language/language_direction.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -10,6 +11,7 @@ import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
+import 'package:quizoo/core/widgets/content_language_scope.dart';
 import 'package:quizoo/features/duel/domain/duel_player.dart';
 import 'package:quizoo/features/duel/domain/duel_question.dart';
 import 'package:quizoo/features/duel/presentation/widgets/duel_audio_button.dart';
@@ -51,6 +53,7 @@ class DuelRoundView extends StatelessWidget {
     required this.question,
     required this.secondsRemaining,
     required this.secondsTotal,
+    required this.languageCode,
     super.key,
     this.myChoice,
     this.mySeconds,
@@ -77,6 +80,10 @@ class DuelRoundView extends StatelessWidget {
   final DuelQuestion? question;
   final int secondsRemaining;
   final int secondsTotal;
+
+  /// The content language the duel's questions are in — the question card
+  /// and options follow its direction and script, not the UI locale's.
+  final String languageCode;
   final int? myChoice;
   final int? mySeconds;
   final bool opponentLocked;
@@ -127,6 +134,9 @@ class DuelRoundView extends StatelessWidget {
     final canAnswer =
         answer != null && current != null && !_myLocked && !isRevealed;
     final opponentName = opponent.displayName(l10n);
+    final keys = textDirectionFor(languageCode) == TextDirection.rtl
+        ? Question.urduKeys
+        : Question.latinKeys;
 
     return Column(
       children: [
@@ -230,10 +240,18 @@ class DuelRoundView extends StatelessWidget {
                 children: [
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl.w),
-                    child: _QuestionCard(
-                      text: current?.text ?? l10n.duelGetReady,
-                      isDanger: isDanger,
-                    ),
+                    child: current == null
+                        ? _QuestionCard(
+                            text: l10n.duelGetReady,
+                            isDanger: isDanger,
+                          )
+                        : ContentLanguageScope(
+                            languageCode: languageCode,
+                            child: _QuestionCard(
+                              text: current.text,
+                              isDanger: isDanger,
+                            ),
+                          ),
                   ),
                   Expanded(
                     child: Stack(
@@ -241,52 +259,52 @@ class DuelRoundView extends StatelessWidget {
                         Positioned.fill(
                           child: current == null
                               ? const SizedBox.shrink()
-                              : SingleChildScrollView(
-                                  padding: EdgeInsets.fromLTRB(
-                                    AppSpacing.lg.w,
-                                    AppSpacing.md.h,
-                                    AppSpacing.lg.w,
-                                    AppSpacing.xxl.h * 2,
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      for (
-                                        var index = 0;
-                                        index < current.options.length;
-                                        index++
-                                      )
-                                        _StaggeredEntrance(
-                                          index: index,
-                                          child: Padding(
-                                            padding: EdgeInsets.only(
-                                              bottom: AppSpacing.sm.h,
-                                            ),
-                                            child: _OptionTile(
-                                              label: current.options[index],
-                                              optionKey:
-                                                  Question.latinKeys[index %
-                                                      Question
-                                                          .latinKeys
-                                                          .length],
-                                              state: _optionState(index),
-                                              showHourglass:
-                                                  !isRevealed &&
-                                                  myChoice == index,
-                                              pickedBy: [
-                                                if (isRevealed &&
-                                                    myChoice == index)
-                                                  me.avatarEmoji,
-                                                if (isRevealed &&
-                                                    opponentChoice == index)
-                                                  opponent.avatarEmoji,
-                                              ],
-                                              onPressed: canAnswer
-                                                  ? () => answer(index)
-                                                  : null,
+                              : ContentLanguageScope(
+                                  languageCode: languageCode,
+                                  child: SingleChildScrollView(
+                                    padding: EdgeInsets.fromLTRB(
+                                      AppSpacing.lg.w,
+                                      AppSpacing.md.h,
+                                      AppSpacing.lg.w,
+                                      AppSpacing.xxl.h * 2,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        for (
+                                          var index = 0;
+                                          index < current.options.length;
+                                          index++
+                                        )
+                                          _StaggeredEntrance(
+                                            index: index,
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                bottom: AppSpacing.sm.h,
+                                              ),
+                                              child: _OptionTile(
+                                                label: current.options[index],
+                                                optionKey:
+                                                    keys[index % keys.length],
+                                                state: _optionState(index),
+                                                showHourglass:
+                                                    !isRevealed &&
+                                                    myChoice == index,
+                                                pickedBy: [
+                                                  if (isRevealed &&
+                                                      myChoice == index)
+                                                    me.avatarEmoji,
+                                                  if (isRevealed &&
+                                                      opponentChoice == index)
+                                                    opponent.avatarEmoji,
+                                                ],
+                                                onPressed: canAnswer
+                                                    ? () => answer(index)
+                                                    : null,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                         ),

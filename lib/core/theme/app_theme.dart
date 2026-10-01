@@ -140,4 +140,27 @@ abstract final class AppTheme {
       ),
     );
   }
+
+  /// Re-types an already-[localize]d [theme] for text in [contentLocale]
+  /// rather than the UI's [uiLocale] — an Urdu question under an English UI
+  /// needs Nastaliq and its taller leading, and an English question under an
+  /// Urdu UI needs the Latin families back.
+  ///
+  /// Returns [theme] untouched when both locales share a script, which is the
+  /// common case.
+  static ThemeData forContent(
+    ThemeData theme, {
+    required Locale uiLocale,
+    required Locale contentLocale,
+  }) {
+    bool isNastaliq(Locale locale) =>
+        AppTypography.nastaliqLanguages.contains(locale.languageCode);
+
+    final contentIsNastaliq = isNastaliq(contentLocale);
+    if (isNastaliq(uiLocale) == contentIsNastaliq) return theme;
+    if (contentIsNastaliq) return localize(theme, contentLocale);
+
+    final plain = theme.brightness == Brightness.dark ? dark : light;
+    return theme.copyWith(textTheme: plain.textTheme);
+  }
 }

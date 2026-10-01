@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
+import 'package:quizoo/core/content_language/language_direction.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -18,6 +19,7 @@ import 'package:quizoo/core/widgets/answer_option.dart';
 import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
+import 'package:quizoo/core/widgets/content_language_scope.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/report_question_sheet.dart';
 import 'package:quizoo/features/daily/data/daily_api.dart';
@@ -395,8 +397,10 @@ class _QuestionView extends StatelessWidget {
     final arena = context.arena;
     final quizoo = context.quizoo;
     final cubit = context.read<QuizPlayCubit>();
-    final textTheme = Theme.of(context).textTheme;
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    // The question and its options follow the language the question is in,
+    // not the UI locale — the run was fetched in exactly this language.
+    final languageCode = context.read<ContentLanguageCubit>().state.code;
+    final isRtl = textDirectionFor(languageCode) == TextDirection.rtl;
     final keys = isRtl ? Question.urduKeys : Question.latinKeys;
 
     final hasImage = state.question.hasImage;
@@ -470,14 +474,20 @@ class _QuestionView extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(22.r),
                     ),
-                    child: Text(
-                      state.question.text,
-                      // The full question always renders — the options
-                      // below live in their own `Expanded` scroll view, so a
-                      // long question shrinking that space never overflows
-                      // the arena.
-                      style: textTheme.headlineSmall!.copyWith(
-                        color: arena.onArena,
+                    child: ContentLanguageScope(
+                      languageCode: languageCode,
+                      // Read inside the scope, so an RTL question gets the
+                      // Nastaliq question style rather than the UI's.
+                      child: Builder(
+                        builder: (context) => Text(
+                          state.question.text,
+                          // The full question always renders — the options
+                          // below live in their own `Expanded` scroll view,
+                          // so a long question shrinking that space never
+                          // overflows the arena.
+                          style: Theme.of(context).textTheme.headlineSmall!
+                              .copyWith(color: arena.onArena),
+                        ),
                       ),
                     ),
                   ),
@@ -495,34 +505,38 @@ class _QuestionView extends StatelessWidget {
                 // criteria).
                 if (state.phase != QuestionPhase.speaking)
                   Expanded(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 0),
-                      child: Column(
-                        children: [
-                          for (
-                            var index = 0;
-                            index < state.question.options.length;
-                            index++
-                          )
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 10.h),
-                              child: _RevealingOption(
-                                index: index,
-                                isRevealing:
-                                    state.phase == QuestionPhase.revealing,
-                                child: AnswerOption(
-                                  label: state.question.options[index],
-                                  optionKey: keys[index % keys.length],
-                                  state: _optionState(index),
-                                  onPressed:
-                                      state.isAwaitingAnswer &&
-                                          state.phase == QuestionPhase.answering
-                                      ? () => cubit.answer(index)
-                                      : null,
+                    child: ContentLanguageScope(
+                      languageCode: languageCode,
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 0),
+                        child: Column(
+                          children: [
+                            for (
+                              var index = 0;
+                              index < state.question.options.length;
+                              index++
+                            )
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 10.h),
+                                child: _RevealingOption(
+                                  index: index,
+                                  isRevealing:
+                                      state.phase == QuestionPhase.revealing,
+                                  child: AnswerOption(
+                                    label: state.question.options[index],
+                                    optionKey: keys[index % keys.length],
+                                    state: _optionState(index),
+                                    onPressed:
+                                        state.isAwaitingAnswer &&
+                                            state.phase ==
+                                                QuestionPhase.answering
+                                        ? () => cubit.answer(index)
+                                        : null,
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   )
