@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/format/difficulty_label.dart';
@@ -11,6 +12,7 @@ import 'package:quizoo/core/models/level.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_route_observer.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/subscription/paywall_source.dart';
 import 'package:quizoo/core/theme/app_elevation.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -19,6 +21,7 @@ import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/anchored_banner_ad.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
+import 'package:quizoo/core/widgets/pro_upsell_sheet.dart';
 import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/skeleton_box.dart';
@@ -64,6 +67,7 @@ class LevelMapScreen extends StatelessWidget {
             categoryId: categoryId,
             subcategoryId: subcategoryId,
             locale: locale,
+            isPro: context.read<SubscriptionCubit>().state.isPro,
           ),
       child: _LevelMapView(
         categoryId: categoryId,
@@ -122,6 +126,7 @@ class _LevelMapViewState extends State<_LevelMapView> with RouteAware {
       categoryId: widget.categoryId,
       subcategoryId: widget.subcategoryId,
       locale: context.read<ContentLanguageCubit>().state.code,
+      isPro: context.read<SubscriptionCubit>().state.isPro,
     );
   }
 
@@ -129,33 +134,48 @@ class _LevelMapViewState extends State<_LevelMapView> with RouteAware {
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
 
-    return Scaffold(
-      backgroundColor: quizoo.s0,
-      body: SafeArea(
-        child: BlocBuilder<LevelMapCubit, LevelMapState>(
-          builder: (context, state) => switch (state) {
-            LevelMapInitial() || LevelMapLoading() => const _LevelMapSkeleton(),
-            LevelMapError(:final error) => _LevelMapError(
-              errorCode: error.code,
-            ),
-            LevelMapEmpty(:final map) => _LevelMapEmpty(map: map),
-            LevelMapLoaded(:final map) => _LevelMapLoaded(
-              map: map,
-              initialBriefLevelNumber: _initialBriefLevelNumber,
-            ),
-          },
-        ),
+    // Plan 023: the map must open up the moment the player comes back from
+    // the paywall, not after a restart — so a change to the entitlement
+    // reloads with the new `isPro`. `listenWhen` on the flag only.
+    return BlocListener<SubscriptionCubit, SubscriptionState>(
+      listenWhen: (previous, current) => previous.isPro != current.isPro,
+      listener: (context, state) => context.read<LevelMapCubit>().load(
+        categoryId: widget.categoryId,
+        subcategoryId: widget.subcategoryId,
+        locale: context.read<ContentLanguageCubit>().state.code,
+        isPro: state.isPro,
       ),
-      // Stays mounted across `didPopNext`'s Loading → Loaded reload, so
-      // returning from a level neither requests a new ad nor moves the Play
-      // button. Never beside an error or an empty map (plan 022, B1).
-      bottomNavigationBar: BlocBuilder<LevelMapCubit, LevelMapState>(
-        builder: (context, state) => AnchoredBannerAd(
-          placement: AdPlacement.levelMapBanner,
-          isVisible: switch (state) {
-            LevelMapInitial() || LevelMapLoading() || LevelMapLoaded() => true,
-            LevelMapError() || LevelMapEmpty() => false,
-          },
+      child: Scaffold(
+        backgroundColor: quizoo.s0,
+        body: SafeArea(
+          child: BlocBuilder<LevelMapCubit, LevelMapState>(
+            builder: (context, state) => switch (state) {
+              LevelMapInitial() ||
+              LevelMapLoading() => const _LevelMapSkeleton(),
+              LevelMapError(:final error) => _LevelMapError(
+                errorCode: error.code,
+              ),
+              LevelMapEmpty(:final map) => _LevelMapEmpty(map: map),
+              LevelMapLoaded(:final map) => _LevelMapLoaded(
+                map: map,
+                initialBriefLevelNumber: _initialBriefLevelNumber,
+              ),
+            },
+          ),
+        ),
+        // Stays mounted across `didPopNext`'s Loading → Loaded reload, so
+        // returning from a level neither requests a new ad nor moves the
+        // Play button. Never beside an error or an empty map (plan 022, B1).
+        bottomNavigationBar: BlocBuilder<LevelMapCubit, LevelMapState>(
+          builder: (context, state) => AnchoredBannerAd(
+            placement: AdPlacement.levelMapBanner,
+            isVisible: switch (state) {
+              LevelMapInitial() ||
+              LevelMapLoading() ||
+              LevelMapLoaded() => true,
+              LevelMapError() || LevelMapEmpty() => false,
+            },
+          ),
         ),
       ),
     );
@@ -204,6 +224,26 @@ class _LevelMapLoadedState extends State<_LevelMapLoaded> {
     );
   }
 
+  /// True when an upsell is worth showing at all (plan 023): Pro must be
+  /// purchasable on this device and the player must not already have it.
+  bool _canOfferPro(BuildContext context) {
+    final state = context.read<SubscriptionCubit>().state;
+    return state is SubscriptionFree && state.isAvailable;
+  }
+
+  /// The locked-node upsell (plan 023's entry-point table). Names the level
+  /// that must be cleared first so the sheet is useful rather than generic.
+  Future<void> _offerPro(Level level) {
+    final l10n = AppLocalizations.of(context);
+    return ProUpsellSheet.show(
+      context,
+      emoji: '🔓',
+      title: l10n.proUpsellLockedLevelTitle(level.number),
+      message: l10n.proUpsellLockedLevelBody(widget.map.currentLevel.number),
+      source: PaywallSource.lockedLevel,
+    );
+  }
+
   Future<void> _openBrief(BuildContext context, Level level) async {
     final started = await LevelBriefSheet.show(
       context,
@@ -232,6 +272,9 @@ class _LevelMapLoadedState extends State<_LevelMapLoaded> {
               levels: map.levels,
               currentNodeKey: _currentNodeKey,
               onLevelTap: (level) => _openBrief(context, level),
+              // A locked node is inert unless Pro could actually change it —
+              // then it opens the small upsell sheet, not the paywall.
+              onLockedTap: _canOfferPro(context) ? _offerPro : null,
             ),
           ),
         ),

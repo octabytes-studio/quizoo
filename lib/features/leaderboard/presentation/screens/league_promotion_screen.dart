@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
@@ -180,6 +182,10 @@ class _StandingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
+    // Plan 023: own row, so the local entitlement is OR'd in — see `proBadge`.
+    final localIsPro = context.select<SubscriptionCubit, bool>(
+      (cubit) => cubit.state.isPro,
+    );
 
     return Container(
       width: double.infinity,
@@ -204,6 +210,11 @@ class _StandingsCard extends StatelessWidget {
                     : ListRowVariant.player,
                 title: standing.name,
                 leadingEmoji: standing.avatarEmoji,
+                isPro: proBadge(
+                  serverIsPro: standing.isPro,
+                  isSelf: standing.isSelf,
+                  localIsPro: localIsPro,
+                ),
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,

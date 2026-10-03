@@ -178,6 +178,7 @@ final class QuizPlayInProgress extends QuizPlayState {
     required this.powerUps,
     this.feedback = const NoFeedback(),
     this.eliminatedIndexes = const {},
+    this.usedPowerUps = const {},
     this.selectedIndex,
     this.phase = QuestionPhase.answering,
     this.isAudioOn = true,
@@ -196,6 +197,16 @@ final class QuizPlayInProgress extends QuizPlayState {
 
   /// Options removed by 50:50.
   final Set<int> eliminatedIndexes;
+
+  /// Power-ups already fired on **this** question (plan 023, 6.3).
+  ///
+  /// A second 50:50 on the same question would have nothing sensible left to
+  /// remove, so each type may fire at most once per question. Reset by
+  /// `_beginQuestion`; the dock tile for a type in here renders disabled.
+  final Set<PowerUp> usedPowerUps;
+
+  /// True when [powerUp] has already been fired on the current question.
+  bool usedOnThisQuestion(PowerUp powerUp) => usedPowerUps.contains(powerUp);
 
   /// Tapped and awaiting the verdict — the lemon ring on S-11's option.
   final int? selectedIndex;
@@ -235,6 +246,7 @@ final class QuizPlayInProgress extends QuizPlayState {
     PowerUpInventory? powerUps,
     QuestionFeedback? feedback,
     Set<int>? eliminatedIndexes,
+    Set<PowerUp>? usedPowerUps,
     int? selectedIndex,
     QuestionPhase? phase,
     bool? isAudioOn,
@@ -245,6 +257,7 @@ final class QuizPlayInProgress extends QuizPlayState {
     powerUps: powerUps ?? this.powerUps,
     feedback: feedback ?? this.feedback,
     eliminatedIndexes: eliminatedIndexes ?? this.eliminatedIndexes,
+    usedPowerUps: usedPowerUps ?? this.usedPowerUps,
     selectedIndex: selectedIndex ?? this.selectedIndex,
     phase: phase ?? this.phase,
     isAudioOn: isAudioOn ?? this.isAudioOn,
@@ -258,6 +271,7 @@ final class QuizPlayInProgress extends QuizPlayState {
     powerUps,
     feedback,
     eliminatedIndexes,
+    usedPowerUps,
     selectedIndex,
     phase,
     isAudioOn,

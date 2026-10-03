@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quizoo/core/format/app_format.dart';
+import 'package:quizoo/core/widgets/pro_name.dart';
 import 'package:quizoo/core/theme/app_elevation.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -155,10 +156,11 @@ class _IncomingPlate extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          l10n.duelIncomingTitle(requester.displayName(l10n)),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        ProName(
+                          name: l10n.duelIncomingTitle(
+                            requester.displayName(l10n),
+                          ),
+                          isPro: requester.isPro,
                           style: textTheme.titleSmall!.copyWith(
                             color: arena.cardInk,
                           ),

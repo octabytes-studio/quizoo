@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
@@ -330,6 +331,13 @@ class _StreakCard extends StatelessWidget {
     final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
+    // Plan 023, benefit 6: a member's freezes refill to 2 every month, so
+    // the explainer says that instead of the free player's "spend one to
+    // save your streak" line. No data change — `freezesLeft` already comes
+    // from `profiles.streak_freezes`.
+    final isPro = context.select<SubscriptionCubit, bool>(
+      (cubit) => cubit.state.isPro,
+    );
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.base.w - 1.w),
@@ -368,11 +376,20 @@ class _StreakCard extends StatelessWidget {
                           color: quizoo.tx,
                         ),
                       ),
-                      TextSpan(text: ' ${l10n.dailyFreezeExplainer}'),
+                      // Plan 023: the second sentence is the entitlement's.
+                      TextSpan(
+                        text: isPro
+                            ? ' ${l10n.proStreakShieldLine}'
+                            : ' ${l10n.dailyFreezeExplainer}',
+                      ),
                     ],
                   ),
                 ),
               ),
+              if (isPro) ...[
+                SizedBox(width: AppSpacing.sm.w),
+                Text('👑', style: AppTypography.glyph(12.sp)),
+              ],
             ],
           ),
         ],

@@ -300,18 +300,37 @@ class CatalogApi {
   List<Level> _levelsFor(
     Subcategory subcategory,
     Map<int, ({int bestScore, int stars})>? perLevel,
-  ) => [
-    for (var number = 1; number <= subcategory.levelCount; number++)
-      _levelFor(subcategory, number, perLevel?[number]),
-  ];
+  ) {
+    // The "current" node is the lowest level not yet cleared, not
+    // `levelsCleared + 1` (plan 023, 6.2): `levelsCleared` is a *count*, so
+    // once clears can be non-contiguous it can name an already-cleared level.
+    final lowestUncleared = _lowestUncleared(subcategory, perLevel);
+    return [
+      for (var number = 1; number <= subcategory.levelCount; number++)
+        _levelFor(subcategory, number, perLevel?[number], lowestUncleared),
+    ];
+  }
+
+  /// The smallest level number with no completed `level_progress` row, or
+  /// null when every level is cleared.
+  int? _lowestUncleared(
+    Subcategory subcategory,
+    Map<int, ({int bestScore, int stars})>? perLevel,
+  ) {
+    for (var number = 1; number <= subcategory.levelCount; number++) {
+      if (perLevel?[number] == null) return number;
+    }
+    return null;
+  }
 
   Level _levelFor(
     Subcategory subcategory,
     int number,
     ({int bestScore, int stars})? cleared,
+    int? lowestUncleared,
   ) {
     final isCleared = cleared != null;
-    final isCurrent = !isCleared && number == subcategory.levelsCleared + 1;
+    final isCurrent = !isCleared && number == lowestUncleared;
     return Level(
       id: MockCatalog.levelId(subcategory.id, number),
       subcategoryId: subcategory.id,

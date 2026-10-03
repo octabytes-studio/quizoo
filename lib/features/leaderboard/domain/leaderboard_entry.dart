@@ -29,6 +29,10 @@ abstract class LeaderboardEntry with _$LeaderboardEntry {
     /// Set only on the player's own row.
     @Default(false) bool isSelf,
 
+    /// A Quizoo Pro member (plan 023) — drives the crown and the tick. From
+    /// `profiles.is_pro`, written only by the server.
+    @Default(false) bool isPro,
+
     /// "Top N%", shown only on the self row of a global/country board.
     int? topPercent,
 

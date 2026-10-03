@@ -2010,4 +2010,326 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get privacyAdChoices => 'اشتہارات کی رازداری کے اختیارات';
+
+  @override
+  String get proBadgeLabel => 'پرو ممبر';
+
+  @override
+  String get proPaywallTitle => 'کوئزو پرو';
+
+  @override
+  String get proPaywallTagline => 'بغیر حدود کے کھیلیں۔ الگ نظر آئیں۔';
+
+  @override
+  String get proBenefitBadgeTitle => 'پرو بیج';
+
+  @override
+  String get proBenefitBadgeBody =>
+      'آپ کے اوتار پر سنہری تاج اور نام کے بعد تصدیقی نشان، سب کے لیے نظر آنے والا۔';
+
+  @override
+  String get proBenefitAllLevelsTitle => 'ہر لیول کھلا';
+
+  @override
+  String get proBenefitAllLevelsBody =>
+      'کسی بھی موضوع میں کسی بھی لیول پر سیدھا جائیں — پچھلے لیول صاف کرنے کی ضرورت نہیں۔';
+
+  @override
+  String get proBenefitNoAdsTitle => 'کوئی اشتہار نہیں';
+
+  @override
+  String get proBenefitNoAdsBody =>
+      'کوئی بینر نہیں، لیول کے درمیان کوئی وقفہ نہیں۔ دل کا اشتہار موجود رہتا ہے، اگر آپ چاہیں۔';
+
+  @override
+  String get proBenefitFreeReviveTitle => 'مفت جان';
+
+  @override
+  String get proBenefitFreeReviveBody =>
+      'ہر لیول پر فوراً ایک اضافی جان — کوئی اشتہار دیکھنے کی ضرورت نہیں۔';
+
+  @override
+  String get proBenefitDoublePowerUpsTitle => 'دوگنے پاور اپس';
+
+  @override
+  String get proBenefitDoublePowerUpsBody =>
+      'ہر لیول پر 2× 50:50 اور 2× +5 سیکنڈ۔';
+
+  @override
+  String get proBenefitStreakShieldTitle => 'اسٹریک ڈھال';
+
+  @override
+  String get proBenefitStreakShieldBody =>
+      'آپ کے اسٹریک فریز ہر ماہ دوبارہ 2 ہو جاتے ہیں۔';
+
+  @override
+  String get proBenefitAvatarsTitle => 'خصوصی اوتار';
+
+  @override
+  String get proBenefitAvatarsBody => 'صرف پرو ممبرز کے لیے اوتار کا مجموعہ۔';
+
+  @override
+  String get proBenefitAnswerReviewTitle => 'جواب کا جائزہ';
+
+  @override
+  String get proBenefitAnswerReviewBody =>
+      'ہر سوال دوبارہ دیکھیں، درست جواب اور وضاحت کے ساتھ۔';
+
+  @override
+  String get proPlanMonthly => 'ماہانہ';
+
+  @override
+  String get proPlanYearly => 'سالانہ';
+
+  @override
+  String get proPlanLifetime => 'تاحیات';
+
+  @override
+  String get proBestValue => 'بہترین قیمت';
+
+  @override
+  String proSavePercent(int percent) {
+    return '$percent% بچت';
+  }
+
+  @override
+  String proPerMonthLabel(String price) {
+    return '$price فی ماہ';
+  }
+
+  @override
+  String proPricePerYear(String price) {
+    return '$price / سال';
+  }
+
+  @override
+  String proPricePerMonth(String price) {
+    return '$price / ماہ';
+  }
+
+  @override
+  String proPriceOnce(String price) {
+    return '$price ایک بار';
+  }
+
+  @override
+  String get proContinue => 'جاری رکھیں';
+
+  @override
+  String proStartTrial(int days) {
+    return '$days دن کا مفت ٹرائل شروع کریں';
+  }
+
+  @override
+  String get proWorking => 'کام ہو رہا ہے…';
+
+  @override
+  String proDisclosureMonthly(String price) {
+    return '$price فی ماہ، منسوخ کرنے تک خودکار طور پر تجدید ہوتی رہے گی۔';
+  }
+
+  @override
+  String proDisclosureYearly(String price) {
+    return '$price فی سال، منسوخ کرنے تک خودکار طور پر تجدید ہوتی رہے گی۔';
+  }
+
+  @override
+  String get proDisclosureLifetime => 'ایک ادائیگی۔ ہمیشہ کے لیے آپ کی۔';
+
+  @override
+  String get proRestore => 'خریداریاں بحال کریں';
+
+  @override
+  String get proRestoreSuccess => 'خریداریاں بحال ہو گئیں';
+
+  @override
+  String get proTerms => 'استعمال کی شرائط';
+
+  @override
+  String get proPrivacy => 'رازداری کی پالیسی';
+
+  @override
+  String get proNoticeFailed =>
+      'وہ خریداری مکمل نہیں ہو سکی۔ براہ کرم دوبارہ کوشش کریں۔';
+
+  @override
+  String get proNoticeRetry => 'دوبارہ کوشش کریں';
+
+  @override
+  String get proNoticePending =>
+      'آپ کی خریداری منظوری کے انتظار میں ہے۔ منظوری کے فوراً بعد پرو کھل جائے گا۔';
+
+  @override
+  String get proNoticeNothingToRestore =>
+      'اس اکاؤنٹ پر بحال کرنے کے لیے کچھ نہیں ہے۔';
+
+  @override
+  String get proUnavailableTitle => 'یہاں کوئزو پرو دستیاب نہیں';
+
+  @override
+  String get proUnavailableBody =>
+      'فی الحال خریداریاں لوڈ نہیں ہو سکتیں۔ اپنا کنکشن چیک کر کے دوبارہ کوشش کریں۔';
+
+  @override
+  String get proTryAgain => 'دوبارہ کوشش کریں';
+
+  @override
+  String get proWelcomeTitle => 'آپ پرو ہیں!';
+
+  @override
+  String get proWelcomeChipAdsOff => 'اشتہار بند';
+
+  @override
+  String get proWelcomeChipAllLevels => 'تمام لیول کھلے';
+
+  @override
+  String get proWelcomeChipBadge => 'بیج آن';
+
+  @override
+  String get proStartPlaying => 'کھیلنا شروع کریں';
+
+  @override
+  String get proSaveToAccount => 'پرو کو اپنے اکاؤنٹ میں محفوظ کریں';
+
+  @override
+  String get proMembershipActive => 'کوئزو پرو · فعال';
+
+  @override
+  String proMembershipRenewsOn(String date) {
+    return '$date کو تجدید ہوگی';
+  }
+
+  @override
+  String proMembershipEndsOn(String date) {
+    return '$date کو ختم ہوگا';
+  }
+
+  @override
+  String get proMembershipLifetime => 'تاحیات ممبر';
+
+  @override
+  String proMembershipInTrial(String date) {
+    return 'مفت ٹرائل — پہلی وصولی $date کو';
+  }
+
+  @override
+  String get proMembershipNoDate => 'ممبرشپ فعال ہے';
+
+  @override
+  String get proMembershipBillingIssue =>
+      'آپ کی سبسکرپشن میں بلنگ کا مسئلہ ہے۔ پرو برقرار رکھنے کے لیے اپنا ادائیگی کا طریقہ اپ ڈیٹ کریں۔';
+
+  @override
+  String get proManageSubscription => 'سبسکرپشن منظم کریں';
+
+  @override
+  String get proManageFailed =>
+      'اسٹور نہیں کھل سکا۔ آپ اپنی سبسکرپشن اسٹور اکاؤنٹ کی سیٹنگز میں منظم کر سکتے ہیں۔';
+
+  @override
+  String get proRestoreHelper =>
+      'بحال کرنے سے یہ اسٹور خریداری اسی اکاؤنٹ پر لاگو ہوتی ہے جو اس ڈیوائس پر سائن اِن ہے۔';
+
+  @override
+  String get proGoPro => 'پرو لیں';
+
+  @override
+  String get proGoProCardBody =>
+      'ہر لیول کھولیں، اشتہار ہٹائیں، اور سنہری بیج کے ساتھ الگ نظر آئیں۔';
+
+  @override
+  String get proRemoveAds => 'اشتہار ہٹائیں';
+
+  @override
+  String get proUseFreeRevive => 'مفت جان استعمال کریں';
+
+  @override
+  String get proOutOfLivesLink =>
+      'پرو کے ساتھ ہر لیول پر ایک مفت جان حاصل کریں';
+
+  @override
+  String get proReviewAnswers => 'جوابات کا جائزہ لیں';
+
+  @override
+  String get proSettingsRow => 'کوئزو پرو';
+
+  @override
+  String get proNotNow => 'ابھی نہیں';
+
+  @override
+  String get proSeeQuizooPro => 'کوئزو پرو دیکھیں';
+
+  @override
+  String proUpsellLockedLevelTitle(int level) {
+    return 'لیول $level بند ہے';
+  }
+
+  @override
+  String proUpsellLockedLevelBody(int level) {
+    return 'پہلے لیول $level صاف کریں — یا کوئزو پرو کے ساتھ ہر لیول کھولیں۔';
+  }
+
+  @override
+  String get proUpsellAdFreeTitle => 'کوئزو پسند آ رہا ہے؟';
+
+  @override
+  String get proUpsellAdFreeBody => 'کوئزو پرو کے ساتھ بغیر اشتہار کے کھیلیں۔';
+
+  @override
+  String get proAvatarRequired => 'یہ اوتار صرف کوئزو پرو ممبرز کے لیے ہے۔';
+
+  @override
+  String get proUpsellAvatarTitle => 'یہ ایک پرو اوتار ہے';
+
+  @override
+  String get proUpsellAvatarBody =>
+      'پرو ممبر اس اوتار کے ساتھ کھیل سکتے ہیں — اور گیارہ مزید۔';
+
+  @override
+  String get proUpsellReviewTitle => 'جواب کا جائزہ ایک پرو فائدہ ہے';
+
+  @override
+  String get proUpsellReviewBody =>
+      'ہر سوال دوبارہ دیکھیں، درست جواب اور وضاحت کے ساتھ۔';
+
+  @override
+  String get proStreakShieldLine => 'پرو کے ساتھ ہر ماہ 2 تک بحال ہوتا ہے۔';
+
+  @override
+  String get proAvatarSection => 'کوئزو پرو';
+
+  @override
+  String get proLevelOpenCaption => 'کھلا';
+
+  @override
+  String proLevelOpenSemantics(int level) {
+    return 'لیول $level، کھلا — ابھی کھیلنے کے قابل۔';
+  }
+
+  @override
+  String get playErrorLevelLocked =>
+      'یہ لیول ابھی بند ہے — پہلے اپنا ایک صاف کریں۔';
+
+  @override
+  String reviewQuestionNumber(int number, int total) {
+    return 'سوال $number میں سے $total';
+  }
+
+  @override
+  String get reviewTitle => 'جواب کا جائزہ';
+
+  @override
+  String get reviewCorrect => 'درست جواب';
+
+  @override
+  String get reviewYourAnswer => 'آپ کا جواب';
+
+  @override
+  String get reviewTimedOut => 'آپ نے جواب نہیں دیا';
+
+  @override
+  String get reviewExplanation => 'وضاحت';
+
+  @override
+  String get reviewEmpty => 'اس رن میں دیکھنے کے لیے کچھ نہیں ہے۔';
 }

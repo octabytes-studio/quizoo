@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -44,6 +47,11 @@ class MatchIntroView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final opponentName = opponent.displayName(l10n);
+    // Plan 023: `me` is the player's own side, so the local entitlement is
+    // OR'd into its badge (see `proBadge`).
+    final localIsPro = context.select<SubscriptionCubit, bool>(
+      (cubit) => cubit.state.isPro,
+    );
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
@@ -62,8 +70,14 @@ class MatchIntroView extends StatelessWidget {
           VsHeader(
             leftAvatarEmoji: me.avatarEmoji,
             leftName: me.displayName(l10n),
+            leftIsPro: proBadge(
+              serverIsPro: me.isPro,
+              isSelf: true,
+              localIsPro: localIsPro,
+            ),
             leftCaption: _standing(me, l10n),
             rightAvatarEmoji: opponent.avatarEmoji,
+            rightIsPro: opponent.isPro,
             rightName: opponentName,
             rightCaption: _standing(opponent, l10n),
             rightBadge: opponent.isBot ? l10n.duelBotBadge : null,

@@ -23,6 +23,8 @@ import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart
 import 'package:quizoo/features/shell/presentation/widgets/app_tab_bar.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
+import '../support/fake_purchases.dart';
+
 void main() {
   useMockApiFailureRate();
 
@@ -45,6 +47,7 @@ void main() {
         router: router,
         preferences: await testPreferences(),
         adsCubit: FakeAdsCubit(),
+        subscriptionCubit: freeSubscriptionCubit(),
       ),
     );
     await tester.pumpAndSettle();
@@ -116,6 +119,7 @@ void main() {
         QuizooApp(
           preferences: await testPreferences(),
           adsCubit: FakeAdsCubit(),
+          subscriptionCubit: freeSubscriptionCubit(),
         ),
       );
       await tester.pump();
@@ -258,6 +262,7 @@ void main() {
             router: router,
             preferences: preferences,
             adsCubit: FakeAdsCubit(),
+            subscriptionCubit: freeSubscriptionCubit(),
           ),
         ),
       );
@@ -271,6 +276,7 @@ void main() {
             router: router,
             preferences: preferences,
             adsCubit: FakeAdsCubit(),
+            subscriptionCubit: freeSubscriptionCubit(),
           ),
         ),
       );

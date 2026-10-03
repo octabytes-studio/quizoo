@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/widgets/list_row_tile.dart';
@@ -33,6 +36,12 @@ class PinnedSelfRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final localeName = Localizations.localeOf(context).toLanguageTag();
+    // Plan 023: own row, so the local entitlement is OR'd in — the badge
+    // must appear the instant a purchase lands, not when the server catches
+    // up. See `proBadge`.
+    final localIsPro = context.select<SubscriptionCubit, bool>(
+      (cubit) => cubit.state.isPro,
+    );
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -57,6 +66,11 @@ class PinnedSelfRow extends StatelessWidget {
                 entry!.locationLabel ?? '',
               ),
               leadingEmoji: entry!.avatarEmoji,
+              isPro: proBadge(
+                serverIsPro: entry!.isPro,
+                isSelf: true,
+                localIsPro: localIsPro,
+              ),
               trailingValue: AppFormat.number(entry!.score, localeName),
               trailingLabel: _deltaLabel(entry!.rankDelta),
             ),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/router/app_route_observer.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/subscription/paywall_source.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/report_question_sheet.dart';
@@ -41,6 +42,7 @@ import 'package:quizoo/features/profile/presentation/screens/stats_screen.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.dart';
+import 'package:quizoo/features/quiz_result/presentation/screens/answer_review_screen.dart';
 import 'package:quizoo/features/quiz_result/presentation/screens/quiz_result_screen.dart';
 import 'package:quizoo/features/settings/presentation/screens/delete_account_screen.dart';
 import 'package:quizoo/features/settings/presentation/screens/force_update_screen.dart';
@@ -49,6 +51,9 @@ import 'package:quizoo/features/settings/presentation/screens/notifications_scre
 import 'package:quizoo/features/settings/presentation/screens/privacy_settings_screen.dart';
 import 'package:quizoo/features/settings/presentation/screens/settings_screen.dart';
 import 'package:quizoo/features/shell/presentation/screens/app_shell_screen.dart';
+import 'package:quizoo/features/subscription/presentation/screens/paywall_screen.dart';
+import 'package:quizoo/features/subscription/presentation/screens/pro_membership_screen.dart';
+import 'package:quizoo/features/subscription/presentation/screens/pro_welcome_screen.dart';
 import 'package:quizoo/features/topic_mastery/presentation/screens/topic_mastered_screen.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
@@ -195,6 +200,33 @@ abstract final class AppRouter {
         // pushed, so a quit can never land on the completion screen.
         _resultRoute(AppRoutes.levelComplete),
         _resultRoute(AppRoutes.levelFailed),
+        // Answer review (plan 023, benefit 8) — beside the result routes
+        // because it is reached from one and reads the same run.
+        GoRoute(
+          path: AppRoutes.answerReview,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) =>
+              AnswerReviewScreen(run: state.extra as QuizRun?),
+        ),
+        // Quizoo Pro (plan 023): the paywall and the two screens a member
+        // sees. Static `/pro/...` paths, so no ordering care is needed.
+        GoRoute(
+          path: AppRoutes.paywall,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => PaywallScreen(
+            source: state.extra as PaywallSource? ?? PaywallSource.direct,
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.proWelcome,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const ProWelcomeScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.proMembership,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const ProMembershipScreen(),
+        ),
         GoRoute(
           path: AppRoutes.badgeUnlocked,
           parentNavigatorKey: rootNavigatorKey,

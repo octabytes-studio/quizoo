@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/widgets/pro_name.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
@@ -61,6 +62,7 @@ class PlayerTopBar extends StatelessWidget {
     required this.playerLevel,
     required this.onSearchPressed,
     required this.onAvatarTap,
+    required this.isPro,
     super.key,
   });
 
@@ -69,6 +71,11 @@ class PlayerTopBar extends StatelessWidget {
   final int dayStreak;
   final int playerLevel;
   final VoidCallback onSearchPressed;
+
+  /// A Quizoo Pro member (plan 023): the name carries the gold verified
+  /// tick — the avatar is never decorated. Driven by this device's own
+  /// entitlement so the badge appears the instant a purchase lands.
+  final bool isPro;
 
   /// Opens Edit Profile (plan 019) — Home's only entry point to it.
   final VoidCallback onAvatarTap;
@@ -109,10 +116,9 @@ class PlayerTopBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              ProName(
+                name: name,
+                isPro: isPro,
                 style: textTheme.titleLarge!.copyWith(fontSize: 19.sp),
               ),
               Text(

@@ -3,11 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/widgets/pro_name.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -25,6 +27,7 @@ import 'package:quizoo/core/widgets/skeleton_box.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
 import 'package:quizoo/features/profile/data/profile_api.dart';
 import 'package:quizoo/features/profile/data/profile_repository.dart';
+import 'package:quizoo/features/profile/presentation/widgets/membership_row.dart';
 import 'package:quizoo/features/profile/domain/profile_summary.dart';
 import 'package:quizoo/features/profile/presentation/bloc/profile_cubit.dart';
 import 'package:quizoo/features/profile/presentation/widgets/badges_rail.dart';
@@ -162,6 +165,16 @@ class _ProfileLoadedView extends StatelessWidget {
   final ProfileSummary summary;
   final bool isOwnProfile;
 
+  /// True when the membership row belongs on this profile at all: the
+  /// player is a member, or Pro is purchasable on this device (plan 023).
+  static bool _showMembershipRow(BuildContext context) {
+    final state = context.watch<SubscriptionCubit>().state;
+    return state.isPro || (state is SubscriptionFree && state.isAvailable);
+  }
+
+  static bool _isProMember(BuildContext context) =>
+      context.select<SubscriptionCubit, bool>((cubit) => cubit.state.isPro);
+
   Future<void> _confirmLogout(BuildContext context) async {
     final confirmed = await AppDialog.show<bool>(
       context,
@@ -218,6 +231,14 @@ class _ProfileLoadedView extends StatelessWidget {
                 const GuestSignInBanner(),
                 SizedBox(height: AppSpacing.xl.h),
               ],
+              // Plan 023: the membership row is the first list item on the
+              // player's own profile. Hidden entirely when Pro cannot be
+              // bought here and the player is free.
+              if (isOwnProfile && _showMembershipRow(context))
+                Padding(
+                  padding: EdgeInsets.only(bottom: AppSpacing.xl.h),
+                  child: MembershipRow(isPro: _isProMember(context)),
+                ),
               StatStrip(
                 stats: [
                   (
@@ -319,6 +340,15 @@ class _ProfileHeader extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
     final summary = this.summary;
+    // Plan 023: the server's `profiles.is_pro` is what other players see,
+    // but on the player's *own* profile the badge must appear the instant a
+    // purchase lands — so this device's own entitlement is OR'd in.
+    final badgeIsPro =
+        summary?.isPro == true ||
+        (isOwnProfile &&
+            context.select<SubscriptionCubit, bool>(
+              (cubit) => cubit.state.isPro,
+            ));
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -419,8 +449,9 @@ class _ProfileHeader extends StatelessWidget {
                           if (summary != null &&
                               isSignedIn &&
                               summary.username.isNotEmpty)
-                            Text(
-                              summary.username,
+                            ProName(
+                              name: summary.username,
+                              isPro: badgeIsPro,
                               style: textTheme.displayMedium!.copyWith(
                                 fontSize: 22.sp,
                                 color: Colors.white,

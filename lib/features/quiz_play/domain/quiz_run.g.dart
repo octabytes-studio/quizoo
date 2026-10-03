@@ -61,6 +61,7 @@ _QuizRun _$QuizRunFromJson(Map<String, dynamic> json) => _QuizRun(
   finishedAt: json['finishedAt'] == null
       ? null
       : DateTime.parse(json['finishedAt'] as String),
+  freeReviveUsed: json['freeReviveUsed'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$QuizRunToJson(_QuizRun instance) => <String, dynamic>{
@@ -84,6 +85,7 @@ Map<String, dynamic> _$QuizRunToJson(_QuizRun instance) => <String, dynamic>{
   'usedPowerUp': instance.usedPowerUp,
   'ending': _$RunEndingEnumMap[instance.ending]!,
   'finishedAt': instance.finishedAt?.toIso8601String(),
+  'freeReviveUsed': instance.freeReviveUsed,
 };
 
 const _$RunEndingEnumMap = {

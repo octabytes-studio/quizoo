@@ -193,11 +193,16 @@ class _EditProfileViewState extends State<_EditProfileView> {
         emoji: '🎉',
       );
       context.pop();
-    } on ApiException {
+    } on ApiException catch (error) {
       if (!mounted) return;
+      // Defence in depth (plan 023, 6.5): the picker already locks Pro
+      // avatars for a free player, but the server is the real gate and this
+      // is what its refusal looks like.
       AppSnackbar.show(
         context,
-        title: l10n.profileUpdateError,
+        title: error.code == 'pro_avatar_required'
+            ? l10n.proAvatarRequired
+            : l10n.profileUpdateError,
         intent: SnackbarIntent.error,
       );
     } finally {

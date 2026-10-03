@@ -9,7 +9,16 @@ import 'package:quizoo/features/duel/presentation/bloc/challenge_card_state.dart
 import 'package:quizoo/features/duel/presentation/bloc/fairness.dart';
 import 'package:quizoo/features/duel/presentation/widgets/challenge_card.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/features/auth/data/auth_repository.dart';
+import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../support/fake_purchases.dart';
 import '../../support/pump_app.dart';
+import '../../support/pump_screen.dart';
 
 final DateTime _now = DateTime.utc(2026, 9, 27, 12);
 
@@ -39,6 +48,10 @@ final DuelChallenge _challenge = DuelChallenge(
 );
 
 void main() {
+  /// `ChallengeCard` reads the app-root `SessionCubit`/`SubscriptionCubit`
+  /// to decide the Pro tick (plan 023), so those two — and only those two —
+  /// sit above it. `pumpApp` keeps the test's original layout and pump
+  /// semantics.
   Future<void> pumpCard(
     WidgetTester tester,
     ChallengeCardState cardState, {
@@ -47,21 +60,40 @@ void main() {
     VoidCallback? onJoin,
     VoidCallback? onWithdraw,
     VoidCallback? onCancel,
-  }) => tester.pumpApp(
-    Padding(
-      padding: const EdgeInsets.all(20),
-      child: ChallengeCard(
-        challenge: challenge ?? _challenge,
-        cardState: cardState,
-        fairness: fairness,
-        now: _now,
-        config: const DuelConfig(),
-        onJoin: onJoin,
-        onWithdraw: onWithdraw,
-        onCancel: onCancel,
+  }) async {
+    final authApi = FakeAuthApi();
+    when(
+      () => authApi.authStateChanges,
+    ).thenAnswer((_) => const Stream.empty());
+    final session = SessionCubit(
+      AuthRepository(authApi, await SharedPreferences.getInstance()),
+    );
+    final subscription = freeSubscriptionCubit();
+    addTearDown(session.close);
+    addTearDown(subscription.close);
+
+    await tester.pumpApp(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<SessionCubit>.value(value: session),
+          BlocProvider<SubscriptionCubit>.value(value: subscription),
+        ],
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: ChallengeCard(
+            challenge: challenge ?? _challenge,
+            cardState: cardState,
+            fairness: fairness,
+            now: _now,
+            config: const DuelConfig(),
+            onJoin: onJoin,
+            onWithdraw: onWithdraw,
+            onCancel: onCancel,
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   ChunkyButton buttonLabelled(WidgetTester tester, String label) => tester
       .widget<ChunkyButton>(find.widgetWithText(ChunkyButton, label).first);

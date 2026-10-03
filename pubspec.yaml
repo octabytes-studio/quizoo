@@ -45,7 +45,12 @@ dependencies:
   firebase_messaging: ^16.6.0
   firebase_remote_config: ^6.6.0
   google_mobile_ads: ^9.1.0
-  in_app_purchase: ^3.3.0
+
+  # Quizoo Pro purchases (plan 023) — RevenueCat's SDK drives the store
+  # sheet, entitlements and restore. It brings its own billing clients, so
+  # the unused `in_app_purchase` line this replaces is gone rather than kept
+  # alongside (two Play Billing versions invite conflicts).
+  purchases_flutter: ^10.14.0
 
   # Play-mode sound effects (tick/correct/wrong/next-question); also plays
   # pre-generated question narration clips straight from their Supabase

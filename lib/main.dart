@@ -94,6 +94,10 @@ Future<void> main() async {
     'ads_home_native_every_sections': 5,
     'ads_home_native_max': 2,
     'ads_ranks_native_after_row': 5,
+    // Quizoo Pro (plan 023) — master switch for every Pro entry point and
+    // for the purchase SDK's start-up. Existing members keep their perks
+    // from the local cache while it is off.
+    'pro_enabled': true,
   });
   unawaited(remoteConfig.fetchAndActivate());
 

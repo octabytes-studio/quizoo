@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/format/app_format.dart';
+import 'package:quizoo/core/widgets/pro_name.dart';
 import 'package:quizoo/core/theme/app_elevation.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
@@ -777,6 +782,21 @@ class _NameAndRating extends StatelessWidget {
     final arena = context.arena;
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
+    // Plan 023: the badge is the verified tick after the name. A player's
+    // *own* card gets it from this device's entitlement as well, so it
+    // appears the instant a purchase lands rather than when the server has
+    // written `profiles.is_pro` — see `proBadge`.
+    final showPro = proBadge(
+      serverIsPro: player.isPro,
+      isSelf:
+          player.id ==
+          context.select<SessionCubit, String?>(
+            (cubit) => cubit.state.user?.id,
+          ),
+      localIsPro: context.select<SubscriptionCubit, bool>(
+        (cubit) => cubit.state.isPro,
+      ),
+    );
     final rating = [
       '${player.leagueEmoji} ${AppFormat.number(player.elo, l10n.localeName)}',
       if (player.topicLevel > 0) l10n.duelTopicLevel(player.topicLevel),
@@ -786,10 +806,9 @@ class _NameAndRating extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          player.displayName(l10n),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        ProName(
+          name: player.displayName(l10n),
+          isPro: showPro,
           style: textTheme.titleSmall!.copyWith(
             color: onArena ? arena.onArena : arena.cardInk,
           ),

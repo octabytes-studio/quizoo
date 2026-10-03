@@ -131,6 +131,8 @@ class ProfileApi {
       badgeCount: badges.length,
       recentBadges: badges.take(3).toList(),
       bestCategories: bestCategories,
+      // `profiles.is_pro` — written only by the server (plan 023).
+      isPro: profileRow['is_pro'] as bool? ?? false,
     );
   }
 

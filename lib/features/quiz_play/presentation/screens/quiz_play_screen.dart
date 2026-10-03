@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/content_language/language_direction.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
@@ -105,6 +106,9 @@ class QuizPlayScreen extends StatelessWidget {
             levelId: levelId,
             categoryId: subcategory?.categoryId ?? '',
             subcategoryName: subcategory?.name ?? '',
+            // Plan 023: the run's hearts and power-ups come from the
+            // entitlement, not from a fixed constant.
+            perks: context.read<SubscriptionCubit>().state.perks,
             languageCode: languageCode,
           );
         } else {
@@ -693,11 +697,20 @@ class _ArenaError extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
+    // Plan 023: `level_locked` means the client's map was stale (a free
+    // player starting a level they cannot play) — say so rather than
+    // offering the generic "could not load" copy. Anything else falls back
+    // to that message as before.
+    final message = switch (errorCode) {
+      'level_locked' => l10n.playErrorLevelLocked,
+      _ => l10n.contentErrorBody,
+    };
+
     return Center(
       child: ErrorStateView(
         title: l10n.contentErrorTitle,
         emoji: '🛰️',
-        message: l10n.contentErrorBody,
+        message: message,
         errorCode: errorCode,
         action: ChunkyButton.ghost(
           label: l10n.commonBack,

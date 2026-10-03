@@ -156,6 +156,30 @@ abstract final class AppColors {
   static const Color lifeDiscFrom = Color(0xFFFF7A9C);
   static const Color lifeDiscTo = Color(0xFFFF3D6E);
 
+  // ------------------------------------------- Quizoo Pro wash (plan 023)
+  // The paywall, Pro Welcome and Pro Membership screens look the same in
+  // both themes, exactly like the Topic Mastered wash above and the arena —
+  // a deep grape-to-night wash with gold accents. There is no dark-mode twin
+  // to keep in sync because these screens never read the active brightness.
+  /// Top of the grape-to-night wash.
+  static const Color proWashTop = Color(0xFF2A1570);
+
+  /// Bottom of the wash — the same value as [darkS0], so it sinks into the
+  /// night just like the mastery wash.
+  static const Color proWashBottom = Color(0xFF120D25);
+
+  /// Start of the gold gradient on the Go Pro card and the CTA.
+  static const Color proGoldFrom = Color(0xFFFFD84D);
+
+  /// End of the gold gradient.
+  static const Color proGoldTo = Color(0xFFF0A500);
+
+  /// Translucent white surface the benefit rows and plan cards sit on.
+  static const Color proCard = Color(0x1FFFFFFF);
+
+  /// Hairline around [proCard] surfaces.
+  static const Color proCardBorder = Color(0x33FFFFFF);
+
   /// Light [ColorScheme] seeded from the brand hues.
   static const ColorScheme lightScheme = ColorScheme(
     brightness: Brightness.light,

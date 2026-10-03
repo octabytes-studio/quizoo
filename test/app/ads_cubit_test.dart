@@ -303,6 +303,69 @@ void main() {
     });
   });
 
+  // Plan 023: the "Remove ads" switch a Quizoo Pro purchase flips.
+  group('AdsCubit.setAdFree (plan 023)', () {
+    test('disables every placement and every interstitial', () async {
+      final cubit = await ready(const AdsConfig());
+
+      expect(cubit.isPlacementEnabled(AdPlacement.homeFeedNative), isTrue);
+
+      cubit.setAdFree(true);
+      expect(cubit.isAdFree, isTrue);
+      expect(
+        cubit.state,
+        isA<AdsReady>().having((s) => s.isAdFree, 'isAdFree', isTrue),
+      );
+      for (final placement in AdPlacement.values) {
+        expect(cubit.isPlacementEnabled(placement), isFalse);
+      }
+
+      // A break is registered but nothing shows.
+      await cubit.showInterstitialIfDue(AdPlacement.levelCompleteBreak);
+      expect(interstitial.showCount, 0);
+      await cubit.close();
+    });
+
+    test('turning it back on restores placements and preloads an ad', () async {
+      final cubit = await ready(const AdsConfig());
+      final preloadsBefore = interstitial.preloadCount;
+
+      cubit.setAdFree(true);
+      cubit.setAdFree(false);
+      expect(cubit.isAdFree, isFalse);
+      expect(cubit.isPlacementEnabled(AdPlacement.homeFeedNative), isTrue);
+      expect(interstitial.preloadCount, preloadsBefore + 1);
+      await cubit.close();
+    });
+
+    test('ad-free before initialize skips the preload', () async {
+      when(() => config.read()).thenReturn(const AdsConfig());
+      final cubit = build();
+      cubit.setAdFree(true);
+      await cubit.initialize();
+
+      expect(interstitial.preloadCount, 0);
+      expect(
+        cubit.state,
+        isA<AdsReady>().having((s) => s.isAdFree, 'isAdFree', isTrue),
+      );
+      await cubit.close();
+    });
+
+    test('an idempotent setAdFree does not re-emit', () async {
+      final cubit = await ready(const AdsConfig());
+      var emissions = 0;
+      final sub = cubit.stream.listen((_) => emissions++);
+
+      cubit.setAdFree(true);
+      cubit.setAdFree(true);
+      await pumpEventQueue();
+      expect(emissions, 1);
+      await sub.cancel();
+      await cubit.close();
+    });
+  });
+
   test('showPrivacyOptions re-opens the consent form', () async {
     final cubit = await ready();
 

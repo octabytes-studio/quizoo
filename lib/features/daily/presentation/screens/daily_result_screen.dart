@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quizoo/app/ads_cubit.dart';
 import 'package:quizoo/core/ads/ad_placement.dart';
+import 'package:quizoo/core/widgets/ad_break.dart';
 import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -55,7 +54,8 @@ class _DailyResultScreenState extends State<DailyResultScreen> {
   Future<void> _leave() async {
     if (_isLeaving) return;
     _isLeaving = true;
-    await context.read<AdsCubit>().showInterstitialIfDue(
+    await runAdBreak(
+      context,
       AdPlacement.dailyResultBreak,
       isCelebration: widget.result.newlyEarnedBadgeIds.isNotEmpty,
     );

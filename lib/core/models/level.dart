@@ -3,9 +3,26 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'level.freezed.dart';
 part 'level.g.dart';
 
-/// Where a level sits in the player's progression — the four `LevelNode`
-/// states from §06.
-enum LevelStatus { locked, current, done }
+/// Where a level sits in the player's progression.
+///
+/// Four states since plan 023: `open` is a level a Quizoo Pro player can
+/// play that is *not* the next step in the ladder — every locked level
+/// becomes `open` for them (see `LevelMap.withAllLevelsOpen`), so the map
+/// shows "playable" without pretending it is the current one. A lapsed
+/// member's replayable levels also land here.
+enum LevelStatus {
+  /// Not playable yet — no clear on this or the level before it.
+  locked,
+
+  /// The next one to play. The "YOU'RE HERE" flag lands on this.
+  current,
+
+  /// Cleared at least once.
+  done,
+
+  /// Playable, but not the next step in the ladder (plan 023).
+  open,
+}
 
 /// The escalating difficulty bands, which set the clock: 20s → 15s → 10s per
 /// question as the player climbs the 30-level ladder.

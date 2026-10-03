@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quizoo/app/ads_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/ads/ad_placement.dart';
+import 'package:quizoo/core/widgets/ad_break.dart';
 import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/widgets/pro_name.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
@@ -206,7 +209,8 @@ class _DuelResultViewState extends State<_DuelResultView> {
   /// natural break for an interstitial (plan 022, I2). **Rematches never
   /// come through here**: a live rematch has a server-side window and a
   /// synced clock, so nothing full-screen may sit in its way.
-  Future<void> _showBreakAd() => context.read<AdsCubit>().showInterstitialIfDue(
+  Future<void> _showBreakAd() => runAdBreak(
+    context,
     AdPlacement.duelResultBreak,
     isCelebration: widget.result.newlyEarnedBadgeIds.isNotEmpty,
   );
@@ -304,6 +308,7 @@ class _DuelResultViewState extends State<_DuelResultView> {
                 player: result.me,
                 isWinner: result.isVictory,
                 score: result.playerRoundsWon,
+                isSelf: true,
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.md.w),
@@ -406,11 +411,16 @@ class _AvatarBadge extends StatelessWidget {
     required this.player,
     required this.isWinner,
     required this.score,
+    this.isSelf = false,
   });
 
   final DuelPlayer player;
   final bool isWinner;
   final int score;
+
+  /// True for the player's own side of the scoreline, so the local
+  /// entitlement is OR'd into the badge (see `proBadge`).
+  final bool isSelf;
 
   @override
   Widget build(BuildContext context) {
@@ -439,11 +449,16 @@ class _AvatarBadge extends StatelessWidget {
             child: Text(player.avatarEmoji, style: AppTypography.glyph(30.sp)),
           ),
           SizedBox(height: AppSpacing.xs.h),
-          Text(
-            player.displayName(l10n),
+          ProName(
+            name: player.displayName(l10n),
+            isPro: proBadge(
+              serverIsPro: player.isPro,
+              isSelf: isSelf,
+              localIsPro: context.select<SubscriptionCubit, bool>(
+                (cubit) => cubit.state.isPro,
+              ),
+            ),
             textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: textTheme.labelMedium!.copyWith(color: Colors.white),
           ),
           if (player.isBot)

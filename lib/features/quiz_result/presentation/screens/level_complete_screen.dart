@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quizoo/app/ads_cubit.dart';
 import 'package:quizoo/core/ads/ad_placement.dart';
+import 'package:quizoo/core/widgets/ad_break.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -123,7 +123,8 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
     if (_isLeaving) return;
     _isLeaving = true;
     final result = widget.state.result;
-    await context.read<AdsCubit>().showInterstitialIfDue(
+    await runAdBreak(
+      context,
       AdPlacement.levelCompleteBreak,
       isCelebration:
           result.unlocksMastery ||

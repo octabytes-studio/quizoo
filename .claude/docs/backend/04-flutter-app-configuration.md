@@ -168,7 +168,53 @@ are done — test ads always fill and never earn.
 and native ad on the next launch; `ads_disabled_placements` turns off single
 placements. Neither affects the rewarded heart ad.
 
-## 8. Verify before handing off to plan 005/006
+## 8. RevenueCat (plan 023)
+
+Quizoo Pro's purchases go through the RevenueCat SDK
+(`purchases_flutter`). No native setup is required beyond what the SDK
+pulls in itself; the app's own configuration is three concerns.
+
+**Where the keys live.** Exactly one file may contain a RevenueCat key:
+`lib/core/subscription/revenuecat_config.dart`. They are **public** SDK
+keys by design (they ship in the bundle and identify the app to
+RevenueCat) — the secret REST key and the webhook bearer secret live only
+as Supabase Edge Function secrets (doc 03 §2). The grep that proves this:
+
+```bash
+grep -rn "appl_\|goog_\|test_" lib   # must match only revenuecat_config.dart
+```
+
+**Which key, when.** `RevenueCatConfig.apiKeyFor(platform, useRealStore:
+…)` picks it:
+
+| | Debug | Release |
+|---|---|---|
+| iOS / macOS | Test Store key | `appl_…` |
+| Android | Test Store key | `goog_…` |
+| Web / desktop | none — Pro is unavailable | none |
+
+Debug builds default to RevenueCat's **Test Store** so the paywall is
+exercisable with no store setup at all. `--dart-define=RC_USE_REAL_STORE=true`
+opts a debug build into the real sandbox stores. A release build **never**
+falls back to the Test Store key: an empty platform key must leave Pro
+unavailable.
+
+```bash
+# sandbox testing on a real store
+flutter run --dart-define=RC_USE_REAL_STORE=true
+```
+
+**Master switch.** Remote Config's `pro_enabled` (doc 02 §3) hides every
+paywall entry point and stops the SDK starting. Members keep their perks
+from the local cache while it is off.
+
+**Sandbox testing notes.** Apple sandbox subscriptions renew on an
+accelerated clock (a monthly sub lapses in minutes); Google's license
+testers need an internal-testing build at minimum. A purchase made while
+signed in as a guest is attached to a device identity — the plan's
+"Identity" section covers how it transfers on sign-in.
+
+## 9. Verify before handing off to plan 005/006
 
 Once steps 1-6 are done:
 

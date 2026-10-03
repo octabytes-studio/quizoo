@@ -4,6 +4,7 @@ import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
+import 'package:quizoo/core/widgets/pro_name.dart';
 
 /// The three configurations of the one row component (§06).
 enum ListRowVariant {
@@ -31,6 +32,7 @@ class ListRowTile extends StatelessWidget {
     this.subtitle,
     this.rank,
     this.leadingEmoji,
+    this.leadingChild,
     this.leadingPlateColor,
     this.trailingValue,
     this.trailingLabel,
@@ -40,6 +42,7 @@ class ListRowTile extends StatelessWidget {
     this.accentColor,
     this.onTap,
     this.padding,
+    this.isPro = false,
   });
 
   final String title;
@@ -51,6 +54,12 @@ class ListRowTile extends StatelessWidget {
 
   /// The glyph inside the leading plate.
   final String? leadingEmoji;
+
+  /// A custom widget for the leading plate, taking precedence over
+  /// [leadingEmoji] — the brand mark on the membership row, for instance.
+  /// Rendered inside the standard plate at the standard size, so a row never
+  /// breaks the list's rhythm by supplying its own leading box.
+  final Widget? leadingChild;
 
   /// Fill behind [leadingEmoji]. Defaults to the sunken surface.
   final Color? leadingPlateColor;
@@ -80,6 +89,11 @@ class ListRowTile extends StatelessWidget {
   /// Overrides `.row`'s 11×14 padding.
   final EdgeInsetsGeometry? padding;
 
+  /// A Quizoo Pro member (plan 023): a gold verified tick follows the
+  /// title. The avatar is left alone — the tick is the only Pro marker.
+  /// Off by default so every existing call site is unchanged.
+  final bool isPro;
+
   /// `.row .av` — the content variant's rounded-square plate.
   static const double plateSize = 44;
 
@@ -96,8 +110,13 @@ class ListRowTile extends StatelessWidget {
     final borderWidth = isSelf || accentColor != null ? 2.0 : 1.0;
 
     Widget? leading;
-    if (leadingEmoji != null) {
-      leading = variant == ListRowVariant.content
+    final leadingContent =
+        leadingChild ??
+        (leadingEmoji == null
+            ? null
+            : Text(leadingEmoji!, style: AppTypography.glyph(22.sp)));
+    if (leadingContent != null) {
+      final plate = variant == ListRowVariant.content
           ? Container(
               width: plateSize.w,
               height: plateSize.w,
@@ -106,7 +125,7 @@ class ListRowTile extends StatelessWidget {
                 color: leadingPlateColor ?? quizoo.s3,
                 borderRadius: BorderRadius.circular(AppRadius.rowAvatar.r),
               ),
-              child: Text(leadingEmoji!, style: AppTypography.glyph(22.sp)),
+              child: leadingContent,
             )
           : Container(
               width: avatarSize.w,
@@ -117,8 +136,9 @@ class ListRowTile extends StatelessWidget {
                 color: leadingPlateColor ?? quizoo.s3,
                 border: Border.all(color: quizoo.s1, width: 2),
               ),
-              child: Text(leadingEmoji!, style: AppTypography.glyph(19.sp)),
+              child: leadingContent,
             );
+      leading = plate;
     }
 
     Widget? trailingWidget = trailing;
@@ -172,10 +192,9 @@ class ListRowTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                ProName(
+                  name: title,
+                  isPro: isPro,
                   style: textTheme.bodyLarge!.copyWith(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w800,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/ads_cubit.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/ads/inline_ad_layout.dart';
 import 'package:quizoo/core/format/app_format.dart';
@@ -14,6 +15,8 @@ import 'package:quizoo/core/content_language/languages_repository.dart';
 import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/subscription/paywall_source.dart';
+import 'package:quizoo/core/widgets/go_pro_card.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -231,6 +234,11 @@ class _HomeTopBar extends StatelessWidget {
     };
     final user = session.user;
     void openEditProfile() => context.push(AppRoutes.editProfile);
+    // Plan 023: the badge is this device's own entitlement, so it appears
+    // the instant a purchase lands rather than after a profile refetch.
+    final isPro = context.select<SubscriptionCubit, bool>(
+      (cubit) => cubit.state.isPro,
+    );
 
     if (session is SessionSignedIn && user != null) {
       if (content == null) {
@@ -241,6 +249,7 @@ class _HomeTopBar extends StatelessWidget {
           playerLevel: 0,
           onSearchPressed: onSearchPressed,
           onAvatarTap: openEditProfile,
+          isPro: isPro,
         );
       }
       if (content.currency != null) {
@@ -251,6 +260,7 @@ class _HomeTopBar extends StatelessWidget {
           playerLevel: content.playerLevel,
           onSearchPressed: onSearchPressed,
           onAvatarTap: openEditProfile,
+          isPro: isPro,
         );
       }
     }
@@ -430,6 +440,27 @@ class _HomeContentView extends StatelessWidget {
         )
       else
         const SaveProgressCard(),
+      // Plan 023: the dismissible Go Pro card, right under the top banner.
+      // Only for a free player on a device where Pro can be bought, and not
+      // within seven days of a dismissal. Never in the offline view (the
+      // whole `_HomeContentView` is bypassed there).
+      if (context.select<SubscriptionCubit, bool>((cubit) {
+        final state = cubit.state;
+        return state is SubscriptionFree &&
+            state.isAvailable &&
+            state.showHomePromo;
+      })) ...[
+        SizedBox(height: AppSpacing.lg.h - 2.h),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
+          child: GoProCard(
+            onTap: () =>
+                context.push(AppRoutes.paywall, extra: PaywallSource.homeCard),
+            onDismiss: () =>
+                context.read<SubscriptionCubit>().dismissHomePromo(),
+          ),
+        ),
+      ],
       if (content.continueEntry case final entry?) ...[
         SizedBox(height: AppSpacing.lg.h - 2.h),
         SectionHeader(title: l10n.homeContinueHeading),

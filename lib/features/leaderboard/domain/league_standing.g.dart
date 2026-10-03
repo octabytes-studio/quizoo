@@ -14,6 +14,7 @@ _LeagueStanding _$LeagueStandingFromJson(Map<String, dynamic> json) =>
       avatarEmoji: json['avatarEmoji'] as String,
       points: (json['points'] as num).toInt(),
       isSelf: json['isSelf'] as bool? ?? false,
+      isPro: json['isPro'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$LeagueStandingToJson(_LeagueStanding instance) =>
@@ -24,4 +25,5 @@ Map<String, dynamic> _$LeagueStandingToJson(_LeagueStanding instance) =>
       'avatarEmoji': instance.avatarEmoji,
       'points': instance.points,
       'isSelf': instance.isSelf,
+      'isPro': instance.isPro,
     };

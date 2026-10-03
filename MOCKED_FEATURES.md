@@ -106,6 +106,28 @@ Real by contrast: `notifications_api.dart` (in-app notification list, mark-read,
 
 ---
 
+## `subscription` — Quizoo Pro placeholders (plan 023)
+
+| File:Line | What's mocked | Impact |
+|---|---|---|
+| `core/subscription/revenuecat_config.dart` (`termsUrl`, `privacyUrl`) | Both are `https://example.com/...` placeholders. | **High before release** — both stores require a real Terms of Use and Privacy Policy link on a subscription paywall, and Apple rejects a build over a dead one. Owner checklist item 7 in doc 03 §1. |
+| `core/subscription/revenuecat_config.dart` (`appleApiKey`, `googleApiKey`) | Real RevenueCat **public** SDK keys, but the RevenueCat apps have **no store credentials uploaded yet** and the six real store products do not exist — only the Test Store's three placeholder-priced dev products. | **High before release** — a release build would point at real store apps that cannot serve products, so the paywall shows its unavailable state. Owner checklist items 1–3 in doc 03 §1. |
+| `supabase/functions/{revenuecat-webhook,sync-pro-status}` | Deployed and complete, but fail **closed** until `REVENUECAT_SECRET_KEY` and `REVENUECAT_WEBHOOK_SECRET` are set. **Verified live on 2026-10-02: `pro_subscriptions`, `revenuecat_events` and `profiles.is_pro` are all still empty (0 rows)** — neither secret is set, so nothing has ever written the server mirror. | **High** — `profiles.is_pro` is the only thing other players' leaderboards and duel surfaces read, so a real member looks like a free player to everyone else. Their own rows are covered by the client (see below). Set the two secrets (doc 03 §2), then launch the app once: `SubscriptionRepository.start` re-syncs every already-Pro device on launch, which backfills the whole member base. |
+
+Real by contrast: the entitlement layer (`core/subscription/`), the paywall
+and membership screens, and the server-side mirror (`profiles.is_pro`,
+`pro_subscriptions`, the level lock, Pro avatars, streak-shield refill) are
+all genuinely wired up against the Test Store — the mirror is simply empty
+because the secrets that let it be written are not set.
+
+**The Pro badge itself** is the gold verified tick after the name and
+nothing else: no crown on any avatar. For the player's *own* rows the tick
+is driven by this device's entitlement (`proBadge` in
+`core/subscription/pro_badge.dart`), so it appears the instant a purchase
+lands even though `profiles.is_pro` is still false.
+
+---
+
 ## Summary
 
 10 of 14 features had at least one mocked/stubbed item. The highest-impact clusters are:
@@ -115,3 +137,4 @@ Real by contrast: `notifications_api.dart` (in-app notification list, mark-read,
 3. ~~**Duel has no real matchmaking**~~ — **fixed by plan 017**: a realtime Duel Arena (challenges + join requests), server-side matchmaking and server-refereed live duels; the bot is now only a labelled practice fallback.
 4. **Delete Account doesn't delete anything** — it signs out to guest and shows a success message.
 5. ~~**Home's top bar shows a fixed level/streak**~~ — **fixed by plan 019**: `PlayerTopBar` now reads the signed-in player's real `streak_days`/`player_level` from `HomeContent`.
+6. **Quizoo Pro's legal URLs and store catalogue are placeholders** — the code and the database are complete, but the Terms/Privacy URLs are `example.com` and the six real store products need creating in both consoles (plan 023, owner checklist in doc 03 §1).

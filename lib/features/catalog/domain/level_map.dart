@@ -36,6 +36,19 @@ abstract class LevelMap with _$LevelMap {
   /// Stars earned of `levels.length * 3` available (§19).
   int get starsAvailable => levels.length * 3;
 
+  /// The Quizoo Pro view of this map (plan 023, benefit 2): every locked
+  /// level becomes [LevelStatus.open] — playable, but not the next step.
+  /// Cleared levels stay `done` and the current one stays `current`, so the
+  /// ladder's own shape survives.
+  LevelMap withAllLevelsOpen() => copyWith(
+    levels: [
+      for (final level in levels)
+        level.status == LevelStatus.locked
+            ? level.copyWith(status: LevelStatus.open)
+            : level,
+    ],
+  );
+
   static const Level _placeholder = Level(
     id: '',
     subcategoryId: '',

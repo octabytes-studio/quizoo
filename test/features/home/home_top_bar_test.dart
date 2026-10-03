@@ -18,6 +18,7 @@ void main() {
           playerLevel: 4,
           onSearchPressed: () {},
           onAvatarTap: () => tapped = true,
+          isPro: false,
         ),
       );
 
