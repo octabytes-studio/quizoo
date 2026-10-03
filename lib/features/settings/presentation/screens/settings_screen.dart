@@ -4,8 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/theme_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/models/app_theme_mode.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/subscription/paywall_source.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/segmented_tabs.dart';
@@ -109,6 +111,50 @@ class _SettingsView extends StatelessWidget {
                   SizedBox(height: AppSpacing.lg.h),
                   _GroupLabel(l10n.settingsAccount),
                   SizedBox(height: AppSpacing.sm.h),
+                  // Plan 023: the Quizoo Pro row and its restore, both
+                  // hidden when Pro cannot be bought here and the player is
+                  // free. Restore lives on the paywall/membership screen so
+                  // there is exactly one restore code path.
+                  if (context.select<SubscriptionCubit, bool>((cubit) {
+                    final state = cubit.state;
+                    return state.isPro ||
+                        (state is SubscriptionFree && state.isAvailable);
+                  })) ...[
+                    Builder(
+                      builder: (context) {
+                        final isPro = context.select<SubscriptionCubit, bool>(
+                          (cubit) => cubit.state.isPro,
+                        );
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SettingsRow(
+                              title: isPro
+                                  ? l10n.proMembershipActive
+                                  : l10n.proSettingsRow,
+                              onTap: () => context.push(
+                                isPro
+                                    ? AppRoutes.proMembership
+                                    : AppRoutes.paywall,
+                                extra: isPro ? null : PaywallSource.settings,
+                              ),
+                            ),
+                            SizedBox(height: AppSpacing.sm.h),
+                            SettingsRow(
+                              title: l10n.proRestore,
+                              onTap: () => context.push(
+                                isPro
+                                    ? AppRoutes.proMembership
+                                    : AppRoutes.paywall,
+                                extra: isPro ? null : PaywallSource.settings,
+                              ),
+                            ),
+                            SizedBox(height: AppSpacing.sm.h),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
                   SettingsRow(
                     title: l10n.settingsNotifications,
                     onTap: () => context.push(AppRoutes.notificationSettings),

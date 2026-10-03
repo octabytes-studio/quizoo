@@ -38,24 +38,50 @@ class FakeAdsCubit extends Cubit<AdsState> implements AdsCubit {
   int fullScreenAdsNoted = 0;
   int privacyOptionsShown = 0;
 
+  /// Whether the fake "shows" an interstitial. A test that wants `runAdBreak`
+  /// to count one sets this true (the default), or false to model a break
+  /// where the pacing said no.
+  bool showsInterstitial = true;
+
+  /// Set by [setAdFree]; mirrors `AdsCubit`'s behaviour so an ad-free
+  /// player's screen renders with no slots at all (plan 023).
+  @override
+  bool isAdFree = false;
+
   @override
   Future<void> initialize() async {}
 
   @override
+  void setAdFree(bool value) {
+    isAdFree = value;
+    final current = state;
+    if (current is AdsReady) {
+      emit(
+        AdsReady(
+          config: current.config,
+          privacyOptionsRequired: current.privacyOptionsRequired,
+          isAdFree: value,
+        ),
+      );
+    }
+  }
+
+  @override
   bool isPlacementEnabled(AdPlacement placement) => switch (state) {
-    AdsReady(:final config) => !config.disabledPlacements.contains(
-      placement.id,
-    ),
+    AdsReady(:final config, :final isAdFree) =>
+      !isAdFree && !config.disabledPlacements.contains(placement.id),
     AdsInitial() || AdsDisabled() => false,
   };
 
   @override
-  Future<void> showInterstitialIfDue(
+  Future<bool> showInterstitialIfDue(
     AdPlacement placement, {
     bool isCelebration = false,
   }) async {
     breaks.add((placement: placement, isCelebration: isCelebration));
     await interstitialGate?.future;
+    if (!showsInterstitial || isAdFree) return false;
+    return true;
   }
 
   @override

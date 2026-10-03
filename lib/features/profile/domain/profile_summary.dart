@@ -49,6 +49,12 @@ abstract class ProfileSummary with _$ProfileSummary {
     required int badgeCount,
     required List<AppBadge> recentBadges,
     required List<BestCategoryEntry> bestCategories,
+
+    /// A Quizoo Pro member (plan 023) — drives the crown and the tick.
+    /// From `profiles.is_pro`, which only the server writes; the profile
+    /// screen ORs it with this device's own entitlement so the badge
+    /// appears the instant a purchase lands.
+    @Default(false) bool isPro,
   }) = _ProfileSummary;
 
   const ProfileSummary._();

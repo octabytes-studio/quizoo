@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AvatarOption {
 
- String get id; String get emoji; int get sortOrder;
+ String get id; String get emoji; int get sortOrder;/// A Quizoo Pro-only avatar (plan 023, benefit 7). The server refuses
+/// `avatar_key` changes to one of these for a free player
+/// (`pro_avatar_required`); the picker merely shows the lock.
+ bool get isPro;
 /// Create a copy of AvatarOption
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +31,16 @@ $AvatarOptionCopyWith<AvatarOption> get copyWith => _$AvatarOptionCopyWithImpl<A
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AvatarOption&&(identical(other.id, id) || other.id == id)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AvatarOption&&(identical(other.id, id) || other.id == id)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.isPro, isPro) || other.isPro == isPro));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,emoji,sortOrder);
+int get hashCode => Object.hash(runtimeType,id,emoji,sortOrder,isPro);
 
 @override
 String toString() {
-  return 'AvatarOption(id: $id, emoji: $emoji, sortOrder: $sortOrder)';
+  return 'AvatarOption(id: $id, emoji: $emoji, sortOrder: $sortOrder, isPro: $isPro)';
 }
 
 
@@ -48,7 +51,7 @@ abstract mixin class $AvatarOptionCopyWith<$Res>  {
   factory $AvatarOptionCopyWith(AvatarOption value, $Res Function(AvatarOption) _then) = _$AvatarOptionCopyWithImpl;
 @useResult
 $Res call({
- String id, String emoji, int sortOrder
+ String id, String emoji, int sortOrder, bool isPro
 });
 
 
@@ -65,12 +68,13 @@ class _$AvatarOptionCopyWithImpl<$Res>
 
 /// Create a copy of AvatarOption
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? emoji = null,Object? sortOrder = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? emoji = null,Object? sortOrder = null,Object? isPro = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
-as int,
+as int,isPro: null == isPro ? _self.isPro : isPro // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -155,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String emoji,  int sortOrder)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String emoji,  int sortOrder,  bool isPro)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AvatarOption() when $default != null:
-return $default(_that.id,_that.emoji,_that.sortOrder);case _:
+return $default(_that.id,_that.emoji,_that.sortOrder,_that.isPro);case _:
   return orElse();
 
 }
@@ -176,10 +180,10 @@ return $default(_that.id,_that.emoji,_that.sortOrder);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String emoji,  int sortOrder)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String emoji,  int sortOrder,  bool isPro)  $default,) {final _that = this;
 switch (_that) {
 case _AvatarOption():
-return $default(_that.id,_that.emoji,_that.sortOrder);case _:
+return $default(_that.id,_that.emoji,_that.sortOrder,_that.isPro);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +200,10 @@ return $default(_that.id,_that.emoji,_that.sortOrder);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String emoji,  int sortOrder)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String emoji,  int sortOrder,  bool isPro)?  $default,) {final _that = this;
 switch (_that) {
 case _AvatarOption() when $default != null:
-return $default(_that.id,_that.emoji,_that.sortOrder);case _:
+return $default(_that.id,_that.emoji,_that.sortOrder,_that.isPro);case _:
   return null;
 
 }
@@ -211,12 +215,16 @@ return $default(_that.id,_that.emoji,_that.sortOrder);case _:
 @JsonSerializable()
 
 class _AvatarOption implements AvatarOption {
-  const _AvatarOption({required this.id, required this.emoji, required this.sortOrder});
+  const _AvatarOption({required this.id, required this.emoji, required this.sortOrder, this.isPro = false});
   factory _AvatarOption.fromJson(Map<String, dynamic> json) => _$AvatarOptionFromJson(json);
 
 @override final  String id;
 @override final  String emoji;
 @override final  int sortOrder;
+/// A Quizoo Pro-only avatar (plan 023, benefit 7). The server refuses
+/// `avatar_key` changes to one of these for a free player
+/// (`pro_avatar_required`); the picker merely shows the lock.
+@override@JsonKey() final  bool isPro;
 
 /// Create a copy of AvatarOption
 /// with the given fields replaced by the non-null parameter values.
@@ -231,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AvatarOption&&(identical(other.id, id) || other.id == id)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AvatarOption&&(identical(other.id, id) || other.id == id)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.isPro, isPro) || other.isPro == isPro));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,emoji,sortOrder);
+int get hashCode => Object.hash(runtimeType,id,emoji,sortOrder,isPro);
 
 @override
 String toString() {
-  return 'AvatarOption(id: $id, emoji: $emoji, sortOrder: $sortOrder)';
+  return 'AvatarOption(id: $id, emoji: $emoji, sortOrder: $sortOrder, isPro: $isPro)';
 }
 
 
@@ -251,7 +259,7 @@ abstract mixin class _$AvatarOptionCopyWith<$Res> implements $AvatarOptionCopyWi
   factory _$AvatarOptionCopyWith(_AvatarOption value, $Res Function(_AvatarOption) _then) = __$AvatarOptionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String emoji, int sortOrder
+ String id, String emoji, int sortOrder, bool isPro
 });
 
 
@@ -268,12 +276,13 @@ class __$AvatarOptionCopyWithImpl<$Res>
 
 /// Create a copy of AvatarOption
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? emoji = null,Object? sortOrder = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? emoji = null,Object? sortOrder = null,Object? isPro = null,}) {
   return _then(_AvatarOption(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
-as int,
+as int,isPro: null == isPro ? _self.isPro : isPro // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

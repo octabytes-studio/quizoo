@@ -11,6 +11,7 @@ _AvatarOption _$AvatarOptionFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       emoji: json['emoji'] as String,
       sortOrder: (json['sortOrder'] as num).toInt(),
+      isPro: json['isPro'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$AvatarOptionToJson(_AvatarOption instance) =>
@@ -18,4 +19,5 @@ Map<String, dynamic> _$AvatarOptionToJson(_AvatarOption instance) =>
       'id': instance.id,
       'emoji': instance.emoji,
       'sortOrder': instance.sortOrder,
+      'isPro': instance.isPro,
     };

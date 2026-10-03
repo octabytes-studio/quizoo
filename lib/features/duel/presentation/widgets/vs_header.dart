@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/core/widgets/pro_name.dart';
 import 'package:quizoo/core/theme/app_colors.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -28,6 +29,8 @@ class VsHeader extends StatelessWidget {
     this.rightName,
     this.leftBadge,
     this.rightBadge,
+    this.leftIsPro = false,
+    this.rightIsPro = false,
   });
 
   final String leftAvatarEmoji;
@@ -38,6 +41,10 @@ class VsHeader extends StatelessWidget {
   final String? rightName;
   final String? leftBadge;
   final String? rightBadge;
+
+  /// Quizoo Pro members (plan 023) — crown + tick on that side.
+  final bool leftIsPro;
+  final bool rightIsPro;
 
   static const double avatarSize = 64;
 
@@ -54,6 +61,7 @@ class VsHeader extends StatelessWidget {
           caption: leftCaption,
           name: leftName,
           badge: leftBadge,
+          isPro: leftIsPro,
         ),
         Text(
           'VS',
@@ -65,6 +73,7 @@ class VsHeader extends StatelessWidget {
             caption: rightCaption,
             name: rightName,
             badge: rightBadge,
+            isPro: rightIsPro,
           )
         else
           _SearchingSide(caption: rightCaption),
@@ -79,12 +88,17 @@ class _Side extends StatelessWidget {
     required this.caption,
     this.name,
     this.badge,
+    this.isPro = false,
   });
 
   final String emoji;
   final String caption;
   final String? name;
   final String? badge;
+
+  /// A Quizoo Pro member (plan 023) — the gold verified tick follows the
+  /// name. The avatar is never decorated.
+  final bool isPro;
 
   @override
   Widget build(BuildContext context) {
@@ -126,10 +140,9 @@ class _Side extends StatelessWidget {
             ),
           SizedBox(height: (badge == null ? AppSpacing.xs : AppSpacing.md).h),
           if (name != null)
-            Text(
-              name!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            ProName(
+              name: name!,
+              isPro: isPro,
               style: textTheme.labelMedium!.copyWith(
                 color: arena.onArena,
                 fontWeight: FontWeight.w800,

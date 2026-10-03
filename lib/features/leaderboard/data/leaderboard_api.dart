@@ -16,6 +16,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// category board but not for a genuine global total). The friends board has
 /// no materialized view at all (plan 006, Design overview) — a friends list
 /// is small enough to aggregate live.
+/// What one `profiles` row contributes to a leaderboard, league or friends
+/// row (plan 023, 6.8).
+typedef _ProfileRow = ({
+  String name,
+  String avatar,
+  String? location,
+  bool isPro,
+});
+
 class LeaderboardApi {
   LeaderboardApi(this._client);
 
@@ -170,8 +179,9 @@ class LeaderboardApi {
           LeaderboardEntry(
             rank: row['rank_subcategory'] as int,
             playerId: row['user_id'] as String,
-            name: profiles[row['user_id']]?.$1 ?? '—',
-            avatarEmoji: profiles[row['user_id']]?.$2 ?? '🐼',
+            name: profiles[row['user_id']]?.name ?? '—',
+            avatarEmoji: profiles[row['user_id']]?.avatar ?? '🐼',
+            isPro: profiles[row['user_id']]?.isPro ?? false,
             score: row['points'] as int,
             levelsCleared: clearedByUser[row['user_id']] ?? 0,
             levelCount: LadderConfigRepository.fallbackTotalLevels,
@@ -293,8 +303,9 @@ class LeaderboardApi {
           LeagueStanding(
             rank: index + 1,
             playerId: rows[index]['user_id'] as String,
-            name: profiles[rows[index]['user_id']]?.$1 ?? '—',
-            avatarEmoji: profiles[rows[index]['user_id']]?.$2 ?? '🐼',
+            name: profiles[rows[index]['user_id']]?.name ?? '—',
+            avatarEmoji: profiles[rows[index]['user_id']]?.avatar ?? '🐼',
+            isPro: profiles[rows[index]['user_id']]?.isPro ?? false,
             points: rows[index]['points'] as int,
             isSelf: rows[index]['user_id'] == userId,
           ),
@@ -356,8 +367,9 @@ class LeaderboardApi {
         LeaderboardEntry(
           rank: index + 1,
           playerId: entry.key,
-          name: profiles[entry.key]?.$1 ?? '—',
-          avatarEmoji: profiles[entry.key]?.$2 ?? '🐼',
+          name: profiles[entry.key]?.name ?? '—',
+          avatarEmoji: profiles[entry.key]?.avatar ?? '🐼',
+          isPro: profiles[entry.key]?.isPro ?? false,
           score: entry.value,
           isSelf: entry.key == userId,
         ),
@@ -374,10 +386,11 @@ class LeaderboardApi {
     return LeaderboardEntry(
       rank: rank,
       playerId: userId,
-      name: profile[userId]?.$1 ?? 'You',
-      avatarEmoji: profile[userId]?.$2 ?? '🐼',
+      name: profile[userId]?.name ?? 'You',
+      avatarEmoji: profile[userId]?.avatar ?? '🐼',
+      isPro: profile[userId]?.isPro ?? false,
       score: score,
-      locationLabel: profile[userId]?.$3,
+      locationLabel: profile[userId]?.location,
       isSelf: true,
       topPercent: topPercent,
     );
@@ -386,7 +399,7 @@ class LeaderboardApi {
   LeaderboardEntry _entryFromTotalsRow(
     Map<String, dynamic> row, {
     required LeaderboardScope scope,
-    required (String, String, String?)? profile,
+    required _ProfileRow? profile,
     required String? selfId,
   }) {
     final userId = row['user_id'] as String;
@@ -395,10 +408,11 @@ class LeaderboardApi {
           ? row['rank_country'] as int
           : row['rank_global'] as int,
       playerId: userId,
-      name: profile?.$1 ?? '—',
-      avatarEmoji: profile?.$2 ?? '🐼',
+      name: profile?.name ?? '—',
+      avatarEmoji: profile?.avatar ?? '🐼',
+      isPro: profile?.isPro ?? false,
       score: row['points'] as int,
-      locationLabel: profile?.$3,
+      locationLabel: profile?.location,
       isSelf: userId == selfId,
     );
   }
@@ -406,7 +420,7 @@ class LeaderboardApi {
   Friend _friendFromRow(
     Map<String, dynamic> row, {
     required String userId,
-    required Map<String, (String, String, String?)> profiles,
+    required Map<String, _ProfileRow> profiles,
   }) {
     final isRequester = row['requester_id'] == userId;
     final otherId = isRequester
@@ -421,8 +435,9 @@ class LeaderboardApi {
 
     return Friend(
       id: otherId,
-      name: profile?.$1 ?? '—',
-      avatarEmoji: profile?.$2 ?? '🐼',
+      name: profile?.name ?? '—',
+      avatarEmoji: profile?.avatar ?? '🐼',
+      isPro: profile?.isPro ?? false,
       status: friendStatus,
       subtitle: friendStatus == FriendStatus.pending
           ? 'Wants to be friends'
@@ -430,21 +445,23 @@ class LeaderboardApi {
     );
   }
 
-  Future<Map<String, (String, String, String?)>> _profilesFor(
-    List<String> userIds,
-  ) async {
+  /// The one profile lookup behind every leaderboard, league and friends
+  /// row. A named record (plan 023, 6.8) rather than a positional one, since
+  /// the Pro flag makes four fields and `$4` is unreadable.
+  Future<Map<String, _ProfileRow>> _profilesFor(List<String> userIds) async {
     if (userIds.isEmpty) return const {};
     final rows = await _client
         .from('profiles')
-        .select('id, username, avatar_key, country_code')
+        .select('id, username, avatar_key, country_code, is_pro')
         .inFilter('id', userIds.toSet().toList());
 
     return {
       for (final row in rows)
         row['id'] as String: (
-          row['username'] as String? ?? '—',
-          row['avatar_key'] as String? ?? '🐼',
-          _locationLabel(row['country_code'] as String?),
+          name: row['username'] as String? ?? '—',
+          avatar: row['avatar_key'] as String? ?? '🐼',
+          location: _locationLabel(row['country_code'] as String?),
+          isPro: row['is_pro'] as bool? ?? false,
         ),
     };
   }

@@ -22,6 +22,11 @@ abstract class DuelPlayer with _$DuelPlayer {
     @Default('bronze') String league,
     @Default(0) int topicLevel,
     @Default(false) bool isBot,
+
+    /// A Quizoo Pro member (plan 023). JSON key `isPro`, matching the
+    /// server's `_duel_player_json` / `_duel_challenge_card` /
+    /// `_duel_requester_json` (Phase 2 step E).
+    @Default(false) bool isPro,
   }) = _DuelPlayer;
 
   const DuelPlayer._();

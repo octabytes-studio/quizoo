@@ -2,7 +2,10 @@ import 'dart:math' as math;
 
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/content_language/language_direction.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -134,6 +137,11 @@ class DuelRoundView extends StatelessWidget {
     final canAnswer =
         answer != null && current != null && !_myLocked && !isRevealed;
     final opponentName = opponent.displayName(l10n);
+    // Plan 023: `me` is the player's own side, so the local entitlement is
+    // OR'd into its badge (see `proBadge`).
+    final localIsPro = context.select<SubscriptionCubit, bool>(
+      (cubit) => cubit.state.isPro,
+    );
     final keys = textDirectionFor(languageCode) == TextDirection.rtl
         ? Question.urduKeys
         : Question.latinKeys;
@@ -152,8 +160,14 @@ class DuelRoundView extends StatelessWidget {
               child: VsHeader(
                 leftAvatarEmoji: me.avatarEmoji,
                 leftName: me.displayName(l10n),
+                leftIsPro: proBadge(
+                  serverIsPro: me.isPro,
+                  isSelf: true,
+                  localIsPro: localIsPro,
+                ),
                 leftCaption: '$myScore',
                 rightAvatarEmoji: opponent.avatarEmoji,
+                rightIsPro: opponent.isPro,
                 rightName: opponentName,
                 rightCaption: '$opponentScore',
                 rightBadge: opponent.isBot ? l10n.duelBotBadge : null,

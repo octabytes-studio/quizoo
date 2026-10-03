@@ -3391,6 +3391,552 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ad privacy choices'**
   String get privacyAdChoices;
+
+  /// Plan 023: screen-reader label for the crown overlay and the verified tick.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro member'**
+  String get proBadgeLabel;
+
+  /// Plan 023: paywall hero title.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizoo Pro'**
+  String get proPaywallTitle;
+
+  /// Plan 023: paywall hero subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Play without limits. Stand out.'**
+  String get proPaywallTagline;
+
+  /// Plan 023 benefit 1: title.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro badge'**
+  String get proBenefitBadgeTitle;
+
+  /// Plan 023 benefit 1: one line of plain copy.
+  ///
+  /// In en, this message translates to:
+  /// **'A gold crown on your avatar and a verified tick after your name, for everyone to see.'**
+  String get proBenefitBadgeBody;
+
+  /// Plan 023 benefit 2: title.
+  ///
+  /// In en, this message translates to:
+  /// **'Every level open'**
+  String get proBenefitAllLevelsTitle;
+
+  /// Plan 023 benefit 2: one line of plain copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump straight to any level in any topic — no clearing the ones before it.'**
+  String get proBenefitAllLevelsBody;
+
+  /// Plan 023 benefit 3: title.
+  ///
+  /// In en, this message translates to:
+  /// **'No ads'**
+  String get proBenefitNoAdsTitle;
+
+  /// Plan 023 benefit 3: one line of plain copy.
+  ///
+  /// In en, this message translates to:
+  /// **'No banners, no breaks between levels. The heart ad stays, if you want it.'**
+  String get proBenefitNoAdsBody;
+
+  /// Plan 023 benefit 4: title.
+  ///
+  /// In en, this message translates to:
+  /// **'Free revive'**
+  String get proBenefitFreeReviveTitle;
+
+  /// Plan 023 benefit 4: one line of plain copy.
+  ///
+  /// In en, this message translates to:
+  /// **'One extra life on every level, instantly — no ad to watch.'**
+  String get proBenefitFreeReviveBody;
+
+  /// Plan 023 benefit 5: title.
+  ///
+  /// In en, this message translates to:
+  /// **'Double power-ups'**
+  String get proBenefitDoublePowerUpsTitle;
+
+  /// Plan 023 benefit 5: one line of plain copy.
+  ///
+  /// In en, this message translates to:
+  /// **'2× 50:50 and 2× +5s on every level.'**
+  String get proBenefitDoublePowerUpsBody;
+
+  /// Plan 023 benefit 6: title.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak shield'**
+  String get proBenefitStreakShieldTitle;
+
+  /// Plan 023 benefit 6: one line of plain copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Your streak freezes top back up to 2 every month.'**
+  String get proBenefitStreakShieldBody;
+
+  /// Plan 023 benefit 7: title.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclusive avatars'**
+  String get proBenefitAvatarsTitle;
+
+  /// Plan 023 benefit 7: one line of plain copy.
+  ///
+  /// In en, this message translates to:
+  /// **'A Pro-only set of avatars to play as.'**
+  String get proBenefitAvatarsBody;
+
+  /// Plan 023 benefit 8: title.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer review'**
+  String get proBenefitAnswerReviewTitle;
+
+  /// Plan 023 benefit 8: one line of plain copy.
+  ///
+  /// In en, this message translates to:
+  /// **'See every question again with the right answer and an explanation.'**
+  String get proBenefitAnswerReviewBody;
+
+  /// Plan 023: paywall plan card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get proPlanMonthly;
+
+  /// Plan 023: paywall plan card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get proPlanYearly;
+
+  /// Plan 023: paywall plan card title.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifetime'**
+  String get proPlanLifetime;
+
+  /// Plan 023: pill on the yearly plan card.
+  ///
+  /// In en, this message translates to:
+  /// **'BEST VALUE'**
+  String get proBestValue;
+
+  /// Plan 023: savings pill, shown only when monthly and yearly prices are both known.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {percent}%'**
+  String proSavePercent(int percent);
+
+  /// Plan 023: monthly-equivalent price on the yearly card.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} per month'**
+  String proPerMonthLabel(String price);
+
+  /// Plan 023: yearly card price line.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} / year'**
+  String proPricePerYear(String price);
+
+  /// Plan 023: monthly card price line.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} / month'**
+  String proPricePerMonth(String price);
+
+  /// Plan 023: lifetime card price line.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} once'**
+  String proPriceOnce(String price);
+
+  /// Plan 023: paywall primary CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get proContinue;
+
+  /// Plan 023: paywall primary CTA when the selected plan carries a free trial.
+  ///
+  /// In en, this message translates to:
+  /// **'Start {days}-day free trial'**
+  String proStartTrial(int days);
+
+  /// Plan 023: paywall CTA while a purchase or restore is in flight.
+  ///
+  /// In en, this message translates to:
+  /// **'Working…'**
+  String get proWorking;
+
+  /// Plan 023: store-required price/period disclosure under the CTA for the monthly plan.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} per month, renews automatically until cancelled.'**
+  String proDisclosureMonthly(String price);
+
+  /// Plan 023: store-required price/period disclosure under the CTA for the yearly plan.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} per year, renews automatically until cancelled.'**
+  String proDisclosureYearly(String price);
+
+  /// Plan 023: store-required disclosure under the CTA for the lifetime plan.
+  ///
+  /// In en, this message translates to:
+  /// **'One payment. Yours forever.'**
+  String get proDisclosureLifetime;
+
+  /// Plan 023: paywall footer / membership screen / Settings row.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get proRestore;
+
+  /// Plan 023: snackbar confirming a restore that found this account's Pro purchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases restored'**
+  String get proRestoreSuccess;
+
+  /// Plan 023: paywall legal footer link.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Use'**
+  String get proTerms;
+
+  /// Plan 023: paywall legal footer link.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get proPrivacy;
+
+  /// Plan 023: snackbar after a failed purchase.
+  ///
+  /// In en, this message translates to:
+  /// **'That purchase did not go through. Please try again.'**
+  String get proNoticeFailed;
+
+  /// Plan 023: retry action on the failed-purchase snackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get proNoticeRetry;
+
+  /// Plan 023: snackbar for a pending store purchase (slow payment, Ask to Buy).
+  ///
+  /// In en, this message translates to:
+  /// **'Your purchase is waiting for approval. Pro will unlock as soon as it is.'**
+  String get proNoticePending;
+
+  /// Plan 023: snackbar when restore finds no Pro purchase.
+  ///
+  /// In en, this message translates to:
+  /// **'There is nothing to restore on this account.'**
+  String get proNoticeNothingToRestore;
+
+  /// Plan 023: paywall unavailable-state heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizoo Pro is not available here'**
+  String get proUnavailableTitle;
+
+  /// Plan 023: paywall unavailable-state body.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases cannot be loaded right now. Check your connection and try again.'**
+  String get proUnavailableBody;
+
+  /// Plan 023: paywall unavailable-state action.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get proTryAgain;
+
+  /// Plan 023: Pro Welcome screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re Pro!'**
+  String get proWelcomeTitle;
+
+  /// Plan 023: Pro Welcome chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Ads off'**
+  String get proWelcomeChipAdsOff;
+
+  /// Plan 023: Pro Welcome chip.
+  ///
+  /// In en, this message translates to:
+  /// **'All levels open'**
+  String get proWelcomeChipAllLevels;
+
+  /// Plan 023: Pro Welcome chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge on'**
+  String get proWelcomeChipBadge;
+
+  /// Plan 023: Pro Welcome primary CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Start playing'**
+  String get proStartPlaying;
+
+  /// Plan 023: Pro Welcome / membership action for a guest.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Pro to your account'**
+  String get proSaveToAccount;
+
+  /// Plan 023: Profile and Settings row for a member.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizoo Pro · Active'**
+  String get proMembershipActive;
+
+  /// Plan 023: membership screen date line for a renewing subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews on {date}'**
+  String proMembershipRenewsOn(String date);
+
+  /// Plan 023: membership screen date line for a cancelled subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends on {date}'**
+  String proMembershipEndsOn(String date);
+
+  /// Plan 023: membership screen date line for a lifetime purchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifetime member'**
+  String get proMembershipLifetime;
+
+  /// Plan 023: membership screen date line during a free trial.
+  ///
+  /// In en, this message translates to:
+  /// **'Free trial — first charge on {date}'**
+  String proMembershipInTrial(String date);
+
+  /// Plan 023: membership screen fallback when the store reported no date.
+  ///
+  /// In en, this message translates to:
+  /// **'Membership active'**
+  String get proMembershipNoDate;
+
+  /// Plan 023: membership screen billing-issue notice.
+  ///
+  /// In en, this message translates to:
+  /// **'There is a billing problem with your subscription. Update your payment method to keep Pro.'**
+  String get proMembershipBillingIssue;
+
+  /// Plan 023: membership screen action opening the store's management page.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription'**
+  String get proManageSubscription;
+
+  /// Plan 023: membership screen when the store's management page cannot be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the store. You can manage your subscription in your store account settings.'**
+  String get proManageFailed;
+
+  /// Plan 023: membership screen helper text under Restore purchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring applies this store purchase to whichever Quizoo account is signed in on this device.'**
+  String get proRestoreHelper;
+
+  /// Plan 023: Home promo card title, Profile row title and generic upsell CTA.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Pro'**
+  String get proGoPro;
+
+  /// Plan 023: Home promo card one-liner.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock every level, drop the ads, and stand out with a gold badge.'**
+  String get proGoProCardBody;
+
+  /// Plan 023: link beside an ad label.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove ads'**
+  String get proRemoveAds;
+
+  /// Plan 023: first action on the out-of-lives dialog for a member.
+  ///
+  /// In en, this message translates to:
+  /// **'Use free revive'**
+  String get proUseFreeRevive;
+
+  /// Plan 023: quiet text link under the out-of-lives buttons for a free player.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a free revive every level with Pro'**
+  String get proOutOfLivesLink;
+
+  /// Plan 023: result-screen action opening the answer review.
+  ///
+  /// In en, this message translates to:
+  /// **'Review answers'**
+  String get proReviewAnswers;
+
+  /// Plan 023: Settings Account-group row.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizoo Pro'**
+  String get proSettingsRow;
+
+  /// Plan 023: dismiss on the Pro upsell sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get proNotNow;
+
+  /// Plan 023: primary action on the Pro upsell sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'See Quizoo Pro'**
+  String get proSeeQuizooPro;
+
+  /// Plan 023: upsell sheet title when a locked level node is tapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level} is locked'**
+  String proUpsellLockedLevelTitle(int level);
+
+  /// Plan 023: upsell sheet body when a locked level node is tapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear level {level} first — or unlock every level with Quizoo Pro.'**
+  String proUpsellLockedLevelBody(int level);
+
+  /// Plan 023: upsell sheet title shown once after the third interstitial.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoying Quizoo?'**
+  String get proUpsellAdFreeTitle;
+
+  /// Plan 023: upsell sheet body shown once after the third interstitial.
+  ///
+  /// In en, this message translates to:
+  /// **'Play without ads with Quizoo Pro.'**
+  String get proUpsellAdFreeBody;
+
+  /// Plan 023: snackbar when the server refuses a Pro avatar (pro_avatar_required) — defence in depth behind the picker's own lock.
+  ///
+  /// In en, this message translates to:
+  /// **'That avatar is for Quizoo Pro members only.'**
+  String get proAvatarRequired;
+
+  /// Plan 023: upsell sheet title when a free player taps a Pro avatar.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s a Pro avatar'**
+  String get proUpsellAvatarTitle;
+
+  /// Plan 023: upsell sheet body when a free player taps a Pro avatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro members can play as this avatar — and eleven more.'**
+  String get proUpsellAvatarBody;
+
+  /// Plan 023: upsell sheet title when a free player taps Review answers.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer review is a Pro perk'**
+  String get proUpsellReviewTitle;
+
+  /// Plan 023: upsell sheet body when a free player taps Review answers.
+  ///
+  /// In en, this message translates to:
+  /// **'See every question again with the right answer and an explanation.'**
+  String get proUpsellReviewBody;
+
+  /// Plan 023: Daily tab streak-freeze explainer line for a member.
+  ///
+  /// In en, this message translates to:
+  /// **'Refills to 2 every month with Pro.'**
+  String get proStreakShieldLine;
+
+  /// Plan 023: sub-header above the Pro-only avatars in the avatar picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizoo Pro'**
+  String get proAvatarSection;
+
+  /// Plan 023: level-node status caption for a playable-but-not-next level.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get proLevelOpenCaption;
+
+  /// Plan 023: semantics label for an open level node.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}, open — playable now.'**
+  String proLevelOpenSemantics(int level);
+
+  /// Plan 023: play error copy when the server rejects a level the stale client thought was open (level_locked).
+  ///
+  /// In en, this message translates to:
+  /// **'This level is still locked — clear the one before it first.'**
+  String get playErrorLevelLocked;
+
+  /// Plan 023: answer review per-question caption.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {number} of {total}'**
+  String reviewQuestionNumber(int number, int total);
+
+  /// Plan 023: answer review screen top bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer review'**
+  String get reviewTitle;
+
+  /// Plan 023: answer review marker on the right option.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer'**
+  String get reviewCorrect;
+
+  /// Plan 023: answer review marker on the option the player picked.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get reviewYourAnswer;
+
+  /// Plan 023: answer review line when the question timed out.
+  ///
+  /// In en, this message translates to:
+  /// **'You didn\'t answer'**
+  String get reviewTimedOut;
+
+  /// Plan 023: answer review explanation heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation'**
+  String get reviewExplanation;
+
+  /// Plan 023: answer review empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'There is nothing to review for this run.'**
+  String get reviewEmpty;
 }
 
 class _AppLocalizationsDelegate

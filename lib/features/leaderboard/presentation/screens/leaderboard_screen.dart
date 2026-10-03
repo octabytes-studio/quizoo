@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/ads_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
@@ -237,6 +239,10 @@ class _LeaderboardRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
+    // Plan 023: own row, so the local entitlement is OR'd in — see `proBadge`.
+    final localIsPro = context.select<SubscriptionCubit, bool>(
+      (cubit) => cubit.state.isPro,
+    );
     final delta = entry.rankDelta;
     final deltaColor = delta == null || delta == 0
         ? quizoo.tx3
@@ -255,6 +261,11 @@ class _LeaderboardRow extends StatelessWidget {
       title: entry.name,
       subtitle: entry.locationLabel,
       leadingEmoji: entry.avatarEmoji,
+      isPro: proBadge(
+        serverIsPro: entry.isPro,
+        isSelf: entry.isSelf,
+        localIsPro: localIsPro,
+      ),
       trailing: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,

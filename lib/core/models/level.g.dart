@@ -42,4 +42,5 @@ const _$LevelStatusEnumMap = {
   LevelStatus.locked: 'locked',
   LevelStatus.current: 'current',
   LevelStatus.done: 'done',
+  LevelStatus.open: 'open',
 };

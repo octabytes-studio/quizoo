@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/format/difficulty_label.dart';
-import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/level.dart';
 import 'package:quizoo/core/models/subcategory.dart';
 import 'package:quizoo/core/network/api_exception.dart';
+import 'package:quizoo/core/subscription/pro_perks.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -108,6 +109,9 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
+    // Plan 023: lives and power-up counts are the entitlement's, never a
+    // constant — see `ProPerks`.
+    final perks = context.read<SubscriptionCubit>().state.perks;
     final Subcategory subcategory = widget.map.subcategory;
     final level = widget.level;
 
@@ -172,7 +176,10 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
               ),
               SizedBox(width: 9.w),
               _BriefStat(
-                value: '${MockPlayer.livesPerLevel}',
+                // Plan 023: the lives and power-up counts come from the
+                // entitlement, so the paywall's promise and the play surface
+                // cannot drift (`ProPerks` is their one home).
+                value: '${perks.livesPerLevel}',
                 label: l10n.levelBriefLives,
               ),
             ],
@@ -185,13 +192,15 @@ class _LevelBriefSheetState extends State<LevelBriefSheet> {
               _BriefPowerUp(
                 emoji: '🎯',
                 label: l10n.quizPowerUpFiftyFifty,
-                count: MockPlayer.fiftyFiftyCount,
+                count: perks.fiftyFifty,
+                isDoubled: perks.fiftyFifty > const ProPerks.free().fiftyFifty,
               ),
               SizedBox(width: 10.w),
               _BriefPowerUp(
                 emoji: '⏱️',
                 label: l10n.quizPowerUpAddTime,
-                count: MockPlayer.addTimeCount,
+                count: perks.addTime,
+                isDoubled: perks.addTime > const ProPerks.free().addTime,
               ),
             ],
           ),
@@ -270,11 +279,16 @@ class _BriefPowerUp extends StatelessWidget {
     required this.emoji,
     required this.label,
     required this.count,
+    this.isDoubled = false,
   });
 
   final String emoji;
   final String label;
   final int count;
+
+  /// True when the count is above the free player's — a small 👑 marks it
+  /// (plan 023), so the doubling is visible without a number to compare to.
+  final bool isDoubled;
 
   @override
   Widget build(BuildContext context) {
@@ -310,6 +324,12 @@ class _BriefPowerUp extends StatelessWidget {
               ],
             ),
           ),
+          if (isDoubled)
+            PositionedDirectional(
+              top: -7.h,
+              start: -7.w,
+              child: Text('👑', style: AppTypography.glyph(11.sp)),
+            ),
           if (count > 0)
             PositionedDirectional(
               top: -5.h,

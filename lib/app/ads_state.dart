@@ -22,13 +22,22 @@ final class AdsDisabled extends AdsState {
 
 /// Consent is in hand and the SDK is initialised.
 final class AdsReady extends AdsState {
-  const AdsReady({required this.config, required this.privacyOptionsRequired});
+  const AdsReady({
+    required this.config,
+    required this.privacyOptionsRequired,
+    this.isAdFree = false,
+  });
 
   final AdsConfig config;
 
   /// Whether Google requires an "Ad privacy choices" entry point.
   final bool privacyOptionsRequired;
 
+  /// The player owns Quizoo Pro (plan 023). Every placement is off and no
+  /// interstitial is requested, but the rewarded heart ad is untouched — it
+  /// is opt-in and Pro explicitly promises to keep it (design bible S-36).
+  final bool isAdFree;
+
   @override
-  List<Object?> get props => [config, privacyOptionsRequired];
+  List<Object?> get props => [config, privacyOptionsRequired, isAdFree];
 }

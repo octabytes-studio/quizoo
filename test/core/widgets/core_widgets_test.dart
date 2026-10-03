@@ -532,7 +532,23 @@ void main() {
       );
     });
 
-    testWidgets('a locked node is not tappable', (tester) async {
+    testWidgets('a locked node with no handler is not tappable', (
+      tester,
+    ) async {
+      var taps = 0;
+      await tester.pumpApp(LevelNode(number: 9, status: LevelStatus.locked));
+
+      await tester.tap(find.text('9'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(taps, 0);
+    });
+
+    // Plan 023: a locked node with an `onLockedTap` (the Pro upsell) must
+    // reach it — otherwise the map's locked levels would stay dead ends.
+    testWidgets('a locked node with a handler fires it (plan 023)', (
+      tester,
+    ) async {
       var taps = 0;
       await tester.pumpApp(
         LevelNode(number: 9, status: LevelStatus.locked, onTap: () => taps++),
@@ -541,7 +557,7 @@ void main() {
       await tester.tap(find.text('9'));
       await tester.pumpAndSettle();
 
-      expect(taps, 0);
+      expect(taps, 1);
     });
   });
 

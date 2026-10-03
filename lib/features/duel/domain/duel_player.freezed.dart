@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DuelPlayer {
 
- String get id; String? get name;@JsonKey(name: 'avatar') String get avatarEmoji; int get elo; bool get isGuest; String? get guestTag; String get league; int get topicLevel; bool get isBot;
+ String get id; String? get name;@JsonKey(name: 'avatar') String get avatarEmoji; int get elo; bool get isGuest; String? get guestTag; String get league; int get topicLevel; bool get isBot;/// A Quizoo Pro member (plan 023). JSON key `isPro`, matching the
+/// server's `_duel_player_json` / `_duel_challenge_card` /
+/// `_duel_requester_json` (Phase 2 step E).
+ bool get isPro;
 /// Create a copy of DuelPlayer
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +31,16 @@ $DuelPlayerCopyWith<DuelPlayer> get copyWith => _$DuelPlayerCopyWithImpl<DuelPla
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelPlayer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.elo, elo) || other.elo == elo)&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.guestTag, guestTag) || other.guestTag == guestTag)&&(identical(other.league, league) || other.league == league)&&(identical(other.topicLevel, topicLevel) || other.topicLevel == topicLevel)&&(identical(other.isBot, isBot) || other.isBot == isBot));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelPlayer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.elo, elo) || other.elo == elo)&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.guestTag, guestTag) || other.guestTag == guestTag)&&(identical(other.league, league) || other.league == league)&&(identical(other.topicLevel, topicLevel) || other.topicLevel == topicLevel)&&(identical(other.isBot, isBot) || other.isBot == isBot)&&(identical(other.isPro, isPro) || other.isPro == isPro));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,avatarEmoji,elo,isGuest,guestTag,league,topicLevel,isBot);
+int get hashCode => Object.hash(runtimeType,id,name,avatarEmoji,elo,isGuest,guestTag,league,topicLevel,isBot,isPro);
 
 @override
 String toString() {
-  return 'DuelPlayer(id: $id, name: $name, avatarEmoji: $avatarEmoji, elo: $elo, isGuest: $isGuest, guestTag: $guestTag, league: $league, topicLevel: $topicLevel, isBot: $isBot)';
+  return 'DuelPlayer(id: $id, name: $name, avatarEmoji: $avatarEmoji, elo: $elo, isGuest: $isGuest, guestTag: $guestTag, league: $league, topicLevel: $topicLevel, isBot: $isBot, isPro: $isPro)';
 }
 
 
@@ -48,7 +51,7 @@ abstract mixin class $DuelPlayerCopyWith<$Res>  {
   factory $DuelPlayerCopyWith(DuelPlayer value, $Res Function(DuelPlayer) _then) = _$DuelPlayerCopyWithImpl;
 @useResult
 $Res call({
- String id, String? name,@JsonKey(name: 'avatar') String avatarEmoji, int elo, bool isGuest, String? guestTag, String league, int topicLevel, bool isBot
+ String id, String? name,@JsonKey(name: 'avatar') String avatarEmoji, int elo, bool isGuest, String? guestTag, String league, int topicLevel, bool isBot, bool isPro
 });
 
 
@@ -65,7 +68,7 @@ class _$DuelPlayerCopyWithImpl<$Res>
 
 /// Create a copy of DuelPlayer
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = freezed,Object? avatarEmoji = null,Object? elo = null,Object? isGuest = null,Object? guestTag = freezed,Object? league = null,Object? topicLevel = null,Object? isBot = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = freezed,Object? avatarEmoji = null,Object? elo = null,Object? isGuest = null,Object? guestTag = freezed,Object? league = null,Object? topicLevel = null,Object? isBot = null,Object? isPro = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -76,6 +79,7 @@ as bool,guestTag: freezed == guestTag ? _self.guestTag : guestTag // ignore: cas
 as String?,league: null == league ? _self.league : league // ignore: cast_nullable_to_non_nullable
 as String,topicLevel: null == topicLevel ? _self.topicLevel : topicLevel // ignore: cast_nullable_to_non_nullable
 as int,isBot: null == isBot ? _self.isBot : isBot // ignore: cast_nullable_to_non_nullable
+as bool,isPro: null == isPro ? _self.isPro : isPro // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -161,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? name, @JsonKey(name: 'avatar')  String avatarEmoji,  int elo,  bool isGuest,  String? guestTag,  String league,  int topicLevel,  bool isBot)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? name, @JsonKey(name: 'avatar')  String avatarEmoji,  int elo,  bool isGuest,  String? guestTag,  String league,  int topicLevel,  bool isBot,  bool isPro)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DuelPlayer() when $default != null:
-return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_that.guestTag,_that.league,_that.topicLevel,_that.isBot);case _:
+return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_that.guestTag,_that.league,_that.topicLevel,_that.isBot,_that.isPro);case _:
   return orElse();
 
 }
@@ -182,10 +186,10 @@ return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? name, @JsonKey(name: 'avatar')  String avatarEmoji,  int elo,  bool isGuest,  String? guestTag,  String league,  int topicLevel,  bool isBot)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? name, @JsonKey(name: 'avatar')  String avatarEmoji,  int elo,  bool isGuest,  String? guestTag,  String league,  int topicLevel,  bool isBot,  bool isPro)  $default,) {final _that = this;
 switch (_that) {
 case _DuelPlayer():
-return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_that.guestTag,_that.league,_that.topicLevel,_that.isBot);case _:
+return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_that.guestTag,_that.league,_that.topicLevel,_that.isBot,_that.isPro);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +206,10 @@ return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? name, @JsonKey(name: 'avatar')  String avatarEmoji,  int elo,  bool isGuest,  String? guestTag,  String league,  int topicLevel,  bool isBot)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? name, @JsonKey(name: 'avatar')  String avatarEmoji,  int elo,  bool isGuest,  String? guestTag,  String league,  int topicLevel,  bool isBot,  bool isPro)?  $default,) {final _that = this;
 switch (_that) {
 case _DuelPlayer() when $default != null:
-return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_that.guestTag,_that.league,_that.topicLevel,_that.isBot);case _:
+return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_that.guestTag,_that.league,_that.topicLevel,_that.isBot,_that.isPro);case _:
   return null;
 
 }
@@ -217,7 +221,7 @@ return $default(_that.id,_that.name,_that.avatarEmoji,_that.elo,_that.isGuest,_t
 @JsonSerializable()
 
 class _DuelPlayer extends DuelPlayer {
-  const _DuelPlayer({required this.id, required this.name, @JsonKey(name: 'avatar') required this.avatarEmoji, required this.elo, this.isGuest = false, this.guestTag, this.league = 'bronze', this.topicLevel = 0, this.isBot = false}): super._();
+  const _DuelPlayer({required this.id, required this.name, @JsonKey(name: 'avatar') required this.avatarEmoji, required this.elo, this.isGuest = false, this.guestTag, this.league = 'bronze', this.topicLevel = 0, this.isBot = false, this.isPro = false}): super._();
   factory _DuelPlayer.fromJson(Map<String, dynamic> json) => _$DuelPlayerFromJson(json);
 
 @override final  String id;
@@ -229,6 +233,10 @@ class _DuelPlayer extends DuelPlayer {
 @override@JsonKey() final  String league;
 @override@JsonKey() final  int topicLevel;
 @override@JsonKey() final  bool isBot;
+/// A Quizoo Pro member (plan 023). JSON key `isPro`, matching the
+/// server's `_duel_player_json` / `_duel_challenge_card` /
+/// `_duel_requester_json` (Phase 2 step E).
+@override@JsonKey() final  bool isPro;
 
 /// Create a copy of DuelPlayer
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelPlayer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.elo, elo) || other.elo == elo)&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.guestTag, guestTag) || other.guestTag == guestTag)&&(identical(other.league, league) || other.league == league)&&(identical(other.topicLevel, topicLevel) || other.topicLevel == topicLevel)&&(identical(other.isBot, isBot) || other.isBot == isBot));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelPlayer&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.elo, elo) || other.elo == elo)&&(identical(other.isGuest, isGuest) || other.isGuest == isGuest)&&(identical(other.guestTag, guestTag) || other.guestTag == guestTag)&&(identical(other.league, league) || other.league == league)&&(identical(other.topicLevel, topicLevel) || other.topicLevel == topicLevel)&&(identical(other.isBot, isBot) || other.isBot == isBot)&&(identical(other.isPro, isPro) || other.isPro == isPro));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,avatarEmoji,elo,isGuest,guestTag,league,topicLevel,isBot);
+int get hashCode => Object.hash(runtimeType,id,name,avatarEmoji,elo,isGuest,guestTag,league,topicLevel,isBot,isPro);
 
 @override
 String toString() {
-  return 'DuelPlayer(id: $id, name: $name, avatarEmoji: $avatarEmoji, elo: $elo, isGuest: $isGuest, guestTag: $guestTag, league: $league, topicLevel: $topicLevel, isBot: $isBot)';
+  return 'DuelPlayer(id: $id, name: $name, avatarEmoji: $avatarEmoji, elo: $elo, isGuest: $isGuest, guestTag: $guestTag, league: $league, topicLevel: $topicLevel, isBot: $isBot, isPro: $isPro)';
 }
 
 
@@ -263,7 +271,7 @@ abstract mixin class _$DuelPlayerCopyWith<$Res> implements $DuelPlayerCopyWith<$
   factory _$DuelPlayerCopyWith(_DuelPlayer value, $Res Function(_DuelPlayer) _then) = __$DuelPlayerCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String? name,@JsonKey(name: 'avatar') String avatarEmoji, int elo, bool isGuest, String? guestTag, String league, int topicLevel, bool isBot
+ String id, String? name,@JsonKey(name: 'avatar') String avatarEmoji, int elo, bool isGuest, String? guestTag, String league, int topicLevel, bool isBot, bool isPro
 });
 
 
@@ -280,7 +288,7 @@ class __$DuelPlayerCopyWithImpl<$Res>
 
 /// Create a copy of DuelPlayer
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? avatarEmoji = null,Object? elo = null,Object? isGuest = null,Object? guestTag = freezed,Object? league = null,Object? topicLevel = null,Object? isBot = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = freezed,Object? avatarEmoji = null,Object? elo = null,Object? isGuest = null,Object? guestTag = freezed,Object? league = null,Object? topicLevel = null,Object? isBot = null,Object? isPro = null,}) {
   return _then(_DuelPlayer(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -291,6 +299,7 @@ as bool,guestTag: freezed == guestTag ? _self.guestTag : guestTag // ignore: cas
 as String?,league: null == league ? _self.league : league // ignore: cast_nullable_to_non_nullable
 as String,topicLevel: null == topicLevel ? _self.topicLevel : topicLevel // ignore: cast_nullable_to_non_nullable
 as int,isBot: null == isBot ? _self.isBot : isBot // ignore: cast_nullable_to_non_nullable
+as bool,isPro: null == isPro ? _self.isPro : isPro // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

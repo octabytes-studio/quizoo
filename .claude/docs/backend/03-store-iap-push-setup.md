@@ -4,76 +4,88 @@ Covers the two things only Apple's and Google's own dashboards can issue:
 in-app purchase products (for `features/shop`) and the APNs key Firebase
 needs to actually deliver push notifications to iOS devices.
 
-## 1. In-app purchase products
+## 1. Quizoo Pro products (plan 023)
 
-The shop sells three coin packs
-(`lib/features/shop/data/shop_api.dart`'s `_shop.coinPacks`) — create a
-matching **consumable** IAP product for each, in both stores, with **the
-same product ID in both** so the Flutter-side catalog (Remote Config's
-`coin_pack_ids`, doc 02 §3) doesn't need per-platform branching:
+The old coin-pack shop is gone (plan 013 deleted it); the app's one
+purchaseable product line is **Quizoo Pro**, an auto-renewing subscription
+(monthly, yearly) plus a lifetime purchase, sold through **RevenueCat**.
+All three unlock the single entitlement `quizoo_pro`.
 
-| Product ID | Coins | Reference price | Bonus |
+| Plan | App Store product id | Play Store identifier | RevenueCat package |
 |---|---|---|---|
-| `quizoo_coins_small` | 500 | $0.99 | — |
-| `quizoo_coins_medium` | 2,800 | $4.99 | +20% |
-| `quizoo_coins_large` | 6,500 | $9.99 | +50% |
+| Monthly | `quizoo_pro_monthly` (group "Quizoo Pro") | `quizoo_pro:monthly` (subscription `quizoo_pro`, base plan `monthly`) | `$rc_monthly` |
+| Yearly | `quizoo_pro_yearly` (group "Quizoo Pro") | `quizoo_pro:yearly` (base plan `yearly`) | `$rc_annual` |
+| Lifetime | `quizoo_pro_lifetime` (non-consumable) | `quizoo_pro_lifetime` (one-time product) | `$rc_lifetime` |
 
-**App Store Connect** (**My Apps → Quizoo → In-App Purchases**):
-1. Create your app record first if you haven't (needs a bundle ID matching
-   doc 02's iOS registration, a paid Apple Developer Program membership).
-2. **+ → Consumable**, one per row above. Reference name can be anything
-   internal; **Product ID** must match the table exactly.
-3. Add a localization (display name + description) for at least English.
-4. Pricing: pick the tier closest to the reference price.
-5. Products stay in "Ready to Submit" until your first app binary is
-   uploaded — that's expected at this stage, not an error.
+**These identifiers are final — never rename them after release.** In the
+App Store subscription group, rank yearly above monthly so upgrades and
+downgrades behave correctly. Play's subscription must be
+**backwards-compatible off / base-plan based** (RevenueCat SDK 10 uses
+Billing Library 6+).
 
-**Google Play Console** (**Your app → Monetize → Products → In-app
-products**):
-1. **Create product**, Product ID matching the table exactly, mark it
-   **Managed product** (Play's term for consumable-capable — the app marks
-   it consumed after granting coins, via `in_app_purchase`'s
-   `completePurchase`).
-2. Set a price; **Activate** the product.
+### RevenueCat project (already created)
 
-The **freeze power-up** (`PowerUp.freeze`, gem-priced) and gem purchases
-generally aren't in this table because the shop fixture
-(`ShopApi._shop`) only sells coin packs in v1 — gems accumulate from
-achievements/duels per the mock data, with no direct gem IAP yet. Add a gem
-pack here the same way if that changes.
+| Object | Id |
+|---|---|
+| Project "Quizoo" | `proj66ca87d0` |
+| Test Store app | `app4ae025b9bd` |
+| Quizoo iOS (App Store) | `app6d4e7125fb` |
+| Quizoo Android (Play Store) | `app632311ce98` |
+| Entitlement `quizoo_pro` | `entl290e4fc2fe` |
+| Offering `default` (current) | `ofrng2dff8fa3f7` |
+| Webhook "Supabase – Quizoo Pro" | `whintgr6cac98441b` |
 
-## 2. Receipt validation secrets
+The three Test Store products (`proddd41ad3919` monthly,
+`prod59fc6a0fca` yearly, `prod9c538a5aaa` lifetime) are development-only;
+their USD prices are placeholders and are **not** the owner's real prices.
 
-`verify-purchase` (one of the seven Edge Functions — see plan 006) needs
-credentials to call each store's server-to-server verification API:
+### Owner checklist — dashboard only
 
-**Apple** — an **App Store Server API key**:
-1. App Store Connect → **Users and Access → Integrations → App Store
-   Server API** → **Generate API Key**.
-2. Download the `.p8` key (once only, like the Sign-In-with-Apple key in
-   doc 01 — don't lose it), note the **Key ID** and **Issuer ID**.
+1. RevenueCat dashboard → **Quizoo iOS**: upload the **App Store Connect
+   API key** and the **In-App Purchase key** (`.p8`, key id, issuer id).
+2. RevenueCat dashboard → **Quizoo Android**: upload the **Play
+   service-account JSON** (with the financial-data and order-management
+   permissions RevenueCat lists), and enable Real-time Developer
+   Notifications.
+3. Create the six real products in both consoles with the exact ids above,
+   decide the three prices and whether yearly gets a free trial (7 days is
+   the common choice), and register them in RevenueCat. Fill in the App
+   Store subscription group's localizations and the review screenshot —
+   **the first subscription must be submitted together with an app
+   version.**
+4. RevenueCat dashboard → the webhook: set the **Authorization header** to
+   `Bearer <random secret>`, and create a **secret API key** (v1).
+5. RevenueCat → Project settings: confirm restore behaviour is **"Transfer
+   to new App User ID"**.
+6. Xcode: confirm the **In-App Purchase** capability on the Runner target;
+   add sandbox testers in App Store Connect. Play Console: add license
+   testers and publish at least an internal-testing build (products are not
+   purchasable until one exists).
+7. Publish **Terms of Use** and **Privacy Policy** pages and put their URLs
+   in `lib/core/subscription/revenuecat_config.dart` (currently
+   placeholders); add the Terms link to the App Store description (Apple
+   requires it for auto-renewing subscriptions).
+8. Update App Store "App Privacy" and Play "Data safety" for purchase
+   history, and the store listings to mention Quizoo Pro.
+9. Complete the paid-apps agreements, tax and banking in both consoles —
+   products cannot be sold without them.
 
-**Google** — a **service account** with API access:
-1. [Google Play Console API access](https://play.google.com/console) →
-   **Setup → API access** → **Create new service account** (this opens
-   Google Cloud Console).
-2. In Cloud Console, grant the service account the **Pub/Sub Editor** role
-   if you also want real-time subscription notifications (optional for v1);
-   at minimum it needs access to query purchase state.
-3. Back in Play Console, grant that service account **Finance data** view
-   access under **API access**.
-4. Download its JSON key.
+## 2. Edge Function secrets (plan 023)
 
-Store both sets of credentials as **Supabase Edge Function secrets** (not in
-the Flutter app, not in git):
+The two Pro Edge Functions (`revenuecat-webhook`, `sync-pro-status`) fail
+**closed** until these are set — a missing secret grants Pro to nobody.
 
 ```bash
-supabase secrets set APPLE_ISSUER_ID=... APPLE_KEY_ID=... APPLE_PRIVATE_KEY="$(cat AuthKey_XXXX.p8)"
-supabase secrets set GOOGLE_SERVICE_ACCOUNT_JSON="$(cat play-service-account.json)"
+supabase secrets set REVENUECAT_WEBHOOK_SECRET='<the bearer secret from checklist 4>'
+supabase secrets set REVENUECAT_SECRET_KEY='<the RevenueCat v1 secret API key>'
 ```
 
-(Exact secret names are up to whoever implements `verify-purchase` in plan
-006 — this is the credential material it will need, not a fixed contract.)
+Then send a test event from the RevenueCat dashboard and confirm a row
+appears in `public.revenuecat_events`.
+
+The old `verify-purchase` / `APPLE_*` / `GOOGLE_*` secrets are obsolete —
+the coin-pack shop they served was deleted in plan 013. RevenueCat performs
+the store verification now.
 
 ## 3. APNs key for Firebase Cloud Messaging (iOS push)
 

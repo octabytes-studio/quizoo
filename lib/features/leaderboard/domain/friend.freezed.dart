@@ -18,7 +18,8 @@ mixin _$Friend {
  String get id; String get name; String get avatarEmoji; FriendStatus get status;/// "Level 22 · Gold League" for a request, "🟢 Playing Cricket now" or
 /// "Last seen 2h ago · 142k pts" for a friend — precomputed by the
 /// fixture, since it is presentation copy over otherwise-identical data.
- String get subtitle;
+ String get subtitle;/// A Quizoo Pro member (plan 023) — drives the crown and the tick.
+ bool get isPro;
 /// Create a copy of Friend
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +32,16 @@ $FriendCopyWith<Friend> get copyWith => _$FriendCopyWithImpl<Friend>(this as Fri
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Friend&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Friend&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.isPro, isPro) || other.isPro == isPro));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,avatarEmoji,status,subtitle);
+int get hashCode => Object.hash(runtimeType,id,name,avatarEmoji,status,subtitle,isPro);
 
 @override
 String toString() {
-  return 'Friend(id: $id, name: $name, avatarEmoji: $avatarEmoji, status: $status, subtitle: $subtitle)';
+  return 'Friend(id: $id, name: $name, avatarEmoji: $avatarEmoji, status: $status, subtitle: $subtitle, isPro: $isPro)';
 }
 
 
@@ -51,7 +52,7 @@ abstract mixin class $FriendCopyWith<$Res>  {
   factory $FriendCopyWith(Friend value, $Res Function(Friend) _then) = _$FriendCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String avatarEmoji, FriendStatus status, String subtitle
+ String id, String name, String avatarEmoji, FriendStatus status, String subtitle, bool isPro
 });
 
 
@@ -68,14 +69,15 @@ class _$FriendCopyWithImpl<$Res>
 
 /// Create a copy of Friend
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? avatarEmoji = null,Object? status = null,Object? subtitle = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? avatarEmoji = null,Object? status = null,Object? subtitle = null,Object? isPro = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,avatarEmoji: null == avatarEmoji ? _self.avatarEmoji : avatarEmoji // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as FriendStatus,subtitle: null == subtitle ? _self.subtitle : subtitle // ignore: cast_nullable_to_non_nullable
-as String,
+as String,isPro: null == isPro ? _self.isPro : isPro // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -160,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String avatarEmoji,  FriendStatus status,  String subtitle)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String avatarEmoji,  FriendStatus status,  String subtitle,  bool isPro)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Friend() when $default != null:
-return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitle);case _:
+return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitle,_that.isPro);case _:
   return orElse();
 
 }
@@ -181,10 +183,10 @@ return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitl
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String avatarEmoji,  FriendStatus status,  String subtitle)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String avatarEmoji,  FriendStatus status,  String subtitle,  bool isPro)  $default,) {final _that = this;
 switch (_that) {
 case _Friend():
-return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitle);case _:
+return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitle,_that.isPro);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +203,10 @@ return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitl
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String avatarEmoji,  FriendStatus status,  String subtitle)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String avatarEmoji,  FriendStatus status,  String subtitle,  bool isPro)?  $default,) {final _that = this;
 switch (_that) {
 case _Friend() when $default != null:
-return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitle);case _:
+return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitle,_that.isPro);case _:
   return null;
 
 }
@@ -216,7 +218,7 @@ return $default(_that.id,_that.name,_that.avatarEmoji,_that.status,_that.subtitl
 @JsonSerializable()
 
 class _Friend implements Friend {
-  const _Friend({required this.id, required this.name, required this.avatarEmoji, required this.status, required this.subtitle});
+  const _Friend({required this.id, required this.name, required this.avatarEmoji, required this.status, required this.subtitle, this.isPro = false});
   factory _Friend.fromJson(Map<String, dynamic> json) => _$FriendFromJson(json);
 
 @override final  String id;
@@ -227,6 +229,8 @@ class _Friend implements Friend {
 /// "Last seen 2h ago · 142k pts" for a friend — precomputed by the
 /// fixture, since it is presentation copy over otherwise-identical data.
 @override final  String subtitle;
+/// A Quizoo Pro member (plan 023) — drives the crown and the tick.
+@override@JsonKey() final  bool isPro;
 
 /// Create a copy of Friend
 /// with the given fields replaced by the non-null parameter values.
@@ -241,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Friend&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Friend&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.status, status) || other.status == status)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.isPro, isPro) || other.isPro == isPro));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,avatarEmoji,status,subtitle);
+int get hashCode => Object.hash(runtimeType,id,name,avatarEmoji,status,subtitle,isPro);
 
 @override
 String toString() {
-  return 'Friend(id: $id, name: $name, avatarEmoji: $avatarEmoji, status: $status, subtitle: $subtitle)';
+  return 'Friend(id: $id, name: $name, avatarEmoji: $avatarEmoji, status: $status, subtitle: $subtitle, isPro: $isPro)';
 }
 
 
@@ -261,7 +265,7 @@ abstract mixin class _$FriendCopyWith<$Res> implements $FriendCopyWith<$Res> {
   factory _$FriendCopyWith(_Friend value, $Res Function(_Friend) _then) = __$FriendCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String avatarEmoji, FriendStatus status, String subtitle
+ String id, String name, String avatarEmoji, FriendStatus status, String subtitle, bool isPro
 });
 
 
@@ -278,14 +282,15 @@ class __$FriendCopyWithImpl<$Res>
 
 /// Create a copy of Friend
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? avatarEmoji = null,Object? status = null,Object? subtitle = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? avatarEmoji = null,Object? status = null,Object? subtitle = null,Object? isPro = null,}) {
   return _then(_Friend(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,avatarEmoji: null == avatarEmoji ? _self.avatarEmoji : avatarEmoji // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as FriendStatus,subtitle: null == subtitle ? _self.subtitle : subtitle // ignore: cast_nullable_to_non_nullable
-as String,
+as String,isPro: null == isPro ? _self.isPro : isPro // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

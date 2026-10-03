@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
+import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
@@ -206,12 +207,25 @@ class _ProfileCreationViewState extends State<_ProfileCreationView> {
     final l10n = AppLocalizations.of(context);
     final user = context.read<SessionCubit>().state.user;
 
-    await context.read<SessionCubit>().createProfile(
-      username: _username.text.trim(),
-      email: _isVendorSignIn ? user!.email! : _email.text.trim(),
-      avatarEmoji: _avatarKey,
-      countryCode: _country.countryCode,
-    );
+    try {
+      await context.read<SessionCubit>().createProfile(
+        username: _username.text.trim(),
+        email: _isVendorSignIn ? user!.email! : _email.text.trim(),
+        avatarEmoji: _avatarKey,
+        countryCode: _country.countryCode,
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      // Defence in depth (plan 023, 6.5) — see Edit Profile's twin.
+      AppSnackbar.show(
+        context,
+        title: error.code == 'pro_avatar_required'
+            ? l10n.proAvatarRequired
+            : l10n.profileUpdateError,
+        intent: SnackbarIntent.error,
+      );
+      return;
+    }
     if (!mounted) return;
 
     AppSnackbar.show(

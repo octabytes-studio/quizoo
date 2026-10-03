@@ -16,6 +16,9 @@ abstract class LeagueStanding with _$LeagueStanding {
     required String avatarEmoji,
     required int points,
     @Default(false) bool isSelf,
+
+    /// A Quizoo Pro member (plan 023) — drives the crown and the tick.
+    @Default(false) bool isPro,
   }) = _LeagueStanding;
 
   factory LeagueStanding.fromJson(Map<String, dynamic> json) =>

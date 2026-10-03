@@ -301,7 +301,11 @@ mixin _$ProfileSummary {
 
  String get username; String get avatarEmoji;/// "🇵🇰 Islamabad".
  String get cityLabel;/// "Joined Mar 2026".
- String get joinedLabel; String get leagueEmoji; String get leagueName; int get dayStreak; int get playerLevel; String get rankTitle; int get xpIntoLevel; int get xpToNextLevel; int get totalPoints; int get totalLevels; int get accuracyPercent; int get badgeCount; List<AppBadge> get recentBadges; List<BestCategoryEntry> get bestCategories;
+ String get joinedLabel; String get leagueEmoji; String get leagueName; int get dayStreak; int get playerLevel; String get rankTitle; int get xpIntoLevel; int get xpToNextLevel; int get totalPoints; int get totalLevels; int get accuracyPercent; int get badgeCount; List<AppBadge> get recentBadges; List<BestCategoryEntry> get bestCategories;/// A Quizoo Pro member (plan 023) — drives the crown and the tick.
+/// From `profiles.is_pro`, which only the server writes; the profile
+/// screen ORs it with this device's own entitlement so the badge
+/// appears the instant a purchase lands.
+ bool get isPro;
 /// Create a copy of ProfileSummary
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -314,16 +318,16 @@ $ProfileSummaryCopyWith<ProfileSummary> get copyWith => _$ProfileSummaryCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileSummary&&(identical(other.username, username) || other.username == username)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.cityLabel, cityLabel) || other.cityLabel == cityLabel)&&(identical(other.joinedLabel, joinedLabel) || other.joinedLabel == joinedLabel)&&(identical(other.leagueEmoji, leagueEmoji) || other.leagueEmoji == leagueEmoji)&&(identical(other.leagueName, leagueName) || other.leagueName == leagueName)&&(identical(other.dayStreak, dayStreak) || other.dayStreak == dayStreak)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel)&&(identical(other.rankTitle, rankTitle) || other.rankTitle == rankTitle)&&(identical(other.xpIntoLevel, xpIntoLevel) || other.xpIntoLevel == xpIntoLevel)&&(identical(other.xpToNextLevel, xpToNextLevel) || other.xpToNextLevel == xpToNextLevel)&&(identical(other.totalPoints, totalPoints) || other.totalPoints == totalPoints)&&(identical(other.totalLevels, totalLevels) || other.totalLevels == totalLevels)&&(identical(other.accuracyPercent, accuracyPercent) || other.accuracyPercent == accuracyPercent)&&(identical(other.badgeCount, badgeCount) || other.badgeCount == badgeCount)&&const DeepCollectionEquality().equals(other.recentBadges, recentBadges)&&const DeepCollectionEquality().equals(other.bestCategories, bestCategories));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileSummary&&(identical(other.username, username) || other.username == username)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.cityLabel, cityLabel) || other.cityLabel == cityLabel)&&(identical(other.joinedLabel, joinedLabel) || other.joinedLabel == joinedLabel)&&(identical(other.leagueEmoji, leagueEmoji) || other.leagueEmoji == leagueEmoji)&&(identical(other.leagueName, leagueName) || other.leagueName == leagueName)&&(identical(other.dayStreak, dayStreak) || other.dayStreak == dayStreak)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel)&&(identical(other.rankTitle, rankTitle) || other.rankTitle == rankTitle)&&(identical(other.xpIntoLevel, xpIntoLevel) || other.xpIntoLevel == xpIntoLevel)&&(identical(other.xpToNextLevel, xpToNextLevel) || other.xpToNextLevel == xpToNextLevel)&&(identical(other.totalPoints, totalPoints) || other.totalPoints == totalPoints)&&(identical(other.totalLevels, totalLevels) || other.totalLevels == totalLevels)&&(identical(other.accuracyPercent, accuracyPercent) || other.accuracyPercent == accuracyPercent)&&(identical(other.badgeCount, badgeCount) || other.badgeCount == badgeCount)&&const DeepCollectionEquality().equals(other.recentBadges, recentBadges)&&const DeepCollectionEquality().equals(other.bestCategories, bestCategories)&&(identical(other.isPro, isPro) || other.isPro == isPro));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,username,avatarEmoji,cityLabel,joinedLabel,leagueEmoji,leagueName,dayStreak,playerLevel,rankTitle,xpIntoLevel,xpToNextLevel,totalPoints,totalLevels,accuracyPercent,badgeCount,const DeepCollectionEquality().hash(recentBadges),const DeepCollectionEquality().hash(bestCategories));
+int get hashCode => Object.hash(runtimeType,username,avatarEmoji,cityLabel,joinedLabel,leagueEmoji,leagueName,dayStreak,playerLevel,rankTitle,xpIntoLevel,xpToNextLevel,totalPoints,totalLevels,accuracyPercent,badgeCount,const DeepCollectionEquality().hash(recentBadges),const DeepCollectionEquality().hash(bestCategories),isPro);
 
 @override
 String toString() {
-  return 'ProfileSummary(username: $username, avatarEmoji: $avatarEmoji, cityLabel: $cityLabel, joinedLabel: $joinedLabel, leagueEmoji: $leagueEmoji, leagueName: $leagueName, dayStreak: $dayStreak, playerLevel: $playerLevel, rankTitle: $rankTitle, xpIntoLevel: $xpIntoLevel, xpToNextLevel: $xpToNextLevel, totalPoints: $totalPoints, totalLevels: $totalLevels, accuracyPercent: $accuracyPercent, badgeCount: $badgeCount, recentBadges: $recentBadges, bestCategories: $bestCategories)';
+  return 'ProfileSummary(username: $username, avatarEmoji: $avatarEmoji, cityLabel: $cityLabel, joinedLabel: $joinedLabel, leagueEmoji: $leagueEmoji, leagueName: $leagueName, dayStreak: $dayStreak, playerLevel: $playerLevel, rankTitle: $rankTitle, xpIntoLevel: $xpIntoLevel, xpToNextLevel: $xpToNextLevel, totalPoints: $totalPoints, totalLevels: $totalLevels, accuracyPercent: $accuracyPercent, badgeCount: $badgeCount, recentBadges: $recentBadges, bestCategories: $bestCategories, isPro: $isPro)';
 }
 
 
@@ -334,7 +338,7 @@ abstract mixin class $ProfileSummaryCopyWith<$Res>  {
   factory $ProfileSummaryCopyWith(ProfileSummary value, $Res Function(ProfileSummary) _then) = _$ProfileSummaryCopyWithImpl;
 @useResult
 $Res call({
- String username, String avatarEmoji, String cityLabel, String joinedLabel, String leagueEmoji, String leagueName, int dayStreak, int playerLevel, String rankTitle, int xpIntoLevel, int xpToNextLevel, int totalPoints, int totalLevels, int accuracyPercent, int badgeCount, List<AppBadge> recentBadges, List<BestCategoryEntry> bestCategories
+ String username, String avatarEmoji, String cityLabel, String joinedLabel, String leagueEmoji, String leagueName, int dayStreak, int playerLevel, String rankTitle, int xpIntoLevel, int xpToNextLevel, int totalPoints, int totalLevels, int accuracyPercent, int badgeCount, List<AppBadge> recentBadges, List<BestCategoryEntry> bestCategories, bool isPro
 });
 
 
@@ -351,7 +355,7 @@ class _$ProfileSummaryCopyWithImpl<$Res>
 
 /// Create a copy of ProfileSummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? username = null,Object? avatarEmoji = null,Object? cityLabel = null,Object? joinedLabel = null,Object? leagueEmoji = null,Object? leagueName = null,Object? dayStreak = null,Object? playerLevel = null,Object? rankTitle = null,Object? xpIntoLevel = null,Object? xpToNextLevel = null,Object? totalPoints = null,Object? totalLevels = null,Object? accuracyPercent = null,Object? badgeCount = null,Object? recentBadges = null,Object? bestCategories = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? username = null,Object? avatarEmoji = null,Object? cityLabel = null,Object? joinedLabel = null,Object? leagueEmoji = null,Object? leagueName = null,Object? dayStreak = null,Object? playerLevel = null,Object? rankTitle = null,Object? xpIntoLevel = null,Object? xpToNextLevel = null,Object? totalPoints = null,Object? totalLevels = null,Object? accuracyPercent = null,Object? badgeCount = null,Object? recentBadges = null,Object? bestCategories = null,Object? isPro = null,}) {
   return _then(_self.copyWith(
 username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,avatarEmoji: null == avatarEmoji ? _self.avatarEmoji : avatarEmoji // ignore: cast_nullable_to_non_nullable
@@ -370,7 +374,8 @@ as int,accuracyPercent: null == accuracyPercent ? _self.accuracyPercent : accura
 as int,badgeCount: null == badgeCount ? _self.badgeCount : badgeCount // ignore: cast_nullable_to_non_nullable
 as int,recentBadges: null == recentBadges ? _self.recentBadges : recentBadges // ignore: cast_nullable_to_non_nullable
 as List<AppBadge>,bestCategories: null == bestCategories ? _self.bestCategories : bestCategories // ignore: cast_nullable_to_non_nullable
-as List<BestCategoryEntry>,
+as List<BestCategoryEntry>,isPro: null == isPro ? _self.isPro : isPro // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -455,10 +460,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String username,  String avatarEmoji,  String cityLabel,  String joinedLabel,  String leagueEmoji,  String leagueName,  int dayStreak,  int playerLevel,  String rankTitle,  int xpIntoLevel,  int xpToNextLevel,  int totalPoints,  int totalLevels,  int accuracyPercent,  int badgeCount,  List<AppBadge> recentBadges,  List<BestCategoryEntry> bestCategories)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String username,  String avatarEmoji,  String cityLabel,  String joinedLabel,  String leagueEmoji,  String leagueName,  int dayStreak,  int playerLevel,  String rankTitle,  int xpIntoLevel,  int xpToNextLevel,  int totalPoints,  int totalLevels,  int accuracyPercent,  int badgeCount,  List<AppBadge> recentBadges,  List<BestCategoryEntry> bestCategories,  bool isPro)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProfileSummary() when $default != null:
-return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLabel,_that.leagueEmoji,_that.leagueName,_that.dayStreak,_that.playerLevel,_that.rankTitle,_that.xpIntoLevel,_that.xpToNextLevel,_that.totalPoints,_that.totalLevels,_that.accuracyPercent,_that.badgeCount,_that.recentBadges,_that.bestCategories);case _:
+return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLabel,_that.leagueEmoji,_that.leagueName,_that.dayStreak,_that.playerLevel,_that.rankTitle,_that.xpIntoLevel,_that.xpToNextLevel,_that.totalPoints,_that.totalLevels,_that.accuracyPercent,_that.badgeCount,_that.recentBadges,_that.bestCategories,_that.isPro);case _:
   return orElse();
 
 }
@@ -476,10 +481,10 @@ return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLab
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String username,  String avatarEmoji,  String cityLabel,  String joinedLabel,  String leagueEmoji,  String leagueName,  int dayStreak,  int playerLevel,  String rankTitle,  int xpIntoLevel,  int xpToNextLevel,  int totalPoints,  int totalLevels,  int accuracyPercent,  int badgeCount,  List<AppBadge> recentBadges,  List<BestCategoryEntry> bestCategories)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String username,  String avatarEmoji,  String cityLabel,  String joinedLabel,  String leagueEmoji,  String leagueName,  int dayStreak,  int playerLevel,  String rankTitle,  int xpIntoLevel,  int xpToNextLevel,  int totalPoints,  int totalLevels,  int accuracyPercent,  int badgeCount,  List<AppBadge> recentBadges,  List<BestCategoryEntry> bestCategories,  bool isPro)  $default,) {final _that = this;
 switch (_that) {
 case _ProfileSummary():
-return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLabel,_that.leagueEmoji,_that.leagueName,_that.dayStreak,_that.playerLevel,_that.rankTitle,_that.xpIntoLevel,_that.xpToNextLevel,_that.totalPoints,_that.totalLevels,_that.accuracyPercent,_that.badgeCount,_that.recentBadges,_that.bestCategories);case _:
+return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLabel,_that.leagueEmoji,_that.leagueName,_that.dayStreak,_that.playerLevel,_that.rankTitle,_that.xpIntoLevel,_that.xpToNextLevel,_that.totalPoints,_that.totalLevels,_that.accuracyPercent,_that.badgeCount,_that.recentBadges,_that.bestCategories,_that.isPro);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -496,10 +501,10 @@ return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLab
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String username,  String avatarEmoji,  String cityLabel,  String joinedLabel,  String leagueEmoji,  String leagueName,  int dayStreak,  int playerLevel,  String rankTitle,  int xpIntoLevel,  int xpToNextLevel,  int totalPoints,  int totalLevels,  int accuracyPercent,  int badgeCount,  List<AppBadge> recentBadges,  List<BestCategoryEntry> bestCategories)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String username,  String avatarEmoji,  String cityLabel,  String joinedLabel,  String leagueEmoji,  String leagueName,  int dayStreak,  int playerLevel,  String rankTitle,  int xpIntoLevel,  int xpToNextLevel,  int totalPoints,  int totalLevels,  int accuracyPercent,  int badgeCount,  List<AppBadge> recentBadges,  List<BestCategoryEntry> bestCategories,  bool isPro)?  $default,) {final _that = this;
 switch (_that) {
 case _ProfileSummary() when $default != null:
-return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLabel,_that.leagueEmoji,_that.leagueName,_that.dayStreak,_that.playerLevel,_that.rankTitle,_that.xpIntoLevel,_that.xpToNextLevel,_that.totalPoints,_that.totalLevels,_that.accuracyPercent,_that.badgeCount,_that.recentBadges,_that.bestCategories);case _:
+return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLabel,_that.leagueEmoji,_that.leagueName,_that.dayStreak,_that.playerLevel,_that.rankTitle,_that.xpIntoLevel,_that.xpToNextLevel,_that.totalPoints,_that.totalLevels,_that.accuracyPercent,_that.badgeCount,_that.recentBadges,_that.bestCategories,_that.isPro);case _:
   return null;
 
 }
@@ -511,7 +516,7 @@ return $default(_that.username,_that.avatarEmoji,_that.cityLabel,_that.joinedLab
 @JsonSerializable()
 
 class _ProfileSummary extends ProfileSummary {
-  const _ProfileSummary({required this.username, required this.avatarEmoji, required this.cityLabel, required this.joinedLabel, required this.leagueEmoji, required this.leagueName, required this.dayStreak, required this.playerLevel, required this.rankTitle, required this.xpIntoLevel, required this.xpToNextLevel, required this.totalPoints, required this.totalLevels, required this.accuracyPercent, required this.badgeCount, required final  List<AppBadge> recentBadges, required final  List<BestCategoryEntry> bestCategories}): _recentBadges = recentBadges,_bestCategories = bestCategories,super._();
+  const _ProfileSummary({required this.username, required this.avatarEmoji, required this.cityLabel, required this.joinedLabel, required this.leagueEmoji, required this.leagueName, required this.dayStreak, required this.playerLevel, required this.rankTitle, required this.xpIntoLevel, required this.xpToNextLevel, required this.totalPoints, required this.totalLevels, required this.accuracyPercent, required this.badgeCount, required final  List<AppBadge> recentBadges, required final  List<BestCategoryEntry> bestCategories, this.isPro = false}): _recentBadges = recentBadges,_bestCategories = bestCategories,super._();
   factory _ProfileSummary.fromJson(Map<String, dynamic> json) => _$ProfileSummaryFromJson(json);
 
 @override final  String username;
@@ -545,6 +550,11 @@ class _ProfileSummary extends ProfileSummary {
   return EqualUnmodifiableListView(_bestCategories);
 }
 
+/// A Quizoo Pro member (plan 023) — drives the crown and the tick.
+/// From `profiles.is_pro`, which only the server writes; the profile
+/// screen ORs it with this device's own entitlement so the badge
+/// appears the instant a purchase lands.
+@override@JsonKey() final  bool isPro;
 
 /// Create a copy of ProfileSummary
 /// with the given fields replaced by the non-null parameter values.
@@ -559,16 +569,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileSummary&&(identical(other.username, username) || other.username == username)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.cityLabel, cityLabel) || other.cityLabel == cityLabel)&&(identical(other.joinedLabel, joinedLabel) || other.joinedLabel == joinedLabel)&&(identical(other.leagueEmoji, leagueEmoji) || other.leagueEmoji == leagueEmoji)&&(identical(other.leagueName, leagueName) || other.leagueName == leagueName)&&(identical(other.dayStreak, dayStreak) || other.dayStreak == dayStreak)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel)&&(identical(other.rankTitle, rankTitle) || other.rankTitle == rankTitle)&&(identical(other.xpIntoLevel, xpIntoLevel) || other.xpIntoLevel == xpIntoLevel)&&(identical(other.xpToNextLevel, xpToNextLevel) || other.xpToNextLevel == xpToNextLevel)&&(identical(other.totalPoints, totalPoints) || other.totalPoints == totalPoints)&&(identical(other.totalLevels, totalLevels) || other.totalLevels == totalLevels)&&(identical(other.accuracyPercent, accuracyPercent) || other.accuracyPercent == accuracyPercent)&&(identical(other.badgeCount, badgeCount) || other.badgeCount == badgeCount)&&const DeepCollectionEquality().equals(other._recentBadges, _recentBadges)&&const DeepCollectionEquality().equals(other._bestCategories, _bestCategories));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileSummary&&(identical(other.username, username) || other.username == username)&&(identical(other.avatarEmoji, avatarEmoji) || other.avatarEmoji == avatarEmoji)&&(identical(other.cityLabel, cityLabel) || other.cityLabel == cityLabel)&&(identical(other.joinedLabel, joinedLabel) || other.joinedLabel == joinedLabel)&&(identical(other.leagueEmoji, leagueEmoji) || other.leagueEmoji == leagueEmoji)&&(identical(other.leagueName, leagueName) || other.leagueName == leagueName)&&(identical(other.dayStreak, dayStreak) || other.dayStreak == dayStreak)&&(identical(other.playerLevel, playerLevel) || other.playerLevel == playerLevel)&&(identical(other.rankTitle, rankTitle) || other.rankTitle == rankTitle)&&(identical(other.xpIntoLevel, xpIntoLevel) || other.xpIntoLevel == xpIntoLevel)&&(identical(other.xpToNextLevel, xpToNextLevel) || other.xpToNextLevel == xpToNextLevel)&&(identical(other.totalPoints, totalPoints) || other.totalPoints == totalPoints)&&(identical(other.totalLevels, totalLevels) || other.totalLevels == totalLevels)&&(identical(other.accuracyPercent, accuracyPercent) || other.accuracyPercent == accuracyPercent)&&(identical(other.badgeCount, badgeCount) || other.badgeCount == badgeCount)&&const DeepCollectionEquality().equals(other._recentBadges, _recentBadges)&&const DeepCollectionEquality().equals(other._bestCategories, _bestCategories)&&(identical(other.isPro, isPro) || other.isPro == isPro));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,username,avatarEmoji,cityLabel,joinedLabel,leagueEmoji,leagueName,dayStreak,playerLevel,rankTitle,xpIntoLevel,xpToNextLevel,totalPoints,totalLevels,accuracyPercent,badgeCount,const DeepCollectionEquality().hash(_recentBadges),const DeepCollectionEquality().hash(_bestCategories));
+int get hashCode => Object.hash(runtimeType,username,avatarEmoji,cityLabel,joinedLabel,leagueEmoji,leagueName,dayStreak,playerLevel,rankTitle,xpIntoLevel,xpToNextLevel,totalPoints,totalLevels,accuracyPercent,badgeCount,const DeepCollectionEquality().hash(_recentBadges),const DeepCollectionEquality().hash(_bestCategories),isPro);
 
 @override
 String toString() {
-  return 'ProfileSummary(username: $username, avatarEmoji: $avatarEmoji, cityLabel: $cityLabel, joinedLabel: $joinedLabel, leagueEmoji: $leagueEmoji, leagueName: $leagueName, dayStreak: $dayStreak, playerLevel: $playerLevel, rankTitle: $rankTitle, xpIntoLevel: $xpIntoLevel, xpToNextLevel: $xpToNextLevel, totalPoints: $totalPoints, totalLevels: $totalLevels, accuracyPercent: $accuracyPercent, badgeCount: $badgeCount, recentBadges: $recentBadges, bestCategories: $bestCategories)';
+  return 'ProfileSummary(username: $username, avatarEmoji: $avatarEmoji, cityLabel: $cityLabel, joinedLabel: $joinedLabel, leagueEmoji: $leagueEmoji, leagueName: $leagueName, dayStreak: $dayStreak, playerLevel: $playerLevel, rankTitle: $rankTitle, xpIntoLevel: $xpIntoLevel, xpToNextLevel: $xpToNextLevel, totalPoints: $totalPoints, totalLevels: $totalLevels, accuracyPercent: $accuracyPercent, badgeCount: $badgeCount, recentBadges: $recentBadges, bestCategories: $bestCategories, isPro: $isPro)';
 }
 
 
@@ -579,7 +589,7 @@ abstract mixin class _$ProfileSummaryCopyWith<$Res> implements $ProfileSummaryCo
   factory _$ProfileSummaryCopyWith(_ProfileSummary value, $Res Function(_ProfileSummary) _then) = __$ProfileSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- String username, String avatarEmoji, String cityLabel, String joinedLabel, String leagueEmoji, String leagueName, int dayStreak, int playerLevel, String rankTitle, int xpIntoLevel, int xpToNextLevel, int totalPoints, int totalLevels, int accuracyPercent, int badgeCount, List<AppBadge> recentBadges, List<BestCategoryEntry> bestCategories
+ String username, String avatarEmoji, String cityLabel, String joinedLabel, String leagueEmoji, String leagueName, int dayStreak, int playerLevel, String rankTitle, int xpIntoLevel, int xpToNextLevel, int totalPoints, int totalLevels, int accuracyPercent, int badgeCount, List<AppBadge> recentBadges, List<BestCategoryEntry> bestCategories, bool isPro
 });
 
 
@@ -596,7 +606,7 @@ class __$ProfileSummaryCopyWithImpl<$Res>
 
 /// Create a copy of ProfileSummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? username = null,Object? avatarEmoji = null,Object? cityLabel = null,Object? joinedLabel = null,Object? leagueEmoji = null,Object? leagueName = null,Object? dayStreak = null,Object? playerLevel = null,Object? rankTitle = null,Object? xpIntoLevel = null,Object? xpToNextLevel = null,Object? totalPoints = null,Object? totalLevels = null,Object? accuracyPercent = null,Object? badgeCount = null,Object? recentBadges = null,Object? bestCategories = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? username = null,Object? avatarEmoji = null,Object? cityLabel = null,Object? joinedLabel = null,Object? leagueEmoji = null,Object? leagueName = null,Object? dayStreak = null,Object? playerLevel = null,Object? rankTitle = null,Object? xpIntoLevel = null,Object? xpToNextLevel = null,Object? totalPoints = null,Object? totalLevels = null,Object? accuracyPercent = null,Object? badgeCount = null,Object? recentBadges = null,Object? bestCategories = null,Object? isPro = null,}) {
   return _then(_ProfileSummary(
 username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,avatarEmoji: null == avatarEmoji ? _self.avatarEmoji : avatarEmoji // ignore: cast_nullable_to_non_nullable
@@ -615,7 +625,8 @@ as int,accuracyPercent: null == accuracyPercent ? _self.accuracyPercent : accura
 as int,badgeCount: null == badgeCount ? _self.badgeCount : badgeCount // ignore: cast_nullable_to_non_nullable
 as int,recentBadges: null == recentBadges ? _self._recentBadges : recentBadges // ignore: cast_nullable_to_non_nullable
 as List<AppBadge>,bestCategories: null == bestCategories ? _self._bestCategories : bestCategories // ignore: cast_nullable_to_non_nullable
-as List<BestCategoryEntry>,
+as List<BestCategoryEntry>,isPro: null == isPro ? _self.isPro : isPro // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

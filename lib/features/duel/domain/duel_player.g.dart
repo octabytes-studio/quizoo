@@ -16,6 +16,7 @@ _DuelPlayer _$DuelPlayerFromJson(Map<String, dynamic> json) => _DuelPlayer(
   league: json['league'] as String? ?? 'bronze',
   topicLevel: (json['topicLevel'] as num?)?.toInt() ?? 0,
   isBot: json['isBot'] as bool? ?? false,
+  isPro: json['isPro'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$DuelPlayerToJson(_DuelPlayer instance) =>
@@ -29,4 +30,5 @@ Map<String, dynamic> _$DuelPlayerToJson(_DuelPlayer instance) =>
       'league': instance.league,
       'topicLevel': instance.topicLevel,
       'isBot': instance.isBot,
+      'isPro': instance.isPro,
     };

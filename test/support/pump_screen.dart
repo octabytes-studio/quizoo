@@ -4,9 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/app/ads_cubit.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/ads/inline_ad_service.dart';
+import 'package:quizoo/core/subscription/pro_promo_store.dart';
+import 'package:quizoo/core/subscription/subscription_repository.dart';
 import 'package:quizoo/core/content_language/content_language_api.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/ladder/ladder_config_api.dart';
@@ -23,6 +26,7 @@ import 'package:quizoo/features/settings/data/settings_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_ads.dart';
+import 'fake_purchases.dart';
 import 'pump_app.dart';
 
 /// A no-op stand-in for the real `AuthApi`/`QuizPlayApi`/`ContentLanguageApi`,
@@ -58,6 +62,12 @@ class FakeDuelRealtime extends Mock implements DuelRealtime {}
 /// renders exactly as it did before ads existed; pass `ads:
 /// FakeAdsCubit.ready()` to exercise a screen's ad slots and breaks.
 ///
+/// Pro defaults to **off and unavailable** ([SubscriptionFree] with
+/// `isAvailable: false, showHomePromo: false`), so every screen renders
+/// exactly as it did before plan 023 — no crown, no upsell link, no Go Pro
+/// card. Pass `subscription:` to exercise a member's surface or an
+/// available upsell.
+///
 /// A [GoRouter] is stood up too, because these screens navigate: `context.pop`
 /// and `context.push` need a router above them, and a bare `MaterialApp` has
 /// none.
@@ -78,6 +88,8 @@ extension PumpScreen on WidgetTester {
     LadderConfigRepository? ladderConfig,
     AdsCubit? ads,
     InlineAdService? inlineAds,
+    SubscriptionCubit? subscription,
+    SubscriptionRepository? subscriptionRepository,
   }) async {
     final auth = authRepository ?? await _fakeAuthRepository();
     // `QuizPlayScreen` builds a real `StoredAudioTtsService` inline (it isn't
@@ -120,6 +132,14 @@ extension PumpScreen on WidgetTester {
           RepositoryProvider<InlineAdService>.value(
             value: inlineAds ?? FakeInlineAdService(),
           ),
+          // Plan 023: `runAdBreak` and the membership screen read both of
+          // these off the root, exactly as `app.dart` provides them.
+          RepositoryProvider<SubscriptionRepository>.value(
+            value: subscriptionRepository ?? _fallbackRepository,
+          ),
+          RepositoryProvider<ProPromoStore>.value(
+            value: ProPromoStore(await SharedPreferences.getInstance()),
+          ),
         ],
         child: MultiBlocProvider(
           providers: [
@@ -133,6 +153,9 @@ extension PumpScreen on WidgetTester {
               value: contentLanguageCubit,
             ),
             BlocProvider<AdsCubit>.value(value: ads ?? FakeAdsCubit()),
+            BlocProvider<SubscriptionCubit>.value(
+              value: subscription ?? freeSubscriptionCubit(),
+            ),
           ],
           child: _RouterHost(child: screen),
         ),
@@ -143,6 +166,11 @@ extension PumpScreen on WidgetTester {
     );
   }
 }
+
+/// The repository `pumpScreen` hands out when a test does not supply one.
+/// Never called — the default [SubscriptionCubit] is constructed with a null
+/// API key and `isEnabled: false`, so it never reaches the SDK.
+final SubscriptionRepository _fallbackRepository = fakeSubscriptionRepository();
 
 Future<AuthRepository> _fakeAuthRepository() async {
   SharedPreferences.setMockInitialValues({});

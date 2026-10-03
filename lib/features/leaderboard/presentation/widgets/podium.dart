@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/format/app_format.dart';
+import 'package:quizoo/core/widgets/pro_tick.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
@@ -121,6 +125,14 @@ class _PodiumPlace extends StatelessWidget {
     final localeName = Localizations.localeOf(context).toLanguageTag();
     final isFirst = place == 1;
     final avatarDiameter = isFirst ? firstAvatarSize : avatarSize;
+    // Plan 023: own row, so the local entitlement is OR'd in — see `proBadge`.
+    final isPro = proBadge(
+      serverIsPro: entry.isPro,
+      isSelf: entry.isSelf,
+      localIsPro: context.select<SubscriptionCubit, bool>(
+        (cubit) => cubit.state.isPro,
+      ),
+    );
     final flag = _flagOf(entry);
 
     return GestureDetector(
@@ -171,15 +183,30 @@ class _PodiumPlace extends StatelessWidget {
             ],
           ),
           SizedBox(height: 12.h),
-          Text(
-            entry.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: textTheme.bodyLarge!.copyWith(
-              fontSize: isFirst ? 13.5.sp : 12.5.sp,
-              fontWeight: isFirst ? FontWeight.w800 : FontWeight.w700,
-            ),
+          // Plan 023: name + the gold verified tick, which is the only Pro
+          // marker. The tick keeps its own semantics so the name is still
+          // read as one word.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  entry.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyLarge!.copyWith(
+                    fontSize: isFirst ? 13.5.sp : 12.5.sp,
+                    fontWeight: isFirst ? FontWeight.w800 : FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (isPro) ...[
+                SizedBox(width: 3.w),
+                ProTick(size: isFirst ? 13.sp : 12.sp),
+              ],
+            ],
           ),
           Text(
             AppFormat.compact(entry.score, localeName),

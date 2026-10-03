@@ -12,6 +12,7 @@ _Friend _$FriendFromJson(Map<String, dynamic> json) => _Friend(
   avatarEmoji: json['avatarEmoji'] as String,
   status: $enumDecode(_$FriendStatusEnumMap, json['status']),
   subtitle: json['subtitle'] as String,
+  isPro: json['isPro'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$FriendToJson(_Friend instance) => <String, dynamic>{
@@ -20,6 +21,7 @@ Map<String, dynamic> _$FriendToJson(_Friend instance) => <String, dynamic>{
   'avatarEmoji': instance.avatarEmoji,
   'status': _$FriendStatusEnumMap[instance.status]!,
   'subtitle': instance.subtitle,
+  'isPro': instance.isPro,
 };
 
 const _$FriendStatusEnumMap = {

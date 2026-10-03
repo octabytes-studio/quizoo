@@ -6,13 +6,15 @@ import 'package:quizoo/core/theme/app_elevation.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
+import 'package:quizoo/l10n/app_localizations.dart';
 
 /// A node on the level map.
 ///
-/// Four looks driven by [LevelStatus] plus [isBoss]: done (mint, with the
+/// Five looks driven by [LevelStatus] plus [isBoss]: done (mint, with the
 /// stars it earned), current (mango, scaled 1.12 with a soft ring so the eye
-/// lands on it first), locked (sunken with a padlock), and boss — every tenth
-/// level, which wears a crown.
+/// lands on it first), locked (sunken with a padlock), open (an outlined
+/// grape node a Quizoo Pro player can play right now — plan 023), and boss —
+/// every tenth level, which wears a crown.
 ///
 /// Like every pressable surface it sits on a 4px ledge.
 class LevelNode extends StatefulWidget {
@@ -47,8 +49,10 @@ class LevelNode extends StatefulWidget {
 class _LevelNodeState extends State<LevelNode> {
   bool _isPressed = false;
 
-  bool get _isEnabled =>
-      widget.onTap != null && widget.status != LevelStatus.locked;
+  /// A node is pressable whenever a handler is attached — including a locked
+  /// one, since plan 023 gives locked nodes their own `onLockedTap` upsell.
+  /// With no handler it stays inert exactly as before.
+  bool get _isEnabled => widget.onTap != null;
 
   void _setPressed(bool value) {
     if (_isPressed == value) return;
@@ -69,6 +73,9 @@ class _LevelNodeState extends State<LevelNode> {
       LevelStatus.done => (quizoo.ok, Colors.white, quizoo.okShadow),
       LevelStatus.current => (quizoo.p, Colors.white, quizoo.pShadow),
       LevelStatus.locked => (quizoo.s3, quizoo.tx3, quizoo.ln),
+      // Playable but not the next step (plan 023): an outlined grape node,
+      // so it reads as "you can" without stealing the current node's ring.
+      LevelStatus.open => (quizoo.s1, quizoo.g, quizoo.ln),
     };
 
     final showDepressed = _isPressed && _isEnabled;
@@ -87,11 +94,13 @@ class _LevelNodeState extends State<LevelNode> {
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(AppRadius.node.r),
-          // Only the locked/idle node keeps a hairline; the filled ones let
-          // their ledge do the work.
-          border: widget.status == LevelStatus.locked
-              ? null
-              : Border.all(color: Colors.transparent),
+          // The sunken and outlined nodes keep a hairline; the filled ones
+          // let their ledge do the work.
+          border: switch (widget.status) {
+            LevelStatus.locked => null,
+            LevelStatus.open => Border.all(color: quizoo.g, width: 2),
+            _ => Border.all(color: Colors.transparent),
+          },
           boxShadow: showDepressed
               ? null
               : [BoxShadow(color: ledgeColor, offset: Offset(0, ledge))],
@@ -176,6 +185,9 @@ class _LevelNodeState extends State<LevelNode> {
         LevelStatus.done => '${widget.starsEarned} of 3 stars',
         LevelStatus.current => 'Current level',
         LevelStatus.locked => 'Locked',
+        LevelStatus.open => AppLocalizations.of(
+          context,
+        ).proLevelOpenSemantics(widget.number),
       },
       child: GestureDetector(
         onTapDown: _isEnabled ? (_) => _setPressed(true) : null,

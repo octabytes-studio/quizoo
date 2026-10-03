@@ -326,7 +326,10 @@ mixin _$QuizRun {
 /// level (design decision: one play surface, not two).
  bool get isDaily;/// True once any power-up has been fired, which forfeits the clean-run
 /// bonus (§19).
- bool get usedPowerUp; RunEnding get ending; DateTime? get finishedAt;
+ bool get usedPowerUp; RunEnding get ending; DateTime? get finishedAt;/// Spent once, at most, for the whole level (plan 023, benefit 4). Set
+/// by [QuizPlayCubit.useFreeRevive]; a second out-of-lives on the same
+/// level falls back to the rewarded ad.
+ bool get freeReviveUsed;
 /// Create a copy of QuizRun
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -339,16 +342,16 @@ $QuizRunCopyWith<QuizRun> get copyWith => _$QuizRunCopyWithImpl<QuizRun>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is QuizRun&&(identical(other.attemptId, attemptId) || other.attemptId == attemptId)&&(identical(other.levelId, levelId) || other.levelId == levelId)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.subcategoryName, subcategoryName) || other.subcategoryName == subcategoryName)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.levelNumber, levelNumber) || other.levelNumber == levelNumber)&&(identical(other.secondsPerQuestion, secondsPerQuestion) || other.secondsPerQuestion == secondsPerQuestion)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&const DeepCollectionEquality().equals(other.answers, answers)&&(identical(other.score, score) || other.score == score)&&(identical(other.longestStreak, longestStreak) || other.longestStreak == longestStreak)&&(identical(other.currentStreak, currentStreak) || other.currentStreak == currentStreak)&&(identical(other.heartsRemaining, heartsRemaining) || other.heartsRemaining == heartsRemaining)&&(identical(other.questionCount, questionCount) || other.questionCount == questionCount)&&(identical(other.isBoss, isBoss) || other.isBoss == isBoss)&&(identical(other.powerUps, powerUps) || other.powerUps == powerUps)&&(identical(other.isDaily, isDaily) || other.isDaily == isDaily)&&(identical(other.usedPowerUp, usedPowerUp) || other.usedPowerUp == usedPowerUp)&&(identical(other.ending, ending) || other.ending == ending)&&(identical(other.finishedAt, finishedAt) || other.finishedAt == finishedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is QuizRun&&(identical(other.attemptId, attemptId) || other.attemptId == attemptId)&&(identical(other.levelId, levelId) || other.levelId == levelId)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.subcategoryName, subcategoryName) || other.subcategoryName == subcategoryName)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.levelNumber, levelNumber) || other.levelNumber == levelNumber)&&(identical(other.secondsPerQuestion, secondsPerQuestion) || other.secondsPerQuestion == secondsPerQuestion)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&const DeepCollectionEquality().equals(other.answers, answers)&&(identical(other.score, score) || other.score == score)&&(identical(other.longestStreak, longestStreak) || other.longestStreak == longestStreak)&&(identical(other.currentStreak, currentStreak) || other.currentStreak == currentStreak)&&(identical(other.heartsRemaining, heartsRemaining) || other.heartsRemaining == heartsRemaining)&&(identical(other.questionCount, questionCount) || other.questionCount == questionCount)&&(identical(other.isBoss, isBoss) || other.isBoss == isBoss)&&(identical(other.powerUps, powerUps) || other.powerUps == powerUps)&&(identical(other.isDaily, isDaily) || other.isDaily == isDaily)&&(identical(other.usedPowerUp, usedPowerUp) || other.usedPowerUp == usedPowerUp)&&(identical(other.ending, ending) || other.ending == ending)&&(identical(other.finishedAt, finishedAt) || other.finishedAt == finishedAt)&&(identical(other.freeReviveUsed, freeReviveUsed) || other.freeReviveUsed == freeReviveUsed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,attemptId,levelId,subcategoryId,subcategoryName,categoryId,levelNumber,secondsPerQuestion,startedAt,const DeepCollectionEquality().hash(answers),score,longestStreak,currentStreak,heartsRemaining,questionCount,isBoss,powerUps,isDaily,usedPowerUp,ending,finishedAt]);
+int get hashCode => Object.hashAll([runtimeType,attemptId,levelId,subcategoryId,subcategoryName,categoryId,levelNumber,secondsPerQuestion,startedAt,const DeepCollectionEquality().hash(answers),score,longestStreak,currentStreak,heartsRemaining,questionCount,isBoss,powerUps,isDaily,usedPowerUp,ending,finishedAt,freeReviveUsed]);
 
 @override
 String toString() {
-  return 'QuizRun(attemptId: $attemptId, levelId: $levelId, subcategoryId: $subcategoryId, subcategoryName: $subcategoryName, categoryId: $categoryId, levelNumber: $levelNumber, secondsPerQuestion: $secondsPerQuestion, startedAt: $startedAt, answers: $answers, score: $score, longestStreak: $longestStreak, currentStreak: $currentStreak, heartsRemaining: $heartsRemaining, questionCount: $questionCount, isBoss: $isBoss, powerUps: $powerUps, isDaily: $isDaily, usedPowerUp: $usedPowerUp, ending: $ending, finishedAt: $finishedAt)';
+  return 'QuizRun(attemptId: $attemptId, levelId: $levelId, subcategoryId: $subcategoryId, subcategoryName: $subcategoryName, categoryId: $categoryId, levelNumber: $levelNumber, secondsPerQuestion: $secondsPerQuestion, startedAt: $startedAt, answers: $answers, score: $score, longestStreak: $longestStreak, currentStreak: $currentStreak, heartsRemaining: $heartsRemaining, questionCount: $questionCount, isBoss: $isBoss, powerUps: $powerUps, isDaily: $isDaily, usedPowerUp: $usedPowerUp, ending: $ending, finishedAt: $finishedAt, freeReviveUsed: $freeReviveUsed)';
 }
 
 
@@ -359,7 +362,7 @@ abstract mixin class $QuizRunCopyWith<$Res>  {
   factory $QuizRunCopyWith(QuizRun value, $Res Function(QuizRun) _then) = _$QuizRunCopyWithImpl;
 @useResult
 $Res call({
- String attemptId, String levelId, String subcategoryId, String subcategoryName, String categoryId, int levelNumber, int secondsPerQuestion, DateTime startedAt, List<AnsweredQuestion> answers, int score, int longestStreak, int currentStreak, int heartsRemaining, int questionCount, bool isBoss, PowerUpInventory powerUps, bool isDaily, bool usedPowerUp, RunEnding ending, DateTime? finishedAt
+ String attemptId, String levelId, String subcategoryId, String subcategoryName, String categoryId, int levelNumber, int secondsPerQuestion, DateTime startedAt, List<AnsweredQuestion> answers, int score, int longestStreak, int currentStreak, int heartsRemaining, int questionCount, bool isBoss, PowerUpInventory powerUps, bool isDaily, bool usedPowerUp, RunEnding ending, DateTime? finishedAt, bool freeReviveUsed
 });
 
 
@@ -376,7 +379,7 @@ class _$QuizRunCopyWithImpl<$Res>
 
 /// Create a copy of QuizRun
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? attemptId = null,Object? levelId = null,Object? subcategoryId = null,Object? subcategoryName = null,Object? categoryId = null,Object? levelNumber = null,Object? secondsPerQuestion = null,Object? startedAt = null,Object? answers = null,Object? score = null,Object? longestStreak = null,Object? currentStreak = null,Object? heartsRemaining = null,Object? questionCount = null,Object? isBoss = null,Object? powerUps = null,Object? isDaily = null,Object? usedPowerUp = null,Object? ending = null,Object? finishedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? attemptId = null,Object? levelId = null,Object? subcategoryId = null,Object? subcategoryName = null,Object? categoryId = null,Object? levelNumber = null,Object? secondsPerQuestion = null,Object? startedAt = null,Object? answers = null,Object? score = null,Object? longestStreak = null,Object? currentStreak = null,Object? heartsRemaining = null,Object? questionCount = null,Object? isBoss = null,Object? powerUps = null,Object? isDaily = null,Object? usedPowerUp = null,Object? ending = null,Object? finishedAt = freezed,Object? freeReviveUsed = null,}) {
   return _then(_self.copyWith(
 attemptId: null == attemptId ? _self.attemptId : attemptId // ignore: cast_nullable_to_non_nullable
 as String,levelId: null == levelId ? _self.levelId : levelId // ignore: cast_nullable_to_non_nullable
@@ -398,7 +401,8 @@ as PowerUpInventory,isDaily: null == isDaily ? _self.isDaily : isDaily // ignore
 as bool,usedPowerUp: null == usedPowerUp ? _self.usedPowerUp : usedPowerUp // ignore: cast_nullable_to_non_nullable
 as bool,ending: null == ending ? _self.ending : ending // ignore: cast_nullable_to_non_nullable
 as RunEnding,finishedAt: freezed == finishedAt ? _self.finishedAt : finishedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,freeReviveUsed: null == freeReviveUsed ? _self.freeReviveUsed : freeReviveUsed // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of QuizRun
@@ -492,10 +496,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String attemptId,  String levelId,  String subcategoryId,  String subcategoryName,  String categoryId,  int levelNumber,  int secondsPerQuestion,  DateTime startedAt,  List<AnsweredQuestion> answers,  int score,  int longestStreak,  int currentStreak,  int heartsRemaining,  int questionCount,  bool isBoss,  PowerUpInventory powerUps,  bool isDaily,  bool usedPowerUp,  RunEnding ending,  DateTime? finishedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String attemptId,  String levelId,  String subcategoryId,  String subcategoryName,  String categoryId,  int levelNumber,  int secondsPerQuestion,  DateTime startedAt,  List<AnsweredQuestion> answers,  int score,  int longestStreak,  int currentStreak,  int heartsRemaining,  int questionCount,  bool isBoss,  PowerUpInventory powerUps,  bool isDaily,  bool usedPowerUp,  RunEnding ending,  DateTime? finishedAt,  bool freeReviveUsed)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _QuizRun() when $default != null:
-return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcategoryName,_that.categoryId,_that.levelNumber,_that.secondsPerQuestion,_that.startedAt,_that.answers,_that.score,_that.longestStreak,_that.currentStreak,_that.heartsRemaining,_that.questionCount,_that.isBoss,_that.powerUps,_that.isDaily,_that.usedPowerUp,_that.ending,_that.finishedAt);case _:
+return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcategoryName,_that.categoryId,_that.levelNumber,_that.secondsPerQuestion,_that.startedAt,_that.answers,_that.score,_that.longestStreak,_that.currentStreak,_that.heartsRemaining,_that.questionCount,_that.isBoss,_that.powerUps,_that.isDaily,_that.usedPowerUp,_that.ending,_that.finishedAt,_that.freeReviveUsed);case _:
   return orElse();
 
 }
@@ -513,10 +517,10 @@ return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcateg
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String attemptId,  String levelId,  String subcategoryId,  String subcategoryName,  String categoryId,  int levelNumber,  int secondsPerQuestion,  DateTime startedAt,  List<AnsweredQuestion> answers,  int score,  int longestStreak,  int currentStreak,  int heartsRemaining,  int questionCount,  bool isBoss,  PowerUpInventory powerUps,  bool isDaily,  bool usedPowerUp,  RunEnding ending,  DateTime? finishedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String attemptId,  String levelId,  String subcategoryId,  String subcategoryName,  String categoryId,  int levelNumber,  int secondsPerQuestion,  DateTime startedAt,  List<AnsweredQuestion> answers,  int score,  int longestStreak,  int currentStreak,  int heartsRemaining,  int questionCount,  bool isBoss,  PowerUpInventory powerUps,  bool isDaily,  bool usedPowerUp,  RunEnding ending,  DateTime? finishedAt,  bool freeReviveUsed)  $default,) {final _that = this;
 switch (_that) {
 case _QuizRun():
-return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcategoryName,_that.categoryId,_that.levelNumber,_that.secondsPerQuestion,_that.startedAt,_that.answers,_that.score,_that.longestStreak,_that.currentStreak,_that.heartsRemaining,_that.questionCount,_that.isBoss,_that.powerUps,_that.isDaily,_that.usedPowerUp,_that.ending,_that.finishedAt);case _:
+return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcategoryName,_that.categoryId,_that.levelNumber,_that.secondsPerQuestion,_that.startedAt,_that.answers,_that.score,_that.longestStreak,_that.currentStreak,_that.heartsRemaining,_that.questionCount,_that.isBoss,_that.powerUps,_that.isDaily,_that.usedPowerUp,_that.ending,_that.finishedAt,_that.freeReviveUsed);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -533,10 +537,10 @@ return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcateg
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String attemptId,  String levelId,  String subcategoryId,  String subcategoryName,  String categoryId,  int levelNumber,  int secondsPerQuestion,  DateTime startedAt,  List<AnsweredQuestion> answers,  int score,  int longestStreak,  int currentStreak,  int heartsRemaining,  int questionCount,  bool isBoss,  PowerUpInventory powerUps,  bool isDaily,  bool usedPowerUp,  RunEnding ending,  DateTime? finishedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String attemptId,  String levelId,  String subcategoryId,  String subcategoryName,  String categoryId,  int levelNumber,  int secondsPerQuestion,  DateTime startedAt,  List<AnsweredQuestion> answers,  int score,  int longestStreak,  int currentStreak,  int heartsRemaining,  int questionCount,  bool isBoss,  PowerUpInventory powerUps,  bool isDaily,  bool usedPowerUp,  RunEnding ending,  DateTime? finishedAt,  bool freeReviveUsed)?  $default,) {final _that = this;
 switch (_that) {
 case _QuizRun() when $default != null:
-return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcategoryName,_that.categoryId,_that.levelNumber,_that.secondsPerQuestion,_that.startedAt,_that.answers,_that.score,_that.longestStreak,_that.currentStreak,_that.heartsRemaining,_that.questionCount,_that.isBoss,_that.powerUps,_that.isDaily,_that.usedPowerUp,_that.ending,_that.finishedAt);case _:
+return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcategoryName,_that.categoryId,_that.levelNumber,_that.secondsPerQuestion,_that.startedAt,_that.answers,_that.score,_that.longestStreak,_that.currentStreak,_that.heartsRemaining,_that.questionCount,_that.isBoss,_that.powerUps,_that.isDaily,_that.usedPowerUp,_that.ending,_that.finishedAt,_that.freeReviveUsed);case _:
   return null;
 
 }
@@ -548,7 +552,7 @@ return $default(_that.attemptId,_that.levelId,_that.subcategoryId,_that.subcateg
 @JsonSerializable()
 
 class _QuizRun extends QuizRun {
-  const _QuizRun({required this.attemptId, required this.levelId, required this.subcategoryId, required this.subcategoryName, required this.categoryId, required this.levelNumber, required this.secondsPerQuestion, required this.startedAt, final  List<AnsweredQuestion> answers = const [], this.score = 0, this.longestStreak = 0, this.currentStreak = 0, this.heartsRemaining = 3, this.questionCount = 20, this.isBoss = false, this.powerUps = const PowerUpInventory(), this.isDaily = false, this.usedPowerUp = false, this.ending = RunEnding.inProgress, this.finishedAt}): _answers = answers,super._();
+  const _QuizRun({required this.attemptId, required this.levelId, required this.subcategoryId, required this.subcategoryName, required this.categoryId, required this.levelNumber, required this.secondsPerQuestion, required this.startedAt, final  List<AnsweredQuestion> answers = const [], this.score = 0, this.longestStreak = 0, this.currentStreak = 0, this.heartsRemaining = 3, this.questionCount = 20, this.isBoss = false, this.powerUps = const PowerUpInventory(), this.isDaily = false, this.usedPowerUp = false, this.ending = RunEnding.inProgress, this.finishedAt, this.freeReviveUsed = false}): _answers = answers,super._();
   factory _QuizRun.fromJson(Map<String, dynamic> json) => _$QuizRunFromJson(json);
 
 /// The server-issued `level_attempts.id` `submit_level_attempt` needs to
@@ -589,6 +593,10 @@ class _QuizRun extends QuizRun {
 @override@JsonKey() final  bool usedPowerUp;
 @override@JsonKey() final  RunEnding ending;
 @override final  DateTime? finishedAt;
+/// Spent once, at most, for the whole level (plan 023, benefit 4). Set
+/// by [QuizPlayCubit.useFreeRevive]; a second out-of-lives on the same
+/// level falls back to the rewarded ad.
+@override@JsonKey() final  bool freeReviveUsed;
 
 /// Create a copy of QuizRun
 /// with the given fields replaced by the non-null parameter values.
@@ -603,16 +611,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _QuizRun&&(identical(other.attemptId, attemptId) || other.attemptId == attemptId)&&(identical(other.levelId, levelId) || other.levelId == levelId)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.subcategoryName, subcategoryName) || other.subcategoryName == subcategoryName)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.levelNumber, levelNumber) || other.levelNumber == levelNumber)&&(identical(other.secondsPerQuestion, secondsPerQuestion) || other.secondsPerQuestion == secondsPerQuestion)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&const DeepCollectionEquality().equals(other._answers, _answers)&&(identical(other.score, score) || other.score == score)&&(identical(other.longestStreak, longestStreak) || other.longestStreak == longestStreak)&&(identical(other.currentStreak, currentStreak) || other.currentStreak == currentStreak)&&(identical(other.heartsRemaining, heartsRemaining) || other.heartsRemaining == heartsRemaining)&&(identical(other.questionCount, questionCount) || other.questionCount == questionCount)&&(identical(other.isBoss, isBoss) || other.isBoss == isBoss)&&(identical(other.powerUps, powerUps) || other.powerUps == powerUps)&&(identical(other.isDaily, isDaily) || other.isDaily == isDaily)&&(identical(other.usedPowerUp, usedPowerUp) || other.usedPowerUp == usedPowerUp)&&(identical(other.ending, ending) || other.ending == ending)&&(identical(other.finishedAt, finishedAt) || other.finishedAt == finishedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _QuizRun&&(identical(other.attemptId, attemptId) || other.attemptId == attemptId)&&(identical(other.levelId, levelId) || other.levelId == levelId)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.subcategoryName, subcategoryName) || other.subcategoryName == subcategoryName)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.levelNumber, levelNumber) || other.levelNumber == levelNumber)&&(identical(other.secondsPerQuestion, secondsPerQuestion) || other.secondsPerQuestion == secondsPerQuestion)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&const DeepCollectionEquality().equals(other._answers, _answers)&&(identical(other.score, score) || other.score == score)&&(identical(other.longestStreak, longestStreak) || other.longestStreak == longestStreak)&&(identical(other.currentStreak, currentStreak) || other.currentStreak == currentStreak)&&(identical(other.heartsRemaining, heartsRemaining) || other.heartsRemaining == heartsRemaining)&&(identical(other.questionCount, questionCount) || other.questionCount == questionCount)&&(identical(other.isBoss, isBoss) || other.isBoss == isBoss)&&(identical(other.powerUps, powerUps) || other.powerUps == powerUps)&&(identical(other.isDaily, isDaily) || other.isDaily == isDaily)&&(identical(other.usedPowerUp, usedPowerUp) || other.usedPowerUp == usedPowerUp)&&(identical(other.ending, ending) || other.ending == ending)&&(identical(other.finishedAt, finishedAt) || other.finishedAt == finishedAt)&&(identical(other.freeReviveUsed, freeReviveUsed) || other.freeReviveUsed == freeReviveUsed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,attemptId,levelId,subcategoryId,subcategoryName,categoryId,levelNumber,secondsPerQuestion,startedAt,const DeepCollectionEquality().hash(_answers),score,longestStreak,currentStreak,heartsRemaining,questionCount,isBoss,powerUps,isDaily,usedPowerUp,ending,finishedAt]);
+int get hashCode => Object.hashAll([runtimeType,attemptId,levelId,subcategoryId,subcategoryName,categoryId,levelNumber,secondsPerQuestion,startedAt,const DeepCollectionEquality().hash(_answers),score,longestStreak,currentStreak,heartsRemaining,questionCount,isBoss,powerUps,isDaily,usedPowerUp,ending,finishedAt,freeReviveUsed]);
 
 @override
 String toString() {
-  return 'QuizRun(attemptId: $attemptId, levelId: $levelId, subcategoryId: $subcategoryId, subcategoryName: $subcategoryName, categoryId: $categoryId, levelNumber: $levelNumber, secondsPerQuestion: $secondsPerQuestion, startedAt: $startedAt, answers: $answers, score: $score, longestStreak: $longestStreak, currentStreak: $currentStreak, heartsRemaining: $heartsRemaining, questionCount: $questionCount, isBoss: $isBoss, powerUps: $powerUps, isDaily: $isDaily, usedPowerUp: $usedPowerUp, ending: $ending, finishedAt: $finishedAt)';
+  return 'QuizRun(attemptId: $attemptId, levelId: $levelId, subcategoryId: $subcategoryId, subcategoryName: $subcategoryName, categoryId: $categoryId, levelNumber: $levelNumber, secondsPerQuestion: $secondsPerQuestion, startedAt: $startedAt, answers: $answers, score: $score, longestStreak: $longestStreak, currentStreak: $currentStreak, heartsRemaining: $heartsRemaining, questionCount: $questionCount, isBoss: $isBoss, powerUps: $powerUps, isDaily: $isDaily, usedPowerUp: $usedPowerUp, ending: $ending, finishedAt: $finishedAt, freeReviveUsed: $freeReviveUsed)';
 }
 
 
@@ -623,7 +631,7 @@ abstract mixin class _$QuizRunCopyWith<$Res> implements $QuizRunCopyWith<$Res> {
   factory _$QuizRunCopyWith(_QuizRun value, $Res Function(_QuizRun) _then) = __$QuizRunCopyWithImpl;
 @override @useResult
 $Res call({
- String attemptId, String levelId, String subcategoryId, String subcategoryName, String categoryId, int levelNumber, int secondsPerQuestion, DateTime startedAt, List<AnsweredQuestion> answers, int score, int longestStreak, int currentStreak, int heartsRemaining, int questionCount, bool isBoss, PowerUpInventory powerUps, bool isDaily, bool usedPowerUp, RunEnding ending, DateTime? finishedAt
+ String attemptId, String levelId, String subcategoryId, String subcategoryName, String categoryId, int levelNumber, int secondsPerQuestion, DateTime startedAt, List<AnsweredQuestion> answers, int score, int longestStreak, int currentStreak, int heartsRemaining, int questionCount, bool isBoss, PowerUpInventory powerUps, bool isDaily, bool usedPowerUp, RunEnding ending, DateTime? finishedAt, bool freeReviveUsed
 });
 
 
@@ -640,7 +648,7 @@ class __$QuizRunCopyWithImpl<$Res>
 
 /// Create a copy of QuizRun
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? attemptId = null,Object? levelId = null,Object? subcategoryId = null,Object? subcategoryName = null,Object? categoryId = null,Object? levelNumber = null,Object? secondsPerQuestion = null,Object? startedAt = null,Object? answers = null,Object? score = null,Object? longestStreak = null,Object? currentStreak = null,Object? heartsRemaining = null,Object? questionCount = null,Object? isBoss = null,Object? powerUps = null,Object? isDaily = null,Object? usedPowerUp = null,Object? ending = null,Object? finishedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? attemptId = null,Object? levelId = null,Object? subcategoryId = null,Object? subcategoryName = null,Object? categoryId = null,Object? levelNumber = null,Object? secondsPerQuestion = null,Object? startedAt = null,Object? answers = null,Object? score = null,Object? longestStreak = null,Object? currentStreak = null,Object? heartsRemaining = null,Object? questionCount = null,Object? isBoss = null,Object? powerUps = null,Object? isDaily = null,Object? usedPowerUp = null,Object? ending = null,Object? finishedAt = freezed,Object? freeReviveUsed = null,}) {
   return _then(_QuizRun(
 attemptId: null == attemptId ? _self.attemptId : attemptId // ignore: cast_nullable_to_non_nullable
 as String,levelId: null == levelId ? _self.levelId : levelId // ignore: cast_nullable_to_non_nullable
@@ -662,7 +670,8 @@ as PowerUpInventory,isDaily: null == isDaily ? _self.isDaily : isDaily // ignore
 as bool,usedPowerUp: null == usedPowerUp ? _self.usedPowerUp : usedPowerUp // ignore: cast_nullable_to_non_nullable
 as bool,ending: null == ending ? _self.ending : ending // ignore: cast_nullable_to_non_nullable
 as RunEnding,finishedAt: freezed == finishedAt ? _self.finishedAt : finishedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,freeReviveUsed: null == freeReviveUsed ? _self.freeReviveUsed : freeReviveUsed // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

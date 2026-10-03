@@ -33,6 +33,7 @@ class FriendRow extends StatelessWidget {
       title: friend.name,
       subtitle: friend.subtitle,
       leadingEmoji: friend.avatarEmoji,
+      isPro: friend.isPro,
       trailing: friend.status == FriendStatus.pending
           ? Row(
               mainAxisSize: MainAxisSize.min,

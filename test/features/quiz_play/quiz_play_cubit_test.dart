@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/power_up.dart';
+import 'package:quizoo/core/subscription/pro_perks.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/data/question_audio_cache_service.dart';
@@ -190,6 +191,7 @@ void main() {
     levelId: levelId,
     categoryId: MockCatalog.sportsId,
     subcategoryName: 'Football',
+    perks: const ProPerks.free(),
   );
 
   group('QuizPlayCubit', () {

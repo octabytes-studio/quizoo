@@ -101,6 +101,11 @@ abstract class QuizRun with _$QuizRun {
     @Default(false) bool usedPowerUp,
     @Default(RunEnding.inProgress) RunEnding ending,
     DateTime? finishedAt,
+
+    /// Spent once, at most, for the whole level (plan 023, benefit 4). Set
+    /// by [QuizPlayCubit.useFreeRevive]; a second out-of-lives on the same
+    /// level falls back to the rewarded ad.
+    @Default(false) bool freeReviveUsed,
   }) = _QuizRun;
 
   const QuizRun._();

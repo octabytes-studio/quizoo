@@ -116,6 +116,24 @@ abstract final class AppRoutes {
   static String topicMasteredPath(String categoryId, String subcategoryId) =>
       '/category/$categoryId/subcategory/$subcategoryId/mastered';
 
+  // ------------------------------------------------------- Quizoo Pro (023)
+  // The paywall and the two screens a member sees. None of these is one of
+  // the bible's 54 IDs (see this class's doc comment), so they have no `sXX`
+  // alias below.
+  /// The Quizoo Pro paywall; `extra`: `PaywallSource`.
+  static const String paywall = '/pro';
+
+  /// Shown once, right after a purchase or a restore that found Pro.
+  static const String proWelcome = '/pro/welcome';
+
+  /// What a Pro member sees instead of the paywall.
+  static const String proMembership = '/pro/membership';
+
+  /// Post-level answer review; `extra`: `QuizRun`.
+  static const String answerReview = '/play/:levelId/review';
+
+  static String answerReviewPath(String levelId) => '/play/$levelId/review';
+
   // ------------------------------------------------------------- daily
   /// S-27 Daily tab — shell tab 4.
   static const String daily = '/daily';

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/subscription/pro_badge.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/subcategory.dart';
@@ -110,6 +112,10 @@ class _CategoryLoaded extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Plan 023: own row, so the local entitlement is OR'd in — see `proBadge`.
+    final localIsPro = context.select<SubscriptionCubit, bool>(
+      (cubit) => cubit.state.isPro,
+    );
     final localeName = Localizations.localeOf(context).toLanguageTag();
     final category = MockCatalog.categoryById(subcategory.categoryId);
     final isMastered = subcategory.levelsCleared >= subcategory.levelCount;
@@ -197,6 +203,11 @@ class _CategoryLoaded extends StatelessWidget {
                           title: entry.name,
                           subtitle: entry.levelsLabel,
                           leadingEmoji: entry.avatarEmoji,
+                          isPro: proBadge(
+                            serverIsPro: entry.isPro,
+                            isSelf: entry.isSelf,
+                            localIsPro: localIsPro,
+                          ),
                           trailingValue: AppFormat.number(
                             entry.score,
                             localeName,

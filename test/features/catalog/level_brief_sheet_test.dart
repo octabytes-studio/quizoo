@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/catalog/domain/level_map.dart';
@@ -8,6 +10,7 @@ import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
 
+import '../../support/fake_purchases.dart';
 import '../../support/pump_app.dart';
 
 class _MockQuizPlayApi extends Mock implements QuizPlayApi {}
@@ -32,14 +35,23 @@ void main() {
     repository = QuizPlayRepository(api);
   });
 
-  Future<void> pumpSheet(WidgetTester tester) => tester.pumpApp(
-    LevelBriefSheet(
-      map: map,
-      level: level,
-      repository: repository,
-      languageCode: 'en',
-    ),
-  );
+  Future<void> pumpSheet(WidgetTester tester, {bool isPro = false}) {
+    // `pumpApp` has no app-root providers, and the brief sheet reads the
+    // entitlement for its lives/power-up counts (plan 023).
+    final cubit = isPro ? proSubscriptionCubit() : freeSubscriptionCubit();
+    addTearDown(cubit.close);
+    return tester.pumpApp(
+      BlocProvider<SubscriptionCubit>.value(
+        value: cubit,
+        child: LevelBriefSheet(
+          map: map,
+          level: level,
+          repository: repository,
+          languageCode: 'en',
+        ),
+      ),
+    );
+  }
 
   group('LevelBriefSheet', () {
     testWidgets(

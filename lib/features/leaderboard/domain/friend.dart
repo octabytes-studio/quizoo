@@ -25,6 +25,9 @@ abstract class Friend with _$Friend {
     /// "Last seen 2h ago · 142k pts" for a friend — precomputed by the
     /// fixture, since it is presentation copy over otherwise-identical data.
     required String subtitle,
+
+    /// A Quizoo Pro member (plan 023) — drives the crown and the tick.
+    @Default(false) bool isPro,
   }) = _Friend;
 
   factory Friend.fromJson(Map<String, dynamic> json) => _$FriendFromJson(json);

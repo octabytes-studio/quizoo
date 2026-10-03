@@ -29,13 +29,19 @@ class SerpentinePath extends StatelessWidget {
     required this.onLevelTap,
     super.key,
     this.currentNodeKey,
+    this.onLockedTap,
   });
 
   final List<Level> levels;
 
   /// Fired for any node the player is allowed to open — a locked one is inert
-  /// rather than tappable-but-refusing.
+  /// unless [onLockedTap] is attached.
   final ValueChanged<Level> onLevelTap;
+
+  /// Fired for a locked node, when the host has something to say about it
+  /// (plan 023: the Pro upsell sheet). Null keeps locked nodes inert, which
+  /// is the behaviour every free-only surface wants.
+  final ValueChanged<Level>? onLockedTap;
 
   /// Attached to the current node so the screen can scroll it into view.
   final Key? currentNodeKey;
@@ -83,9 +89,11 @@ class SerpentinePath extends StatelessWidget {
         _PathStep(
           level: level,
           nodeKey: level.status == LevelStatus.current ? currentNodeKey : null,
-          onTap: level.status == LevelStatus.locked
-              ? null
-              : () => onLevelTap(level),
+          onTap: switch (level.status) {
+            LevelStatus.locked =>
+              onLockedTap == null ? null : () => onLockedTap!(level),
+            _ => () => onLevelTap(level),
+          },
           // Only the node immediately after the current one names what
           // opens it ("CLEAR LEVEL 12"); the rest just say LOCKED.
           unlocksAfterLevel:
@@ -137,6 +145,9 @@ class _PathStep extends StatelessWidget {
         unlocksAfterLevel == null
             ? l10n.levelMapLocked
             : l10n.levelMapUnlockAfter(unlocksAfterLevel!),
+      // Plan 023: an open node is playable now, so it says so rather than
+      // borrowing the current node's copy.
+      LevelStatus.open => l10n.proLevelOpenCaption,
     };
   }
 

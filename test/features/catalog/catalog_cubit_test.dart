@@ -121,6 +121,7 @@ void main() {
         categoryId: MockCatalog.sportsId,
         subcategoryId: MockCatalog.footballId,
         locale: 'en',
+        isPro: false,
       ),
       expect: () => [
         isA<LevelMapLoading>(),
@@ -150,6 +151,7 @@ void main() {
         categoryId: MockCatalog.sportsId,
         subcategoryId: MockCatalog.footballId,
         locale: 'en',
+        isPro: false,
       ),
       expect: () => [isA<LevelMapLoading>(), isA<LevelMapEmpty>()],
     );
@@ -170,6 +172,7 @@ void main() {
         categoryId: MockCatalog.sportsId,
         subcategoryId: MockCatalog.footballId,
         locale: 'en',
+        isPro: false,
       ),
       expect: () => [isA<LevelMapLoading>(), isA<LevelMapError>()],
     );

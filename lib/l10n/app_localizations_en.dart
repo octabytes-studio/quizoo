@@ -2012,4 +2012,325 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyAdChoices => 'Ad privacy choices';
+
+  @override
+  String get proBadgeLabel => 'Pro member';
+
+  @override
+  String get proPaywallTitle => 'Quizoo Pro';
+
+  @override
+  String get proPaywallTagline => 'Play without limits. Stand out.';
+
+  @override
+  String get proBenefitBadgeTitle => 'Pro badge';
+
+  @override
+  String get proBenefitBadgeBody =>
+      'A gold crown on your avatar and a verified tick after your name, for everyone to see.';
+
+  @override
+  String get proBenefitAllLevelsTitle => 'Every level open';
+
+  @override
+  String get proBenefitAllLevelsBody =>
+      'Jump straight to any level in any topic — no clearing the ones before it.';
+
+  @override
+  String get proBenefitNoAdsTitle => 'No ads';
+
+  @override
+  String get proBenefitNoAdsBody =>
+      'No banners, no breaks between levels. The heart ad stays, if you want it.';
+
+  @override
+  String get proBenefitFreeReviveTitle => 'Free revive';
+
+  @override
+  String get proBenefitFreeReviveBody =>
+      'One extra life on every level, instantly — no ad to watch.';
+
+  @override
+  String get proBenefitDoublePowerUpsTitle => 'Double power-ups';
+
+  @override
+  String get proBenefitDoublePowerUpsBody =>
+      '2× 50:50 and 2× +5s on every level.';
+
+  @override
+  String get proBenefitStreakShieldTitle => 'Streak shield';
+
+  @override
+  String get proBenefitStreakShieldBody =>
+      'Your streak freezes top back up to 2 every month.';
+
+  @override
+  String get proBenefitAvatarsTitle => 'Exclusive avatars';
+
+  @override
+  String get proBenefitAvatarsBody => 'A Pro-only set of avatars to play as.';
+
+  @override
+  String get proBenefitAnswerReviewTitle => 'Answer review';
+
+  @override
+  String get proBenefitAnswerReviewBody =>
+      'See every question again with the right answer and an explanation.';
+
+  @override
+  String get proPlanMonthly => 'Monthly';
+
+  @override
+  String get proPlanYearly => 'Yearly';
+
+  @override
+  String get proPlanLifetime => 'Lifetime';
+
+  @override
+  String get proBestValue => 'BEST VALUE';
+
+  @override
+  String proSavePercent(int percent) {
+    return 'Save $percent%';
+  }
+
+  @override
+  String proPerMonthLabel(String price) {
+    return '$price per month';
+  }
+
+  @override
+  String proPricePerYear(String price) {
+    return '$price / year';
+  }
+
+  @override
+  String proPricePerMonth(String price) {
+    return '$price / month';
+  }
+
+  @override
+  String proPriceOnce(String price) {
+    return '$price once';
+  }
+
+  @override
+  String get proContinue => 'Continue';
+
+  @override
+  String proStartTrial(int days) {
+    return 'Start $days-day free trial';
+  }
+
+  @override
+  String get proWorking => 'Working…';
+
+  @override
+  String proDisclosureMonthly(String price) {
+    return '$price per month, renews automatically until cancelled.';
+  }
+
+  @override
+  String proDisclosureYearly(String price) {
+    return '$price per year, renews automatically until cancelled.';
+  }
+
+  @override
+  String get proDisclosureLifetime => 'One payment. Yours forever.';
+
+  @override
+  String get proRestore => 'Restore purchases';
+
+  @override
+  String get proRestoreSuccess => 'Purchases restored';
+
+  @override
+  String get proTerms => 'Terms of Use';
+
+  @override
+  String get proPrivacy => 'Privacy Policy';
+
+  @override
+  String get proNoticeFailed =>
+      'That purchase did not go through. Please try again.';
+
+  @override
+  String get proNoticeRetry => 'Try again';
+
+  @override
+  String get proNoticePending =>
+      'Your purchase is waiting for approval. Pro will unlock as soon as it is.';
+
+  @override
+  String get proNoticeNothingToRestore =>
+      'There is nothing to restore on this account.';
+
+  @override
+  String get proUnavailableTitle => 'Quizoo Pro is not available here';
+
+  @override
+  String get proUnavailableBody =>
+      'Purchases cannot be loaded right now. Check your connection and try again.';
+
+  @override
+  String get proTryAgain => 'Try again';
+
+  @override
+  String get proWelcomeTitle => 'You\'re Pro!';
+
+  @override
+  String get proWelcomeChipAdsOff => 'Ads off';
+
+  @override
+  String get proWelcomeChipAllLevels => 'All levels open';
+
+  @override
+  String get proWelcomeChipBadge => 'Badge on';
+
+  @override
+  String get proStartPlaying => 'Start playing';
+
+  @override
+  String get proSaveToAccount => 'Save Pro to your account';
+
+  @override
+  String get proMembershipActive => 'Quizoo Pro · Active';
+
+  @override
+  String proMembershipRenewsOn(String date) {
+    return 'Renews on $date';
+  }
+
+  @override
+  String proMembershipEndsOn(String date) {
+    return 'Ends on $date';
+  }
+
+  @override
+  String get proMembershipLifetime => 'Lifetime member';
+
+  @override
+  String proMembershipInTrial(String date) {
+    return 'Free trial — first charge on $date';
+  }
+
+  @override
+  String get proMembershipNoDate => 'Membership active';
+
+  @override
+  String get proMembershipBillingIssue =>
+      'There is a billing problem with your subscription. Update your payment method to keep Pro.';
+
+  @override
+  String get proManageSubscription => 'Manage subscription';
+
+  @override
+  String get proManageFailed =>
+      'Couldn\'t open the store. You can manage your subscription in your store account settings.';
+
+  @override
+  String get proRestoreHelper =>
+      'Restoring applies this store purchase to whichever Quizoo account is signed in on this device.';
+
+  @override
+  String get proGoPro => 'Go Pro';
+
+  @override
+  String get proGoProCardBody =>
+      'Unlock every level, drop the ads, and stand out with a gold badge.';
+
+  @override
+  String get proRemoveAds => 'Remove ads';
+
+  @override
+  String get proUseFreeRevive => 'Use free revive';
+
+  @override
+  String get proOutOfLivesLink => 'Get a free revive every level with Pro';
+
+  @override
+  String get proReviewAnswers => 'Review answers';
+
+  @override
+  String get proSettingsRow => 'Quizoo Pro';
+
+  @override
+  String get proNotNow => 'Not now';
+
+  @override
+  String get proSeeQuizooPro => 'See Quizoo Pro';
+
+  @override
+  String proUpsellLockedLevelTitle(int level) {
+    return 'Level $level is locked';
+  }
+
+  @override
+  String proUpsellLockedLevelBody(int level) {
+    return 'Clear level $level first — or unlock every level with Quizoo Pro.';
+  }
+
+  @override
+  String get proUpsellAdFreeTitle => 'Enjoying Quizoo?';
+
+  @override
+  String get proUpsellAdFreeBody => 'Play without ads with Quizoo Pro.';
+
+  @override
+  String get proAvatarRequired => 'That avatar is for Quizoo Pro members only.';
+
+  @override
+  String get proUpsellAvatarTitle => 'That\'s a Pro avatar';
+
+  @override
+  String get proUpsellAvatarBody =>
+      'Pro members can play as this avatar — and eleven more.';
+
+  @override
+  String get proUpsellReviewTitle => 'Answer review is a Pro perk';
+
+  @override
+  String get proUpsellReviewBody =>
+      'See every question again with the right answer and an explanation.';
+
+  @override
+  String get proStreakShieldLine => 'Refills to 2 every month with Pro.';
+
+  @override
+  String get proAvatarSection => 'Quizoo Pro';
+
+  @override
+  String get proLevelOpenCaption => 'Open';
+
+  @override
+  String proLevelOpenSemantics(int level) {
+    return 'Level $level, open — playable now.';
+  }
+
+  @override
+  String get playErrorLevelLocked =>
+      'This level is still locked — clear the one before it first.';
+
+  @override
+  String reviewQuestionNumber(int number, int total) {
+    return 'Question $number of $total';
+  }
+
+  @override
+  String get reviewTitle => 'Answer review';
+
+  @override
+  String get reviewCorrect => 'Correct answer';
+
+  @override
+  String get reviewYourAnswer => 'Your answer';
+
+  @override
+  String get reviewTimedOut => 'You didn\'t answer';
+
+  @override
+  String get reviewExplanation => 'Explanation';
+
+  @override
+  String get reviewEmpty => 'There is nothing to review for this run.';
 }

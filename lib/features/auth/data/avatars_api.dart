@@ -22,6 +22,7 @@ class AvatarsApi {
             id: row['id'] as String,
             emoji: row['emoji'] as String,
             sortOrder: row['sort_order'] as int,
+            isPro: row['is_pro'] as bool? ?? false,
           ),
       ];
     } catch (error) {

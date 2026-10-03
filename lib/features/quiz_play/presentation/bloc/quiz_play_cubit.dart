@@ -4,9 +4,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
-import 'package:quizoo/core/mock/mock_player.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
+import 'package:quizoo/core/subscription/pro_perks.dart';
 import 'package:quizoo/features/daily/data/daily_repository.dart';
 import 'package:quizoo/features/daily/domain/daily_result.dart';
 import 'package:quizoo/features/quiz_play/data/question_audio_cache_service.dart';
@@ -119,6 +119,11 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   List<Question> _questions = const [];
   int _questionIndex = 0;
 
+  /// The power-ups already fired on the current question (plan 023, 6.3).
+  /// Cleared by [_beginQuestion]; mirrored onto `QuizPlayInProgress` so the
+  /// dock tile can render disabled.
+  final Set<PowerUp> _usedPowerUpsThisQuestion = {};
+
   /// Read from `AppSettings.soundOn` at [startLevel] and kept in sync by
   /// [toggleQuestionAudio] — the HUD speaker icon's persisted preference.
   ///
@@ -154,6 +159,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     required String levelId,
     required String categoryId,
     required String subcategoryName,
+    required ProPerks perks,
     String languageCode = 'en',
   }) async {
     final (subcategoryId, levelNumber) = MockCatalog.parseLevelId(levelId);
@@ -233,10 +239,15 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
           ) ??
           0,
       questionCount: _questions.length,
-      heartsRemaining: MockPlayer.livesPerLevel,
+      heartsRemaining: perks.livesPerLevel,
       isBoss:
           _repository.isBossFor(levelId, languageCode: languageCode) ?? false,
-      powerUps: const PowerUpInventory(fiftyFifty: 1, addTime: 1),
+      // Plan 023, benefit 5: Pro carries two of each. `ProPerks` is the only
+      // home of these numbers — the paywall and this cannot drift.
+      powerUps: PowerUpInventory(
+        fiftyFifty: perks.fiftyFifty,
+        addTime: perks.addTime,
+      ),
       startedAt: DateTime.now(),
     );
 
@@ -307,9 +318,11 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       questionCount: _questions.length,
       // Decorative only for a daily run — see _resolveWrong, which never
       // decrements this.
-      heartsRemaining: MockPlayer.livesPerLevel,
+      heartsRemaining: const ProPerks.free().livesPerLevel,
       // Granted for symmetry with a level run, though the dock never renders
       // for `isDaily` (see quiz_play_screen.dart's guard) so it's inert here.
+      // The daily run always uses the free numbers regardless of
+      // entitlement (plan 023).
       powerUps: const PowerUpInventory(fiftyFifty: 1, addTime: 1),
       isDaily: true,
       startedAt: DateTime.now(),
@@ -356,6 +369,9 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _revealTimer?.cancel();
     _elapsed = Duration.zero;
     _questionBudget = Duration(seconds: run.secondsPerQuestion);
+    // Plan 023: the once-per-question power-up guard is per question, so it
+    // resets here.
+    _usedPowerUpsThisQuestion.clear();
 
     if (_ttsAvailable) unawaited(_prefetchWindow(_questionIndex + 1));
 
@@ -373,6 +389,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
         question: question,
         secondsRemaining: run.secondsPerQuestion,
         powerUps: run.powerUps,
+        usedPowerUps: _usedPowerUpsThisQuestion,
         phase: speaksThisQuestion
             ? QuestionPhase.speaking
             : QuestionPhase.answering,
@@ -704,6 +721,11 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
   /// Fires a power-up. A player with none of it does nothing here — a zero
   /// tile has no tap target, which is the widget's job to enforce.
+  ///
+  /// Each type fires **at most once per question** (plan 023, 6.3): a second
+  /// 50:50 would have nothing sensible left to remove. The dock tile for a
+  /// type already used this question renders disabled, and this is the
+  /// enforcement behind it.
   void usePowerUp(PowerUp powerUp) {
     final current = state;
     if (current is! QuizPlayInProgress || !current.isAwaitingAnswer) return;
@@ -712,6 +734,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     if (current.run.isDaily) return;
     if (current.phase != QuestionPhase.answering) return;
     if (!current.powerUps.has(powerUp)) return;
+    if (current.usedOnThisQuestion(powerUp)) return;
 
     final spent = current.powerUps.spend(powerUp);
     // Any power-up forfeits the clean-run bonus (§19). The spend persists
@@ -719,12 +742,15 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     // survives into the next question's `_beginQuestion`.
     final run = current.run.copyWith(usedPowerUp: true, powerUps: spent);
 
+    _usedPowerUpsThisQuestion.add(powerUp);
+    final used = {...current.usedPowerUps, powerUp};
     switch (powerUp) {
       case PowerUp.fiftyFifty:
         emit(
           current.copyWith(
             run: run,
             powerUps: spent,
+            usedPowerUps: used,
             eliminatedIndexes: _twoWrongOptions(current.question),
           ),
         );
@@ -736,6 +762,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
           current.copyWith(
             run: run,
             powerUps: spent,
+            usedPowerUps: used,
             secondsRemaining:
                 current.secondsRemaining + PowerUpInventory.addTimeSeconds,
           ),
@@ -856,6 +883,24 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     final current = state;
     if (current is! QuizPlayOutOfLives) return;
     _grantHearts(current.underlying, hearts: 1);
+  }
+
+  /// Plan 023, benefit 4: a member's one instant extra life per level.
+  ///
+  /// Only meaningful from [QuizPlayOutOfLives], and only while the level's
+  /// free revive has not already been spent — a second out-of-lives falls
+  /// back to the rewarded ad exactly as a free player's does. A free player
+  /// passing `isPro: false` here gets nothing; the button is not drawn for
+  /// them either, so this is enforcement rather than the mechanism.
+  void useFreeRevive({required bool isPro}) {
+    final current = state;
+    if (current is! QuizPlayOutOfLives) return;
+    if (!isPro) return;
+    final run = current.underlying.run;
+    if (run.freeReviveUsed) return;
+
+    final revived = run.copyWith(freeReviveUsed: true);
+    _grantHearts(current.underlying.copyWith(run: revived), hearts: 1);
   }
 
   /// S-19's second action: leave without watching an ad.

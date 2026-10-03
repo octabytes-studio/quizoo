@@ -53,6 +53,7 @@ _ProfileSummary _$ProfileSummaryFromJson(Map<String, dynamic> json) =>
       bestCategories: (json['bestCategories'] as List<dynamic>)
           .map((e) => BestCategoryEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
+      isPro: json['isPro'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$ProfileSummaryToJson(_ProfileSummary instance) =>
@@ -74,4 +75,5 @@ Map<String, dynamic> _$ProfileSummaryToJson(_ProfileSummary instance) =>
       'badgeCount': instance.badgeCount,
       'recentBadges': instance.recentBadges,
       'bestCategories': instance.bestCategories,
+      'isPro': instance.isPro,
     };
