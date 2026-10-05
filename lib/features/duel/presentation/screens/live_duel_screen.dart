@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
-import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
@@ -61,10 +60,7 @@ class LiveDuelScreen extends StatelessWidget {
           ),
           clock,
           duelId: duelId,
-          audio: DuelAudio.device(
-            settings: context.read<SettingsRepository>(),
-            languages: context.read<ContentLanguageRepository>(),
-          ),
+          audio: DuelAudio.device(settings: context.read<SettingsRepository>()),
           languageCode: context.read<ContentLanguageCubit>().state.code,
         )..add(const LiveDuelStarted());
       },

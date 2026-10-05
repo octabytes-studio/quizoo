@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/features/daily/data/daily_repository.dart';
@@ -25,16 +24,9 @@ class _MockQuizPlayRepository extends Mock implements QuizPlayRepository {}
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
-class _MockContentLanguageRepository extends Mock
-    implements ContentLanguageRepository {}
-
 class _MockDailyRepository extends Mock implements DailyRepository {}
 
 class _NoopTtsService implements TtsService {
-  @override
-  Future<bool> setLanguage(String languageCode, {String? voiceId}) async =>
-      false;
-
   @override
   Future<void> speak(String audioUrl) async {}
 
@@ -79,7 +71,6 @@ class _NoopAudioCacheService implements QuestionAudioCacheService {
 void main() {
   late _MockQuizPlayRepository repository;
   late _MockSettingsRepository settingsRepository;
-  late _MockContentLanguageRepository contentLanguageRepository;
   late _MockDailyRepository dailyRepository;
 
   const questions = [
@@ -137,17 +128,12 @@ void main() {
     when(
       () => settingsRepository.current,
     ).thenReturn(const AppSettings(soundOn: false));
-    contentLanguageRepository = _MockContentLanguageRepository();
-    when(
-      () => contentLanguageRepository.voiceIdFor(any()),
-    ).thenAnswer((_) async => null);
     dailyRepository = _MockDailyRepository();
   });
 
   QuizPlayCubit buildCubit() => QuizPlayCubit(
     repository,
     settingsRepository,
-    contentLanguageRepository,
     _NoopTtsService(),
     _NoopSoundEffectsService(),
     _NoopAudioCacheService(),

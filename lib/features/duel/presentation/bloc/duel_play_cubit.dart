@@ -93,13 +93,11 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
     _me = me;
     _topic = topic;
     emit(const DuelPlayLoading());
-    final audioReady = _audio?.prepare(languageCode);
     try {
       _questions = await _repository.fetchRoundQuestions(
         subcategoryId: topic.id,
         languageCode: languageCode,
       );
-      await audioReady;
     } on ApiException catch (error) {
       if (!isClosed) emit(DuelPlayFailed(error));
       return;

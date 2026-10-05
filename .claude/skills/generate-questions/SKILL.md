@@ -1,7 +1,7 @@
 ---
 name: generate-questions
-description: Interactively generates a batch of Quizoo multiple-choice quiz questions for one sub-category, difficulty tier, and language, in Quizoo's exact `questions` table format. Use when the user wants to author new quiz content, e.g. "generate 50 questions for Cricket", "add Hard Urdu questions for Solar System", "/generate-questions". Asks for sub-category, question count, difficulty, and language (using the Supabase MCP server to list live choices when available, otherwise asking directly), checks existing live questions for that exact sub-category+difficulty+language via Supabase MCP so nothing generated duplicates content already in the database, then writes a review-ready markdown file and a NOT-yet-executed SQL insert script into a `questions/` folder next to the project directory. Never writes to the database itself — the user runs the SQL manually after reviewing it. Self-contained: does not need to re-read the Flutter project or any prior conversation to produce identical output every run.
-compatibility: Works with or without the Supabase MCP server connected, but the duplicate-check against existing questions (Step 6) requires it — without it, the skill can only guarantee no duplicates *within* the newly generated batch, and must say so. Never uses write/DDL Supabase tools — read-only queries only (`execute_sql` for SELECTs). The only files this skill creates are the two output files described in Step 7, written outside the project directory (see Step 7) — if your environment restricts writes to the project tree, ask the user how to proceed rather than silently writing inside the project instead.
+description: Interactively generates a batch of Quizoo multiple-choice quiz questions for one sub-category, difficulty tier, and language, in Quizoo's exact `questions` table format. Supports four content modes via a `-mode` parameter — no `-mode`/`-mode text` (text-only, the original behavior), `-mode image` (verified PD/CC0 image questions, images downloaded from approved sources and re-hosted in the `question-media` bucket), `-mode pattern` (original SVG pattern/IQ questions stored in `figure_svg`), and `-mode all` (a mix of text, image, and — where the sub-category genuinely supports them — pattern questions). Asks for sub-category, question count, difficulty, and language (using the Supabase MCP server to list live choices when available, otherwise asking directly), checks existing live questions for that exact sub-category+difficulty+language via Supabase MCP so nothing generated duplicates content already in the database, then writes a review-ready, consistently-styled HTML review file (`review.html`), a NOT-yet-executed SQL insert script, and (for pattern rows) one SVG asset per question into a `questions/` folder next to the project directory. Never writes to the database itself — the user runs the SQL manually after reviewing it.
+compatibility: Text and pattern modes work with or without the Supabase MCP server connected, but the duplicate-check against existing questions (Step 6) requires it — without it, the skill can only guarantee no duplicates *within* the newly generated batch, and must say so. Image mode (`image`/`all`) additionally requires the MCP server (for the project URL and the mandatory duplicate check), internet access to the approved image sources, and a readable Supabase `service_role` key file (see Configuration). Never uses write/DDL Supabase tools — read-only queries only (`execute_sql` for SELECTs). The only Supabase Storage writes this skill ever makes are image uploads to `question-media` through `scripts/upload_question_media.py`; the only files it creates are the two output files plus `assets/*.svg` for pattern rows, all outside the project directory (see Step 7).
 ---
 
 # Generate Questions
@@ -11,40 +11,118 @@ language, in exactly the shape Quizoo's `questions` table and the Flutter
 `Question` model expect — as **draft output for human review**, never as a
 direct database write.
 
+The skill has four content **modes**:
+
+| Invocation | What it generates | Question kinds |
+|---|---|---|
+| no `-mode`, or `-mode text` | Text questions only (the original behavior) | `text` |
+| `-mode image` | Verified image questions only, sourced from approved PD/CC0 sources | `image` |
+| `-mode pattern` | Original SVG pattern/IQ questions only | `figure` |
+| `-mode all` | A mix of text, image, and (where supported) pattern | `text` + `image` + `figure` |
+
+Mode selection is a hard gate: a mode never silently substitutes one kind for
+another, and a mode that cannot run for the chosen sub-category stops (or, for
+`all`, drops the ineligible kind and says so) — see Steps 1 and 6.
+
 ## Hard rules (do not deviate)
 
 1. **Never write to the database.** Do not call any Supabase write/DDL tool
    (`apply_migration`, `execute_sql` with INSERT/UPDATE/DELETE/DDL, etc.) as
-   part of this skill. Read-only `SELECT` queries (to list sub-categories,
-   languages, or existing prompts) are fine and encouraged. The user runs the
-   generated SQL script themselves, on their own schedule, after reviewing it.
-2. **Always produce exactly two output files**: a SQL insert script and a
-   Markdown review document (Step 7). Never skip either one, never merge them
-   into one file.
-3. **Full schema/format/sample-question knowledge lives in
-   `reference/schema-and-samples.md`** next to this file — read it once at
-   the start of a run. Do not re-derive the schema by reading Flutter source
-   files or querying `information_schema` — that reference file already
-   captures everything needed, kept in sync with the live schema as of
-   2026-09-12. Treat it as ground truth for format; treat live MCP queries as
-   ground truth only for *which sub-categories/languages currently exist* and
-   *what content already exists* (Step 6).
+   part of this skill. Read-only `SELECT` queries are fine and encouraged.
+   The one exception is **Supabase Storage**, not the database: in
+   `image`/`all` modes, verified images are uploaded to the public
+   `question-media` bucket — and only through
+   `scripts/upload_question_media.py`, never by another means and never with
+   the key value handled in the conversation. The user runs the generated SQL
+   script themselves, after reviewing it.
+2. **Always produce exactly two output files** — a SQL insert script
+   (`questions.sql`) and an HTML review document (`review.html`, Step 7) —
+   **plus, for `figure` rows, one `<batch>/assets/q<N>.svg` per pattern
+   question**. Never skip either main file, never merge them into one, never
+   omit a pattern asset. The review file is always generated from
+   `reference/review-template.html`: copy its structure and `<style>` block
+   verbatim and only fill in content — every batch's `review.html` must have
+   the identical UI/UX, layout, design, typography, theme, and formatting,
+   and the correct option is always rendered in green.
+3. **Full schema/format/knowledge lives in the reference files next to this
+   file.** Read `reference/schema-and-samples.md` in full at the start of
+   every run. **Additionally read `reference/image-sources.md` in full before
+   any run whose mode includes `image`** (it is the approved-source catalog,
+   license gate, and verification protocol). Do not re-derive the schema by
+   reading Flutter source files or querying `information_schema` — the
+   reference file already captures everything needed. Treat it as ground
+   truth for format; treat live MCP queries as ground truth only for *which
+   sub-categories/languages currently exist* and *what content already
+   exists* (Step 6).
 4. **No question may duplicate one already in the database.** When Supabase
    MCP is available, Step 6's existing-questions query against the exact
-   chosen sub-category + difficulty + language is mandatory, not optional —
-   run it before drafting a single question, and check every drafted
-   question against that list (not just against the rest of the new batch)
-   before finalizing. When MCP is unavailable, this guarantee can't be made
-   against the live database — say so explicitly to the user rather than
-   silently only deduping within the batch.
+   chosen sub-category + difficulty + language is mandatory — run it before
+   drafting a single question, and check every drafted question against that
+   list (not just against the rest of the new batch) before finalizing. In
+   `image` mode also never reuse an image already referenced by another
+   question in the same sub-category (Step 6's media query). In `pattern`
+   mode never reuse an underlying rule that already exists. When MCP is
+   unavailable (text/pattern only — image mode stops), this guarantee can't
+   be made against the live database: say so explicitly to the user rather
+   than silently only deduping within the batch.
+5. **Mode integrity + capability assessments.** Only write the question
+   kinds the mode allows. Before generating anything, assess whether the
+   chosen sub-category genuinely supports the requested media kinds
+   (Step 1). If it does not: `image`/`pattern` modes **stop without writing
+   any files** and state the verdict + reasoning; `all` mode drops the
+   ineligible kind(s), continues with what remains, and states the drop. A
+   pattern question is only legitimate when a pattern/IQ puzzle genuinely
+   tests *that sub-category* — when in doubt, treat it as unsupported.
+6. **Image license policy + verification + re-hosting.** Images come only
+   from the approved sources in `reference/image-sources.md`, must be
+   **PD/CC0** (no attribution obligation; the app has no credit UI), must be
+   **viewed with the Read tool** before use (metadata alone is not
+   verification), and must be **re-hosted** in `question-media` — never
+   hotlink a source-site URL into `media_url`. Reject and swap on any doubt;
+   never lower the bar to hit a count. Source/author/license are recorded in
+   `review.html` for every image.
+7. **Pattern originality.** Every pattern artwork is an original design.
+   Never reproduce Raven's Progressive Matrices, published IQ-test items, or
+   another app's puzzles. SVGs are self-contained (no scripts, external
+   images/fonts/network references) and exactly one option is correct.
+8. **Never expose secrets.** The `service_role` key is only ever read from a
+   file path by `scripts/upload_question_media.py`. Do not read the key file
+   with the Read tool, print its contents, or paste it into a command.
 
-Read `reference/schema-and-samples.md` in full now, before continuing.
+## Configuration (required for `image`/`all` modes only)
 
-## Step 0 — try one combined live lookup
+### Supabase `service_role` key
 
-If a Supabase MCP tool is available (commonly named `mcp__supabase__execute_sql`
-or similar — check your tool list), run one read-only query up front so Steps
-1 and 4 below don't each need a separate round trip:
+A readable file containing the project's `service_role` key:
+
+`/Users/waleed/Documents/QuizooKeys/supabase_service_role.txt`
+
+Uploads to `question-media` must use this key (it bypasses Storage RLS; the
+anon key cannot upload). The key's *contents* are never read by the agent —
+only passed to `scripts/upload_question_media.py` as a path. Resolve and
+verify the file is readable before generating; if it is missing/unreadable,
+stop and quote this section. (Same key file the `generate-audios` skill
+uses.)
+
+### Project URL
+
+Resolve via the Supabase MCP server (`get_project_url`). If MCP is
+unavailable in `image`/`all` mode, stop — image mode cannot run without it
+(Hard rule 5 / Step 0).
+
+## Step 0 — parse `-mode`, then one combined live lookup
+
+**Parse the mode first.** The user may pass `-mode <value>` anywhere in the
+invocation (case-insensitive value). Valid values: `text`, `image`,
+`pattern`, `all`. No `-mode` → `text`. `-mode text` is equivalent to
+omitting it. Any other value → stop immediately, generate nothing, and tell
+the user the valid values. Carry the mode through the whole run and echo it
+back at Steps 1, 5, and 8.
+
+Then, if a Supabase MCP tool is available (commonly named
+`mcp__supabase__execute_sql` or similar — check your tool list), run one
+read-only query up front so Steps 1 and 4 below don't each need a separate
+round trip:
 
 ```sql
 select
@@ -68,11 +146,16 @@ order by c.language_code, c.slug, s.slug;
 select code, name, native_name, is_rtl, is_active from languages order by sort_order;
 ```
 
-If the MCP tool isn't in your tool list, times out, or errors: don't retry
-endlessly — fall through to the manual-input paths in Steps 1 and 4 below.
-Note to the user (briefly) that the picker is unavailable and why.
+If the MCP tool isn't in your tool list, times out, or errors:
+- **`image`/`all` modes: stop here.** Say plainly: "Image mode needs the
+  Supabase MCP server (project URL + the mandatory duplicate check) and
+  can't run without it." Do not proceed.
+- `text`/`pattern` modes: don't retry endlessly — fall through to the
+  manual-input paths in Steps 1 and 4. Note to the user (briefly) that the
+  picker is unavailable and why, and that the duplicate-check will be
+  batch-internal only (Hard rule 4).
 
-## Step 1 — which sub-category?
+## Step 1 — which sub-category? (then assess its media capabilities)
 
 **If Step 0's data is available:** present the active sub-categories grouped
 by language and category (name, slug, language) and let the user pick one.
@@ -94,6 +177,62 @@ Once resolved, you must know: the sub-category's `id`, `slug`, display name,
 its category's `slug`/name, and — critically — its category's
 `language_code`. Keep this language on hand for Step 4's cross-check.
 
+### 1a. Image-capability assessment (only when mode includes `image`)
+
+Decide — from the sub-category's name, category, and subject matter —
+whether it can be tested with **PD/CC0 photographs whose subject has an
+unambiguous, metadata-confirmable identity**. Positive signals: flags,
+countries/geography, landmarks/architecture, art/paintings/artifacts,
+space/celestial bodies, animals/plants/nature, historical archival subjects.
+Negative signals: sports action photography (copyrighted), religion/doctrine,
+language vocabulary/grammar, abstract math/logic (pattern mode fits better),
+pop culture, current events, living/private people, anything that would need
+a licensed photo to be meaningful.
+
+- `-mode image` and the sub-category is not feasible → **stop without
+  writing any files**, state the verdict and reasoning, and suggest
+  `-mode text` (or `-mode pattern` if 1b would pass).
+- `-mode all` and not feasible → drop `image` from the plan, continue with
+  the remaining capable kinds, and state the drop.
+- Genuinely ambiguous → treat as not feasible (safer default) and say why.
+
+### 1b. Pattern-capability assessment (only when mode includes `pattern`)
+
+**Do your own research here; there is no DB flag and no allowlist.** Decide
+whether pattern-recognition / IQ-style figure questions genuinely test *this
+sub-category* — not merely whether they could be themed around its name.
+Use the sub-category's display name, slug, category, and (when available) a
+small read-only sample of its existing prompts, e.g.:
+
+```sql
+select prompt from questions
+where subcategory_id = '<SUBCATEGORY_ID>' and language_code = '<LANGUAGE_CODE>'
+order by created_at desc limit 20;
+```
+
+If the name is unclear, a quick web search for what the sub-category means is
+allowed. Criteria:
+
+- **Strong yes:** IQ/logic/reasoning categories, pattern/matrix/sequence/
+  spatial/memory puzzles, number/math reasoning, coding/algorithmic thinking,
+  visual odd-one-out — places where a figure puzzle is a legitimate question
+  about the topic.
+- **No:** factual/trivia domains — sports, geography facts, history,
+  religion, language, science facts, pop culture. A shape sequence is not a
+  question about Football.
+- **Ambiguous → treat as not supported** and say why (safer default: it
+  avoids dumping off-topic content into a live pool).
+
+- `-mode pattern` and not supported → **stop immediately, generate nothing,
+  write no files.** Tell the user plainly: the sub-category does not
+  support pattern questions (verdict + one-line reasoning), and suggest
+  `-mode text` / `-mode image` instead.
+- `-mode all` and not supported → drop `pattern`, continue with text (and
+  image if 1a passed), and state the drop.
+
+Record both verdicts (supported/not + one-line rationale) — they go in the
+Step 5 confirmation and the Step 8 summary.
+
 ## Step 2 — how many questions?
 
 Ask for a count (e.g. 10, 50, 100, 200 — accept any positive integer). No
@@ -101,6 +240,9 @@ hard cap, but if it's large (100+), tell the user briefly that you'll track
 facts/correct-answers used so far in the batch to keep everything unique
 rather than silently promising perfect uniqueness — then actually do that
 while generating (Step 6).
+
+For `-mode all`, the split across kinds is resolved in Step 5 (default:
+as even as possible across the capable kinds).
 
 ## Step 3 — which difficulty?
 
@@ -142,28 +284,46 @@ existing language or set up that language's taxonomy first.
 
 ## Step 5 — confirm before generating
 
-Summarize back to the user in one short block before writing anything:
+Resolve the kind split first, then summarize back to the user in one short
+block before writing anything:
+
+- **`text` mode:** N text questions (existing behavior).
+- **`image` mode:** N image questions.
+- **`pattern` mode:** N figure/pattern questions.
+- **`all` mode:** split N as evenly as possible across the capable kinds
+  (1a/1b verdicts), remainder order text → image → pattern. State the split
+  explicitly; the user may correct it here. If only one kind is capable,
+  `all` degenerates to that kind — say so.
 
 ```
 Sub-category: <name> (<slug>) — category <category name>, language <Language (code)>
 Difficulty:   <Label> — tier `<code>`, levels <start>–<end>, <secs>s/question
 Count:        <N> questions
-Output:       <parent of project dir>/questions/<folder>/{questions.sql, review.md}
+Mode:         <text|image|pattern|all> — <n1> text, <n2> image, <n3> pattern
+Status:       text rows live; image/figure rows draft (the app doesn't render
+              media_url/figure_svg in play mode yet) — say "all live" to override
+Output:       <parent of project dir>/questions/<folder>/{questions.sql, review.html[, assets/]}
 ```
 
+Also state for `image`/`all`: images will come from approved PD/CC0 sources
+(Wikimedia Commons, FlagCDN, NASA, Met, Art Institute of Chicago, Cleveland),
+be visually verified, and be uploaded to `question-media` before the SQL is
+written.
+
 Ask for a go/no-go (or a correction) before moving on. This is the one
-deliberate pause in an otherwise autonomous skill — getting one of these four
+deliberate pause in an otherwise autonomous skill — getting one of these
 answers wrong wastes the entire generation effort, so confirm first.
 
 ## Step 6 — check for existing duplicates, then generate
 
-**Mandatory when Supabase MCP is available** (see Hard rule 4): before
-drafting anything, query every live/draft question already in the database
-for this *exact* combination — same sub-category, same difficulty tier, same
-language:
+### 6a. Existing-content queries (mandatory when MCP is available)
+
+Before drafting anything, query every live/draft question already in the
+database for this *exact* combination — same sub-category, same difficulty
+tier, same language:
 
 ```sql
-select id, prompt, options, correct_index
+select id, prompt, options, correct_index, kind, media_url
 from questions
 where subcategory_id = '<SUBCATEGORY_ID>'
   and difficulty_tier_id = (select id from difficulty_tiers where code = '<TIER_CODE>')
@@ -172,26 +332,48 @@ where subcategory_id = '<SUBCATEGORY_ID>'
 order by created_at;
 ```
 
-Keep this full result set on hand while drafting. If it's empty, note that
-(a fresh pool) and proceed. If MCP is unavailable, tell the user plainly that
-you cannot check the live database for duplicates and are only guaranteeing
-uniqueness within the new batch itself — do not imply a DB-level guarantee
-you can't back up.
+For `image`/`all` modes, additionally fetch every existing image in the
+sub-category so no image is reused across difficulties:
 
-Then write exactly `<N>` questions following every rule in
+```sql
+select id, media_url
+from questions
+where subcategory_id = '<SUBCATEGORY_ID>'
+  and language_code = '<LANGUAGE_CODE>'
+  and media_url is not null;
+```
+
+For `pattern`/`all` modes, sample existing figure prompts so rules aren't
+repeated:
+
+```sql
+select prompt, explanation
+from questions
+where subcategory_id = '<SUBCATEGORY_ID>'
+  and language_code = '<LANGUAGE_CODE>'
+  and kind = 'figure';
+```
+
+Keep these result sets on hand while drafting. If the first query is empty,
+note that (a fresh pool) and proceed. If MCP is unavailable (text/pattern
+only), tell the user plainly that you cannot check the live database for
+duplicates and are only guaranteeing uniqueness within the new batch itself
+— do not imply a DB-level guarantee you can't back up.
+
+### 6b. Text questions (mode `text`, or the text share of `all`)
+
+Write each question following every rule in
 `reference/schema-and-samples.md`'s "Content-quality rules" and calibrated
 against that file's difficulty samples for the chosen tier. In particular:
 
-- `kind = 'text'` always; 4 options; one correct answer; a genuine
-  one-sentence explanation.
+- `kind = 'text'`; 4 options; one correct answer; a genuine one-sentence
+  explanation.
 - Vary `correct_index` across the batch.
 - **No question may match or closely paraphrase any prompt fetched above** —
   compare on the underlying fact being tested, not just exact string
-  equality (e.g. "Which planet is the Red Planet?" and "Mars is nicknamed
-  the Red Planet — true or false framed as which-planet?" test the same
-  fact and both count as a duplicate). If a drafted question collides,
-  discard and replace it with a different fact before finalizing the batch —
-  don't just note the collision and move on.
+  equality. If a drafted question collides, discard and replace it with a
+  different fact before finalizing — don't just note the collision and move
+  on.
 - No duplicates within the batch itself, either.
 - Written natively in the target language/script (RTL script and RTL option
   badges — ا ب ج د — for `ur`/`ar`).
@@ -199,7 +381,105 @@ against that file's difficulty samples for the chosen tier. In particular:
   label — an "Easy" question must be answerable from common knowledge; a
   "Hard" question should be genuinely obscure or technical, per the samples.
 
-## Step 7 — write the two output files
+### 6c. Image questions (mode `image`, or the image share of `all`)
+
+Follow `reference/image-sources.md` in full. Per question, repeat:
+
+1. **Pick a subject** that *tests* the sub-category (a flag question for
+   Flags, a landmark question for Landmarks, a celestial body for Space…).
+   Not merely an illustration.
+2. **Find 1–3 candidates** on the approved sources, capturing each one's
+   source page URL, title/description (identity!), author, and license.
+3. **License-gate**: PD/CC0 only. No recognizable PD/CC0 license → reject
+   the candidate. No exceptions.
+4. **Download** the chosen raster rendition (JPEG/PNG only) to the scratchpad
+   at ≥600px wide and ≤~500KB, with a descriptive User-Agent for Wikimedia.
+   Verify with `file <path>` that it really is a JPEG/PNG (not an HTML error
+   page).
+5. **View it with the Read tool.** Mandatory — metadata alone is never
+   sufficient. Check the identity against the metadata, exactly one
+   unambiguous answer, no watermarks/overlaid answer text, no lookalikes,
+   subject survives a wide 132px-tall crop.
+6. **Accept or reject-and-swap.** On any doubt, discard and go back to step 1
+   or 2 — never force a weak image to hit the count.
+7. **Write the question**: short prompt that doesn't give away the answer;
+   exactly **3 options** (one correct, two plausible); `correct_index` 0–2;
+   a genuine one-sentence explanation; natively in the target language.
+8. **Pre-generate the question UUID** (`python3 -c "import uuid; print(uuid.uuid4())"`)
+   and keep it — it becomes both the row id and the storage object path
+   `<language_code>/<uuid>.<ext>`.
+9. **Add to the upload manifest** and record the verification data (source
+   page, author, license, scratchpad filename) for `review.html`.
+
+Avoid entirely: source hotlinks, logos/trademarks/currency, private or
+living individuals, graphic content, images containing the answer as text,
+multi-answer photos, and anything whose license you can't prove.
+
+### 6d. Pattern questions (mode `pattern`, or the pattern share of `all`)
+
+Per question:
+
+1. **Design an original puzzle** fitting the sub-category and tier — sequence
+   completion, matrix completion, rotation/reflection, odd-one-out, counting,
+   analogies, spatial reasoning. Never copy a known copyrighted puzzle (see
+   Hard rule 7).
+2. **Write a self-contained SVG** per
+   `reference/schema-and-samples.md`'s "Pattern (`figure`) authoring spec":
+   fixed `viewBox`/dimensions, shapes + text only, no scripts/external
+   refs/fonts, the full puzzle plus four labelled option figures (A–D, or
+   ا–د for RTL) inside the one artwork, exactly one correct option, under
+   ~10KB, double quotes preferred.
+3. **Save it** to `<batch>/assets/q<N>.svg` where `<N>` matches the
+   question's number in `review.html` and the `-- Q<N>` comment in
+   `questions.sql`.
+4. **Validate it** is well-formed XML before it goes anywhere:
+   `xmllint --noout <file>` (or
+   `python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse(sys.argv[1])" <file>`).
+   Fix and re-validate on failure.
+5. **Write the question**: `kind = 'figure'`; prompt in the target language
+   (short, e.g. "Which figure completes the pattern?"); options are exactly
+   the four labels `["A","B","C","D"]` (or `["ا","ب","ج","د"]` for RTL);
+   `correct_index` 0–3 pointing at the correct label; `tts_excluded = true`;
+   a one-sentence explanation that states the rule; `figure_svg` gets the
+   same SVG markup (SQL-escaped).
+6. **No rule reuse** — neither within the batch nor against the existing
+   figure prompts fetched in 6a.
+
+### 6e. Upload images (mode `image`/`all` only)
+
+Once all image questions are drafted and every image accepted, write one
+upload manifest JSON to the scratchpad:
+
+```json
+{
+  "project_url": "<from mcp__supabase__get_project_url>",
+  "bucket": "question-media",
+  "service_role_key_path": "/Users/waleed/Documents/QuizooKeys/supabase_service_role.txt",
+  "items": [
+    {
+      "question_id": "<pre-generated uuid>",
+      "language_code": "<lang>",
+      "file_path": "<scratchpad>/<subject>.jpg",
+      "content_type": "image/jpeg"
+    }
+  ]
+}
+```
+
+Then run:
+
+```sh
+python3 .claude/skills/generate-questions/scripts/upload_question_media.py \
+  --input <manifest.json> --output <result.json>
+```
+
+Read the result JSON (safe — ids/URLs/errors only). Fill each image row's
+`media_url` from its `public_url`. If an upload failed: retry once; if it
+still fails, drop that question from the batch (adjust the count and the
+split honestly) or replace the image, and report the failure in Step 8.
+Never hand-construct a storage URL for a file that didn't upload.
+
+## Step 7 — write the output files
 
 **These files are written outside the project directory, as a sibling of
 it** — not under `.claude/` or anywhere inside the repo. Determine the
@@ -242,14 +522,15 @@ Inside the batch subfolder, write:
 A single self-contained, idempotent-safe transaction. Follow this exact
 shape (fill in every `<PLACEHOLDER>`; keep the guard block — it makes the
 script safe to run in any environment without depending on this skill or
-this conversation having verified anything):
+this conversation having verified anything). The column list is the same for
+every mode; the per-kind tuple shapes differ as shown:
 
 ```sql
 -- Generated by generate-questions.
 -- Sub-category: <subcategory name> (<slug>), language <language name> (<code>)
 -- Difficulty: <Label> (tier `<code>`, levels <start>-<end>)
--- Count: <N>
--- Review the paired review.md FIRST. Nothing is saved until you run this
+-- Mode: <text|image|pattern|all> — <N> questions (<n1> text, <n2> image, <n3> pattern)
+-- Review the paired review.html FIRST. Nothing is saved until you run this
 -- script yourself in the Supabase SQL editor.
 
 begin;
@@ -284,89 +565,207 @@ end $$;
 insert into questions (
   id, subcategory_id, kind, difficulty, difficulty_tier_id,
   language_code, status, source, options, correct_index,
-  explanation, prompt, tts_excluded
+  explanation, prompt, media_url, figure_svg, tts_excluded
 ) values
-  -- Q1: <first few words of the prompt>
+  -- Q1 (text): <first few words of the prompt>
   (gen_random_uuid(), '<SUBCATEGORY_ID>', 'text', <DIFFICULTY_INT>,
    (select id from difficulty_tiers where code = '<TIER_CODE>'),
-   '<LANGUAGE_CODE>', 'live', 'ai_batch',
-   '["<option A>","<option B>","<option C>","<option D>"]'::jsonb, <CORRECT_INDEX>,
-   '<explanation>', '<prompt text>', false),
-  -- Q2: <first few words of the prompt>
-  (gen_random_uuid(), '<SUBCATEGORY_ID>', 'text', <DIFFICULTY_INT>,
+   '<LANGUAGE_CODE>', '<live|draft>', 'ai_batch',
+   '["<option A>","<option B>","<option C>","<option D>"]'::jsonb, <CORRECT_INDEX_0_3>,
+   '<explanation>', '<prompt text>', null, null, false),
+  -- Q2 (image, id must match the storage object path): <first few words of the prompt>
+  ('<QUESTION_UUID>', '<SUBCATEGORY_ID>', 'image', <DIFFICULTY_INT>,
    (select id from difficulty_tiers where code = '<TIER_CODE>'),
-   '<LANGUAGE_CODE>', 'live', 'ai_batch',
-   '["<option A>","<option B>","<option C>","<option D>"]'::jsonb, <CORRECT_INDEX>,
-   '<explanation>', '<prompt text>', false)
+   '<LANGUAGE_CODE>', '<live|draft>', 'ai_batch',
+   '["<option A>","<option B>","<option C>"]'::jsonb, <CORRECT_INDEX_0_2>,
+   '<explanation>', '<prompt text>', '<MEDIA_URL>', null, <tts_excluded>),
+  -- Q3 (figure/pattern): <first few words of the prompt>
+  (gen_random_uuid(), '<SUBCATEGORY_ID>', 'figure', <DIFFICULTY_INT>,
+   (select id from difficulty_tiers where code = '<TIER_CODE>'),
+   '<LANGUAGE_CODE>', '<live|draft>', 'ai_batch',
+   '["A","B","C","D"]'::jsonb, <CORRECT_INDEX_0_3>,
+   '<explanation>', '<prompt text>', null, '<SVG MARKUP>', true)
   -- ... one tuple per question, comma-separated, no trailing comma after the LAST tuple
 returning id, prompt;
 
 commit;
 ```
 
-Notes for whoever edits this file after reviewing `review.md`:
+Notes for whoever edits this file after reviewing `review.html`:
+- **Option counts differ by kind**: `text` and `figure` rows take exactly 4
+  options; `image` rows take exactly 3 (DB constraint). `correct_index` must
+  point at an existing option.
+- **Image rows keep their pre-generated `id`** — it matches the storage
+  object path; don't regenerate it. `text`/`figure` rows use
+  `gen_random_uuid()`.
 - To drop a question, delete its whole `(...)` tuple (and its `-- Qn` comment
-  line) and fix the commas — the tuple immediately before the one you removed
-  must lose its trailing comma if you removed the last tuple, and gain one if
-  it didn't already have one.
+  line) and fix the commas. Dropping an image question leaves its uploaded
+  object orphaned in `question-media` — harmless; optionally delete it in the
+  Supabase Storage dashboard.
 - To edit a question, edit the literal values inside its tuple directly —
   the shape never changes.
-- Escape any literal `'` inside prompt/option/explanation text by doubling it
-  (SQL string escaping: `it's` → `it''s`).
+- Escape any literal `'` inside prompt/option/explanation/SVG text by
+  doubling it (SQL string escaping: `it's` → `it''s`).
+- The default statuses are `live` for text rows and `draft` for
+  image/figure rows (the app doesn't render `media_url`/`figure_svg` yet).
+  If the user opted for "all live", set every row's status to `live` — but
+  only do that when the rendering support actually ships.
 
-### `review.md`
+### `review.html`
 
-```markdown
-# Generated Questions — <Subcategory name> (<Language name>, <Difficulty label>)
+Read `reference/review-template.html`, then copy it **verbatim** into the
+batch folder as `review.html` and fill it in. The template is the single
+source of truth for the review file's UI/UX, layout, design, typography,
+theme, and formatting: **never edit its `<style>` block, colors, fonts,
+spacing, or structure, and never add or remove sections** — only replace the
+placeholders below and expand `{{QUESTIONS}}`. Every batch's review file must
+render identically.
 
-- Sub-category: <name> (`<slug>`, id `<uuid>`)
-- Category: <category name>
-- Language: <Language name> (`<code>`)
-- Difficulty: <Label> — tier `<code>`, levels <start>–<end>, <secs>s/question
-- Count: <N>
-- Generated: <current date>
-- Paired SQL file: `questions.sql` (same folder)
+Replace every placeholder in the template:
 
-> Nothing has been written to the database. Review each question below. If
-> you remove or edit one here, make the matching edit in `questions.sql`
-> (each question is numbered and commented there). When you're satisfied,
-> run `questions.sql` yourself in the Supabase SQL editor — that's the only
-> step that saves anything.
-
----
-
-### Q1
-
-**Prompt:** <prompt text>
-
-| Option | Text |
+| Placeholder | Value |
 |---|---|
-| A | <option A> |
-| B | <option B> |
-| C | <option C> |
-| D | <option D> |
+| `{{LANG_CODE}}` | ISO code for the `<html lang>` attribute, e.g. `en`, `ur` |
+| `{{LANGUAGE_CODE}}` | the same ISO code as displayed text, e.g. `en`, `ur` |
+| `{{DIR}}` | `ltr`, or `rtl` for `ur`/`ar` |
+| `{{PAGE_TITLE}}` | `<Subcategory name> — <Language name> (<Difficulty label>) · Quizoo Review` |
+| `{{SUBCATEGORY_NAME}}` | sub-category display name |
+| `{{SUBCATEGORY_SLUG}}` | sub-category slug |
+| `{{SUBCATEGORY_ID}}` | sub-category UUID |
+| `{{CATEGORY_NAME}}` | category display name |
+| `{{LANGUAGE_NAME}}` | language display name |
+| `{{DIFFICULTY_LABEL}}` | `Easy` / `Medium` / `Hard` |
+| `{{TIER_CODE}}` | `easy` / `medium` / `hard` |
+| `{{LEVELS}}` | tier level range, e.g. `1–10` |
+| `{{SECS}}` | seconds per question for the tier, e.g. `20` |
+| `{{MODE}}` | `text` / `image` / `pattern` / `all` |
+| `{{SPLIT}}` | actual kind split, e.g. `4 text, 3 image, 3 pattern` |
+| `{{COUNT}}` | total questions generated |
+| `{{GENERATED}}` | current date |
+| `{{QUESTIONS}}` | one question card per question, numbered in order |
 
-**Correct:** <letter> — <correct option text>
+Then replace `{{QUESTIONS}}` with one `<article class="card">` per question,
+numbered to match the `-- Q<N>` comments in `questions.sql`. Use the exact
+skeleton for the question's kind — the correct option carries
+`class="option correct"` plus a trailing `<span class="mark">✓</span>`, and
+that is the only styling difference between options:
 
-**Explanation:** <explanation>
+**Text (`kind = 'text'`)** — four options, status chip `live`:
 
----
-
-<repeat per question, using the same numbering as the `-- Qn` comments in questions.sql>
+```html
+<article class="card" id="q<N>">
+  <div class="card-head">
+    <span class="qno">Q<N></span>
+    <span class="chip chip-text">text</span>
+    <span class="chip chip-live">live</span>
+  </div>
+  <p class="prompt"><PROMPT></p>
+  <ol class="options">
+    <li class="option"><span class="key">A</span><span class="opt-text"><OPTION_A></span></li>
+    <li class="option correct"><span class="key">B</span><span class="opt-text"><OPTION_B></span><span class="mark">✓</span></li>
+    <li class="option"><span class="key">C</span><span class="opt-text"><OPTION_C></span></li>
+    <li class="option"><span class="key">D</span><span class="opt-text"><OPTION_D></span></li>
+  </ol>
+  <p class="answer">Correct: <strong><LETTER></strong> — <CORRECT_OPTION_TEXT></p>
+  <p class="explanation"><span class="label">Explanation</span><EXPLANATION></p>
+</article>
 ```
 
-For an RTL language (`ur`, `ar`), use option labels **ا ب ج د** instead of
-**A B C D** in the table, matching what the app itself renders.
+(The `correct` class is shown on B for illustration only — put it on
+whichever option is actually correct. `id="q<N>"` and `Q<N>` use the
+question's number.)
+
+**Image (`kind = 'image'`)** — three options, media plate, source line,
+status chip `draft` (or `live` if the user opted into "all live"):
+
+```html
+<article class="card" id="q<N>">
+  <div class="card-head">
+    <span class="qno">Q<N></span>
+    <span class="chip chip-image">image</span>
+    <span class="chip chip-draft">draft</span>
+  </div>
+  <p class="prompt"><PROMPT></p>
+  <figure class="media"><img src="<MEDIA_URL>" alt="Q<N> image"></figure>
+  <ol class="options">
+    <li class="option"><span class="key">A</span><span class="opt-text"><OPTION_A></span></li>
+    <li class="option correct"><span class="key">B</span><span class="opt-text"><OPTION_B></span><span class="mark">✓</span></li>
+    <li class="option"><span class="key">C</span><span class="opt-text"><OPTION_C></span></li>
+  </ol>
+  <p class="answer">Correct: <strong><LETTER></strong> — <CORRECT_OPTION_TEXT></p>
+  <p class="explanation"><span class="label">Explanation</span><EXPLANATION></p>
+  <p class="source">Source: <a href="<SOURCE_PAGE_URL>" rel="noopener"><SOURCE_TITLE></a> — <AUTHOR>, <LICENSE_SHORT_NAME>. Stored at <code>question-media/<LANG_CODE>/<UUID>.<ext></code>.</p>
+</article>
+```
+
+**Pattern (`kind = 'figure'`)** — four label options, artwork from
+`assets/`, status chip `draft` (or `live` on override):
+
+```html
+<article class="card" id="q<N>">
+  <div class="card-head">
+    <span class="qno">Q<N></span>
+    <span class="chip chip-figure">pattern</span>
+    <span class="chip chip-draft">draft</span>
+  </div>
+  <p class="prompt"><PROMPT></p>
+  <figure class="media media-figure"><img src="assets/q<N>.svg" alt="Q<N> pattern"></figure>
+  <ol class="options">
+    <li class="option"><span class="key">A</span><span class="opt-text">A</span></li>
+    <li class="option correct"><span class="key">B</span><span class="opt-text">B</span><span class="mark">✓</span></li>
+    <li class="option"><span class="key">C</span><span class="opt-text">C</span></li>
+    <li class="option"><span class="key">D</span><span class="opt-text">D</span></li>
+  </ol>
+  <p class="answer">Correct: <strong><LETTER></strong></p>
+  <p class="explanation"><span class="label">Explanation</span><EXPLANATION></p>
+</article>
+```
+
+**Content escaping and final checks:**
+
+- HTML-escape everything inserted into text positions: `&` → `&amp;`,
+  `<` → `&lt;`, `>` → `&gt;`. Keep `src`/`href`/`alt` values in double quotes.
+  Never paste a raw `<` or `&` from a prompt/option/explanation into the file.
+- For an RTL language (`ur`, `ar`), set `{{DIR}}` to `rtl` — the layout flips
+  automatically (the accent bars, key badges, and ✓ mark move with it) — and
+  use the labels **ا ب ج د** instead of **A B C D** for every option
+  key/`opt-text` and in the pattern SVG labels, matching what the app itself
+  renders.
+- Before declaring the batch done: `grep -c '{{' review.html` must print `0`
+  (its non-zero exit status in that case is expected and fine); the number of
+  `class="option correct"` occurrences must equal the question count; every
+  `assets/q<N>.svg` referenced by a pattern card must exist; and every
+  `<article>` must be closed with `</article>`.
+- The image `src` is the uploaded `media_url` (loads when online); the
+  pattern `src` is the relative `assets/q<N>.svg` — keep that relative path
+  so the batch folder stays portable.
+
+### `assets/` (pattern rows only)
+
+Write each pattern question's SVG to `assets/q<N>.svg` (N = question number)
+as described in Step 6d, before finalizing `questions.sql` — the SQL embeds
+the same markup inline. Verify every file is valid XML before declaring the
+batch done.
 
 ## Step 8 — final message to the user
 
 State plainly, in your own words (don't just dump the template):
 - Both file paths (the full `questions/<batch>/...` paths, sitting next to
-  the project directory, not inside it).
+  the project directory, not inside it), plus the `assets/` folder when
+  pattern rows exist.
+- The mode and the actual kind split generated.
+- The capability verdicts from Step 1 (image/pattern supported or not, and
+  the reasoning) when they were relevant.
 - Whether the duplicate-check against the live database actually ran
   (MCP available) or was skipped (MCP unavailable, batch-internal uniqueness
   only) — don't let this go unstated.
+- For image runs: how many images were uploaded, from which sources, and any
+  upload failures or dropped/replaced questions. Reiterate the PD/CC0 policy.
+- The status choice (text live; image/figure draft by default) and why, so
+  the user knows these won't be dealt in play mode until rendering ships or
+  they override.
 - A one-line reminder: nothing was saved to the database.
-- Next step: review `review.md`, edit both files together for anything you
-  want to change, then run `questions.sql` in the Supabase SQL editor
-  yourself when ready.
+- Next step: open `review.html` in a browser (open the `assets/*.svg` files
+  directly for pattern batches if you want a closer look), edit both files
+  together for anything you want to change, then run `questions.sql` in the
+  Supabase SQL editor yourself when ready.

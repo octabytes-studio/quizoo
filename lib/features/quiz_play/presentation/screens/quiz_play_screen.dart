@@ -7,7 +7,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/app/subscription_cubit.dart';
-import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/content_language/language_direction.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
@@ -91,7 +90,6 @@ class QuizPlayScreen extends StatelessWidget {
         final cubit = QuizPlayCubit(
           context.read<QuizPlayRepository>(),
           context.read<SettingsRepository>(),
-          context.read<ContentLanguageRepository>(),
           StoredAudioTtsService(audioCacheService),
           AudioplayersSoundEffectsService(),
           audioCacheService,

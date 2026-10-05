@@ -4,13 +4,6 @@
 /// synchronously or on a controlled delay (CLAUDE.md §11, mirroring this
 /// Cubit's own `Timer`-not-`Ticker` reasoning).
 abstract class TtsService {
-  /// Attempts to switch the voice to [languageCode]. [voiceId] is the
-  /// ElevenLabs voice configured for this language in the `languages` table
-  /// (plan 010) — `null` when none is configured yet. Returns `false` —
-  /// never throws — when [voiceId] is null, so the caller can fall back to
-  /// silent mode rather than blocking the question screen (spec §4.1).
-  Future<bool> setLanguage(String languageCode, {String? voiceId});
-
   /// Plays the pre-generated narration clip at [audioUrl]. Completion (or
   /// cancellation) fires whichever callback was last registered via
   /// [onComplete].

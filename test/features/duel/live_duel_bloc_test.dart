@@ -225,7 +225,6 @@ void main() {
     setUp(() {
       audio = _MockDuelAudio();
       when(() => audio.isOn).thenReturn(true);
-      when(() => audio.prepare(any())).thenAnswer((_) async {});
       when(() => audio.dispose()).thenAnswer((_) async {});
       when(() => repository.fetchRound(any(), any())).thenAnswer(
         (_) async => (
@@ -241,7 +240,6 @@ void main() {
         'tick, and the reveal plays the verdict chime', () {
       runDuel(_snapshot(), (duel) {
         duel.playIntoRound1();
-        verify(() => audio.prepare('en')).called(1);
         verify(
           () => audio.questionShown(
             audioUrl: narrated.audioUrl,

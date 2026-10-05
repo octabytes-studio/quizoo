@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/features/quiz_play/data/audioplayers_sound_effects_service.dart';
 import 'package:quizoo/features/quiz_play/data/cache_manager_audio_cache_service.dart';
 import 'package:quizoo/features/quiz_play/data/sound_effects_service.dart';
@@ -23,47 +22,31 @@ import 'package:quizoo/features/settings/data/settings_repository.dart';
 /// audio seams to `core/` is a separate cleanup). Blocs/Cubits take this
 /// class through their constructor, so tests substitute a mock.
 class DuelAudio {
-  DuelAudio(this._tts, this._effects, this._settings, this._languages);
+  DuelAudio(this._tts, this._effects, this._settings);
 
   /// The real device audio — the same narration player, clip cache and
   /// chime players play mode builds.
-  factory DuelAudio.device({
-    required SettingsRepository settings,
-    required ContentLanguageRepository languages,
-  }) => DuelAudio(
+  factory DuelAudio.device({required SettingsRepository settings}) => DuelAudio(
     StoredAudioTtsService(CacheManagerAudioCacheService()),
     AudioplayersSoundEffectsService(),
     settings,
-    languages,
   );
 
   final TtsService _tts;
   final SoundEffectsService _effects;
   final SettingsRepository _settings;
-  final ContentLanguageRepository _languages;
 
-  bool _voiceAvailable = false;
   bool _ticking = false;
 
   /// The persisted speaker preference.
   bool get isOn => _settings.current.soundOn;
 
-  /// Checks once whether [languageCode] has a narration voice; without one,
-  /// questions stay silent but the chimes still play.
-  Future<void> prepare(String languageCode) async {
-    try {
-      final voiceId = await _languages.voiceIdFor(languageCode);
-      _voiceAvailable = await _tts.setLanguage(languageCode, voiceId: voiceId);
-    } on Object {
-      _voiceAvailable = false;
-    }
-  }
-
   /// A question just appeared: read it aloud (when it has a clip and isn't
-  /// excluded) and start the clock tick.
+  /// excluded) and start the clock tick. Narration availability is purely
+  /// per-question — the clip exists or it doesn't.
   void questionShown({String? audioUrl, bool ttsExcluded = false}) {
     if (!isOn) return;
-    if (_voiceAvailable && !ttsExcluded && audioUrl != null) {
+    if (!ttsExcluded && audioUrl != null) {
       unawaited(_tts.speak(audioUrl));
     }
     _startTick();
