@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
-import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
@@ -39,10 +38,7 @@ class DuelPlayScreen extends StatelessWidget {
           // play.
           audio: resolved == null
               ? null
-              : DuelAudio.device(
-                  settings: context.read<SettingsRepository>(),
-                  languages: context.read<ContentLanguageRepository>(),
-                ),
+              : DuelAudio.device(settings: context.read<SettingsRepository>()),
         );
         if (resolved == null) {
           cubit.failWithoutTopic();

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/network/api_exception.dart';
@@ -63,7 +62,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   QuizPlayCubit(
     this._repository,
     this._settingsRepository,
-    this._contentLanguageRepository,
     this._ttsService,
     this._soundEffects,
     this._audioCacheService, {
@@ -72,7 +70,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
 
   final QuizPlayRepository _repository;
   final SettingsRepository _settingsRepository;
-  final ContentLanguageRepository _contentLanguageRepository;
   final TtsService _ttsService;
   final SoundEffectsService _soundEffects;
   final QuestionAudioCacheService _audioCacheService;
@@ -131,11 +128,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   /// it gates [_soundEffects] too, not just question narration: one flag,
   /// one meaning, rather than a second toggle nobody asked for.
   bool _audioOn = true;
-
-  /// False when [startLevel] found no voice pack for the active language —
-  /// falls back to silent mode for the whole run rather than retrying every
-  /// question (spec §4.1).
-  bool _ttsAvailable = true;
 
   /// The current question's full allowance, which grows when +15s is spent.
   Duration _questionBudget = Duration.zero;
@@ -207,19 +199,10 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     }
 
     _audioOn = _settingsRepository.current.soundOn;
-    if (_audioOn) {
-      final voiceId = await _contentLanguageRepository.voiceIdFor(languageCode);
-      if (isClosed) return;
-      _ttsAvailable = await _ttsService.setLanguage(
-        languageCode,
-        voiceId: voiceId,
-      );
-    } else {
-      _ttsAvailable = false;
-    }
-    if (isClosed) return;
-
-    if (_ttsAvailable) unawaited(_prefetchWindow(0));
+    // Narration is pre-generated per question (`questions.audio_url`), so
+    // there is no language-level voice to resolve — a question either has a
+    // clip or it doesn't (see [_beginQuestion]).
+    if (_audioOn) unawaited(_prefetchWindow(0));
 
     _questionIndex = 0;
     final run = QuizRun(
@@ -292,19 +275,7 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     _questions = session.questions;
 
     _audioOn = _settingsRepository.current.soundOn;
-    if (_audioOn) {
-      final voiceId = await _contentLanguageRepository.voiceIdFor(languageCode);
-      if (isClosed) return;
-      _ttsAvailable = await _ttsService.setLanguage(
-        languageCode,
-        voiceId: voiceId,
-      );
-    } else {
-      _ttsAvailable = false;
-    }
-    if (isClosed) return;
-
-    if (_ttsAvailable) unawaited(_prefetchWindow(0));
+    if (_audioOn) unawaited(_prefetchWindow(0));
 
     _questionIndex = 0;
     final run = QuizRun(
@@ -373,14 +344,16 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
     // resets here.
     _usedPowerUpsThisQuestion.clear();
 
-    if (_ttsAvailable) unawaited(_prefetchWindow(_questionIndex + 1));
+    if (_audioOn) unawaited(_prefetchWindow(_questionIndex + 1));
 
     final question = _questions[_questionIndex];
+    // Narration availability is purely per-question: a generated clip exists
+    // or it doesn't. The old language-level `languages.voice_id` gate was
+    // removed because clips are now produced by the out-of-app generation
+    // skill, which does not read that column (a language with generated
+    // clips can still have a null `voice_id`).
     final speaksThisQuestion =
-        _audioOn &&
-        _ttsAvailable &&
-        !question.ttsExcluded &&
-        question.audioUrl != null;
+        _audioOn && !question.ttsExcluded && question.audioUrl != null;
     final beganAt = _questionIndex;
 
     emit(

@@ -88,23 +88,5 @@ void main() {
       expect(result, isNull);
       expect(repository.current, 'en');
     });
-
-    test('voiceIdFor returns the voice id the API resolves', () async {
-      when(() => api.fetchVoiceId('en')).thenAnswer((_) async => 'voice-123');
-
-      final result = await repository.voiceIdFor('en');
-
-      expect(result, 'voice-123');
-    });
-
-    test('voiceIdFor returns null when the API throws', () async {
-      when(
-        () => api.fetchVoiceId('ur'),
-      ).thenThrow(const ApiException.network());
-
-      final result = await repository.voiceIdFor('ur');
-
-      expect(result, isNull);
-    });
   });
 }

@@ -24,10 +24,6 @@ class StoredAudioTtsService implements TtsService {
   void Function()? _onComplete;
 
   @override
-  Future<bool> setLanguage(String languageCode, {String? voiceId}) async =>
-      voiceId != null;
-
-  @override
   Future<void> speak(String audioUrl) async {
     try {
       final localPath = await _audioCacheService.localPathFor(audioUrl);

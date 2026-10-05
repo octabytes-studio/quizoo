@@ -71,7 +71,7 @@ class LiveDuelBloc extends Bloc<LiveDuelEvent, LiveDuelState> {
   /// Read-aloud + sound effects; null plays nothing (tests).
   final DuelAudio? _audio;
 
-  /// The duel's content language — which narration voice to use.
+  /// The duel's content language — which language's questions to fetch.
   final String languageCode;
 
   /// How often the screen's clocks advance.
@@ -189,8 +189,6 @@ class LiveDuelBloc extends Bloc<LiveDuelEvent, LiveDuelState> {
 
     _applySnapshot(snapshot, emit);
     if (_isTerminal) return;
-    final audio = _audio;
-    if (audio != null) unawaited(audio.prepare(languageCode));
 
     _ticker = Timer.periodic(tickInterval, (_) {
       if (!isClosed) add(const LiveDuelTicked());

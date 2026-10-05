@@ -4,7 +4,6 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:quizoo/core/content_language/content_language_repository.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/models/power_up.dart';
 import 'package:quizoo/core/subscription/pro_perks.dart';
@@ -25,23 +24,15 @@ class _MockQuizPlayRepository extends Mock implements QuizPlayRepository {}
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
-class _MockContentLanguageRepository extends Mock
-    implements ContentLanguageRepository {}
-
 /// A fake rather than a mocktail `Mock`: the Cubit's phase machine drives
 /// this through real completion-callback timing (`complete()`), which a
 /// stubbed `Mock` can't express.
 class _FakeTtsService implements TtsService {
-  bool languageAvailable = true;
   void Function()? _onComplete;
 
   /// The `audioUrl`s passed to [speak], in call order.
   final List<String> spoken = [];
   int stopCount = 0;
-
-  @override
-  Future<bool> setLanguage(String languageCode, {String? voiceId}) async =>
-      voiceId != null && languageAvailable;
 
   @override
   Future<void> speak(String audioUrl) async => spoken.add(audioUrl);
@@ -111,7 +102,6 @@ void main() {
 
   late _MockQuizPlayRepository repository;
   late _MockSettingsRepository settingsRepository;
-  late _MockContentLanguageRepository contentLanguageRepository;
   late _FakeTtsService ttsService;
   late _FakeSoundEffectsService soundEffects;
   late _FakeAudioCacheService audioCacheService;
@@ -137,11 +127,6 @@ void main() {
       (invocation) => invocation.positionalArguments.first as AppSettings,
     );
 
-    contentLanguageRepository = _MockContentLanguageRepository();
-    when(
-      () => contentLanguageRepository.voiceIdFor(any()),
-    ).thenAnswer((_) async => 'voice-placeholder');
-
     ttsService = _FakeTtsService();
     soundEffects = _FakeSoundEffectsService();
     audioCacheService = _FakeAudioCacheService();
@@ -150,7 +135,6 @@ void main() {
   QuizPlayCubit buildCubit() => QuizPlayCubit(
     repository,
     settingsRepository,
-    contentLanguageRepository,
     ttsService,
     soundEffects,
     audioCacheService,
@@ -331,54 +315,6 @@ void main() {
         questions.first.copyWith(audioUrl: null),
         ...questions.skip(1),
       ]);
-      when(
-        () => settingsRepository.current,
-      ).thenReturn(const AppSettings(soundOn: true));
-      fakeAsync((async) {
-        final cubit = buildCubit();
-        unawaited(start(cubit));
-        async.flushMicrotasks();
-        cubit.skipCountdown();
-
-        final state = cubit.state as QuizPlayInProgress;
-        expect(state.phase, QuestionPhase.answering);
-        expect(ttsService.spoken, isEmpty);
-
-        unawaited(cubit.close());
-        async.flushMicrotasks();
-      });
-    });
-
-    test(
-      'falls back to silent mode when the active language has no voice pack',
-      () {
-        stubQuestions();
-        ttsService.languageAvailable = false;
-        when(
-          () => settingsRepository.current,
-        ).thenReturn(const AppSettings(soundOn: true));
-        fakeAsync((async) {
-          final cubit = buildCubit();
-          unawaited(start(cubit));
-          async.flushMicrotasks();
-          cubit.skipCountdown();
-
-          final state = cubit.state as QuizPlayInProgress;
-          expect(state.phase, QuestionPhase.answering);
-          expect(ttsService.spoken, isEmpty);
-
-          unawaited(cubit.close());
-          async.flushMicrotasks();
-        });
-      },
-    );
-
-    test('falls back to silent mode when no voice_id is configured for the '
-        'active language', () {
-      stubQuestions();
-      when(
-        () => contentLanguageRepository.voiceIdFor(any()),
-      ).thenAnswer((_) async => null);
       when(
         () => settingsRepository.current,
       ).thenReturn(const AppSettings(soundOn: true));
