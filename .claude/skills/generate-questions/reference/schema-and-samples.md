@@ -112,8 +112,11 @@ Match that style:
   content.
 - The `explanation` should add one genuine extra detail, not just restate the
   correct option in different words (see the samples below for the pattern).
-- Image licenses: **PD/CC0 only** (see `image-sources.md`). No logos,
-  trademarks, currency, private individuals, or overlaid text.
+- Image licenses: **PD/CC0/CC-BY/CC-BY-SA only** (see `image-sources.md`).
+  For CC-BY/CC-BY-SA, the `explanation` must end with the credit line
+  `Credit: <author>, <license short name>, <license URL>.` — the
+  attribution those licenses require. No logos, trademarks, currency,
+  private (non-public) individuals, or overlaid text.
 
 ## Difficulty calibration + real sample questions (3 per tier)
 
@@ -162,7 +165,15 @@ only its easiest end.
 
 Remember: image rows have **three** options, not four, and `correct_index`
 must be 0–2. The prompt must not name the answer. Source/license is recorded
-in `review.html`, never in the prompt/explanation.
+in `review.html`; CC-BY/CC-BY-SA images additionally carry the mandatory
+credit line in the explanation (the samples below are PD/CC0/flag images, so
+they need none). Credit-line shape:
+
+`<explanation sentence> Credit: <author>, <license short name>, <license URL>.`
+
+e.g. if sample 1's Taj Mahal photo were `CC BY-SA 4.0` by Diego Delso, its
+explanation would end:
+`... mausoleum for Mumtaz Mahal. Credit: Diego Delso, CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/.`
 
 1. *(subject: Taj Mahal, Wikimedia Commons PD)*
    - Prompt: "In which Indian city does this monument stand?"
