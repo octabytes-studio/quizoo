@@ -1,6 +1,6 @@
 ---
 name: generate-questions
-description: Interactively generates a batch of Quizoo multiple-choice quiz questions for one sub-category, difficulty tier, and language, in Quizoo's exact `questions` table format. Supports four content modes via a `-mode` parameter — no `-mode`/`-mode text` (text-only, the original behavior), `-mode image` (verified PD/CC0 image questions, images downloaded from approved sources and re-hosted in the `question-media` bucket), `-mode pattern` (original SVG pattern/IQ questions stored in `figure_svg`), and `-mode all` (a mix of text, image, and — where the sub-category genuinely supports them — pattern questions). Asks for sub-category, question count, difficulty, and language (using the Supabase MCP server to list live choices when available, otherwise asking directly), checks existing live questions for that exact sub-category+difficulty+language via Supabase MCP so nothing generated duplicates content already in the database, then writes a review-ready, consistently-styled HTML review file (`review.html`), a NOT-yet-executed SQL insert script, and (for pattern rows) one SVG asset per question into a `questions/` folder next to the project directory. Never writes to the database itself — the user runs the SQL manually after reviewing it.
+description: Interactively generates a batch of Quizoo multiple-choice quiz questions for one sub-category, difficulty tier, and language, in Quizoo's exact `questions` table format. Supports four content modes via a `-mode` parameter — no `-mode`/`-mode text` (text-only, the original behavior), `-mode image` (verified open-license image questions — PD/CC0/CC-BY/CC-BY-SA, images downloaded from approved sources and re-hosted in the `question-media` bucket, with a credit line embedded in the explanation when the license requires attribution), `-mode pattern` (original SVG pattern/IQ questions stored in `figure_svg`), and `-mode all` (a mix of text, image, and — where the sub-category genuinely supports them — pattern questions). Asks for sub-category, question count, difficulty, and language (using the Supabase MCP server to list live choices when available, otherwise asking directly), checks existing live questions for that exact sub-category+difficulty+language via Supabase MCP so nothing generated duplicates content already in the database, then writes a review-ready, consistently-styled HTML review file (`review.html`), a NOT-yet-executed SQL insert script, and (for pattern rows) one SVG asset per question into a `questions/` folder next to the project directory. Never writes to the database itself — the user runs the SQL manually after reviewing it.
 compatibility: Text and pattern modes work with or without the Supabase MCP server connected, but the duplicate-check against existing questions (Step 6) requires it — without it, the skill can only guarantee no duplicates *within* the newly generated batch, and must say so. Image mode (`image`/`all`) additionally requires the MCP server (for the project URL and the mandatory duplicate check), internet access to the approved image sources, and a readable Supabase `service_role` key file (see Configuration). Never uses write/DDL Supabase tools — read-only queries only (`execute_sql` for SELECTs). The only Supabase Storage writes this skill ever makes are image uploads to `question-media` through `scripts/upload_question_media.py`; the only files it creates are the two output files plus `assets/*.svg` for pattern rows, all outside the project directory (see Step 7).
 ---
 
@@ -16,7 +16,7 @@ The skill has four content **modes**:
 | Invocation | What it generates | Question kinds |
 |---|---|---|
 | no `-mode`, or `-mode text` | Text questions only (the original behavior) | `text` |
-| `-mode image` | Verified image questions only, sourced from approved PD/CC0 sources | `image` |
+| `-mode image` | Verified image questions only, sourced from approved open-license (PD/CC0/CC-BY/CC-BY-SA) sources | `image` |
 | `-mode pattern` | Original SVG pattern/IQ questions only | `figure` |
 | `-mode all` | A mix of text, image, and (where supported) pattern | `text` + `image` + `figure` |
 
@@ -74,13 +74,18 @@ another, and a mode that cannot run for the chosen sub-category stops (or, for
    pattern question is only legitimate when a pattern/IQ puzzle genuinely
    tests *that sub-category* — when in doubt, treat it as unsupported.
 6. **Image license policy + verification + re-hosting.** Images come only
-   from the approved sources in `reference/image-sources.md`, must be
-   **PD/CC0** (no attribution obligation; the app has no credit UI), must be
-   **viewed with the Read tool** before use (metadata alone is not
-   verification), and must be **re-hosted** in `question-media` — never
-   hotlink a source-site URL into `media_url`. Reject and swap on any doubt;
-   never lower the bar to hit a count. Source/author/license are recorded in
-   `review.html` for every image.
+   from the approved sources in `reference/image-sources.md` and must be
+   **openly licensed: PD, CC0, CC-BY, or CC-BY-SA** (reject CC-BY-NC,
+   CC-BY-ND, GFDL-only, "fair use", and anything all-rights-reserved or
+   unverifiable). They must be **viewed with the Read tool** before use
+   (metadata alone is not verification) and **re-hosted** in
+   `question-media` — never hotlink a source-site URL into `media_url`.
+   Every CC-BY/CC-BY-SA image carries a **mandatory credit line** appended
+   as the final sentence of its `explanation`, in this exact shape:
+   `Credit: <author>, <license short name>, <license URL>.`
+   (PD/CC0 need no credit line, but every image's source/author/license is
+   still recorded in `review.html`. A CC-BY/CC-BY-SA image whose author
+   can't be determined is rejected — it cannot be attributed.)
 7. **Pattern originality.** Every pattern artwork is an original design.
    Never reproduce Raven's Progressive Matrices, published IQ-test items, or
    another app's puzzles. SVGs are self-contained (no scripts, external
@@ -180,14 +185,21 @@ its category's `slug`/name, and — critically — its category's
 ### 1a. Image-capability assessment (only when mode includes `image`)
 
 Decide — from the sub-category's name, category, and subject matter —
-whether it can be tested with **PD/CC0 photographs whose subject has an
-unambiguous, metadata-confirmable identity**. Positive signals: flags,
-countries/geography, landmarks/architecture, art/paintings/artifacts,
-space/celestial bodies, animals/plants/nature, historical archival subjects.
-Negative signals: sports action photography (copyrighted), religion/doctrine,
+whether it can be tested with **openly licensed (PD/CC0/CC-BY/CC-BY-SA)
+photographs whose subject has an unambiguous, metadata-confirmable
+identity**. The gate is *license availability*, not subject matter: a topic
+passes if the approved sources hold a suitable open-license photo of it,
+whatever the topic. Positive signals: flags, countries/geography,
+landmarks/architecture, art/paintings/artifacts, space/celestial bodies,
+animals/plants/nature, historical archival subjects, and **public figures —
+athletes, celebrities, historical personalities — with openly licensed
+portraits on the approved sources** (Commons in particular holds CC-BY/
+CC-BY-SA photographs of many athletes and famous people; check that pool
+before declaring a topic infeasible). Negative signals: religion/doctrine,
 language vocabulary/grammar, abstract math/logic (pattern mode fits better),
-pop culture, current events, living/private people, anything that would need
-a licensed photo to be meaningful.
+current events, private (non-public) individuals, and any topic where a
+genuine search finds no suitable open-license photo — agency/press photos,
+paparazzi shots, and stock previews never count, however many exist.
 
 - `-mode image` and the sub-category is not feasible → **stop without
   writing any files**, state the verdict and reasoning, and suggest
@@ -305,10 +317,12 @@ Status:       text rows live; image/figure rows draft (the app doesn't render
 Output:       <parent of project dir>/questions/<folder>/{questions.sql, review.html[, assets/]}
 ```
 
-Also state for `image`/`all`: images will come from approved PD/CC0 sources
-(Wikimedia Commons, FlagCDN, NASA, Met, Art Institute of Chicago, Cleveland),
-be visually verified, and be uploaded to `question-media` before the SQL is
-written.
+Also state for `image`/`all`: images will come from approved open-license
+sources (Wikimedia Commons, FlagCDN, NASA, Met, Art Institute of Chicago,
+Cleveland), be visually verified, and be uploaded to `question-media` before
+the SQL is written. Licenses may be PD/CC0 or CC-BY/CC-BY-SA; the latter
+carry a mandatory credit line as the explanation's final sentence
+(`Credit: <author>, <license short name>, <license URL>.`).
 
 Ask for a go/no-go (or a correction) before moving on. This is the one
 deliberate pause in an otherwise autonomous skill — getting one of these
@@ -390,8 +404,11 @@ Follow `reference/image-sources.md` in full. Per question, repeat:
    Not merely an illustration.
 2. **Find 1–3 candidates** on the approved sources, capturing each one's
    source page URL, title/description (identity!), author, and license.
-3. **License-gate**: PD/CC0 only. No recognizable PD/CC0 license → reject
-   the candidate. No exceptions.
+3. **License-gate**: PD/CC0/CC-BY/CC-BY-SA only (any license version). No
+   recognizable license, or an NC/ND/GFDL-only/"fair use"/all-rights-
+   reserved one → reject the candidate. No exceptions. Capture author,
+   license short name, license URL, and source page URL — CC-BY/CC-BY-SA
+   needs all of them for the credit line.
 4. **Download** the chosen raster rendition (JPEG/PNG only) to the scratchpad
    at ≥600px wide and ≤~500KB, with a descriptive User-Agent for Wikimedia.
    Verify with `file <path>` that it really is a JPEG/PNG (not an HTML error
@@ -404,16 +421,24 @@ Follow `reference/image-sources.md` in full. Per question, repeat:
    or 2 — never force a weak image to hit the count.
 7. **Write the question**: short prompt that doesn't give away the answer;
    exactly **3 options** (one correct, two plausible); `correct_index` 0–2;
-   a genuine one-sentence explanation; natively in the target language.
+   a genuine one-sentence explanation. For CC-BY/CC-BY-SA images, append
+   the **mandatory credit line** as the explanation's final sentence —
+   `Credit: <author>, <license short name>, <license URL>.` (one space
+   after the preceding sentence's period; use the author exactly as
+   recorded in the source metadata). PD/CC0 need no credit line. Write all
+   question text natively in the target language/script; the `Credit:`
+   keyword and license URL stay as-is.
 8. **Pre-generate the question UUID** (`python3 -c "import uuid; print(uuid.uuid4())"`)
    and keep it — it becomes both the row id and the storage object path
    `<language_code>/<uuid>.<ext>`.
 9. **Add to the upload manifest** and record the verification data (source
    page, author, license, scratchpad filename) for `review.html`.
 
-Avoid entirely: source hotlinks, logos/trademarks/currency, private or
-living individuals, graphic content, images containing the answer as text,
-multi-answer photos, and anything whose license you can't prove.
+Avoid entirely: source hotlinks, logos/trademarks/currency, graphic content,
+images containing the answer as text, multi-answer photos, private
+(non-public) individuals and privacy-sensitive candid shots, and anything
+whose license you can't prove. Openly licensed portraits of public figures
+are allowed — that's the point of the expanded gate.
 
 ### 6d. Pattern questions (mode `pattern`, or the pattern share of `all`)
 
@@ -698,6 +723,10 @@ status chip `draft` (or `live` if the user opted into "all live"):
 </article>
 ```
 
+For a CC-BY/CC-BY-SA image, link `<LICENSE_SHORT_NAME>` to its license URL
+(see `reference/image-sources.md` §5 for the exact source-line shape), and
+remember its credit line is already part of `<EXPLANATION>`.
+
 **Pattern (`kind = 'figure'`)** — four label options, artwork from
 `assets/`, status chip `draft` (or `live` on override):
 
@@ -760,7 +789,9 @@ State plainly, in your own words (don't just dump the template):
   (MCP available) or was skipped (MCP unavailable, batch-internal uniqueness
   only) — don't let this go unstated.
 - For image runs: how many images were uploaded, from which sources, and any
-  upload failures or dropped/replaced questions. Reiterate the PD/CC0 policy.
+  upload failures or dropped/replaced questions. State the license mix
+  (PD/CC0 vs CC-BY/CC-BY-SA) and confirm every attribution-required image
+  carries its credit line.
 - The status choice (text live; image/figure draft by default) and why, so
   the user knows these won't be dealt in play mode until rendering ships or
   they override.

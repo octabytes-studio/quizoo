@@ -6,19 +6,25 @@ gate, and the verification protocol for every image question this skill
 authors. `SKILL.md`'s Hard rule 6 summarizes the non-negotiables; this file is
 the detail.
 
-Captured 2026-10-05. If a source's API shape or license policy changes,
-update this file — don't silently drift.
+Captured 2026-10-05; license policy expanded to CC-BY / CC-BY-SA on
+2026-10-06. If a source's API shape or license policy changes, update this
+file — don't silently drift.
 
 ## 0. The four non-negotiables
 
 1. **Approved sources only.** Images come from the catalog below. Never from
    a general web-search image result, never from a "here's a URL I found"
    guess, never a stock-photo preview, never social media.
-2. **PD / CC0 only.** The app has no credit UI, so anything requiring
-   attribution (CC-BY, CC-BY-SA, GFDL-only, "fair use") is rejected even if it
-   is otherwise freely usable. Public domain and CC0 have no attribution
-   requirement; the skill still records source/author/license in `review.html`
-   as an audit trail.
+2. **Openly licensed only: PD, CC0, CC-BY, or CC-BY-SA.** Attribution-
+   required images (CC-BY, CC-BY-SA) are allowed — the attribution travels
+   with the content itself as a mandatory credit line in the question's
+   `explanation`, so no in-app credit UI is needed:
+   `Credit: <author>, <license short name>, <license URL>.` (final sentence
+   of the explanation; exact format in §5). Reject CC-BY-NC, CC-BY-ND,
+   GFDL-only, "fair use", stock-photo previews, and anything all-rights-
+   reserved or unverifiable. PD/CC0 carry no credit obligation, but every
+   image still records source/author/license in `review.html` as an audit
+   trail.
 3. **Download, verify by sight, re-host.** Every image is downloaded to the
    scratchpad, viewed with the Read tool (not just trusted from metadata),
    and uploaded to the `question-media` bucket via
@@ -43,8 +49,9 @@ update this file — don't silently drift.
   vision alone is not sufficient ground truth.
 - **Clean presentation**: no watermarks, no overlaid answer text, no
   timestamp/channel bugs, no heavy filters or meme formatting, no
-  identifiable private individuals, no graphic/medical content, no
-  trademarks/logos/currency/brands.
+  graphic/medical content, no trademarks/logos/currency/brands. Public
+  figures are fine when the photo is openly licensed; avoid private
+  (non-public) individuals and privacy-sensitive candid shots.
 - **Fits the media plate**: the app's plate is 132 logical px tall and
   full-width, and the future render is `BoxFit.cover`-shaped — prefer
   landscape/centered-subject images where the subject survives a wide crop.
@@ -85,13 +92,19 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
   `media_url`.
 - **License gate** — from `extmetadata`:
   - Accept: `LicenseShortName` / `License` containing `Public domain`,
-    `PD`, `CC0`, `PDM` (e.g. `PD-old-100`, `PD-US`, `CC0 1.0`). Also
-    `UsageTerms` saying "Public domain" with no restrictions.
-  - Reject: `CC BY`, `CC BY-SA`, `GFDL` alone, `CC BY-NC`, `CC BY-ND`,
-    anything with an attribution/ShareAlike term.
+    `PD`, `CC0`, `PDM` (e.g. `PD-old-100`, `PD-US`, `CC0 1.0`), `CC BY`
+    (any version, e.g. `CC BY 2.0 / 3.0 / 4.0`), or `CC BY-SA` (any
+    version). Also `UsageTerms` saying "Public domain" with no
+    restrictions.
+  - Reject: `CC BY-NC`, `CC BY-NC-SA`, `CC BY-ND`, `GFDL` alone, "fair
+    use", and anything unverifiable.
+  - CC-BY/CC-BY-SA files are usable **only if the author is determinable**
+    (`extmetadata.Artist` or equivalent) — no author → reject, since the
+    required credit line can't be written.
   - If `extmetadata` has no recognizable license → reject the file.
 - Record from `extmetadata`: `ImageDescription` (identity!), `Artist`
-  (author), `LicenseShortName`, plus the Commons file page URL
+  (author — strip any HTML), `LicenseShortName`, `LicenseUrl` (goes in the
+  credit line and the review audit), plus the Commons file page URL
   (`https://commons.wikimedia.org/wiki/File:<name>`).
 - **Identity gate**: the file title + description must name the subject
   (e.g. "Taj Mahal from the north", "Eiffel Tower from the Seine"). If the
@@ -128,7 +141,9 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
 ### 2.5 The Met — art, artifacts, world culture (CC0)
 
 - Search:
-  `https://collectionapi.metmuseum.org/public/collection/v1/search?q=<query>&hasImages=true`
+  `https://collectionapi.metmuseum.org/public/collection/v1.1/search?q=<query>&hasImages=true&limit=20`
+  (the old `/v1/search` endpoint was retired 2026-10-01; v1.1 is Elastic-backed and
+  returns `{total, objectIDs}`, paginated via `offset`/`limit`)
 - Object: `https://collectionapi.metmuseum.org/public/collection/v1/objects/{objectID}`
 - Require `isPublicDomain: true`. Use `primaryImageSmall` (≈ fits the plate)
   or `primaryImage`. Record `title`, `artistDisplayName`, `objectID`,
@@ -152,11 +167,12 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
 
 ### 2.8 Openverse — discovery fallback only (verify at source)
 
-- `https://api.openverse.org/v1/images/?q=<query>&license=cc0,pdm&filter_dead=true&page_size=20`
+- `https://api.openverse.org/v1/images/?q=<query>&license=cc0,pdm,by,by-sa&filter_dead=true&page_size=20`
 - Openverse aggregates from many sites and its own docs say license
   accuracy is not guaranteed. Only use it to *find* a candidate, then open
-  the original source page and verify PD/CC0 there before downloading.
-  Prefer the catalog above when it covers the topic.
+  the original source page and verify PD/CC0/CC-BY/CC-BY-SA there (and
+  capture the author for the credit line) before downloading. Prefer the
+  catalog above when it covers the topic.
 
 ## 3. Per-topic strategy
 
@@ -167,7 +183,8 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
 | Space / Solar System / Astronomy | NASA Image library, Commons | Which planet/moon/nebula is this? What mission? |
 | Art / Paintings / History | Met, AIC, Cleveland, Commons | Who painted this? Which movement/civilization? |
 | Animals / Nature / Birds | Commons (named species files), Openverse→source | Which animal/species is this? |
-| Sports / Religion / Language / Math / Pop culture | Usually **no** PD photo pool that tests the topic | Prefer text mode; if mode forces image, assess feasibility and stop rather than force |
+| Sports / Athletes / Celebrities / Pop culture | Commons CC-BY/CC-BY-SA portraits and event photos (many athletes and famous people have them — check per subject); PD historical photos | Who is this athlete/person? Which sport/team are they associated with? Prefer portraits over action shots; keep facts evergreen (achievements pinned to years, not "current") |
+| Religion / Language / Math | No reliable open-license photo pool that tests the topic (math → pattern mode fits better) | Prefer text or pattern mode; if image mode is forced, assess feasibility and stop rather than force |
 
 Make sure the image actually tests the subcategory — a generic satellite
 photo in a "Solar System" quiz is fine, a generic satellite photo in
@@ -177,7 +194,9 @@ photo in a "Solar System" quiz is fine, a generic satellite photo in
 
 1. **Find** 1–3 candidates from an approved source, using a query that names
    the subject, not the question.
-2. **License-gate** each candidate from its metadata before downloading.
+2. **License-gate** each candidate from its metadata before downloading
+   (PD/CC0/CC-BY/CC-BY-SA only; for CC-BY/CC-BY-SA the author must be
+   recoverable for the credit line).
 3. **Download** the chosen rendition to the scratchpad
    (`.../opencode/` is pre-approved) with a descriptive filename:
    `curl -sL -A "<UA>" "<url>" -o <scratch>/<subject>.jpg`.
@@ -193,15 +212,21 @@ photo in a "Solar System" quiz is fine, a generic satellite photo in
 6. **Write the question** only after the image is accepted: short prompt
    (doesn't name the answer), exactly **3 options** (one correct, two
    plausible), `correct_index` 0–2, one-sentence explanation that adds a
-   real detail. Write natively in the target language/script.
+   real detail. For CC-BY/CC-BY-SA, append the **mandatory credit line**
+   as the explanation's final sentence — keep this fixed format, don't
+   translate the keyword: `Credit: <author>, <license short name>,
+   <license URL>.` Example: `Credit: Diego Delso, CC BY-SA 4.0,
+   https://creativecommons.org/licenses/by-sa/4.0/.` PD/CC0 need no
+   credit line. Write the rest natively in the target language/script.
 7. **Pre-generate the question UUID** (`python3 -c "import uuid; print(uuid.uuid4())"`)
    — the storage object path is `<language_code>/<uuid>.<ext>`, so the SQL
    row must use that exact id.
 8. **Upload** via `scripts/upload_question_media.py` (one run for the batch,
    after all images are accepted). Read the result JSON; only uploads with
    a `public_url` go into `questions.sql`.
-9. **Log for `review.html`**: Commons/official title, source page URL, author,
-   license short name, the public URL, and the scratchpad filename if useful.
+9. **Log for `review.html`**: Commons/official title, source page URL,
+   author, license short name + license URL, the public URL, and the
+   scratchpad filename if useful.
 
 ### If a download fails
 
@@ -210,7 +235,7 @@ photo in a "Solar System" quiz is fine, a generic satellite photo in
 | HTTP 403/429 | Wait a moment, retry once with the proper User-Agent. Still failing → reject source/swap candidate. |
 | Wrong content type (HTML error page saved as .jpg) | Check with `file <path>`; reject unless it reports JPEG/PNG. |
 | Image too small/large | Pick a different rendition from the same source (`iiurlwidth`, FlagCDN size, NASA `~medium`). Don't upscale/download-and-resize. |
-| No PD/CC0 candidate after a few tries | Swap the subject for an easier one. If several subjects in a row are impossible, revisit the Step 1 image-capability assessment. |
+| No open-license candidate after a few tries | Swap the subject for an easier one. If several subjects in a row are impossible, revisit the Step 1 image-capability assessment. |
 
 ## 5. Recording & licensing notes
 
@@ -220,8 +245,29 @@ photo in a "Solar System" quiz is fine, a generic satellite photo in
   ```html
   <p class="source">Source: <a href="https://commons.wikimedia.org/wiki/File:Taj_Mahal_(Edited).jpeg" rel="noopener">File:Taj Mahal (Edited).jpeg</a> — Yann Forget, Public domain. Stored at <code>question-media/en/&lt;uuid&gt;.jpg</code>.</p>
   ```
-- `questions.sql` carries only the uploaded `media_url`; the attribution
-  trail lives in `review.html` (and, through it, the batch folder next to the
-  project).
-- If you cannot prove PD/CC0 for a candidate, it does not exist for this
-  skill. There is always another subject.
+
+  For CC-BY/CC-BY-SA, link the license too:
+
+  ```html
+  <p class="source">Source: <a href="https://commons.wikimedia.org/wiki/File:Example.jpg" rel="noopener">File:Example.jpg</a> — Jane Doe, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Stored at <code>question-media/en/&lt;uuid&gt;.jpg</code>.</p>
+  ```
+
+- **CC-BY/CC-BY-SA images carry the credit line in the question's
+  `explanation`** — mandatory, as the explanation's final sentence, in
+  exactly this shape (fixed keyword and punctuation; the URL is the license
+  URL from the source metadata):
+
+  ```
+  Credit: <author>, <license short name>, <license URL>.
+  ```
+
+  Example: `... Shah Jahan as a mausoleum for Mumtaz Mahal. Credit: Diego Delso, CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/.`
+  This is what lets the app satisfy the attribution requirement without a
+  credit UI. PD/CC0 images need no credit line, but the source line above
+  is still written for every image.
+- `questions.sql` carries the `media_url` plus, for CC-BY/CC-BY-SA, the
+  credit line embedded in `explanation`; the fuller attribution trail
+  (source page, license link, stored path) lives in `review.html` and, 
+  through it, the batch folder next to the project.
+- If you cannot prove PD/CC0/CC-BY/CC-BY-SA for a candidate, it does not
+  exist for this skill. There is always another subject.
