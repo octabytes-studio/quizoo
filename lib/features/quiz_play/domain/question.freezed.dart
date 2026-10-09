@@ -22,12 +22,18 @@ mixin _$Question {
 /// wrong. The bible calls it "the single feature that turns a quiz into
 /// learning", so it is required, not optional.
  String get explanation;/// Renders the 132px media plate above the question box (S-15).
- bool get hasImage;/// The emoji standing in for real artwork.
+ bool get hasImage;/// The hosted photograph for a real `image` question, straight from
+/// `questions.media_url`. Rendered with `BoxFit.contain` so nothing a
+/// question depends on is ever cropped away; a failure collapses the
+/// plate rather than showing a broken box.
+ String? get mediaUrl;/// The self-contained SVG artwork for a `figure` (pattern) question,
+/// straight from `questions.figure_svg`. The whole puzzle — including
+/// its own labelled options — lives inside this markup.
+ String? get figureSvg;/// The emoji standing in for real artwork.
 ///
-/// There is no image CDN in this phase, so an "image question" is an
-/// emoji on a gradient plate. [imageAsset] is the hook a real asset drops
-/// into, and the plate falls back to the text-only layout when it is
-/// missing or fails to decode.
+/// [imageAsset] is the hook a bundled asset drops into, and the plate
+/// falls back to the text-only layout when it is missing or fails to
+/// decode.
  String? get imageEmoji; String? get imageAsset;/// Start of the media plate's gradient, as `#RRGGBB`.
  String get imageColorFrom; String get imageColorTo;/// True when this question should skip TTS read-aloud (e.g. it leans on
 /// a figure/image the voice can't describe). Sourced from
@@ -47,16 +53,16 @@ $QuestionCopyWith<Question> get copyWith => _$QuestionCopyWithImpl<Question>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Question&&(identical(other.id, id) || other.id == id)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation)&&(identical(other.hasImage, hasImage) || other.hasImage == hasImage)&&(identical(other.imageEmoji, imageEmoji) || other.imageEmoji == imageEmoji)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.imageColorFrom, imageColorFrom) || other.imageColorFrom == imageColorFrom)&&(identical(other.imageColorTo, imageColorTo) || other.imageColorTo == imageColorTo)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Question&&(identical(other.id, id) || other.id == id)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation)&&(identical(other.hasImage, hasImage) || other.hasImage == hasImage)&&(identical(other.mediaUrl, mediaUrl) || other.mediaUrl == mediaUrl)&&(identical(other.figureSvg, figureSvg) || other.figureSvg == figureSvg)&&(identical(other.imageEmoji, imageEmoji) || other.imageEmoji == imageEmoji)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.imageColorFrom, imageColorFrom) || other.imageColorFrom == imageColorFrom)&&(identical(other.imageColorTo, imageColorTo) || other.imageColorTo == imageColorTo)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,subcategoryId,difficulty,text,const DeepCollectionEquality().hash(options),correctIndex,explanation,hasImage,imageEmoji,imageAsset,imageColorFrom,imageColorTo,ttsExcluded,audioUrl);
+int get hashCode => Object.hash(runtimeType,id,subcategoryId,difficulty,text,const DeepCollectionEquality().hash(options),correctIndex,explanation,hasImage,mediaUrl,figureSvg,imageEmoji,imageAsset,imageColorFrom,imageColorTo,ttsExcluded,audioUrl);
 
 @override
 String toString() {
-  return 'Question(id: $id, subcategoryId: $subcategoryId, difficulty: $difficulty, text: $text, options: $options, correctIndex: $correctIndex, explanation: $explanation, hasImage: $hasImage, imageEmoji: $imageEmoji, imageAsset: $imageAsset, imageColorFrom: $imageColorFrom, imageColorTo: $imageColorTo, ttsExcluded: $ttsExcluded, audioUrl: $audioUrl)';
+  return 'Question(id: $id, subcategoryId: $subcategoryId, difficulty: $difficulty, text: $text, options: $options, correctIndex: $correctIndex, explanation: $explanation, hasImage: $hasImage, mediaUrl: $mediaUrl, figureSvg: $figureSvg, imageEmoji: $imageEmoji, imageAsset: $imageAsset, imageColorFrom: $imageColorFrom, imageColorTo: $imageColorTo, ttsExcluded: $ttsExcluded, audioUrl: $audioUrl)';
 }
 
 
@@ -67,7 +73,7 @@ abstract mixin class $QuestionCopyWith<$Res>  {
   factory $QuestionCopyWith(Question value, $Res Function(Question) _then) = _$QuestionCopyWithImpl;
 @useResult
 $Res call({
- String id, String subcategoryId, int difficulty, String text, List<String> options, int correctIndex, String explanation, bool hasImage, String? imageEmoji, String? imageAsset, String imageColorFrom, String imageColorTo, bool ttsExcluded, String? audioUrl
+ String id, String subcategoryId, int difficulty, String text, List<String> options, int correctIndex, String explanation, bool hasImage, String? mediaUrl, String? figureSvg, String? imageEmoji, String? imageAsset, String imageColorFrom, String imageColorTo, bool ttsExcluded, String? audioUrl
 });
 
 
@@ -84,7 +90,7 @@ class _$QuestionCopyWithImpl<$Res>
 
 /// Create a copy of Question
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? subcategoryId = null,Object? difficulty = null,Object? text = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,Object? hasImage = null,Object? imageEmoji = freezed,Object? imageAsset = freezed,Object? imageColorFrom = null,Object? imageColorTo = null,Object? ttsExcluded = null,Object? audioUrl = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? subcategoryId = null,Object? difficulty = null,Object? text = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,Object? hasImage = null,Object? mediaUrl = freezed,Object? figureSvg = freezed,Object? imageEmoji = freezed,Object? imageAsset = freezed,Object? imageColorFrom = null,Object? imageColorTo = null,Object? ttsExcluded = null,Object? audioUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,subcategoryId: null == subcategoryId ? _self.subcategoryId : subcategoryId // ignore: cast_nullable_to_non_nullable
@@ -94,7 +100,9 @@ as String,options: null == options ? _self.options : options // ignore: cast_nul
 as List<String>,correctIndex: null == correctIndex ? _self.correctIndex : correctIndex // ignore: cast_nullable_to_non_nullable
 as int,explanation: null == explanation ? _self.explanation : explanation // ignore: cast_nullable_to_non_nullable
 as String,hasImage: null == hasImage ? _self.hasImage : hasImage // ignore: cast_nullable_to_non_nullable
-as bool,imageEmoji: freezed == imageEmoji ? _self.imageEmoji : imageEmoji // ignore: cast_nullable_to_non_nullable
+as bool,mediaUrl: freezed == mediaUrl ? _self.mediaUrl : mediaUrl // ignore: cast_nullable_to_non_nullable
+as String?,figureSvg: freezed == figureSvg ? _self.figureSvg : figureSvg // ignore: cast_nullable_to_non_nullable
+as String?,imageEmoji: freezed == imageEmoji ? _self.imageEmoji : imageEmoji // ignore: cast_nullable_to_non_nullable
 as String?,imageAsset: freezed == imageAsset ? _self.imageAsset : imageAsset // ignore: cast_nullable_to_non_nullable
 as String?,imageColorFrom: null == imageColorFrom ? _self.imageColorFrom : imageColorFrom // ignore: cast_nullable_to_non_nullable
 as String,imageColorTo: null == imageColorTo ? _self.imageColorTo : imageColorTo // ignore: cast_nullable_to_non_nullable
@@ -185,10 +193,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded,  String? audioUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? mediaUrl,  String? figureSvg,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded,  String? audioUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Question() when $default != null:
-return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded,_that.audioUrl);case _:
+return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.mediaUrl,_that.figureSvg,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded,_that.audioUrl);case _:
   return orElse();
 
 }
@@ -206,10 +214,10 @@ return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.o
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded,  String? audioUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? mediaUrl,  String? figureSvg,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded,  String? audioUrl)  $default,) {final _that = this;
 switch (_that) {
 case _Question():
-return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded,_that.audioUrl);case _:
+return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.mediaUrl,_that.figureSvg,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded,_that.audioUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -226,10 +234,10 @@ return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.o
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded,  String? audioUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String subcategoryId,  int difficulty,  String text,  List<String> options,  int correctIndex,  String explanation,  bool hasImage,  String? mediaUrl,  String? figureSvg,  String? imageEmoji,  String? imageAsset,  String imageColorFrom,  String imageColorTo,  bool ttsExcluded,  String? audioUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _Question() when $default != null:
-return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded,_that.audioUrl);case _:
+return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.options,_that.correctIndex,_that.explanation,_that.hasImage,_that.mediaUrl,_that.figureSvg,_that.imageEmoji,_that.imageAsset,_that.imageColorFrom,_that.imageColorTo,_that.ttsExcluded,_that.audioUrl);case _:
   return null;
 
 }
@@ -241,7 +249,7 @@ return $default(_that.id,_that.subcategoryId,_that.difficulty,_that.text,_that.o
 @JsonSerializable()
 
 class _Question extends Question {
-  const _Question({required this.id, required this.subcategoryId, required this.difficulty, required this.text, required final  List<String> options, required this.correctIndex, required this.explanation, this.hasImage = false, this.imageEmoji, this.imageAsset, this.imageColorFrom = '#2BB3FF', this.imageColorTo = '#7B4DFF', this.ttsExcluded = false, this.audioUrl}): _options = options,super._();
+  const _Question({required this.id, required this.subcategoryId, required this.difficulty, required this.text, required final  List<String> options, required this.correctIndex, required this.explanation, this.hasImage = false, this.mediaUrl, this.figureSvg, this.imageEmoji, this.imageAsset, this.imageColorFrom = '#2BB3FF', this.imageColorTo = '#7B4DFF', this.ttsExcluded = false, this.audioUrl}): _options = options,super._();
   factory _Question.fromJson(Map<String, dynamic> json) => _$QuestionFromJson(json);
 
 @override final  String id;
@@ -267,12 +275,20 @@ class _Question extends Question {
 @override final  String explanation;
 /// Renders the 132px media plate above the question box (S-15).
 @override@JsonKey() final  bool hasImage;
+/// The hosted photograph for a real `image` question, straight from
+/// `questions.media_url`. Rendered with `BoxFit.contain` so nothing a
+/// question depends on is ever cropped away; a failure collapses the
+/// plate rather than showing a broken box.
+@override final  String? mediaUrl;
+/// The self-contained SVG artwork for a `figure` (pattern) question,
+/// straight from `questions.figure_svg`. The whole puzzle — including
+/// its own labelled options — lives inside this markup.
+@override final  String? figureSvg;
 /// The emoji standing in for real artwork.
 ///
-/// There is no image CDN in this phase, so an "image question" is an
-/// emoji on a gradient plate. [imageAsset] is the hook a real asset drops
-/// into, and the plate falls back to the text-only layout when it is
-/// missing or fails to decode.
+/// [imageAsset] is the hook a bundled asset drops into, and the plate
+/// falls back to the text-only layout when it is missing or fails to
+/// decode.
 @override final  String? imageEmoji;
 @override final  String? imageAsset;
 /// Start of the media plate's gradient, as `#RRGGBB`.
@@ -299,16 +315,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Question&&(identical(other.id, id) || other.id == id)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation)&&(identical(other.hasImage, hasImage) || other.hasImage == hasImage)&&(identical(other.imageEmoji, imageEmoji) || other.imageEmoji == imageEmoji)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.imageColorFrom, imageColorFrom) || other.imageColorFrom == imageColorFrom)&&(identical(other.imageColorTo, imageColorTo) || other.imageColorTo == imageColorTo)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Question&&(identical(other.id, id) || other.id == id)&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.correctIndex, correctIndex) || other.correctIndex == correctIndex)&&(identical(other.explanation, explanation) || other.explanation == explanation)&&(identical(other.hasImage, hasImage) || other.hasImage == hasImage)&&(identical(other.mediaUrl, mediaUrl) || other.mediaUrl == mediaUrl)&&(identical(other.figureSvg, figureSvg) || other.figureSvg == figureSvg)&&(identical(other.imageEmoji, imageEmoji) || other.imageEmoji == imageEmoji)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.imageColorFrom, imageColorFrom) || other.imageColorFrom == imageColorFrom)&&(identical(other.imageColorTo, imageColorTo) || other.imageColorTo == imageColorTo)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,subcategoryId,difficulty,text,const DeepCollectionEquality().hash(_options),correctIndex,explanation,hasImage,imageEmoji,imageAsset,imageColorFrom,imageColorTo,ttsExcluded,audioUrl);
+int get hashCode => Object.hash(runtimeType,id,subcategoryId,difficulty,text,const DeepCollectionEquality().hash(_options),correctIndex,explanation,hasImage,mediaUrl,figureSvg,imageEmoji,imageAsset,imageColorFrom,imageColorTo,ttsExcluded,audioUrl);
 
 @override
 String toString() {
-  return 'Question(id: $id, subcategoryId: $subcategoryId, difficulty: $difficulty, text: $text, options: $options, correctIndex: $correctIndex, explanation: $explanation, hasImage: $hasImage, imageEmoji: $imageEmoji, imageAsset: $imageAsset, imageColorFrom: $imageColorFrom, imageColorTo: $imageColorTo, ttsExcluded: $ttsExcluded, audioUrl: $audioUrl)';
+  return 'Question(id: $id, subcategoryId: $subcategoryId, difficulty: $difficulty, text: $text, options: $options, correctIndex: $correctIndex, explanation: $explanation, hasImage: $hasImage, mediaUrl: $mediaUrl, figureSvg: $figureSvg, imageEmoji: $imageEmoji, imageAsset: $imageAsset, imageColorFrom: $imageColorFrom, imageColorTo: $imageColorTo, ttsExcluded: $ttsExcluded, audioUrl: $audioUrl)';
 }
 
 
@@ -319,7 +335,7 @@ abstract mixin class _$QuestionCopyWith<$Res> implements $QuestionCopyWith<$Res>
   factory _$QuestionCopyWith(_Question value, $Res Function(_Question) _then) = __$QuestionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String subcategoryId, int difficulty, String text, List<String> options, int correctIndex, String explanation, bool hasImage, String? imageEmoji, String? imageAsset, String imageColorFrom, String imageColorTo, bool ttsExcluded, String? audioUrl
+ String id, String subcategoryId, int difficulty, String text, List<String> options, int correctIndex, String explanation, bool hasImage, String? mediaUrl, String? figureSvg, String? imageEmoji, String? imageAsset, String imageColorFrom, String imageColorTo, bool ttsExcluded, String? audioUrl
 });
 
 
@@ -336,7 +352,7 @@ class __$QuestionCopyWithImpl<$Res>
 
 /// Create a copy of Question
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? subcategoryId = null,Object? difficulty = null,Object? text = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,Object? hasImage = null,Object? imageEmoji = freezed,Object? imageAsset = freezed,Object? imageColorFrom = null,Object? imageColorTo = null,Object? ttsExcluded = null,Object? audioUrl = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? subcategoryId = null,Object? difficulty = null,Object? text = null,Object? options = null,Object? correctIndex = null,Object? explanation = null,Object? hasImage = null,Object? mediaUrl = freezed,Object? figureSvg = freezed,Object? imageEmoji = freezed,Object? imageAsset = freezed,Object? imageColorFrom = null,Object? imageColorTo = null,Object? ttsExcluded = null,Object? audioUrl = freezed,}) {
   return _then(_Question(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,subcategoryId: null == subcategoryId ? _self.subcategoryId : subcategoryId // ignore: cast_nullable_to_non_nullable
@@ -346,7 +362,9 @@ as String,options: null == options ? _self._options : options // ignore: cast_nu
 as List<String>,correctIndex: null == correctIndex ? _self.correctIndex : correctIndex // ignore: cast_nullable_to_non_nullable
 as int,explanation: null == explanation ? _self.explanation : explanation // ignore: cast_nullable_to_non_nullable
 as String,hasImage: null == hasImage ? _self.hasImage : hasImage // ignore: cast_nullable_to_non_nullable
-as bool,imageEmoji: freezed == imageEmoji ? _self.imageEmoji : imageEmoji // ignore: cast_nullable_to_non_nullable
+as bool,mediaUrl: freezed == mediaUrl ? _self.mediaUrl : mediaUrl // ignore: cast_nullable_to_non_nullable
+as String?,figureSvg: freezed == figureSvg ? _self.figureSvg : figureSvg // ignore: cast_nullable_to_non_nullable
+as String?,imageEmoji: freezed == imageEmoji ? _self.imageEmoji : imageEmoji // ignore: cast_nullable_to_non_nullable
 as String?,imageAsset: freezed == imageAsset ? _self.imageAsset : imageAsset // ignore: cast_nullable_to_non_nullable
 as String?,imageColorFrom: null == imageColorFrom ? _self.imageColorFrom : imageColorFrom // ignore: cast_nullable_to_non_nullable
 as String,imageColorTo: null == imageColorTo ? _self.imageColorTo : imageColorTo // ignore: cast_nullable_to_non_nullable

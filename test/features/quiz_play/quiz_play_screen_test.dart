@@ -9,6 +9,7 @@ import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/inline_ad_slot.dart';
+import 'package:quizoo/core/widgets/question_media_plate.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_api.dart';
 import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
@@ -19,7 +20,6 @@ import 'package:quizoo/features/quiz_play/presentation/widgets/feedback_banner.d
 import 'package:quizoo/features/quiz_play/presentation/widgets/out_of_lives_dialog.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/pause_sheet.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/power_up_dock.dart';
-import 'package:quizoo/features/quiz_play/presentation/widgets/question_media_plate.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/quit_confirmation_dialog.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/timer_ring.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
@@ -262,7 +262,7 @@ void main() {
         final plate = tester
             .widgetList<QuestionMediaPlate>(find.byType(QuestionMediaPlate))
             .toList();
-        if (plate.isNotEmpty && plate.first.question.hasImage) {
+        if (plate.isNotEmpty) {
           sawPlate = true;
           break;
         }

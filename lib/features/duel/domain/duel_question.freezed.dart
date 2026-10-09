@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DuelQuestion {
 
-@JsonKey(name: 'prompt') String get text; List<String> get options; String get kind; String? get mediaUrl;/// The question's pre-generated narration clip (the same one play mode
+@JsonKey(name: 'prompt') String get text; List<String> get options; String get kind; String? get mediaUrl;/// The self-contained SVG artwork for a `figure` (pattern) round
+/// (`questions.figure_svg`) — the whole puzzle, including its own
+/// labelled options, lives inside this markup.
+ String? get figureSvg;/// The question's pre-generated narration clip (the same one play mode
 /// reads aloud), or null when none exists yet.
  String? get audioUrl;/// True when this question should never be read aloud.
  bool get ttsExcluded;
@@ -31,16 +34,16 @@ $DuelQuestionCopyWith<DuelQuestion> get copyWith => _$DuelQuestionCopyWithImpl<D
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelQuestion&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.mediaUrl, mediaUrl) || other.mediaUrl == mediaUrl)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DuelQuestion&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.mediaUrl, mediaUrl) || other.mediaUrl == mediaUrl)&&(identical(other.figureSvg, figureSvg) || other.figureSvg == figureSvg)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,text,const DeepCollectionEquality().hash(options),kind,mediaUrl,audioUrl,ttsExcluded);
+int get hashCode => Object.hash(runtimeType,text,const DeepCollectionEquality().hash(options),kind,mediaUrl,figureSvg,audioUrl,ttsExcluded);
 
 @override
 String toString() {
-  return 'DuelQuestion(text: $text, options: $options, kind: $kind, mediaUrl: $mediaUrl, audioUrl: $audioUrl, ttsExcluded: $ttsExcluded)';
+  return 'DuelQuestion(text: $text, options: $options, kind: $kind, mediaUrl: $mediaUrl, figureSvg: $figureSvg, audioUrl: $audioUrl, ttsExcluded: $ttsExcluded)';
 }
 
 
@@ -51,7 +54,7 @@ abstract mixin class $DuelQuestionCopyWith<$Res>  {
   factory $DuelQuestionCopyWith(DuelQuestion value, $Res Function(DuelQuestion) _then) = _$DuelQuestionCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'prompt') String text, List<String> options, String kind, String? mediaUrl, String? audioUrl, bool ttsExcluded
+@JsonKey(name: 'prompt') String text, List<String> options, String kind, String? mediaUrl, String? figureSvg, String? audioUrl, bool ttsExcluded
 });
 
 
@@ -68,12 +71,13 @@ class _$DuelQuestionCopyWithImpl<$Res>
 
 /// Create a copy of DuelQuestion
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? options = null,Object? kind = null,Object? mediaUrl = freezed,Object? audioUrl = freezed,Object? ttsExcluded = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? text = null,Object? options = null,Object? kind = null,Object? mediaUrl = freezed,Object? figureSvg = freezed,Object? audioUrl = freezed,Object? ttsExcluded = null,}) {
   return _then(_self.copyWith(
 text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,options: null == options ? _self.options : options // ignore: cast_nullable_to_non_nullable
 as List<String>,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
 as String,mediaUrl: freezed == mediaUrl ? _self.mediaUrl : mediaUrl // ignore: cast_nullable_to_non_nullable
+as String?,figureSvg: freezed == figureSvg ? _self.figureSvg : figureSvg // ignore: cast_nullable_to_non_nullable
 as String?,audioUrl: freezed == audioUrl ? _self.audioUrl : audioUrl // ignore: cast_nullable_to_non_nullable
 as String?,ttsExcluded: null == ttsExcluded ? _self.ttsExcluded : ttsExcluded // ignore: cast_nullable_to_non_nullable
 as bool,
@@ -161,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'prompt')  String text,  List<String> options,  String kind,  String? mediaUrl,  String? audioUrl,  bool ttsExcluded)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'prompt')  String text,  List<String> options,  String kind,  String? mediaUrl,  String? figureSvg,  String? audioUrl,  bool ttsExcluded)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DuelQuestion() when $default != null:
-return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.audioUrl,_that.ttsExcluded);case _:
+return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.figureSvg,_that.audioUrl,_that.ttsExcluded);case _:
   return orElse();
 
 }
@@ -182,10 +186,10 @@ return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.audioUr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'prompt')  String text,  List<String> options,  String kind,  String? mediaUrl,  String? audioUrl,  bool ttsExcluded)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'prompt')  String text,  List<String> options,  String kind,  String? mediaUrl,  String? figureSvg,  String? audioUrl,  bool ttsExcluded)  $default,) {final _that = this;
 switch (_that) {
 case _DuelQuestion():
-return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.audioUrl,_that.ttsExcluded);case _:
+return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.figureSvg,_that.audioUrl,_that.ttsExcluded);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +206,10 @@ return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.audioUr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'prompt')  String text,  List<String> options,  String kind,  String? mediaUrl,  String? audioUrl,  bool ttsExcluded)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'prompt')  String text,  List<String> options,  String kind,  String? mediaUrl,  String? figureSvg,  String? audioUrl,  bool ttsExcluded)?  $default,) {final _that = this;
 switch (_that) {
 case _DuelQuestion() when $default != null:
-return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.audioUrl,_that.ttsExcluded);case _:
+return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.figureSvg,_that.audioUrl,_that.ttsExcluded);case _:
   return null;
 
 }
@@ -217,7 +221,7 @@ return $default(_that.text,_that.options,_that.kind,_that.mediaUrl,_that.audioUr
 @JsonSerializable()
 
 class _DuelQuestion implements DuelQuestion {
-  const _DuelQuestion({@JsonKey(name: 'prompt') required this.text, required final  List<String> options, this.kind = 'text', this.mediaUrl, this.audioUrl, this.ttsExcluded = false}): _options = options;
+  const _DuelQuestion({@JsonKey(name: 'prompt') required this.text, required final  List<String> options, this.kind = 'text', this.mediaUrl, this.figureSvg, this.audioUrl, this.ttsExcluded = false}): _options = options;
   factory _DuelQuestion.fromJson(Map<String, dynamic> json) => _$DuelQuestionFromJson(json);
 
 @override@JsonKey(name: 'prompt') final  String text;
@@ -230,6 +234,10 @@ class _DuelQuestion implements DuelQuestion {
 
 @override@JsonKey() final  String kind;
 @override final  String? mediaUrl;
+/// The self-contained SVG artwork for a `figure` (pattern) round
+/// (`questions.figure_svg`) — the whole puzzle, including its own
+/// labelled options, lives inside this markup.
+@override final  String? figureSvg;
 /// The question's pre-generated narration clip (the same one play mode
 /// reads aloud), or null when none exists yet.
 @override final  String? audioUrl;
@@ -249,16 +257,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelQuestion&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.mediaUrl, mediaUrl) || other.mediaUrl == mediaUrl)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DuelQuestion&&(identical(other.text, text) || other.text == text)&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.mediaUrl, mediaUrl) || other.mediaUrl == mediaUrl)&&(identical(other.figureSvg, figureSvg) || other.figureSvg == figureSvg)&&(identical(other.audioUrl, audioUrl) || other.audioUrl == audioUrl)&&(identical(other.ttsExcluded, ttsExcluded) || other.ttsExcluded == ttsExcluded));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,text,const DeepCollectionEquality().hash(_options),kind,mediaUrl,audioUrl,ttsExcluded);
+int get hashCode => Object.hash(runtimeType,text,const DeepCollectionEquality().hash(_options),kind,mediaUrl,figureSvg,audioUrl,ttsExcluded);
 
 @override
 String toString() {
-  return 'DuelQuestion(text: $text, options: $options, kind: $kind, mediaUrl: $mediaUrl, audioUrl: $audioUrl, ttsExcluded: $ttsExcluded)';
+  return 'DuelQuestion(text: $text, options: $options, kind: $kind, mediaUrl: $mediaUrl, figureSvg: $figureSvg, audioUrl: $audioUrl, ttsExcluded: $ttsExcluded)';
 }
 
 
@@ -269,7 +277,7 @@ abstract mixin class _$DuelQuestionCopyWith<$Res> implements $DuelQuestionCopyWi
   factory _$DuelQuestionCopyWith(_DuelQuestion value, $Res Function(_DuelQuestion) _then) = __$DuelQuestionCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'prompt') String text, List<String> options, String kind, String? mediaUrl, String? audioUrl, bool ttsExcluded
+@JsonKey(name: 'prompt') String text, List<String> options, String kind, String? mediaUrl, String? figureSvg, String? audioUrl, bool ttsExcluded
 });
 
 
@@ -286,12 +294,13 @@ class __$DuelQuestionCopyWithImpl<$Res>
 
 /// Create a copy of DuelQuestion
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? text = null,Object? options = null,Object? kind = null,Object? mediaUrl = freezed,Object? audioUrl = freezed,Object? ttsExcluded = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? text = null,Object? options = null,Object? kind = null,Object? mediaUrl = freezed,Object? figureSvg = freezed,Object? audioUrl = freezed,Object? ttsExcluded = null,}) {
   return _then(_DuelQuestion(
 text: null == text ? _self.text : text // ignore: cast_nullable_to_non_nullable
 as String,options: null == options ? _self._options : options // ignore: cast_nullable_to_non_nullable
 as List<String>,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
 as String,mediaUrl: freezed == mediaUrl ? _self.mediaUrl : mediaUrl // ignore: cast_nullable_to_non_nullable
+as String?,figureSvg: freezed == figureSvg ? _self.figureSvg : figureSvg // ignore: cast_nullable_to_non_nullable
 as String?,audioUrl: freezed == audioUrl ? _self.audioUrl : audioUrl // ignore: cast_nullable_to_non_nullable
 as String?,ttsExcluded: null == ttsExcluded ? _self.ttsExcluded : ttsExcluded // ignore: cast_nullable_to_non_nullable
 as bool,

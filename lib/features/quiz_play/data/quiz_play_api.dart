@@ -105,7 +105,8 @@ class QuizPlayApi {
     correctIndex: row['correctIndex'] as int,
     explanation: row['explanation'] as String,
     hasImage: row['hasImage'] as bool? ?? false,
-    imageAsset: row['imageAsset'] as String?,
+    mediaUrl: row['mediaUrl'] as String?,
+    figureSvg: row['figureSvg'] as String?,
     ttsExcluded: row['ttsExcluded'] as bool? ?? false,
     audioUrl: row['audioUrl'] as String?,
   );

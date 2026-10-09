@@ -59,7 +59,7 @@ class DuelApi {
       final rows = await _client
           .from('questions')
           .select(
-            'id, subcategory_id, difficulty, kind, media_url, '
+            'id, subcategory_id, difficulty, kind, media_url, figure_svg, '
             'prompt, options, correct_index, explanation, '
             'audio_url, tts_excluded',
           )
@@ -125,7 +125,8 @@ class DuelApi {
     correctIndex: row['correct_index'] as int,
     explanation: row['explanation'] as String,
     hasImage: row['kind'] == 'image',
-    imageAsset: row['media_url'] as String?,
+    mediaUrl: row['media_url'] as String?,
+    figureSvg: row['figure_svg'] as String?,
     audioUrl: row['audio_url'] as String?,
     ttsExcluded: row['tts_excluded'] as bool? ?? false,
   );

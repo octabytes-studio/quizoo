@@ -132,6 +132,13 @@ class DuelPlayCubit extends Cubit<DuelPlayState> {
         question: DuelQuestion(
           text: question.text,
           options: question.options,
+          kind: question.figureSvg?.isNotEmpty ?? false
+              ? 'figure'
+              : question.hasImage
+              ? 'image'
+              : 'text',
+          mediaUrl: question.mediaUrl,
+          figureSvg: question.figureSvg,
           audioUrl: question.audioUrl,
           ttsExcluded: question.ttsExcluded,
         ),

@@ -31,12 +31,22 @@ abstract class Question with _$Question {
     /// Renders the 132px media plate above the question box (S-15).
     @Default(false) bool hasImage,
 
+    /// The hosted photograph for a real `image` question, straight from
+    /// `questions.media_url`. Rendered with `BoxFit.contain` so nothing a
+    /// question depends on is ever cropped away; a failure collapses the
+    /// plate rather than showing a broken box.
+    String? mediaUrl,
+
+    /// The self-contained SVG artwork for a `figure` (pattern) question,
+    /// straight from `questions.figure_svg`. The whole puzzle — including
+    /// its own labelled options — lives inside this markup.
+    String? figureSvg,
+
     /// The emoji standing in for real artwork.
     ///
-    /// There is no image CDN in this phase, so an "image question" is an
-    /// emoji on a gradient plate. [imageAsset] is the hook a real asset drops
-    /// into, and the plate falls back to the text-only layout when it is
-    /// missing or fails to decode.
+    /// [imageAsset] is the hook a bundled asset drops into, and the plate
+    /// falls back to the text-only layout when it is missing or fails to
+    /// decode.
     String? imageEmoji,
     String? imageAsset,
 
@@ -60,6 +70,15 @@ abstract class Question with _$Question {
       _$QuestionFromJson(json);
 
   String get correctAnswer => options[correctIndex];
+
+  /// True when this question has any visual media for the plate to draw —
+  /// the hosted image, a pattern's SVG, or a bundled asset. The play
+  /// surfaces use it to shrink the timer ring and tighten their spacing the
+  /// same way for every kind of media question.
+  bool get hasMedia =>
+      hasImage ||
+      (mediaUrl?.isNotEmpty ?? false) ||
+      (figureSvg?.isNotEmpty ?? false);
 
   /// The A/B/C/D badges, or their Urdu equivalents under an RTL locale.
   static const List<String> latinKeys = ['A', 'B', 'C', 'D'];

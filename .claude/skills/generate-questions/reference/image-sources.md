@@ -7,8 +7,9 @@ authors. `SKILL.md`'s Hard rule 6 summarizes the non-negotiables; this file is
 the detail.
 
 Captured 2026-10-05; license policy expanded to CC-BY / CC-BY-SA on
-2026-10-06. If a source's API shape or license policy changes, update this
-file — don't silently drift.
+2026-10-06; images pinned to a fixed 16:9 frame (and questions to four
+options) on 2026-10-10. If a source's API shape or license policy changes,
+update this file — don't silently drift.
 
 ## 0. The four non-negotiables
 
@@ -52,10 +53,17 @@ file — don't silently drift.
   graphic/medical content, no trademarks/logos/currency/brands. Public
   figures are fine when the photo is openly licensed; avoid private
   (non-public) individuals and privacy-sensitive candid shots.
-- **Fits the media plate**: the app's plate is 132 logical px tall and
-  full-width, and the future render is `BoxFit.cover`-shaped — prefer
-  landscape/centered-subject images where the subject survives a wide crop.
-  Reject extremly tall or panoramic images.
+- **Normalizes cleanly to 16:9**: every uploaded image is cropped to an
+  exact 16:9 frame (640–1280 px wide; §4) because the app's plate is a
+  fixed-height, full-width strip drawn with `BoxFit.contain` — a consistent
+  ratio is the *only* thing that makes every question's photo render the
+  same size on screen. Prefer landscape/centered-subject photos, and choose
+  the crop so the answer-critical content (the landmark, the flag's
+  charges, the animal/person, the object being asked about) stays fully
+  inside the frame. A tall/portrait candidate is only acceptable when a
+  16:9 band centered on its subject still shows everything the question
+  depends on; an extreme panorama is fine when cropped down to a centered
+  band. If neither crop keeps the context, reject the candidate.
 - **Evergreen**: no "currently", no current office-holders (image of a
   current president/PM), no "newest/latest" subjects subject to change.
 
@@ -64,11 +72,14 @@ file — don't silently drift.
 ### 2.1 FlagCDN — flags (country, US state, EU/UN)
 
 - List: `https://flagcdn.com/en/codes.json` (`{ "jp": "Japan", ... }`).
-- Image: `https://flagcdn.com/w640/{code}.png` (also `w320`, `w1280`; PNG/WebP/SVG available — always pick PNG for this skill).
+- Image: `https://flagcdn.com/w1280/{code}.png` (also `w640`, `w320`;
+  PNG/WebP/SVG available — always pick PNG for this skill). Use `w1280` as
+  the default so the 16:9 crop keeps a full 1280×720; fall back to `w640`
+  only if the source file is too large.
 - Free service, no key, no per-image license metadata; flags are drawn from
   Wikimedia Commons flag SVGs and are PD/CC0 in substance. Record
   `Source: https://flagcdn.com/ + <code>` in `review.html`.
-- Perfect for "Which country's flag is this?" with three country-name
+- Perfect for "Which country's flag is this?" with four country-name
   options. Distractors should be flags that are visually distinct.
 
 ### 2.2 Wikimedia Commons — the workhorse (landmarks, species, art, history, maps)
@@ -84,11 +95,12 @@ Then fetch the file's URL + license metadata:
 
 ```
 https://commons.wikimedia.org/w/api.php?action=query&format=json
-  &titles=File:<name>&prop=imageinfo&iiprop=url|extmetadata|size&iiurlwidth=800
+  &titles=File:<name>&prop=imageinfo&iiprop=url|extmetadata|size&iiurlwidth=1600
 ```
 
-- Download `imageinfo[0].thumburl` (800px wide) when present, else
-  `imageinfo[0].url`. Never use `upload.wikimedia.org`-style hotlinks in
+- Download `imageinfo[0].thumburl` (1600px wide) when present, else
+  `imageinfo[0].url` if it isn't enormous; the 16:9 crop loses height, so
+  start wide (see §4). Never use `upload.wikimedia.org`-style hotlinks in
   `media_url`.
 - **License gate** — from `extmetadata`:
   - Accept: `LicenseShortName` / `License` containing `Public domain`,
@@ -130,8 +142,9 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
 - Search: `https://images-api.nasa.gov/search?q=<query>&media_type=image`
   (no key needed; `api.nasa.gov` key only for other NASA APIs).
 - Each item: `data[0].title`, `data[0].description`, `data[0].nasa_id`,
-  `links[0].href` (`~medium.jpg` ≈ 1024px is the right rendition; `~orig`
-  is too big).
+  `links[0].href` (`~medium.jpg` ≈ 1024px or `~large.jpg` ≈ 1920px — start
+  at `~large` when present, since the 16:9 crop trims height; `~orig` is
+  too big).
 - NASA-authored imagery is generally not subject to copyright (public
   domain), but some items carry third-party credits — stick to items whose
   `secondary_creator`/credit is NASA or blank, and record `nasa_id` +
@@ -145,9 +158,9 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
   (the old `/v1/search` endpoint was retired 2026-10-01; v1.1 is Elastic-backed and
   returns `{total, objectIDs}`, paginated via `offset`/`limit`)
 - Object: `https://collectionapi.metmuseum.org/public/collection/v1/objects/{objectID}`
-- Require `isPublicDomain: true`. Use `primaryImageSmall` (≈ fits the plate)
-  or `primaryImage`. Record `title`, `artistDisplayName`, `objectID`,
-  `objectURL`.
+- Require `isPublicDomain: true`. Use `primaryImageSmall` only when it's
+  ≥ ~900px wide (enough for the 16:9 crop); otherwise `primaryImage`.
+  Record `title`, `artistDisplayName`, `objectID`, `objectURL`.
 - No key. 80 req/s limit. Best for art/history/culture questions ("Who
   painted this?", "Which civilization made this?").
 
@@ -156,7 +169,9 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
 - Search:
   `https://api.artic.edu/api/v1/artworks/search?q=<query>&fields=id,title,image_id,is_public_domain,artist_title,date_display`
 - Require `is_public_domain: true`; image:
-  `https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg`
+  `https://www.artic.edu/iiif/2/{image_id}/full/1686,/0/default.jpg`
+  (1686px wide gives the 16:9 crop full 1280×720 headroom; IIIF serves any
+  `full/{width},/` size).
 - Record `title`, `artist_title`, `date_display`. No key.
 
 ### 2.7 Cleveland Museum of Art — art (CC0)
@@ -183,7 +198,7 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
 | Space / Solar System / Astronomy | NASA Image library, Commons | Which planet/moon/nebula is this? What mission? |
 | Art / Paintings / History | Met, AIC, Cleveland, Commons | Who painted this? Which movement/civilization? |
 | Animals / Nature / Birds | Commons (named species files), Openverse→source | Which animal/species is this? |
-| Sports / Athletes / Celebrities / Pop culture | Commons CC-BY/CC-BY-SA portraits and event photos (many athletes and famous people have them — check per subject); PD historical photos | Who is this athlete/person? Which sport/team are they associated with? Prefer portraits over action shots; keep facts evergreen (achievements pinned to years, not "current") |
+| Sports / Athletes / Celebrities / Pop culture | Commons CC-BY/CC-BY-SA portraits and event photos (many athletes and famous people have them — check per subject); PD historical photos | Who is this athlete/person? Which sport/team are they associated with? Prefer landscape or face-centered files that survive a 16:9 crop over tall action shots; keep facts evergreen (achievements pinned to years, not "current") |
 | Religion / Language / Math | No reliable open-license photo pool that tests the topic (math → pattern mode fits better) | Prefer text or pattern mode; if image mode is forced, assess feasibility and stop rather than force |
 
 Make sure the image actually tests the subcategory — a generic satellite
@@ -193,40 +208,58 @@ photo in a "Solar System" quiz is fine, a generic satellite photo in
 ## 4. Download & verification protocol (per image question)
 
 1. **Find** 1–3 candidates from an approved source, using a query that names
-   the subject, not the question.
+   the subject, not the question. Prefer landscape/centered-subject files —
+   every image is cropped to a 16:9 band next (step 4), and the crop has to
+   keep the answer-critical content.
 2. **License-gate** each candidate from its metadata before downloading
    (PD/CC0/CC-BY/CC-BY-SA only; for CC-BY/CC-BY-SA the author must be
    recoverable for the credit line).
-3. **Download** the chosen rendition to the scratchpad
+3. **Download** a large rendition to the scratchpad
    (`.../opencode/` is pre-approved) with a descriptive filename:
    `curl -sL -A "<UA>" "<url>" -o <scratch>/<subject>.jpg`.
-   Target: ≥ 600px wide (800–1280 ideal), ≤ ~500KB, JPEG or PNG only
-   (no SVG/WEBP in image mode — the app's future network render won't do
-   SVG).
-4. **View it with the Read tool.** This step is mandatory and cannot be
-   skipped or replaced by metadata. Confirm against the checklist in §1:
-   identity, single answer, no giveaways, presentation, crop.
-5. **Reject and swap** on any doubt — go back to step 1. Never "make it
-   work" with a weak image. It is fine to spend a few candidates per
-   accepted image; it is not fine to lower the bar.
-6. **Write the question** only after the image is accepted: short prompt
-   (doesn't name the answer), exactly **3 options** (one correct, two
-   plausible), `correct_index` 0–2, one-sentence explanation that adds a
+   Start wide — the 16:9 crop trims height: 1280–2048px wide when the
+   source offers it (per-source sizes in §2), JPEG or PNG only (no SVG/WEBP
+   in image mode). If the file is much bigger than ~2 MB, pick a smaller
+   rendition from the same source.
+4. **Choose the 16:9 crop and normalize.** Inspect first:
+   `python3 .claude/skills/generate-questions/scripts/prepare_question_media.py
+   --input <scratch>/<subject>.jpg` — it prints the EXIF-upright size and a
+   suggested centered band. Then write the normalized file:
+   `... prepare_question_media.py --input <scratch>/<subject>.jpg
+   --output <scratch>/<subject>-16x9.jpg --crop <x>,<y>,<w>`
+   (height is derived as w×9/16). Shift/shrink the band so the
+   answer-critical content stays fully inside the frame — a flag's whole
+   charge, the landmark, the animal, the person's face. The script enforces
+   a ≥ 640px crop width, never upscales, and lands the file on a canonical
+   exact-16:9 size (1280×720 down to 640×360). The raw download is never
+   uploaded.
+5. **View the normalized file with the Read tool.** Mandatory and cannot be
+   skipped or replaced by metadata. Confirm against the checklist in §1 —
+   identity, single answer, no giveaways, presentation — **and** that the
+   16:9 crop kept everything the question depends on.
+6. **Reject and swap** on any doubt (including a crop that cuts context) —
+   go back to step 1. Never "make it work" with a weak image or a
+   context-losing crop. It is fine to spend a few candidates per accepted
+   image; it is not fine to lower the bar.
+7. **Write the question** only after the image is accepted: short prompt
+   (doesn't name the answer), exactly **4 options** (one correct, three
+   plausible), `correct_index` 0–3, one-sentence explanation that adds a
    real detail. For CC-BY/CC-BY-SA, append the **mandatory credit line**
    as the explanation's final sentence — keep this fixed format, don't
    translate the keyword: `Credit: <author>, <license short name>,
    <license URL>.` Example: `Credit: Diego Delso, CC BY-SA 4.0,
    https://creativecommons.org/licenses/by-sa/4.0/.` PD/CC0 need no
    credit line. Write the rest natively in the target language/script.
-7. **Pre-generate the question UUID** (`python3 -c "import uuid; print(uuid.uuid4())"`)
+8. **Pre-generate the question UUID** (`python3 -c "import uuid; print(uuid.uuid4())"`)
    — the storage object path is `<language_code>/<uuid>.<ext>`, so the SQL
    row must use that exact id.
-8. **Upload** via `scripts/upload_question_media.py` (one run for the batch,
-   after all images are accepted). Read the result JSON; only uploads with
-   a `public_url` go into `questions.sql`.
-9. **Log for `review.html`**: Commons/official title, source page URL,
-   author, license short name + license URL, the public URL, and the
-   scratchpad filename if useful.
+9. **Upload** via `scripts/upload_question_media.py` (one run for the batch,
+   after all images are accepted; the manifest points at the **normalized**
+   files from step 4). Read the result JSON; only uploads with a
+   `public_url` go into `questions.sql`.
+10. **Log for `review.html`**: Commons/official title, source page URL,
+    author, license short name + license URL, the public URL, and the
+    scratchpad filename if useful.
 
 ### If a download fails
 
@@ -234,7 +267,8 @@ photo in a "Solar System" quiz is fine, a generic satellite photo in
 |---|---|
 | HTTP 403/429 | Wait a moment, retry once with the proper User-Agent. Still failing → reject source/swap candidate. |
 | Wrong content type (HTML error page saved as .jpg) | Check with `file <path>`; reject unless it reports JPEG/PNG. |
-| Image too small/large | Pick a different rendition from the same source (`iiurlwidth`, FlagCDN size, NASA `~medium`). Don't upscale/download-and-resize. |
+| Image too small/large | Pick a different rendition from the same source (`iiurlwidth`, FlagCDN size, NASA `~medium`/`~large`). If even the largest rendition can't give a ≥ 640px-wide 16:9 crop, reject the candidate. Never upscale. |
+| 16:9 crop would cut the subject/context | Shift or shrink the band and re-inspect; if no band keeps the answer-critical content, reject and swap candidates — never ship a context-losing crop. |
 | No open-license candidate after a few tries | Swap the subject for an easier one. If several subjects in a row are impossible, revisit the Step 1 image-capability assessment. |
 
 ## 5. Recording & licensing notes
