@@ -15,6 +15,7 @@ import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
 import 'package:quizoo/core/widgets/content_language_scope.dart';
+import 'package:quizoo/core/widgets/question_media_plate.dart';
 import 'package:quizoo/features/duel/domain/duel_player.dart';
 import 'package:quizoo/features/duel/domain/duel_question.dart';
 import 'package:quizoo/features/duel/presentation/widgets/duel_audio_button.dart';
@@ -252,6 +253,20 @@ class DuelRoundView extends StatelessWidget {
               shake: isRevealed && !_myCorrect,
               child: Column(
                 children: [
+                  // The same plate play mode draws: the round's photograph
+                  // or pattern artwork sits above the question card, and a
+                  // failed image collapses to a text-only round.
+                  if (current != null)
+                    QuestionMediaPlate(
+                      figureSvg: current.figureSvg,
+                      mediaUrl: current.mediaUrl,
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.xl.w,
+                        0,
+                        AppSpacing.xl.w,
+                        AppSpacing.sm.h,
+                      ),
+                    ),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl.w),
                     child: current == null

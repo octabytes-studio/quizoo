@@ -21,6 +21,7 @@ import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/content_language_scope.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
+import 'package:quizoo/core/widgets/question_media_plate.dart';
 import 'package:quizoo/core/widgets/report_question_sheet.dart';
 import 'package:quizoo/features/daily/data/daily_api.dart';
 import 'package:quizoo/features/daily/data/daily_repository.dart';
@@ -39,7 +40,6 @@ import 'package:quizoo/features/quiz_play/presentation/widgets/feedback_banner.d
 import 'package:quizoo/features/quiz_play/presentation/widgets/out_of_lives_dialog.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/pause_sheet.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/power_up_dock.dart';
-import 'package:quizoo/features/quiz_play/presentation/widgets/question_media_plate.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/quiz_hud.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/quit_confirmation_dialog.dart';
 import 'package:quizoo/features/quiz_play/presentation/widgets/timer_ring.dart';
@@ -405,7 +405,7 @@ class _QuestionView extends StatelessWidget {
     final isRtl = textDirectionFor(languageCode) == TextDirection.rtl;
     final keys = isRtl ? Question.urduKeys : Question.latinKeys;
 
-    final hasImage = state.question.hasImage;
+    final hasMedia = state.question.hasMedia;
     final ringColor = switch (state.feedback) {
       CorrectFeedback() => quizoo.ok,
       WrongFeedback() || TimeoutFeedback() => quizoo.bad,
@@ -441,7 +441,7 @@ class _QuestionView extends StatelessWidget {
               key: ValueKey(state.question.id),
               children: [
                 Padding(
-                  padding: EdgeInsets.only(bottom: hasImage ? 10.h : 12.h),
+                  padding: EdgeInsets.only(bottom: hasMedia ? 10.h : 12.h),
                   child: Center(
                     child: TimerRing(
                       secondsRemaining: state.secondsRemaining,
@@ -449,18 +449,25 @@ class _QuestionView extends StatelessWidget {
                       color: ringColor,
                       // The plate takes the room the full-size ring would
                       // need.
-                      diameter: hasImage
+                      diameter: hasMedia
                           ? TimerRing.imageDiameter
                           : TimerRing.defaultDiameter,
                       isPulsing: state.isDanger,
                     ),
                   ),
                 ),
-                QuestionMediaPlate(question: state.question),
+                QuestionMediaPlate(
+                  figureSvg: state.question.figureSvg,
+                  mediaUrl: state.question.mediaUrl,
+                  imageAsset: state.question.imageAsset,
+                  imageEmoji: state.question.imageEmoji,
+                  colorFrom: state.question.imageColorFrom,
+                  colorTo: state.question.imageColorTo,
+                ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(
                     18.w,
-                    hasImage ? 12.h : 0,
+                    hasMedia ? 12.h : 0,
                     18.w,
                     0,
                   ),

@@ -14,6 +14,7 @@ _DuelQuestion _$DuelQuestionFromJson(Map<String, dynamic> json) =>
           .toList(),
       kind: json['kind'] as String? ?? 'text',
       mediaUrl: json['mediaUrl'] as String?,
+      figureSvg: json['figureSvg'] as String?,
       audioUrl: json['audioUrl'] as String?,
       ttsExcluded: json['ttsExcluded'] as bool? ?? false,
     );
@@ -24,6 +25,7 @@ Map<String, dynamic> _$DuelQuestionToJson(_DuelQuestion instance) =>
       'options': instance.options,
       'kind': instance.kind,
       'mediaUrl': instance.mediaUrl,
+      'figureSvg': instance.figureSvg,
       'audioUrl': instance.audioUrl,
       'ttsExcluded': instance.ttsExcluded,
     };

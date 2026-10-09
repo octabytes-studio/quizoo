@@ -18,6 +18,11 @@ abstract class DuelQuestion with _$DuelQuestion {
     @Default('text') String kind,
     String? mediaUrl,
 
+    /// The self-contained SVG artwork for a `figure` (pattern) round
+    /// (`questions.figure_svg`) — the whole puzzle, including its own
+    /// labelled options, lives inside this markup.
+    String? figureSvg,
+
     /// The question's pre-generated narration clip (the same one play mode
     /// reads aloud), or null when none exists yet.
     String? audioUrl,
