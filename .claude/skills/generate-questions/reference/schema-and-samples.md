@@ -2,10 +2,11 @@
 
 Static reference data, captured from the live Quizoo Supabase project and the
 Flutter `Question` domain model (`lib/features/quiz_play/domain/question.dart`)
-on 2026-09-12, extended for image/figure questions on 2026-10-05. `SKILL.md`
-points here so the skill never has to re-read the Flutter source or re-derive
-the schema at run time. If the live schema ever changes, update this file —
-don't silently drift from it.
+on 2026-09-12, extended for image/figure questions on 2026-10-05, and pinned
+to a fixed media geometry (16:9 images, 640×360 pattern artworks) on
+2026-10-10. `SKILL.md` points here so the skill never has to re-read the
+Flutter source or re-derive the schema at run time. If the live schema ever
+changes, update this file — don't silently drift from it.
 
 ## Table: `questions` — the only table this skill writes to
 
@@ -17,15 +18,15 @@ don't silently drift from it.
 | `difficulty` | smallint | Legacy 1–5 scale, still required (`check (difficulty between 1 and 5)`). Must agree with `difficulty_tier_id` — see the mapping table below. |
 | `difficulty_tier_id` | uuid | FK → `difficulty_tiers.id`. Resolve with a subquery on `code` (`(select id from difficulty_tiers where code = 'easy')`) — **never hardcode the UUID**, it can differ per environment. |
 | `language_code` | text | FK → `languages.code`. **Must exactly equal the `language_code` of `subcategory_id`'s own category.** A DB trigger (`enforce_question_language_match`) rejects a mismatch at insert time with a hard error. |
-| `status` | text | One of `draft`, `live`, `suspended`. Defaults: `live` for `text` rows (review is the gate, as before); **`draft` for `image`/`figure` rows** until the app can render `media_url` / `figure_svg` in play mode — `live` only if the user explicitly overrides at Step 5. `start_level_attempt` and the daily-challenge generator only deal `live` rows. |
+| `status` | text | One of `draft`, `live`, `suspended`. Defaults: `live` for `text` rows (review is the gate, as before); **`draft` for `image`/`figure` rows** — `live` only if the user explicitly overrides at Step 5. Only `live` rows are dealt (`start_level_attempt` filters on `status = 'live'`), so flip the drafts once reviewed. |
 | `source` | text | One of `manual`, `ai_batch`, `legacy_migrated`. Always `ai_batch` for this skill's output. |
-| `options` | jsonb | JSON array of strings. Length is **exactly 4** for every kind **except `image`, which must be exactly 3** (DB check constraint: `case when kind = 'image' then 3 else 4 end`). |
-| `correct_index` | smallint | 0–3 (check constraint). Realistically `image` rows use 0–2 (three options). |
+| `options` | jsonb | JSON array of strings — **exactly 4 for every kind**, `image` included. (The DB check constraint still accepts 3 *only* for legacy `image` rows created before 2026-10-10; never emit new 3-option rows.) |
+| `correct_index` | smallint | 0–3 (check constraint) for every kind, including `image` rows. |
 | `media_url` | text | For `kind = 'image'`: the **uploaded public Supabase Storage URL** — `<project_url>/storage/v1/object/public/question-media/<language_code>/<question_id>.<jpg|png>`. NULL for every other kind. **Never a source-site hotlink.** |
 | `figure_svg` | text | For `kind = 'figure'`: the self-contained inline SVG markup for the pattern question (see § "Pattern (figure) authoring spec"). NULL for every other kind. |
 | `explanation` | text | Required, not optional. One sentence shown after every answer, right or wrong — per the domain model's own doc comment, "the single feature that turns a quiz into learning." |
 | `prompt` | text | The question text itself. |
-| `tts_excluded` | boolean | `false` for text. For images: `false` when the prompt **and all three options are fully speakable** (e.g. "Which country's flag is this?" + country names); `true` when the answer hinges on visual distinctions speech can't carry. For `figure`: `true` by default (the answer lives in the artwork; spoken option labels like "A/B/C/D" are meaningless without sight). |
+| `tts_excluded` | boolean | `false` for text. For images: `false` when the prompt **and all four options are fully speakable** (e.g. "Which country's flag is this?" + country names); `true` when the answer hinges on visual distinctions speech can't carry. For `figure`: `true` by default (the answer lives in the artwork; spoken option labels like "A/B/C/D" are meaningless without sight). |
 | `valid_until` | — | Leave NULL — not used by this skill. |
 | `seen_count`, `correct_count`, `avg_answer_ms`, `created_at` | — | Leave to column defaults — omit from the INSERT column list. |
 
@@ -88,18 +89,30 @@ Match that style:
   answer away ("Which country's flag is shown?" is fine; "Which Asian island
   nation's flag is shown?" leaks).
 - Pattern prompts are short ("Which figure completes the pattern?") because
-  the work is in the artwork.
+  the work is in the artwork — but rotate the standard short variants across
+  a batch rather than stamping the identical stem on every question.
 
 ## Content-quality rules
 
 - Exactly one unambiguous correct answer; plausible-but-wrong distractors.
   Avoid "all of the above" / "none of the above" — awkward in a timed
   four-button UI.
-- Vary `correct_index` across the batch — roughly even across the allowed
-  range (0–3, or 0–2 for image rows), not sequential or patterned.
+- Vary `correct_index` across the batch — roughly even across 0–3 for every
+  kind (image rows included), not sequential or patterned.
 - No duplicate or near-duplicate questions within one batch. If existing
   prompts for the same subcategory/language were fetched via MCP, don't
   repeat those facts either.
+- Vary the *wording*, not just the facts. Rewriting one sentence shape with
+  different nouns — "What is the largest desert?", "What is the longest
+  river?", "What is the deepest ocean?" — is still a single template, and
+  users read it as one repetitive question. Track each prompt's shape with
+  its specifics blanked out (e.g. "What is the [superlative] [thing]?"),
+  never reuse a template back-to-back, keep any single shape from covering
+  more than a small share of a batch, and vary openings (which/what/who/
+  where/when/how, "Name the…", statement forms). When the wording space is
+  genuinely narrow (e.g. flags), rotate the available phrasings rather than
+  settling on one — and don't clone the dominant stems of the existing
+  pool. Explanations, too: don't start every one with the same phrase.
 - For image runs, additionally: never reuse an existing `media_url` in the
   same subcategory; never reuse the same image twice in one batch.
 - For pattern runs, additionally: never reuse the same underlying rule twice
@@ -163,11 +176,13 @@ only its easiest end.
 
 ## Image-question authoring samples (not in the DB — for calibration only)
 
-Remember: image rows have **three** options, not four, and `correct_index`
-must be 0–2. The prompt must not name the answer. Source/license is recorded
-in `review.html`; CC-BY/CC-BY-SA images additionally carry the mandatory
-credit line in the explanation (the samples below are PD/CC0/flag images, so
-they need none). Credit-line shape:
+Remember: image rows carry the same **four** options as every other kind
+(they had three before 2026-10-10 — those legacy rows still exist and still
+render, but never generate a new 3-option image question), and
+`correct_index` is 0–3. The prompt must not name the answer. Source/license
+is recorded in `review.html`; CC-BY/CC-BY-SA images additionally carry the
+mandatory credit line in the explanation (the samples below are PD/CC0/flag
+images, so they need none). Credit-line shape:
 
 `<explanation sentence> Credit: <author>, <license short name>, <license URL>.`
 
@@ -175,83 +190,141 @@ e.g. if sample 1's Taj Mahal photo were `CC BY-SA 4.0` by Diego Delso, its
 explanation would end:
 `... mausoleum for Mumtaz Mahal. Credit: Diego Delso, CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/.`
 
+**Media geometry:** every uploaded image is normalized to an exact **16:9**
+frame (canonical sizes 1280×720 down to 640×360) with
+`scripts/prepare_question_media.py` before upload. The app's plate is a
+fixed-height strip drawn with `BoxFit.contain`, so a consistent 16:9 ratio
+is what makes every photo render the same size on screen; portraits and
+arbitrary crops are what made past batches look ragged. The crop may trim
+the composition but must keep the answer-critical content fully inside the
+frame (see `image-sources.md` §4).
+
 1. *(subject: Taj Mahal, Wikimedia Commons PD)*
    - Prompt: "In which Indian city does this monument stand?"
-   - Options: A) Delhi B) **Agra ✓** C) Jaipur
+   - Options: A) Delhi B) **Agra ✓** C) Jaipur D) Lucknow
    - Explanation: "The Taj Mahal sits on the south bank of the Yamuna in Agra, built by Shah Jahan as a mausoleum for Mumtaz Mahal."
 2. *(subject: Saturn, NASA image library)*
    - Prompt: "Which planet is shown here?"
-   - Options: A) Jupiter B) **Saturn ✓** C) Neptune
+   - Options: A) Jupiter B) **Saturn ✓** C) Neptune D) Uranus
    - Explanation: "Saturn's rings are mostly water ice and span about 280,000 km, yet are only around ten metres thick on average."
 3. *(subject: Japan flag, FlagCDN)*
    - Prompt: "Which country's flag is this?"
-   - Options: A) South Korea B) **Japan ✓** C) Bangladesh
+   - Options: A) South Korea B) **Japan ✓** C) Bangladesh D) Nepal
    - Explanation: "Japan's flag shows a red sun disc, the Hinomaru, on white — officially adopted in 1999."
 
-Distractor discipline for image questions: all three options must be
-visually plausible *as answers* but only one can match the image; avoid the
-"obviously wrong third option" trap, and never make two options that are the
-same country/object.
+Note the three sample prompts above share no stem — keep that variation in
+real batches: ten image questions should not read as one template with ten
+nouns.
+
+Distractor discipline for image questions: all four options must be
+plausible *as answers* but only one can match the image; avoid the
+"obviously wrong filler option" trap, and never make two options that are
+the same country/object.
 
 ## Pattern (`figure`) authoring spec (not in the DB — for calibration only)
 
 Pattern questions are stored as `kind = 'figure'` with the artwork inline in
-`figure_svg`, and **four** text options (the DB's constraint for non-image
-kinds). The artwork itself contains the four candidate figures labelled
+`figure_svg`, and **four** text options. The artwork itself contains the
+four candidate figures labelled
 A–D (ا–د for RTL), and the text options are simply those labels. The
 `explanation` states the rule.
 
-### Required SVG properties
+### Fixed canvas — every artwork identical
 
-- Root element with explicit dimensions and a viewBox, e.g.
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img">`.
+- **Exactly** `viewBox="0 0 640 360"` with `width="640" height="360"` (16:9,
+  matching the app's pattern plate). Never any other canvas size or ratio —
+  the fixed geometry is what makes every pattern question draw at the same
+  size on the play screen.
+- Keep all content at least **24 units** inside every canvas edge.
+- All four options carry the same visual weight: identical stroke sizes and
+  figure scale; no option may look heavier than another.
+
+### Stroke budget — the values 6 and 3, nothing else
+
+Only two `stroke-width` values exist, and
+`scripts/validate_figure_svg.py` enforces exactly this:
+
+- **6** — every puzzle and option figure outline (the shapes being tested).
+- **3** — construction lines only: grids, matrix cell borders, panel frames.
+
+Never any other value. The fat, overlapping strokes earlier batches suffered
+from came from ad-hoc numbers (10–20); arbitrary widths are the bug, not a
+style choice. Strokes must never touch or cross each other: keep **at least
+20 geometry units of clear space between any two stroked edges** (so, with
+stroke 6, a visible gap of ~14+ units). Nested/concentric shapes need the
+same 20-unit gap between their strokes — if that doesn't fit, drop the inner
+shape or use `fill` on it instead of a second outline. Use
+`stroke-linejoin="round"` on closed outlines and `stroke-linecap="round"`
+on open strokes so joins stay clean.
+
+### Everything else
+
 - Self-contained: shapes + text only; **no** `<script>`, `<image>`, external
-  fonts, external stylesheets, or network references. Presentation attributes
-  or a small inline `<style>` are fine.
+  fonts, external stylesheets, internal `url(...)` references, or network
+  references. Presentation attributes are fine; `stroke-width` must be an
+  attribute (a `<style>` block may not set it).
 - Neutral background (the app plate may add its own gradient behind it) —
   either a plain light rect or transparent.
 - The full puzzle lives in one SVG: the sequence/matrix on the left/top and
   the four labelled options (A–D) in a row below or beside it. Labels must
-  be inside the artwork and match the text options exactly.
-- Keep it compact — target **< ~10 KB** per file. Prefer double quotes in
-  attributes and avoid apostrophes (simplifies SQL string escaping, though
-  `'` must still be doubled as `''` in `questions.sql`).
+  be inside the artwork and match the text options exactly — one `<text>`
+  element per label, `font-family="sans-serif"`, font-size 24–28, the same
+  baseline for all four.
+- Keep it compact — target **< ~10 KB** per file (hard cap 12 KB, enforced
+  by the validator). Prefer double quotes in attributes and avoid
+  apostrophes (simplifies SQL string escaping, though `'` must still be
+  doubled as `''` in `questions.sql`).
 - Ensure the correct option is visually unambiguous once the rule is
   understood, and that wrong options each violate exactly one aspect of the
-  rule (not "random noise").
+  rule (not "random noise"). Wrong options must not accidentally satisfy
+  the rule through a different reading.
 - Never copy a known copyrighted puzzle (Raven's Progressive Matrices,
   published IQ-test items, other apps' patterns). Every artwork in a batch
   is an original design.
+- Before finalizing: run `scripts/validate_figure_svg.py` on each file, then
+  render it to PNG (`qlmanage -t -s 1280 -o <dir> <file>.svg`) and look at
+  the PNG with the Read tool — the validator catches structure and stroke
+  budget, the render catches overlap, clipping and legibility (SKILL.md
+  Step 6d).
 
-### Example (Easy — sequence completion, correct option B)
+### Example (Easy — sequence completion, correct option A)
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img">
   <rect width="640" height="360" fill="#F5F7FA"/>
   <g fill="none" stroke="#2BB3FF" stroke-width="6" stroke-linejoin="round">
-    <path d="M60 150 L100 90 L140 150 Z"/>
-    <path d="M180 90 h80 v60 h-80 Z"/>
-    <circle cx="400" cy="120" r="40"/>
-    <path d="M520 150 L560 90 L600 150 Z"/>
+    <circle cx="120" cy="95" r="32"/>
+    <path d="M228 127 L260 63 L292 127 Z"/>
+    <rect x="370" y="65" width="60" height="60"/>
   </g>
-  <g fill="none" stroke="#7B4DFF" stroke-width="6">
-    <path d="M120 290 l30 -52 l30 52 Z"/>
-    <path d="M280 238 h60 v104 h-60 Z"/>
-    <circle cx="440" cy="290" r="34"/>
-    <path d="M560 290 l30 -26 l30 26 l-30 26 Z"/>
+  <text x="540" y="110" fill="#1B2430" font-family="sans-serif" font-size="44" font-weight="700" text-anchor="middle">?</text>
+  <g fill="#FFFFFF" stroke="#9E97B8" stroke-width="3">
+    <rect x="65" y="195" width="110" height="110" rx="10"/>
+    <rect x="205" y="195" width="110" height="110" rx="10"/>
+    <rect x="345" y="195" width="110" height="110" rx="10"/>
+    <rect x="485" y="195" width="110" height="110" rx="10"/>
   </g>
-  <g fill="#1B2430" font-family="sans-serif" font-size="28" text-anchor="middle">
-    <text x="150" y="340">A</text>
-    <text x="310" y="340">B</text>
-    <text x="480" y="340">C</text>
-    <text x="590" y="340">D</text>
+  <g fill="none" stroke="#7B4DFF" stroke-width="6" stroke-linejoin="round">
+    <circle cx="120" cy="250" r="28"/>
+    <path d="M232 276 L260 224 L288 276 Z"/>
+    <rect x="372" y="222" width="56" height="56"/>
+    <path d="M540 220 L568.5 240.7 L557.6 274.3 L522.4 274.3 L511.5 240.7 Z"/>
+  </g>
+  <g fill="#1B2430" font-family="sans-serif" font-size="26" text-anchor="middle">
+    <text x="120" y="336">A</text>
+    <text x="260" y="336">B</text>
+    <text x="400" y="336">C</text>
+    <text x="540" y="336">D</text>
   </g>
 </svg>
 ```
 
 - Prompt: "Which figure continues the sequence?"
-- Options: A) A B) **B ✓** C) C D) D
-- Explanation: "The shapes repeat triangle → square → circle, so after the fourth figure restarts the cycle the next shape is the square."
+- Options: **A) A ✓** B) B C) C D) D
+- Explanation: "The shapes repeat circle → triangle → square, so after the square the cycle restarts and the next shape is the circle."
+- Note how the example obeys the stroke budget: every figure outline is
+  exactly 6, the four option panels are exactly 3, and no stroke touches
+  another.
 
 (The example above is a throwaway calibration sketch — do not reuse it.
 Real batches vary the rule, the correct option, and the visual vocabulary;

@@ -1,7 +1,7 @@
 ---
 name: generate-questions
-description: Interactively generates a batch of Quizoo multiple-choice quiz questions for one sub-category, difficulty tier, and language, in Quizoo's exact `questions` table format. Supports four content modes via a `-mode` parameter — no `-mode`/`-mode text` (text-only, the original behavior), `-mode image` (verified open-license image questions — PD/CC0/CC-BY/CC-BY-SA, images downloaded from approved sources and re-hosted in the `question-media` bucket, with a credit line embedded in the explanation when the license requires attribution), `-mode pattern` (original SVG pattern/IQ questions stored in `figure_svg`), and `-mode all` (a mix of text, image, and — where the sub-category genuinely supports them — pattern questions). Asks for sub-category, question count, difficulty, and language (using the Supabase MCP server to list live choices when available, otherwise asking directly), checks existing live questions for that exact sub-category+difficulty+language via Supabase MCP so nothing generated duplicates content already in the database, then writes a review-ready, consistently-styled HTML review file (`review.html`), a NOT-yet-executed SQL insert script, and (for pattern rows) one SVG asset per question into a `questions/` folder next to the project directory. Never writes to the database itself — the user runs the SQL manually after reviewing it.
-compatibility: Text and pattern modes work with or without the Supabase MCP server connected, but the duplicate-check against existing questions (Step 6) requires it — without it, the skill can only guarantee no duplicates *within* the newly generated batch, and must say so. Image mode (`image`/`all`) additionally requires the MCP server (for the project URL and the mandatory duplicate check), internet access to the approved image sources, and a readable Supabase `service_role` key file (see Configuration). Never uses write/DDL Supabase tools — read-only queries only (`execute_sql` for SELECTs). The only Supabase Storage writes this skill ever makes are image uploads to `question-media` through `scripts/upload_question_media.py`; the only files it creates are the two output files plus `assets/*.svg` for pattern rows, all outside the project directory (see Step 7).
+description: Interactively generates a batch of Quizoo multiple-choice quiz questions for one sub-category, difficulty tier, and language, in Quizoo's exact `questions` table format. Supports four content modes via a `-mode` parameter — no `-mode`/`-mode text` (text-only, the original behavior), `-mode image` (verified open-license image questions — PD/CC0/CC-BY/CC-BY-SA, images downloaded from approved sources, normalized to a fixed 16:9 frame and re-hosted in the `question-media` bucket, with a credit line embedded in the explanation when the license requires attribution), `-mode pattern` (original 16:9 SVG pattern/IQ questions stored in `figure_svg`, drawn with a fixed stroke set so no artwork comes out with fat/overlapping lines), and `-mode all` (a mix of text, image, and — where the sub-category genuinely supports them — pattern questions). Asks for sub-category, question count, difficulty, and language (using the Supabase MCP server to list live choices when available, otherwise asking directly), checks existing live questions for that exact sub-category+difficulty+language via Supabase MCP so nothing generated duplicates content already in the database and no question-stem template repeats across the batch, then writes a review-ready, consistently-styled HTML review file (`review.html`), a NOT-yet-executed SQL insert script, and (for pattern rows) one SVG asset per question into a `questions/` folder next to the project directory. Never writes to the database itself — the user runs the SQL manually after reviewing it.
+compatibility: Text and pattern modes work with or without the Supabase MCP server connected, but the duplicate-check against existing questions (Step 6) requires it — without it, the skill can only guarantee no duplicates *within* the newly generated batch, and must say so. Image mode (`image`/`all`) additionally requires the MCP server (for the project URL and the mandatory duplicate check), internet access to the approved image sources, Pillow for the 16:9 crop/normalizer (`scripts/prepare_question_media.py`), and a readable Supabase `service_role` key file (see Configuration). Pattern mode uses the built-in macOS `qlmanage` to render each artwork for its mandatory visual check. Never uses write/DDL Supabase tools — read-only queries only (`execute_sql` for SELECTs). The only Supabase Storage writes this skill ever makes are image uploads to `question-media` through `scripts/upload_question_media.py`; the only files it creates are the two output files plus `assets/*.svg` for pattern rows, all outside the project directory (see Step 7).
 ---
 
 # Generate Questions
@@ -54,8 +54,9 @@ another, and a mode that cannot run for the chosen sub-category stops (or, for
    truth for format; treat live MCP queries as ground truth only for *which
    sub-categories/languages currently exist* and *what content already
    exists* (Step 6).
-4. **No question may duplicate one already in the database.** When Supabase
-   MCP is available, Step 6's existing-questions query against the exact
+4. **No question may duplicate one already in the database — in content or
+   in wording.** When Supabase MCP is available, Step 6's
+   existing-questions query against the exact
    chosen sub-category + difficulty + language is mandatory — run it before
    drafting a single question, and check every drafted question against that
    list (not just against the rest of the new batch) before finalizing. In
@@ -65,6 +66,17 @@ another, and a mode that cannot run for the chosen sub-category stops (or, for
    unavailable (text/pattern only — image mode stops), this guarantee can't
    be made against the live database: say so explicitly to the user rather
    than silently only deduping within the batch.
+
+   The same applies to *how* questions are phrased, not just what they ask.
+   A batch whose prompts keep reusing one sentence shape ("Which planet…?",
+   "Which country's flag is this?", "What is the largest…?") feels
+   machine-generated even when every underlying fact is new. Track each
+   prompt's *template* — the sentence shape with its specifics blanked
+   out — as you draft it, never reuse a template back-to-back, and rewrite
+   any prompt whose wording or opening echoes an earlier one in the batch.
+   When Step 6a's fetch included existing prompts, also steer away from
+   the stems that pool leans on. Step 6e is the mandatory final check for
+   this; it applies in every mode, even when MCP is unavailable.
 5. **Mode integrity + capability assessments.** Only write the question
    kinds the mode allows. Before generating anything, assess whether the
    chosen sub-category genuinely supports the requested media kinds
@@ -93,8 +105,20 @@ another, and a mode that cannot run for the chosen sub-category stops (or, for
 8. **Never expose secrets.** The `service_role` key is only ever read from a
    file path by `scripts/upload_question_media.py`. Do not read the key file
    with the Read tool, print its contents, or paste it into a command.
+9. **Fixed media geometry — identical size for every question.** Every image
+   this skill uploads is exactly 16:9 (a canonical 1280×720 down to 640×360),
+   produced **only** by `scripts/prepare_question_media.py` from the
+   downloaded source — never an un-cropped, portrait or arbitrary-ratio
+   original. Every pattern artwork is drawn on exactly the 640×360 canvas
+   (`viewBox="0 0 640 360"`), uses only stroke widths **6** (figure
+   outlines) and **3** (construction lines), keeps ≥ 20 units of clear
+   space between any two strokes and ≥ 24 units from the canvas edge, passes
+   `scripts/validate_figure_svg.py`, and is then rendered and visually
+   inspected (Step 6d). This is what makes every question's media render at
+   the same size on the play screen — and what stops the fat, overlapping
+   strokes of earlier pattern batches.
 
-## Configuration (required for `image`/`all` modes only)
+## Configuration (required per mode; see each subsection)
 
 ### Supabase `service_role` key
 
@@ -114,6 +138,18 @@ uses.)
 Resolve via the Supabase MCP server (`get_project_url`). If MCP is
 unavailable in `image`/`all` mode, stop — image mode cannot run without it
 (Hard rule 5 / Step 0).
+
+### Media preparation (every mode that produces media)
+
+- `scripts/prepare_question_media.py` — the **only** way an image-mode file
+  becomes an upload: EXIF-upright crop to 16:9, downscale to a canonical
+  size, re-encode (JPEG quality 88, or PNG for flat art). Requires Pillow
+  (`python3 -c "import PIL"` to check; if missing, stop and tell the user to
+  `python3 -m pip install Pillow`). Full protocol in Step 6c.
+- `scripts/validate_figure_svg.py` — the mechanical gate for every pattern
+  SVG (exact canvas, stroke budget, option labels, no external refs, size
+  cap). The render-and-look check in Step 6d is mandatory *on top of* a
+  passing validation.
 
 ## Step 0 — parse `-mode`, then one combined live lookup
 
@@ -249,9 +285,10 @@ Step 5 confirmation and the Step 8 summary.
 
 Ask for a count (e.g. 10, 50, 100, 200 — accept any positive integer). No
 hard cap, but if it's large (100+), tell the user briefly that you'll track
-facts/correct-answers used so far in the batch to keep everything unique
-rather than silently promising perfect uniqueness — then actually do that
-while generating (Step 6).
+facts/correct-answers *and question-stem templates* used so far in the batch
+to keep everything unique in both content and wording (Hard rule 4) rather
+than silently promising perfect uniqueness — then actually do that while
+generating (Steps 6b–6e).
 
 For `-mode all`, the split across kinds is resolved in Step 5 (default:
 as even as possible across the capable kinds).
@@ -312,15 +349,16 @@ Sub-category: <name> (<slug>) — category <category name>, language <Language (
 Difficulty:   <Label> — tier `<code>`, levels <start>–<end>, <secs>s/question
 Count:        <N> questions
 Mode:         <text|image|pattern|all> — <n1> text, <n2> image, <n3> pattern
-Status:       text rows live; image/figure rows draft (the app doesn't render
-              media_url/figure_svg in play mode yet) — say "all live" to override
+Status:       text rows live; image/figure rows draft (only `live` rows get
+              dealt; flip after review) — say "all live" to override
 Output:       <parent of project dir>/questions/<folder>/{questions.sql, review.html[, assets/]}
 ```
 
 Also state for `image`/`all`: images will come from approved open-license
 sources (Wikimedia Commons, FlagCDN, NASA, Met, Art Institute of Chicago,
-Cleveland), be visually verified, and be uploaded to `question-media` before
-the SQL is written. Licenses may be PD/CC0 or CC-BY/CC-BY-SA; the latter
+Cleveland), be normalized to a fixed 16:9 frame (1280×720 down to 640×360,
+cropped so nothing a question depends on is lost), visually verified, and be
+uploaded to `question-media` before the SQL is written. Licenses may be PD/CC0 or CC-BY/CC-BY-SA; the latter
 carry a mandatory credit line as the explanation's final sentence
 (`Credit: <author>, <license short name>, <license URL>.`).
 
@@ -328,7 +366,7 @@ Ask for a go/no-go (or a correction) before moving on. This is the one
 deliberate pause in an otherwise autonomous skill — getting one of these
 answers wrong wastes the entire generation effort, so confirm first.
 
-## Step 6 — check for existing duplicates, then generate
+## Step 6 — check for existing duplicates, then generate with varied wording
 
 ### 6a. Existing-content queries (mandatory when MCP is available)
 
@@ -368,8 +406,11 @@ where subcategory_id = '<SUBCATEGORY_ID>'
   and kind = 'figure';
 ```
 
-Keep these result sets on hand while drafting. If the first query is empty,
-note that (a fresh pool) and proceed. If MCP is unavailable (text/pattern
+Keep these result sets on hand while drafting, and skim the fetched
+`prompt`s for the phrasing templates the pool already leans on (e.g. most
+opening with "Which…") — new questions shouldn't clone the existing style
+any more than its facts. If the first query is empty, note that (a fresh
+pool) and proceed. If MCP is unavailable (text/pattern
 only), tell the user plainly that you cannot check the live database for
 duplicates and are only guaranteeing uniqueness within the new batch itself
 — do not imply a DB-level guarantee you can't back up.
@@ -389,6 +430,16 @@ against that file's difficulty samples for the chosen tier. In particular:
   different fact before finalizing — don't just note the collision and move
   on.
 - No duplicates within the batch itself, either.
+- **No repeated phrasing.** Keep a running inventory of each drafted
+  prompt's sentence shape with its specifics blanked out (e.g. "Which
+  [thing] has the most [property]?" and "What is the [superlative]
+  [thing]?" are different templates even when both are about planets). No
+  template may be reused back-to-back, and across the batch vary openings
+  and interrogatives (which/what/who/where/when/how, imperative forms like
+  "Name the…", question vs. statement structures) so no single shape
+  dominates. When the sub-category's natural phrasing space is genuinely
+  narrow, rotate through the available shapes rather than settling on one.
+  Vary `explanation` openings too — don't let them all start alike.
 - Written natively in the target language/script (RTL script and RTL option
   badges — ا ب ج د — for `ur`/`ar`).
 - Difficulty actually matches the chosen tier's calibration, not just its
@@ -404,35 +455,56 @@ Follow `reference/image-sources.md` in full. Per question, repeat:
    Not merely an illustration.
 2. **Find 1–3 candidates** on the approved sources, capturing each one's
    source page URL, title/description (identity!), author, and license.
+   Prefer landscape/centered-subject files — every image is cropped to a
+   16:9 band next, and the crop has to keep the answer-critical content.
 3. **License-gate**: PD/CC0/CC-BY/CC-BY-SA only (any license version). No
    recognizable license, or an NC/ND/GFDL-only/"fair use"/all-rights-
    reserved one → reject the candidate. No exceptions. Capture author,
    license short name, license URL, and source page URL — CC-BY/CC-BY-SA
    needs all of them for the credit line.
-4. **Download** the chosen raster rendition (JPEG/PNG only) to the scratchpad
-   at ≥600px wide and ≤~500KB, with a descriptive User-Agent for Wikimedia.
-   Verify with `file <path>` that it really is a JPEG/PNG (not an HTML error
-   page).
-5. **View it with the Read tool.** Mandatory — metadata alone is never
-   sufficient. Check the identity against the metadata, exactly one
-   unambiguous answer, no watermarks/overlaid answer text, no lookalikes,
-   subject survives a wide 132px-tall crop.
-6. **Accept or reject-and-swap.** On any doubt, discard and go back to step 1
-   or 2 — never force a weak image to hit the count.
-7. **Write the question**: short prompt that doesn't give away the answer;
-   exactly **3 options** (one correct, two plausible); `correct_index` 0–2;
-   a genuine one-sentence explanation. For CC-BY/CC-BY-SA images, append
+4. **Download a large rendition** (JPEG/PNG only) to the scratchpad —
+   1280–2048px wide when the source offers it, since the 16:9 crop trims
+   height (per-source sizes in `reference/image-sources.md` §2) — with a
+   descriptive User-Agent for Wikimedia. Verify with `file <path>` that it
+   really is a JPEG/PNG (not an HTML error page).
+5. **Normalize to 16:9** (Hard rule 9). First inspect:
+   `python3 .claude/skills/generate-questions/scripts/prepare_question_media.py
+   --input <scratch>/<subject>.jpg` (prints the suggested centered band),
+   then write the normalized file:
+   `... prepare_question_media.py --input <scratch>/<subject>.jpg
+   --output <scratch>/<subject>-16x9.jpg --crop <x>,<y>,<w>`.
+   Shift/shrink the band until the answer-critical content is fully inside —
+   a flag's whole charge, the landmark, the animal, the person's face. The
+   script derives the height (w×9/16), enforces the ≥640px width floor, and
+   outputs an exact canonical size. Never upload the raw download; never
+   upscale; on a too-small source, pick a larger rendition or swap subjects.
+6. **View the normalized file with the Read tool.** Mandatory — metadata
+   alone is never sufficient. Check the identity against the metadata,
+   exactly one unambiguous answer, no watermarks/overlaid answer text, no
+   lookalikes — and that the 16:9 crop kept everything the question needs.
+7. **Accept or reject-and-swap.** On any doubt (including a crop that cuts
+   context), discard and go back to step 1 or 2 — never force a weak image
+   to hit the count.
+8. **Write the question**: short prompt that doesn't give away the answer
+   and doesn't echo the wording of other prompts in the batch (for a run
+   of flags, "Which country's flag is this?", "This flag belongs to which
+   country?" and "Which nation flies this flag?" are all fine — using one
+   of them for every question is not); exactly **4 options** (one correct,
+   three plausible); `correct_index` 0–3; a genuine one-sentence explanation.
+   For CC-BY/CC-BY-SA images, append
    the **mandatory credit line** as the explanation's final sentence —
    `Credit: <author>, <license short name>, <license URL>.` (one space
    after the preceding sentence's period; use the author exactly as
    recorded in the source metadata). PD/CC0 need no credit line. Write all
    question text natively in the target language/script; the `Credit:`
    keyword and license URL stay as-is.
-8. **Pre-generate the question UUID** (`python3 -c "import uuid; print(uuid.uuid4())"`)
+9. **Pre-generate the question UUID** (`python3 -c "import uuid; print(uuid.uuid4())"`)
    and keep it — it becomes both the row id and the storage object path
    `<language_code>/<uuid>.<ext>`.
-9. **Add to the upload manifest** and record the verification data (source
-   page, author, license, scratchpad filename) for `review.html`.
+10. **Add to the upload manifest** — `file_path` is the **normalized** file
+    from step 5 and `content_type` matches its format
+    (`image/jpeg`/`image/png`) — and record the verification data (source
+    page, author, license, scratchpad filename) for `review.html`.
 
 Avoid entirely: source hotlinks, logos/trademarks/currency, graphic content,
 images containing the answer as text, multi-answer photos, private
@@ -448,29 +520,72 @@ Per question:
    completion, matrix completion, rotation/reflection, odd-one-out, counting,
    analogies, spatial reasoning. Never copy a known copyrighted puzzle (see
    Hard rule 7).
-2. **Write a self-contained SVG** per
-   `reference/schema-and-samples.md`'s "Pattern (`figure`) authoring spec":
-   fixed `viewBox`/dimensions, shapes + text only, no scripts/external
-   refs/fonts, the full puzzle plus four labelled option figures (A–D, or
-   ا–د for RTL) inside the one artwork, exactly one correct option, under
-   ~10KB, double quotes preferred.
+2. **Compose the SVG** per `reference/schema-and-samples.md`'s "Pattern
+   (`figure`) authoring spec" — the geometry rules there are hard
+   requirements: exactly `viewBox="0 0 640 360"` + `width="640" height="360"`;
+   only stroke widths **6** (figure outlines) and **3** (construction lines)
+   anywhere in the file; ≥ 20 units of clear space between any two strokes
+   (strokes must never touch or cross) and ≥ 24 units from every canvas
+   edge; identical stroke sizes across all four options; shapes + text only,
+   no scripts/external refs/fonts; the full puzzle plus four labelled option
+   figures (A–D, or ا–د for RTL) inside the one artwork; exactly one correct
+   option; under ~10KB (hard cap 12KB), double quotes preferred.
 3. **Save it** to `<batch>/assets/q<N>.svg` where `<N>` matches the
    question's number in `review.html` and the `-- Q<N>` comment in
    `questions.sql`.
-4. **Validate it** is well-formed XML before it goes anywhere:
-   `xmllint --noout <file>` (or
-   `python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse(sys.argv[1])" <file>`).
-   Fix and re-validate on failure.
-5. **Write the question**: `kind = 'figure'`; prompt in the target language
-   (short, e.g. "Which figure completes the pattern?"); options are exactly
-   the four labels `["A","B","C","D"]` (or `["ا","ب","ج","د"]` for RTL);
+4. **Validate it** with
+   `python3 .claude/skills/generate-questions/scripts/validate_figure_svg.py <file>.svg`
+   — it must print `OK` (canvas, stroke budget, labels, refs, size). Fix
+   every `FAIL` and re-run until clean.
+5. **Render it and look at it** (mandatory — the validator can't see overlap
+   or clipping):
+   `mkdir -p <scratch>/svg-preview && qlmanage -t -s 1280 -o <scratch>/svg-preview <file>.svg`,
+   then Read the produced `<file>.svg.png`. Confirm: uniform stroke weights,
+   no touching/overlapping lines, every option inside its own panel, labels
+   legible, nothing clipped or cramped at the edges, exactly one correct
+   option. Fix and re-render on any doubt. If `qlmanage` is unavailable
+   (non-macOS), say so plainly in the final message and fall back to the
+   validator plus a careful coordinate review.
+6. **Write the question**: `kind = 'figure'`; prompt in the target language
+   — short, and rotated across standard variants ("Which figure completes
+   the pattern?", "Which figure continues the sequence?", "Which shape
+   comes next?") rather than the identical stem on every pattern question;
+   options are exactly the four labels `["A","B","C","D"]` (or
+   `["ا","ب","ج","د"]` for RTL);
    `correct_index` 0–3 pointing at the correct label; `tts_excluded = true`;
    a one-sentence explanation that states the rule; `figure_svg` gets the
    same SVG markup (SQL-escaped).
-6. **No rule reuse** — neither within the batch nor against the existing
+7. **No rule reuse** — neither within the batch nor against the existing
    figure prompts fetched in 6a.
 
-### 6e. Upload images (mode `image`/`all` only)
+### 6e. Wording-variety audit (all modes — mandatory before Step 7)
+
+Before any file is written, run one dedicated pass over every drafted
+prompt in the batch (all kinds) — unique facts are not enough:
+
+1. Write out each prompt with its specifics blanked out to expose its
+   template, and group the prompts by template. Also list each prompt's
+   first two words.
+2. Fix, don't just note:
+   - two consecutive (or near-adjacent) questions sharing a template →
+     rewrite one in a different shape;
+   - in a batch of 10+, any template used more than twice (for batches
+     over ~30, more than ~10% of questions) → rewrite the excess in fresh
+     shapes (pattern prompts, whose phrasing space is deliberately
+     narrow, may reuse a variant up to 2–3 times but never
+     consecutively);
+   - more than a couple of prompts opening with the same first word →
+     vary the openings;
+   - a prompt whose wording merely swaps a noun into a shape borrowed
+     from an existing DB prompt (Step 6a) → rewrite it.
+3. Skim the explanations' first words too; if most start with the same
+   phrase, vary a few.
+
+Unique facts with templated wording is still a Hard rule 4 violation —
+this audit is what makes "unique" true in practice, so it runs in every
+mode, even when MCP (and therefore the DB duplicate check) is unavailable.
+
+### 6f. Upload images (mode `image`/`all` only)
 
 Once all image questions are drafted and every image accepted, write one
 upload manifest JSON to the scratchpad:
@@ -599,11 +714,11 @@ insert into questions (
    '["<option A>","<option B>","<option C>","<option D>"]'::jsonb, <CORRECT_INDEX_0_3>,
    '<explanation>', '<prompt text>', null, null, false),
   -- Q2 (image, id must match the storage object path): <first few words of the prompt>
-  ('<QUESTION_UUID>', '<SUBCATEGORY_ID>', 'image', <DIFFICULTY_INT>,
-   (select id from difficulty_tiers where code = '<TIER_CODE>'),
-   '<LANGUAGE_CODE>', '<live|draft>', 'ai_batch',
-   '["<option A>","<option B>","<option C>"]'::jsonb, <CORRECT_INDEX_0_2>,
-   '<explanation>', '<prompt text>', '<MEDIA_URL>', null, <tts_excluded>),
+   ('<QUESTION_UUID>', '<SUBCATEGORY_ID>', 'image', <DIFFICULTY_INT>,
+    (select id from difficulty_tiers where code = '<TIER_CODE>'),
+    '<LANGUAGE_CODE>', '<live|draft>', 'ai_batch',
+    '["<option A>","<option B>","<option C>","<option D>"]'::jsonb, <CORRECT_INDEX_0_3>,
+    '<explanation>', '<prompt text>', '<MEDIA_URL>', null, <tts_excluded>),
   -- Q3 (figure/pattern): <first few words of the prompt>
   (gen_random_uuid(), '<SUBCATEGORY_ID>', 'figure', <DIFFICULTY_INT>,
    (select id from difficulty_tiers where code = '<TIER_CODE>'),
@@ -617,9 +732,10 @@ commit;
 ```
 
 Notes for whoever edits this file after reviewing `review.html`:
-- **Option counts differ by kind**: `text` and `figure` rows take exactly 4
-  options; `image` rows take exactly 3 (DB constraint). `correct_index` must
-  point at an existing option.
+- **Every kind takes exactly 4 options**: `text`, `image` and `figure` rows
+  all carry four options, and `correct_index` (0–3) must point at an
+  existing one. (Some legacy `image` rows from before 2026-10-10 still carry
+  3 options and remain valid in the DB — never emit new 3-option rows.)
 - **Image rows keep their pre-generated `id`** — it matches the storage
   object path; don't regenerate it. `text`/`figure` rows use
   `gen_random_uuid()`.
@@ -632,9 +748,9 @@ Notes for whoever edits this file after reviewing `review.html`:
 - Escape any literal `'` inside prompt/option/explanation/SVG text by
   doubling it (SQL string escaping: `it's` → `it''s`).
 - The default statuses are `live` for text rows and `draft` for
-  image/figure rows (the app doesn't render `media_url`/`figure_svg` yet).
-  If the user opted for "all live", set every row's status to `live` — but
-  only do that when the rendering support actually ships.
+  image/figure rows — only `live` rows are dealt in play mode, and review is
+  the gate, so flip the drafts to `live` here once they're approved (or say
+  "all live" during generation to start them live).
 
 ### `review.html`
 
@@ -700,7 +816,7 @@ that is the only styling difference between options:
 whichever option is actually correct. `id="q<N>"` and `Q<N>` use the
 question's number.)
 
-**Image (`kind = 'image'`)** — three options, media plate, source line,
+**Image (`kind = 'image'`)** — four options, media plate, source line,
 status chip `draft` (or `live` if the user opted into "all live"):
 
 ```html
@@ -716,6 +832,7 @@ status chip `draft` (or `live` if the user opted into "all live"):
     <li class="option"><span class="key">A</span><span class="opt-text"><OPTION_A></span></li>
     <li class="option correct"><span class="key">B</span><span class="opt-text"><OPTION_B></span><span class="mark">✓</span></li>
     <li class="option"><span class="key">C</span><span class="opt-text"><OPTION_C></span></li>
+    <li class="option"><span class="key">D</span><span class="opt-text"><OPTION_D></span></li>
   </ol>
   <p class="answer">Correct: <strong><LETTER></strong> — <CORRECT_OPTION_TEXT></p>
   <p class="explanation"><span class="label">Explanation</span><EXPLANATION></p>
@@ -773,8 +890,9 @@ remember its credit line is already part of `<EXPLANATION>`.
 
 Write each pattern question's SVG to `assets/q<N>.svg` (N = question number)
 as described in Step 6d, before finalizing `questions.sql` — the SQL embeds
-the same markup inline. Verify every file is valid XML before declaring the
-batch done.
+the same markup inline. Every file must pass
+`scripts/validate_figure_svg.py` and the visual render check (Step 6d.5)
+before the batch is declared done.
 
 ## Step 8 — final message to the user
 
@@ -783,6 +901,8 @@ State plainly, in your own words (don't just dump the template):
   the project directory, not inside it), plus the `assets/` folder when
   pattern rows exist.
 - The mode and the actual kind split generated.
+- That the wording-variety audit (Step 6e) ran and roughly how many
+  prompts it rewrote to avoid repeated stems/templates.
 - The capability verdicts from Step 1 (image/pattern supported or not, and
   the reasoning) when they were relevant.
 - Whether the duplicate-check against the live database actually ran
@@ -791,10 +911,16 @@ State plainly, in your own words (don't just dump the template):
 - For image runs: how many images were uploaded, from which sources, and any
   upload failures or dropped/replaced questions. State the license mix
   (PD/CC0 vs CC-BY/CC-BY-SA) and confirm every attribution-required image
-  carries its credit line.
-- The status choice (text live; image/figure draft by default) and why, so
-  the user knows these won't be dealt in play mode until rendering ships or
-  they override.
+  carries its credit line. Confirm every uploaded file was normalized to an
+  exact 16:9 frame by `prepare_question_media.py`, and say how many
+  candidates were rejected because no 16:9 crop kept the answer-critical
+  content.
+- For pattern runs: confirm every artwork passed `validate_figure_svg.py`
+  and was rendered and visually checked (uniform strokes, no overlap, labels
+  legible) — or, if `qlmanage` was unavailable, say plainly that the visual
+  check could not run.
+- The status choice (text live; image/figure draft by default — only `live`
+  rows get dealt, so say "all live" if these should start live).
 - A one-line reminder: nothing was saved to the database.
 - Next step: open `review.html` in a browser (open the `assets/*.svg` files
   directly for pattern batches if you want a closer look), edit both files
