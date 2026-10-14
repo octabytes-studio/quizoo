@@ -1,7 +1,7 @@
 ---
 name: generate-audios
-description: Generates pre-recorded narration audio (via the ElevenLabs API) for Quizoo questions that don't have one yet, uploads each clip to the `question-audio` Supabase Storage bucket, and links it back by writing `questions.audio_url`. Use when the user wants to backfill question narration, e.g. "generate audio for the remaining questions", "/generate-audios", "/generate-audios -n 20". Always queries Supabase live via MCP to find questions with `audio_url IS NULL`, so every run only ever processes the actual remainder — never re-generates audio that already exists. Defaults to 100 questions per run; `-n <count>` processes that many instead, with no upper limit. API keys and voice ids come from a single `elevenlabs_keys.json` file (one entry per key/voice pair, possibly several per language) kept one directory above the project; any language with zero entries in that file is skipped entirely. Rotates through a language's configured key/voice pairs on quota/auth failure, moving on once that language's pairs are all exhausted while continuing other languages. Requires the Supabase MCP server (Hard Rule 1) and local file paths to the ElevenLabs keys JSON + a Supabase `service_role` key (see Configuration below) — refuses to run without them.
-compatibility: Requires the Supabase MCP server to be connected — this skill does not fall back to any other means of reaching the database, per Hard Rule 1. Requires Python 3 (stdlib only, no extra installs) to run the batch script. Requires the Configuration section below to resolve to real, readable files before the first real run — a missing or malformed `elevenlabs_keys.json` causes the skill to stop immediately with instructions, rather than silently skipping key rotation or querying Supabase for the wrong languages.
+description: Generates pre-recorded narration audio (via the ElevenLabs API) for Quizoo questions that don't have one yet, uploads each clip to the `question-audio` Supabase Storage bucket, and links it back by writing `questions.audio_url`. Use when the user wants to backfill question narration, e.g. "generate audio for the remaining questions", "/generate-audios", "/generate-audios -n 20". Always queries Supabase live via MCP to find questions with `audio_url IS NULL`, so every run only ever processes the actual remainder — never re-generates audio that already exists. Defaults to 100 questions per run; `-n <count>` processes that many instead, with no upper limit. Optionally accepts `-f "<file-path>"` pointing at a plain-text file of question ids (one uuid per line) — when supplied, the run is restricted to exactly those ids, still filtered so that ids already having audio are always skipped and never regenerated, and that file is deleted once the run finishes. API keys and voice ids come from a single `elevenlabs_keys.json` file (one entry per key/voice pair, possibly several per language) kept one directory above the project; any language with zero entries in that file is skipped entirely. Rotates through a language's configured key/voice pairs on quota/auth failure, moving on once that language's pairs are all exhausted while continuing other languages. Requires the Supabase MCP server (Hard Rule 1) and local file paths to the ElevenLabs keys JSON + a Supabase `service_role` key (see Configuration below) — refuses to run without them.
+compatibility: Requires the Supabase MCP server to be connected — this skill does not fall back to any other means of reaching the database, per Hard Rule 1. Requires Python 3 (stdlib only, no extra installs) to run the batch script. Requires the Configuration section below to resolve to real, readable files before the first real run — a missing or malformed `elevenlabs_keys.json` causes the skill to stop immediately with instructions, rather than silently skipping key rotation or querying Supabase for the wrong languages. If `-f "<file-path>"` is passed, that file must exist, be readable, and contain at least one usable question id, or the run stops rather than falling back to unrestricted selection.
 ---
 
 # Generate Audios
@@ -59,6 +59,42 @@ to be fixed, quoting this section. Do not attempt to run the batch script
 against a broken config — that's not a rule this skill can safely guess
 around.
 
+### Optional `-f "<file-path>"` — restrict this run to an explicit id list
+
+By default the skill selects candidates itself (oldest `created_at` first,
+`LIMIT` = the effective count). Passing `-f <path>` switches it to
+**explicit-scope mode**: the file's question ids become the *only*
+candidates for this run, and every normal eligibility gate still applies on
+top of them (`audio_url IS NULL`, `status = 'live'`, `tts_excluded = false`,
+and a language that has at least one `elevenlabs_keys.json` entry). This is
+how one large backfill is split across several parallel sessions — one file
+per session — without the sessions all grabbing the same oldest questions.
+
+File format (a plain-text, UTF-8 file):
+
+- **One question id (uuid) per line.**
+- Blank / whitespace-only lines are ignored.
+- Leading and trailing whitespace on each line is trimmed; optionally
+  surrounding quotes are stripped.
+- Duplicate ids are collapsed — an id present twice is processed once.
+
+An id in the file that already has a non-NULL `audio_url` is **always
+skipped** — never regenerated, never overwritten (Hard Rule 2 applied to
+explicit ids). The same goes for file ids that are not `live`, are
+`tts_excluded`, or whose language has no key/voice entry: they're skipped and
+reported as such (see Step 6), not silently dropped.
+
+**This file is consumed and deleted.** After the run finishes, the skill
+deletes the file passed to `-f` (Hard Rule 8) and reports that in the
+summary — if you need the id list preserved, keep a copy elsewhere before
+running.
+
+If the `-f` path is missing, unreadable, or contains zero usable id lines:
+stop immediately and tell the user which path needs fixing — do not silently
+fall back to the unrestricted default selection (that would generate audio
+for the wrong questions). If `-f` is not passed at all, candidate selection
+and behavior are exactly as before.
+
 ## Hard rules (do not deviate)
 
 1. **Supabase MCP is mandatory, with no fallback.** The first
@@ -98,8 +134,28 @@ around.
    this run (its remaining candidate questions in this run are marked
    failed) and continue processing other languages normally — other
    languages have their own independent key/voice lists and are unaffected.
-   Only a fatal config problem (Configuration section unreadable/empty)
-   stops the entire run.
+    Only a fatal config problem (Configuration section unreadable/empty)
+    stops the entire run.
+7. **When `-f <file>` is given, that file is the candidate scope, but the
+   normal gates still decide eligibility.** Only ids listed in the file are
+   considered (each still required to be `audio_url IS NULL`, `status =
+   'live'`, `tts_excluded = false`, and in a language with a key/voice
+   entry). An id that already has audio, or that fails any gate, is skipped
+   and reported — never regenerated and never overwritten. Never widen
+   selection beyond the file's ids, and never fall back to the unrestricted
+   default selection if the file can't be read (stop instead). With no `-f`,
+   selection is unchanged from Hard Rules 2–5.
+8. **In `-f` mode, delete the input id file once the run has finished, then
+   summarize.** After Step 5's write-back completes and the run reaches its
+   normal end — not `stopped_early`, and not aborted at Step 2 by an
+   MCP/Supabase failure (in those cases the ids are still needed for a retry,
+   so leave the file in place) — delete the **exact file passed to `-f`**
+   (e.g. `rm "<file-path>"`), then produce the Step 6 summary and state that
+   the file was deleted. Never delete any other file (the keys JSON, the
+   service-role key file, etc.). If the delete itself fails, do not retry
+   destructively — report the failure and the exact path in the summary
+   instead. This rule only applies when `-f` was passed; with no `-f` there
+   is nothing to delete.
 
 ## Step 1 — load the key/voice configuration (local, no secrets exposed)
 
@@ -131,6 +187,12 @@ contains no secrets.
   real, readable file (a quick `Read` or shell `test -r` is enough — do not
   print its *contents*). If unreadable, stop here per the Configuration
   section.
+- If `-f "<file-path>"` was passed: read that file, trim each line, drop
+  blanks and duplicates, and strip optional surrounding quotes. That
+  de-duplicated id list is this run's **explicit id set**. If the path is
+  missing/unreadable or the resulting set is empty, stop here per the
+  Configuration section's `-f` subsection — do not fall back to unrestricted
+  selection.
 
 The set of language codes with `languages[code] > 0` is this run's
 **eligible language set** — carry it into Step 2.
@@ -151,6 +213,13 @@ in the `language_code in (...)` / `not in (...)` lists:
   skipped this run.
 - The candidate list itself (restricted to the eligible language set),
   `LIMIT`ed to the **effective count** (see Step 3).
+- If `-f` was passed, use the reference doc's **`-f` variants** instead: the
+  candidate list gains `and q.id in (<FILE_IDS>)` (Step 1's explicit id set),
+  the skipped-languages report is likewise scoped with `q.id in
+  (<FILE_IDS>)`, and run the **file-id audit** query so Step 6 can report how
+  many of the file's ids were already-audio / otherwise ineligible / eligible.
+  `<FILE_IDS>` is the de-duplicated id set from Step 1, quoted as SQL string
+  literals (e.g. `'uuid-1', 'uuid-2'`).
 
 If this MCP call fails for any reason (tool missing, connection error,
 timeout): stop immediately per Hard Rule 1. Tell the user: "Could not reach
@@ -160,7 +229,8 @@ the underlying error. Do not proceed to any later step.
 If the candidate list comes back empty (nothing eligible at all, whether
 because everything already has audio or every remaining language lacks a
 key/voice entry): stop here and report that plainly — there's nothing to
-generate.
+generate. In `-f` mode this also covers "every id in the file already has
+audio or is otherwise ineligible."
 
 ## Step 3 — resolve the effective count
 
@@ -168,6 +238,11 @@ generate.
 - If invoked with `-n <count>`: effective count = `count`, used as-is — no
   upper limit is enforced, however large `count` is. If `count < 1`, ask
   for a valid positive integer instead of guessing.
+- If `-f <file>` was passed and `-n` was **not**: the default of 100 does not
+  apply — the effective count is the size of Step 1's explicit id set, so
+  every eligible id in the file is processed in one run.
+- If both `-f` and `-n <count>` were passed: effective count = `count`
+  (`-n` still wins as a cap on top of the file's ids).
 - The effective count is a ceiling on *how many questions this run
   attempts*, not a guarantee — if fewer than that are eligible, process all
   of them and say so (don't imply more existed).
@@ -231,10 +306,21 @@ key/voice pairs worked), skip this step — there's nothing to write.
 
 ## Step 6 — final summary to the user
 
+In `-f` mode, before writing the summary: if the run reached its normal end
+(not `stopped_early`, not aborted at Step 2), delete the exact `-f` file per
+Hard Rule 8 and note its path — the summary must say the file was deleted (or,
+if the delete failed, that it could not be deleted, with the path). With no
+`-f`, skip this.
+
 State plainly, in your own words (don't just dump a template):
 
 - **How many audio files were generated** this run, and for which
   language(s).
+- **In `-f` mode, a short file audit** (from Step 2's file-id audit query):
+  how many of the file's unique ids already had audio (skipped, per Hard Rule
+  7), how many were otherwise ineligible (`not live` / `tts_excluded` /
+  language without a key/voice entry), how many were eligible and processed,
+  and how many file ids were not found in the database at all.
 - **Languages skipped entirely** for lacking any entry in
   `elevenlabs_keys.json` (from Step 2), with counts.
 - **Malformed entries in `elevenlabs_keys.json`**, if any were reported in
@@ -252,7 +338,9 @@ State plainly, in your own words (don't just dump a template):
 - **Whether more were eligible than the effective count** (Hard Rule 3) and,
   if so, that a follow-up run will pick up where this one left off
   (re-querying `audio_url IS NULL` means no extra bookkeeping is needed
-  between runs).
+  between runs). In `-f` mode, say instead how many of the file's eligible
+  ids were left for a follow-up `-f` run (relevant only when `-n` capped the
+  file below its eligible count).
 - **How many eligible questions remain** after this run (re-run the
   candidate query as a bare count, no `LIMIT`, restricted to the same
   eligible language set) — so the user knows whether to run this skill

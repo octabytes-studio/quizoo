@@ -136,7 +136,7 @@ exists (e.g. TTS succeeded, upload succeeded, but the DB `UPDATE` step never
 ran because the process was interrupted — a rerun just overwrites the same
 object with the same bytes and proceeds to retry the `UPDATE`).
 
-## Candidate-selection SQL (Hard Rules 2, 4, 5)
+## Candidate-selection SQL (Hard Rules 2, 4, 5, 7)
 
 `<ELIGIBLE_LANGUAGES>` is the set of language codes that have at least one
 entry in `elevenlabs_keys.json`, from Step 1 of `SKILL.md` — e.g.
@@ -158,6 +158,25 @@ order by q.created_at asc
 limit <EFFECTIVE_COUNT>;
 ```
 
+With `-f` (explicit-scope mode): `<FILE_IDS>` is the de-duplicated id set from
+Step 1's `-f` file, written as a comma-separated list of quoted uuid string
+literals (e.g. `'uuid-1', 'uuid-2', ...`). The same gates still apply, so an
+id listed in the file but already carrying an `audio_url` (or otherwise
+ineligible) is excluded here and thus never regenerated. `LIMIT` still
+applies — see `SKILL.md` Step 3 for what the effective count is in `-f` mode:
+
+```sql
+select q.id, q.prompt, q.language_code
+from questions q
+where q.id in (<FILE_IDS>)
+  and q.audio_url is null
+  and q.status = 'live'
+  and q.tts_excluded = false
+  and q.language_code in (<ELIGIBLE_LANGUAGES>)
+order by q.created_at asc, q.id asc
+limit <EFFECTIVE_COUNT>;
+```
+
 Languages skipped entirely for lacking any `elevenlabs_keys.json` entry
 (report these by name in the final summary, per Hard Rule 5):
 
@@ -172,6 +191,45 @@ group by q.language_code
 order by q.language_code;
 ```
 
+With `-f`, scope that same report to the file's ids:
+
+```sql
+select q.language_code, count(*) as missing_count
+from questions q
+where q.id in (<FILE_IDS>)
+  and q.audio_url is null
+  and q.status = 'live'
+  and q.tts_excluded = false
+  and q.language_code not in (<ELIGIBLE_LANGUAGES>)
+group by q.language_code
+order by q.language_code;
+```
+
+File-id audit (only in `-f` mode) — how the file's ids break down, so Step 6
+can report ids already done vs. still eligible. `<FILE_IDS>` is the
+de-duplicated id set from Step 1:
+
+```sql
+select
+  count(*)                                                          as file_ids_found,
+  count(*) filter (where audio_url is not null)                     as already_have_audio,
+  count(*) filter (
+    where audio_url is null
+      and (status <> 'live' or tts_excluded)
+  )                                                                 as ineligible_status_or_excluded,
+  count(*) filter (
+    where audio_url is null
+      and status = 'live'
+      and tts_excluded = false
+  )                                                                 as eligible
+from questions
+where id in (<FILE_IDS>);
+```
+
+File ids that don't exist in the table are not counted by `file_ids_found`;
+Step 6 reports the gap between the file's unique id count and that total as
+"not found".
+
 If `<ELIGIBLE_LANGUAGES>` is empty (no language has any entry in
 `elevenlabs_keys.json` at all), drop the `not in (...)` clause entirely
 (an empty `IN`/`NOT IN` list is invalid SQL) and just group every
@@ -180,7 +238,9 @@ this run.
 
 Remaining eligible count after a run (re-run the first query's `where`
 clause as a bare `count(*)`, no `limit`) — report this so the user knows
-whether another run is needed.
+whether another run is needed. In `-f` mode, re-run the `-f` candidate
+query's `where` clause (including the `id in (<FILE_IDS>)` restriction) as a
+bare `count(*)` to get how many of that file's ids are still eligible.
 
 ## Batched write-back SQL
 
