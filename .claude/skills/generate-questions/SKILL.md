@@ -11,6 +11,10 @@ language, in exactly the shape Quizoo's `questions` table and the Flutter
 `Question` model expect — as **draft output for human review**, never as a
 direct database write.
 
+> To re-express questions that already exist in another language's pool (for
+> example Arabic/French from English/Spanish/Hindi/Urdu) instead of authoring
+> new ones, use the sibling `translate-questions` skill.
+
 The skill has four content **modes**:
 
 | Invocation | What it generates | Question kinds |

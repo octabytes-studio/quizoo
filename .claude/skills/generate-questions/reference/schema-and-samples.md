@@ -19,7 +19,7 @@ changes, update this file — don't silently drift from it.
 | `difficulty_tier_id` | uuid | FK → `difficulty_tiers.id`. Resolve with a subquery on `code` (`(select id from difficulty_tiers where code = 'easy')`) — **never hardcode the UUID**, it can differ per environment. |
 | `language_code` | text | FK → `languages.code`. **Must exactly equal the `language_code` of `subcategory_id`'s own category.** A DB trigger (`enforce_question_language_match`) rejects a mismatch at insert time with a hard error. |
 | `status` | text | One of `draft`, `live`, `suspended`. Defaults: `live` for `text` rows (review is the gate, as before); **`draft` for `image`/`figure` rows** — `live` only if the user explicitly overrides at Step 5. Only `live` rows are dealt (`start_level_attempt` filters on `status = 'live'`), so flip the drafts once reviewed. |
-| `source` | text | One of `manual`, `ai_batch`, `legacy_migrated`. Always `ai_batch` for this skill's output. |
+| `source` | text | One of `manual`, `ai_batch`, `legacy_migrated`, `translated`. Always `ai_batch` for this skill's output; `translated` is set only by the `translate-questions` skill (rows translated from another language's pool). |
 | `options` | jsonb | JSON array of strings — **exactly 4 for every kind**, `image` included. (The DB check constraint still accepts 3 *only* for legacy `image` rows created before 2026-10-10; never emit new 3-option rows.) |
 | `correct_index` | smallint | 0–3 (check constraint) for every kind, including `image` rows. |
 | `media_url` | text | For `kind = 'image'`: the **uploaded public Supabase Storage URL** — `<project_url>/storage/v1/object/public/question-media/<language_code>/<question_id>.<jpg|png>`. NULL for every other kind. **Never a source-site hotlink.** |
