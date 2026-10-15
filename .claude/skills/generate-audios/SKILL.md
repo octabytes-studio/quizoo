@@ -1,6 +1,6 @@
 ---
 name: generate-audios
-description: Generates pre-recorded narration audio (via the ElevenLabs API) for Quizoo questions that don't have one yet, uploads each clip to the `question-audio` Supabase Storage bucket, and links it back by writing `questions.audio_url`. Use when the user wants to backfill question narration, e.g. "generate audio for the remaining questions", "/generate-audios", "/generate-audios -n 20". Always queries Supabase live via MCP to find questions with `audio_url IS NULL`, so every run only ever processes the actual remainder — never re-generates audio that already exists. Defaults to 100 questions per run; `-n <count>` processes that many instead, with no upper limit. Optionally accepts `-f "<file-path>"` pointing at a plain-text file of question ids (one uuid per line) — when supplied, the run is restricted to exactly those ids, still filtered so that ids already having audio are always skipped and never regenerated, and that file is deleted once the run finishes. API keys and voice ids come from a single `elevenlabs_keys.json` file (one entry per key/voice pair, possibly several per language) kept one directory above the project; any language with zero entries in that file is skipped entirely. Rotates through a language's configured key/voice pairs on quota/auth failure, moving on once that language's pairs are all exhausted while continuing other languages. Requires the Supabase MCP server (Hard Rule 1) and local file paths to the ElevenLabs keys JSON + a Supabase `service_role` key (see Configuration below) — refuses to run without them.
+description: Generates pre-recorded narration audio (via the ElevenLabs API) for Quizoo questions that don't have one yet, uploads each clip to the `question-audio` Supabase Storage bucket, and links it back by writing `questions.audio_url` plus the ElevenLabs `voice_id` that produced that clip into `questions.voice_id`. Use when the user wants to backfill question narration, e.g. "generate audio for the remaining questions", "/generate-audios", "/generate-audios -n 20". Always queries Supabase live via MCP to find questions with `audio_url IS NULL`, so every run only ever processes the actual remainder — never re-generates audio that already exists. Defaults to 100 questions per run; `-n <count>` processes that many instead, with no upper limit. Optionally accepts `-f "<file-path>"` pointing at a plain-text file of question ids (one uuid per line) — when supplied, the run is restricted to exactly those ids, still filtered so that ids already having audio are always skipped and never regenerated, and that file is deleted once the run finishes. API keys and voice ids come from a single `elevenlabs_keys.json` file (a list of accounts, each with one `api_key` and per-language `voice_id`s) kept one directory above the project; any language with no voice in that file is skipped entirely. Rotates through a language's configured key/voice pairs on quota/auth failure, moving on once that language's pairs are all exhausted while continuing other languages. Requires the Supabase MCP server (Hard Rule 1) and local file paths to the ElevenLabs keys JSON + a Supabase `service_role` key (see Configuration below) — refuses to run without them.
 compatibility: Requires the Supabase MCP server to be connected — this skill does not fall back to any other means of reaching the database, per Hard Rule 1. Requires Python 3 (stdlib only, no extra installs) to run the batch script. Requires the Configuration section below to resolve to real, readable files before the first real run — a missing or malformed `elevenlabs_keys.json` causes the skill to stop immediately with instructions, rather than silently skipping key rotation or querying Supabase for the wrong languages. If `-f "<file-path>"` is passed, that file must exist, be readable, and contain at least one usable question id, or the run stops rather than falling back to unrestricted selection.
 ---
 
@@ -30,21 +30,32 @@ A single JSON file, always expected **one directory above the project root**
 
 `/Users/waleed/Documents/projects/elevenlabs_keys.json`
 
-This file is a JSON array. Each element is one key/voice pair for one
-language:
+This file is a JSON array of *accounts*. Each element is one ElevenLabs
+account: a single `api_key` plus a `voices` array, where each voice names the
+`language` it narrates and the `voice_id` to use for that language:
 
 ```json
 [
-  {"language": "en", "voice_id": "MN7bvz2v9Z55XnbHzEk4", "api_key": "sk_..."},
-  {"language": "en", "voice_id": "AnotherVoiceIdHere",   "api_key": "sk_..."},
-  {"language": "ur", "voice_id": "o85TqPN3F4P7dWae2paA", "api_key": "sk_..."}
+  {
+    "account": "team-a@example.com",
+    "api_key": "sk_...",
+    "voices": [
+      {"language": "hi", "voice_id": "8GDHFuOvDwWOX1uq7lPE"},
+      {"language": "ur", "voice_id": "nD26RKCqart2U7tJi1rq"},
+      {"language": "en", "voice_id": "0V5PMY71PaJwhYHWCqLF"}
+    ]
+  }
 ]
 ```
 
-A language may have any number of entries (zero, one, or many). Multiple
-entries for the same language are different accounts' key + voice pairs and
-are tried **in file order** for that language (Hard Rule 6). A language with
-**zero** entries in this file is not eligible for this run at all — see Hard
+An account may list voices for any number of languages, and several accounts
+may list the same language — those become that language's rotation sequence.
+Pairs are grouped per language in **file order** (accounts outermost, each
+account's `voices` in their listed order); a single account's `api_key` can
+therefore back pairs in several languages, always paired with that account's
+own `voice_id` for the language. The `account` field is optional,
+human-readable only, and never used for selection. A language with **zero**
+voices across the whole file is not eligible for this run at all — see Hard
 Rule 5. See `reference/schema-and-api-contract.md` for full format rules.
 
 ### Supabase `service_role` key (required to upload into `question-audio` — see reference doc's "Storage" section for why the anon key can't be used)
@@ -119,11 +130,14 @@ and behavior are exactly as before.
    question's `language_code`.** Never hardcode a voice id or key, never
    reuse one language's pair for another's questions. `languages.voice_id`
    in Supabase is no longer read or trusted by this skill for any purpose.
-5. **If a language has no entries in `elevenlabs_keys.json`, skip every
+   The voice id *actually used* for each clip is recorded per question in
+   `questions.voice_id` (Step 5) — that column is an output/provenance
+   record, never an input.
+5. **If a language has no voices in `elevenlabs_keys.json`, skip every
    question in that language for this run** — not just the ones that would
    have been in this batch, but the language as a whole is excluded from
    candidate selection (Step 2 only queries Supabase for languages that have
-   at least one entry). Report which languages were skipped and how many
+   at least one voice pair). Report which languages were skipped and how many
    questions each had, in the final summary.
 6. **API key + voice rotation on quota/auth failure, scoped per language.**
    If the active key/voice pair for a question's language fails with a
@@ -169,10 +183,11 @@ python3 .claude/skills/generate-audios/scripts/generate_audio_batch.py \
 ```
 
 This mode never prints an API key or voice id — it only reports, per
-language, how many usable key/voice entries exist, plus how many entries
-were malformed (missing/empty `language`, `voice_id`, or `api_key`) and
-their indices. Read `<scratchpad>/languages.json` back; it's safe, it
-contains no secrets.
+language, how many usable key/voice pairs exist, plus any malformed entries
+it skipped (reported by index path only, never by value) such as a
+non-object account, an account missing/empty `api_key`, a missing/empty
+`voices` list, or a voice missing/empty `language`/`voice_id`. Read
+`<scratchpad>/languages.json` back; it's safe, it contains no secrets.
 
 - If the script exits non-zero (file missing, not valid JSON, not a JSON
   array): stop immediately per the Configuration section's instructions —
@@ -181,7 +196,7 @@ contains no secrets.
   the array itself was empty): stop immediately — there are no usable
   key/voice pairs at all.
 - If some entries were malformed but at least one language has usable
-  entries: proceed, but mention the malformed entry count/indices in the
+  entries: proceed, but mention the malformed entry count/locations in the
   final summary (Step 6) so the user can fix their JSON file.
 - Also verify the Supabase `service_role` key path from Configuration is a
   real, readable file (a quick `Read` or shell `test -r` is enough — do not
@@ -267,10 +282,10 @@ directory) shaped like:
 ```
 
 `questions` is exactly Step 2's candidate list (already limited to the
-effective count) — note there
-is no `voice_id` per question anymore; the script resolves voice id (and
-which key to use) itself, per language, with its own rotation state. Then
-run:
+effective count) — note the *input* carries no `voice_id` per question: the
+script resolves the voice id (and which key to use) itself, per language,
+with its own rotation state, and reports the voice it used back in
+`generated`. Then run:
 
 ```sh
 python3 .claude/skills/generate-audios/scripts/generate_audio_batch.py \
@@ -279,30 +294,37 @@ python3 .claude/skills/generate-audios/scripts/generate_audio_batch.py \
 
 This script is the only thing in this skill that ever touches the actual
 key/voice *values* — it reads `keys_json_path` itself, in its own process,
-and never prints a key or voice id. Do not read the keys JSON file yourself
-with the `Read` tool at this point either; pass the path through and let the
-script open it (Step 1's `--list-languages` mode is the one sanctioned way
-to learn anything about its contents from the conversation side, and even
-that only reveals language names and counts).
+and never prints or logs an `api_key`. Do not read the keys JSON file
+yourself with the `Read` tool at this point either; pass the path through and
+let the script open it (Step 1's `--list-languages` mode is the one
+sanctioned way to learn anything about its contents from the conversation
+side, and even that only reveals language names and counts). A `voice_id` is
+**not** a secret: the output records the exact one used for each question so
+Step 5 can store it.
 
 The script handles ElevenLabs calls, per-language key/voice rotation (Hard
 Rule 6), and Supabase Storage uploads (`x-upsert: true`, so a rerun after a
 partial failure is safe) entirely on its own, one question at a time, and
 writes a structured result to `--output`: `generated` (id + resulting
-`audio_url`), `failed` (id + stage + error), `key_events`, `languages_exhausted`
-(languages whose key/voice pairs all failed mid-run), and `stopped_early`/
-`stop_reason` if a fatal config problem cut the whole run short.
+`audio_url` + the `voice_id` that produced it), `failed` (id + stage +
+error), `key_events`, `languages_exhausted` (languages whose key/voice pairs
+all failed mid-run), and `stopped_early`/`stop_reason` if a fatal config
+problem cut the whole run short.
 
 Read the output JSON file back (this is safe — it contains no secrets, only
-ids/URLs/error strings/language codes) to get the results.
+ids/URLs/voice ids/error strings/language codes) to get the results.
 
-## Step 5 — write `audio_url` back, batched
+## Step 5 — write `audio_url` and `voice_id` back, batched
 
 Using the reference doc's "Batched write-back SQL" shape, issue **one**
 `UPDATE ... FROM (VALUES ...)` statement via the Supabase MCP SQL tool
-covering every entry in `generated` from Step 4's output. Do not issue one
-`UPDATE` per row. If `generated` is empty (everything failed or zero
-key/voice pairs worked), skip this step — there's nothing to write.
+covering every entry in `generated` from Step 4's output — setting both
+`audio_url` and `voice_id` (from `generated[].voice_id`, the voice that
+actually produced that clip) for each row. Do not issue one `UPDATE` per row.
+`questions.voice_id` is the per-question provenance record this skill
+maintains; it is written at the same time as `audio_url`, never on its own.
+If `generated` is empty (everything failed or zero key/voice pairs worked),
+skip this step — there's nothing to write.
 
 ## Step 6 — final summary to the user
 
@@ -316,6 +338,10 @@ State plainly, in your own words (don't just dump a template):
 
 - **How many audio files were generated** this run, and for which
   language(s).
+- **Which voice id(s) were used** this run (the distinct `voice_id` values in
+  `generated`, per language) — worth stating whenever a language has multiple
+  key/voice pairs, since rotation can switch voices mid-run. These are now
+  recorded per question in `questions.voice_id`.
 - **In `-f` mode, a short file audit** (from Step 2's file-id audit query):
   how many of the file's unique ids already had audio (skipped, per Hard Rule
   7), how many were otherwise ineligible (`not live` / `tts_excluded` /
@@ -324,7 +350,8 @@ State plainly, in your own words (don't just dump a template):
 - **Languages skipped entirely** for lacking any entry in
   `elevenlabs_keys.json` (from Step 2), with counts.
 - **Malformed entries in `elevenlabs_keys.json`**, if any were reported in
-  Step 1 (indices), so the user can fix their file.
+  Step 1 (their index paths, e.g. `[0].voices[1]`), so the user can fix their
+  file.
 - **Any per-question failures** (from `failed` in the script's output) —
   id + stage + short reason, not just a count, so they're actionable.
 - **Any languages that got exhausted mid-run** (`languages_exhausted` in the
