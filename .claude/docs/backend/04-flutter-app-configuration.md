@@ -119,32 +119,69 @@ Xcode build complains.
 
 The app shows a rewarded ad (out-of-lives dialog), interstitials at three
 "run finished" break points, adaptive banners, a 300×250 rectangle and native
-ads. Everything ships on **Google's public test ids** until the steps below
-are done — test ads always fill and never earn.
+ads. The real AdMob ids (account `ca-app-pub-2195537972404209`) are in place;
+which set a build serves — real or Google's public test ids — is chosen by the
+`SHOW_TEST_ADS` dart-define, so a debug run never earns and a release build
+always does.
 
 **Where the ids live**
 
 | What | Where |
 |---|---|
-| Ad unit ids (six per platform) | `lib/core/ads/ad_unit_ids.dart` — the only Dart file with an ad unit id |
-| iOS App ID | `ios/Runner/Info.plist` → `GADApplicationIdentifier` |
-| Android App ID | `android/app/src/main/AndroidManifest.xml` → `com.google.android.gms.ads.APPLICATION_ID` |
+| Ad unit ids (real **and** test, per platform) | `lib/core/ads/ad_unit_ids.dart` — the only Dart file with an ad unit id |
+| Real-vs-test switch | `"SHOW_TEST_ADS"` in `dart_define.json` (`true` \| `false`) |
+| iOS App ID | `ios/Runner/Info.plist` → `GADApplicationIdentifier` (always real) |
+| Android App ID | `android/app/src/main/AndroidManifest.xml` → `com.google.android.gms.ads.APPLICATION_ID` (always real) |
 
-**Ad units to create** (once per platform):
+**Real vs test ads (`SHOW_TEST_ADS`).** `lib/core/ads/ad_unit_ids.dart` holds
+both sets behind one boolean, read from the `SHOW_TEST_ADS` dart-define:
 
-| Unit name | Format | Constant in `AdUnitIds` | Used by |
+| `SHOW_TEST_ADS` | Debug | Profile | Release |
 |---|---|---|---|
-| `interstitial_break` | Interstitial | `interstitial` | Level Complete, Duel Result, Daily Result exits |
-| `banner_anchored` | Banner (adaptive) | `anchoredBanner` | Level Map, Category Detail, Stats, Achievements |
-| `banner_rectangle` | Banner (300×250) | `rectangleBanner` | Daily tab |
-| `native_feed` | Native advanced | `nativeFeed` | Home feed, Ranks list |
-| `native_result` | Native advanced | `nativeResult` | Level Complete, Duel Result, Daily Result |
-| `rewarded_heart` | Rewarded | `rewardedHeart` | Out-of-lives dialog |
+| `true` | test | test | test |
+| `false` | real | real | real |
+| absent | test | test | real |
+
+`dart_define.json` sets `true`, so local debug/profile runs use test ads.
+`scripts/build.sh` (the only supported way to sign a release/profile artifact)
+always appends `--dart-define=SHOW_TEST_ADS=false`, and a `--dart-define`
+overrides the file — so a release can never ship test ads even though the file
+says `true`. A bare build with no key at all falls back to the safe default
+above. If you build a release **without** `scripts/build.sh` and pass
+`dart_define.json` directly, you must add `--dart-define=SHOW_TEST_ADS=false`
+yourself.
+
+```bash
+# local dev: test ads (dart_define.json already says true)
+flutter run --dart-define-from-file=dart_define.json
+# check the live units from a debug run
+flutter run --dart-define-from-file=dart_define.json --dart-define=SHOW_TEST_ADS=false
+# a signed release — the guard overrides the file's "true"
+scripts/build.sh apk
+```
+
+The App IDs stay real in every mode — Google's test *ad units* are valid under
+a real App ID, so the native files never change.
+
+**Ad units** (once per platform). The AdMob account defines one Banner and one
+Native Advanced unit, so the anchored/rectangle and feed/result constants share
+those real ids — only the test set distinguishes the two sizes:
+
+| Format | Constant in `AdUnitIds` | Used by |
+|---|---|---|
+| Banner (adaptive) | `anchoredBanner` | Level Map, Category Detail, Stats, Achievements |
+| Banner (300×250) | `rectangleBanner` | Daily tab |
+| Interstitial | `interstitial` | Level Complete, Duel Result, Daily Result exits |
+| Native advanced | `nativeFeed` | Home feed, Ranks list |
+| Native advanced | `nativeResult` | Level Complete, Duel Result, Daily Result |
+| Rewarded | `rewardedHeart` | Out-of-lives dialog |
+| Rewarded interstitial | `rewardedInterstitial` | reserved — no service yet |
+| App open | `appOpen` | reserved — no service yet |
 
 **Console checklist** (none of this can be done from code):
 
-1. AdMob: create the iOS and Android apps and the twelve ad units; paste the
-   ids into the three places above.
+1. AdMob: the iOS and Android apps and their ad units exist, and their ids are
+   in the three places above.
 2. AdMob → Privacy & messaging: publish a **European regulations (GDPR)**
    message, a **US states** message if targeting the US, and an **IDFA
    explainer** for iOS. Without published messages the consent form never

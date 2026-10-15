@@ -226,6 +226,15 @@ Facts that drive the placement decisions:
    The file currently holds Google's public test ids for all formats; the
    owner will replace the constants with real ids later. There is no
    debug/release switching and no "empty id" state.
+
+   > **Superseded (2026-10-14).** The real ids are now in the file alongside
+   > the test ones, and a single `SHOW_TEST_ADS` dart-define (from
+   > `dart_define.json`) selects between them: `true` = test ads in every
+   > mode, `false` = real ads in every mode, absent = test in debug/profile
+   > and real in release. `scripts/build.sh` forces `false` for release and
+   > profile artifacts. The "one file, no other file may hold an id" rule
+   > still stands; only the "no switching" clause changed. See
+   > `.claude/docs/backend/04-flutter-app-configuration.md` §7.
 7. **Native ads use `NativeTemplateStyle`** (Dart-only) rather than custom
    `NativeAdFactory` classes in Kotlin/Swift — no native code to maintain,
    and colours still come from the app's tokens.

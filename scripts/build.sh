@@ -36,6 +36,9 @@
 #     Keep these; you need the matching set to symbolicate a crash for a given
 #     release build (Crashlytics/Sentry `--split-debug-info`).
 #   - iOS builds must run on macOS with Xcode installed.
+#   - Ads: release/profile artifacts always force SHOW_TEST_ADS=false, so a
+#     signed build can never ship Google's test ad units regardless of what
+#     the dart-define file says (see lib/core/ads/ad_unit_ids.dart).
 
 set -eo pipefail
 # Note: deliberately no `set -u` — macOS ships bash 3.2, where expanding an empty
@@ -54,7 +57,7 @@ TEAM_ID=""
 EXPORT_OPTIONS_PLIST=""
 
 usage() {
-  sed -n '2,33p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,41p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$1"; }
@@ -103,6 +106,11 @@ if [[ -f "$DART_DEFINE_FILE" ]]; then
 else
   warn "$DART_DEFINE_FILE not found — building without --dart-define-from-file."
 fi
+# Never ship test ads. This script only builds release/profile artifacts, so
+# force the real AdMob units regardless of what the define file says.
+# --dart-define overrides --dart-define-from-file, so this wins over
+# "SHOW_TEST_ADS": true in dart_define.json (see lib/core/ads/ad_unit_ids.dart).
+DART_DEFINE_ARGS+=(--dart-define=SHOW_TEST_ADS=false)
 
 # Sets the global OBF_ARGS array. $1 = platform subdir name for the symbols output
 # (android / ios). Bash 3.2 (macOS's default /bin/bash) has no `mapfile`, so this
