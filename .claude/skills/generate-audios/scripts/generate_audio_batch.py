@@ -5,14 +5,19 @@ each clip to a Supabase Storage bucket.
 Invoked by the generate-audios skill, never run standalone with hardcoded
 secrets: every credential is a *file path* passed in --input (or
 --keys-json), read once into memory here, and never printed/logged. Only
-structural results (question ids, resulting public URLs, error strings,
-language codes) are written to --output for the calling agent to read back.
+structural results (question ids, resulting public URLs, the voice id used
+for each clip, error strings, language codes) are written to --output for the
+calling agent to read back. The api_key is never included in any output; a
+voice_id is not a secret and *is* recorded, per question, so the database can
+keep provenance of which voice produced each narration.
 
 Two modes:
   --list-languages --keys-json <path> --output <path>
-      Reads elevenlabs_keys.json and reports, per language, how many usable
-      key/voice pairs exist (and which entries were malformed, by index
-      only). Never reveals an api_key or voice_id value.
+      Reads elevenlabs_keys.json (an array of accounts, each with one
+      api_key and a voices list of per-language voice ids) and reports, per
+      language, how many usable key/voice pairs exist (and which entries
+      were malformed, by index path only). This mode reveals no api_key or
+      voice_id value.
   --input <path> --output <path>
       The main batch-generation run.
 
@@ -67,12 +72,26 @@ def load_key(path_str: str) -> str | None:
 def load_keys_config(
     path_str: str,
 ) -> tuple[dict[str, list[dict]] | None, list[dict], str | None]:
-    """Reads elevenlabs_keys.json and groups entries by language, preserving
-    file order within each language (that order is the rotation sequence).
+    """Reads elevenlabs_keys.json and groups key/voice pairs by language,
+    preserving file order within each language (that order is the rotation
+    sequence).
+
+    The file is a JSON array of *accounts*, each shaped like:
+
+        {"account": "label", "api_key": "sk_...",
+         "voices": [{"language": "en", "voice_id": "..."}, ...]}
+
+    Every voice an account lists becomes a (that account's api_key, that
+    voice's voice_id) pair under that voice's language. Grouping order is
+    accounts outermost (file order), each account's `voices` in their listed
+    order — so a language's pair list is the rotation sequence for it. A
+    single account's api_key may therefore back pairs in several languages;
+    it is always paired with that account's voice_id for the language.
 
     Returns (grouped, malformed_entries, error). On any fatal problem
     (unreadable file, invalid JSON, not a JSON array), grouped is None and
-    error explains why.
+    error explains why. Malformed entries are reported by index path only
+    (e.g. "[0].voices[1]"), never by value.
     """
     path = Path(path_str).expanduser()
     try:
@@ -90,23 +109,36 @@ def load_keys_config(
 
     grouped: dict[str, list[dict]] = {}
     malformed: list[dict] = []
-    for i, entry in enumerate(data):
-        language = entry.get("language") if isinstance(entry, dict) else None
-        voice_id = entry.get("voice_id") if isinstance(entry, dict) else None
-        api_key = entry.get("api_key") if isinstance(entry, dict) else None
-        if (
-            not isinstance(language, str)
-            or not language.strip()
-            or not isinstance(voice_id, str)
-            or not voice_id.strip()
-            or not isinstance(api_key, str)
-            or not api_key.strip()
-        ):
-            malformed.append({"index": i})
+    for i, account in enumerate(data):
+        if not isinstance(account, dict):
+            malformed.append({"location": f"[{i}]"})
             continue
-        grouped.setdefault(language.strip(), []).append(
-            {"voice_id": voice_id.strip(), "api_key": api_key.strip()}
-        )
+
+        api_key = account.get("api_key")
+        if not isinstance(api_key, str) or not api_key.strip():
+            malformed.append({"location": f"[{i}]"})
+            continue
+        api_key = api_key.strip()
+
+        voices = account.get("voices")
+        if not isinstance(voices, list) or not voices:
+            malformed.append({"location": f"[{i}].voices"})
+            continue
+
+        for j, voice in enumerate(voices):
+            language = voice.get("language") if isinstance(voice, dict) else None
+            voice_id = voice.get("voice_id") if isinstance(voice, dict) else None
+            if (
+                not isinstance(language, str)
+                or not language.strip()
+                or not isinstance(voice_id, str)
+                or not voice_id.strip()
+            ):
+                malformed.append({"location": f"[{i}].voices[{j}]"})
+                continue
+            grouped.setdefault(language.strip(), []).append(
+                {"voice_id": voice_id.strip(), "api_key": api_key}
+            )
 
     return grouped, malformed, None
 
@@ -272,6 +304,7 @@ def run_batch(input_path: str, output_path: str) -> int:
 
         transient_attempts = 0
         audio_bytes: bytes | None = None
+        used_voice_id: str | None = None
 
         while True:
             pairs = grouped[language_code]
@@ -289,6 +322,7 @@ def run_batch(input_path: str, output_path: str) -> int:
 
             if status == 200:
                 audio_bytes = body
+                used_voice_id = pair["voice_id"]
                 break
 
             if is_quota_or_auth_failure(status, body):
@@ -346,7 +380,9 @@ def run_batch(input_path: str, output_path: str) -> int:
 
         if up_status in (200, 201):
             public_url = f"{project_url}/storage/v1/object/public/{bucket}/{object_path}"
-            result["generated"].append({"id": qid, "audio_url": public_url})
+            result["generated"].append(
+                {"id": qid, "audio_url": public_url, "voice_id": used_voice_id}
+            )
         else:
             result["failed"].append(
                 {

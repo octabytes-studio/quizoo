@@ -358,11 +358,15 @@ Status:       text rows live; image/figure rows draft (only `live` rows get
 Output:       <parent of project dir>/questions/<folder>/{questions.sql, review.html[, assets/]}
 ```
 
-Also state for `image`/`all`: images will come from approved open-license
-sources (Wikimedia Commons, FlagCDN, NASA, Met, Art Institute of Chicago,
-Cleveland), be normalized to a fixed 16:9 frame (1280×720 down to 640×360,
-cropped so nothing a question depends on is lost), visually verified, and be
-uploaded to `question-media` before the SQL is written. Licenses may be PD/CC0 or CC-BY/CC-BY-SA; the latter
+Also state for `image`/`all`: images will come from the approved
+open-license catalog in `reference/image-sources.md` (Wikimedia Commons,
+FlagCDN, NASA/ESA/ESO, the open-access art museums — Met, AIC, Cleveland,
+Smithsonian, Rijksmuseum, NGA, Getty, … — and the public-domain library /
+archive / government science sources such as LOC, NARA, USGS, NOAA, USFWS,
+USDA ARS, NPS and BHL), be normalized to a fixed 16:9 frame (1280×720 down
+to 640×360, cropped so nothing a question depends on is lost), visually
+verified, and be uploaded to `question-media` before the SQL is written.
+Licenses may be PD/CC0 or CC-BY/CC-BY-SA; the latter
 carry a mandatory credit line as the explanation's final sentence
 (`Credit: <author>, <license short name>, <license URL>.`).
 

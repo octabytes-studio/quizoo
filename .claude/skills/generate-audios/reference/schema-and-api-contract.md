@@ -16,6 +16,7 @@ update this file.
 | `status` | text | This skill only ever generates audio for `status = 'live'` questions — narrating `draft`/`suspended` content wastes ElevenLabs quota on rows that aren't served to users yet (or ever). |
 | `tts_excluded` | boolean | Rows with `tts_excluded = true` are permanently skipped — per plan 011's own design note, these are expected to never get an `audio_url` (they lean on visuals a voice can't describe). |
 | `audio_url` | text, nullable | The column this skill fills in. `NULL` = "needs audio, eligible" (until Hard Rule 4/5 language gating narrows that further). Never overwritten if already non-`NULL` — that's what makes reruns only pick up the remainder. |
+| `voice_id` | text, nullable | Provenance for the narration: the ElevenLabs voice id that produced this row's `audio_url`. Written at the same time as `audio_url` (Step 5). Not a secret — the app never reads it, this is purely a record of which voice was used. `NULL` on rows without audio, and on rows narrated before this column existed. |
 
 ## `elevenlabs_keys.json` — the key/voice gate (Hard Rules 4 & 5)
 
@@ -27,31 +28,47 @@ directory above the project root:
 
 `/Users/waleed/Documents/projects/elevenlabs_keys.json`
 
-Format — a JSON array of objects, one per key/voice pair:
+Format — a JSON array of *account* objects, each carrying one `api_key` and
+a `voices` array of per-language voice ids:
 
 ```json
 [
-  {"language": "en", "voice_id": "MN7bvz2v9Z55XnbHzEk4", "api_key": "sk_..."},
-  {"language": "en", "voice_id": "AnotherVoiceIdHere",   "api_key": "sk_..."},
-  {"language": "ur", "voice_id": "o85TqPN3F4P7dWae2paA", "api_key": "sk_..."}
+  {
+    "account": "team-a@example.com",
+    "api_key": "sk_...",
+    "voices": [
+      {"language": "hi", "voice_id": "8GDHFuOvDwWOX1uq7lPE"},
+      {"language": "ur", "voice_id": "nD26RKCqart2U7tJi1rq"},
+      {"language": "en", "voice_id": "0V5PMY71PaJwhYHWCqLF"}
+    ]
+  }
 ]
 ```
 
 | Field | Relevance |
 |---|---|
-| `language` | Matches `questions.language_code`. A language with zero entries anywhere in the array ⇒ **skip every question of that language entirely** for this run — do not guess or fall back to another language's voice/key. |
-| `voice_id` | The ElevenLabs voice id for this specific key/voice pair. |
-| `api_key` | The ElevenLabs API key paired with that `voice_id`. Always used together — never mix a `voice_id` from one entry with an `api_key` from another. |
+| `account` | Optional, human-readable label only (an email, an owner name, etc.). Never read for selection. |
+| `api_key` | The ElevenLabs API key for this account. Required — an account missing/empty `api_key` is malformed in full and contributes no pairs. |
+| `voices` | Required, non-empty list of `{"language", "voice_id"}` objects. Each voice becomes a pair of *this account's* `api_key` with that `voice_id`, filed under that `language`. |
+| `voices[].language` | Matches `questions.language_code`. A language with zero voices anywhere in the file ⇒ **skip every question of that language entirely** for this run — do not guess or fall back to another language's voice/key. |
+| `voices[].voice_id` | The ElevenLabs voice id to use when this account narrates that `language`. |
+| `voices[].voice_id` + account `api_key` | Always used together — never mix a `voice_id` from one account with an `api_key` from another. |
 
-A language may have any number of entries. When a language has multiple
-entries, they are tried **in file order** as the rotation sequence for that
-language (see "Key-failure handling" below) — each rotation step swaps in
-the *next entry's* `api_key` **and** `voice_id` together, not just the key.
+A language may have any number of pairs (across one or many accounts), and a
+single account's `api_key` may back pairs in several languages at once. When
+a language has multiple pairs they are tried **in file order** as the
+rotation sequence for that language (see "Key-failure handling" below) —
+accounts outermost in file order, each account's `voices` in their listed
+order. Each rotation step swaps in the *next pair's* `api_key` **and**
+`voice_id` together, not just the key.
 
-An entry missing/empty `language`, `voice_id`, or `api_key` is malformed and
-is skipped when the batch script loads the file (reported by index, never by
-value, so no partial secret ever surfaces in a transcript). A malformed
-entry does not invalidate the rest of the file.
+An entry is malformed and skipped when the batch script loads the file if:
+a top-level element is not an object; an account is missing/empty `api_key`;
+an account's `voices` is missing, not a list, or empty; or a voice is not an
+object or is missing/empty `language`/`voice_id`. Malformed entries are
+reported by **index path** only (e.g. `[0]`, `[0].voices`, `[0].voices[1]`),
+never by value, so no partial secret ever surfaces in a transcript. One
+malformed account/voice does not invalidate the rest of the file.
 
 ## Storage: `question-audio` bucket
 
@@ -111,12 +128,17 @@ that single question is marked failed and the run moves on to the next
 question with the *same* key/voice pair still active.
 
 Rotation is scoped **per language**, since each language has its own
-independent list of key/voice pairs from `elevenlabs_keys.json`. Exhausting
-every pair for one language (e.g. all 10 English pairs failing) stops
-generation for that language only — the run continues normally with other
-languages, each tracking rotation state independently. This is a deliberate
-change from a single project-wide key list: with per-language pairs, one
-language's exhaustion carries no information about another's.
+independent list of key/voice pairs derived from `elevenlabs_keys.json`'s
+accounts. Exhausting every pair for one language (e.g. all 10 English pairs
+failing) stops generation for that language only — the run continues
+normally with other languages, each tracking rotation state independently.
+This is a deliberate change from a single project-wide key list: with
+per-language pairs, one language's exhaustion carries no information about
+another's. Note that under the account-based file format a single `api_key`
+can back pairs in several languages at once, so an account that is globally
+exhausted may exhaust several languages in the same run — that is expected,
+and each language still tracks (and reports) its own exhaustion
+independently.
 
 ## Supabase Storage upload contract
 
@@ -139,7 +161,7 @@ object with the same bytes and proceeds to retry the `UPDATE`).
 ## Candidate-selection SQL (Hard Rules 2, 4, 5, 7)
 
 `<ELIGIBLE_LANGUAGES>` is the set of language codes that have at least one
-entry in `elevenlabs_keys.json`, from Step 1 of `SKILL.md` — e.g.
+voice pair in `elevenlabs_keys.json`, from Step 1 of `SKILL.md` — e.g.
 `'en', 'ur'`. No join to the `languages` table is needed for this purpose
 anymore.
 
@@ -246,14 +268,17 @@ bare `count(*)` to get how many of that file's ids are still eligible.
 
 After the batch script returns, write all successes back in one statement
 (never one `UPDATE` per row — this table can have hundreds of rows in a
-single run):
+single run). Both `audio_url` and the `voice_id` that produced it come
+straight from the script output's `generated` entries (`generated[].id`,
+`generated[].audio_url`, `generated[].voice_id`), and are written together:
 
 ```sql
 update questions as q
-set audio_url = v.audio_url
+set audio_url = v.audio_url,
+    voice_id = v.voice_id
 from (values
-  ('<id-1>'::uuid, '<url-1>'),
-  ('<id-2>'::uuid, '<url-2>')
-) as v(id, audio_url)
+  ('<id-1>'::uuid, '<url-1>', '<voice-id-1>'),
+  ('<id-2>'::uuid, '<url-2>', '<voice-id-2>')
+) as v(id, audio_url, voice_id)
 where q.id = v.id;
 ```

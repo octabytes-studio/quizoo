@@ -8,8 +8,11 @@ the detail.
 
 Captured 2026-10-05; license policy expanded to CC-BY / CC-BY-SA on
 2026-10-06; images pinned to a fixed 16:9 frame (and questions to four
-options) on 2026-10-10. If a source's API shape or license policy changes,
-update this file — don't silently drift.
+options) on 2026-10-10; source catalog expanded with public-domain art
+museums, national libraries/archives and government science agencies on
+2026-10-15 (see §2.9–2.33, plus the rejected-source list in §6). If a
+source's API shape or license policy changes, update this file — don't
+silently drift.
 
 ## 0. The four non-negotiables
 
@@ -187,18 +190,319 @@ https://commons.wikimedia.org/w/api.php?action=query&format=json
   accuracy is not guaranteed. Only use it to *find* a candidate, then open
   the original source page and verify PD/CC0/CC-BY/CC-BY-SA there (and
   capture the author for the credit line) before downloading. Prefer the
-  catalog above when it covers the topic.
+  approved catalog in this section when it covers the topic.
+
+### 2.9 Europeana — discovery fallback only (verify at source)
+
+- `https://api.europeana.eu/` (free account + API key required).
+- Aggregates millions of digitised objects from thousands of European
+  galleries, libraries, archives and museums. Europeana's **metadata** is
+  CC0, but a **digital object's** rights are whatever the provider
+  declared (`edm:rights` / `europeana:rights`). Filter to the `PD`, `CC0`,
+  `CC BY`, `CC BY-SA` rights statements, then open the provider's own
+  record and verify + capture the author before downloading.
+- Same "discovery only" discipline as Openverse (§2.8): prefer the direct
+  institutional catalog when it covers the topic; use Europeana to reach
+  small European institutions that have no API of their own.
+
+### 2.10 GBIF — discovery/reference only (verify at source)
+
+- `https://api.gbif.org/v1/` (no key for occurrence search; bulk image
+  downloads may need a free account).
+- Occurrence **datasets** can only be CC0, CC-BY or CC-BY-NC, but the
+  **image** license is per-media and is frequently more restrictive than
+  the record. Read the media's own license URL and accept only
+  PD/CC0/CC-BY/CC-BY-SA. Many GBIF images are mirrored from iNaturalist —
+  prefer §2.32 and do the license filtering there.
+- Use it to locate a specimen/occurrence for a species, then verify the
+  media license at the publisher.
+
+### 2.11 Smithsonian Open Access — art, natural history, history, space, design (CC0)
+
+- Search/records:
+  `https://api.si.edu/openaccess/api/v1.0/search?q=<query>&api_key=<key>`
+  and `https://api.si.edu/openaccess/api/v1.0/content/<id>?api_key=<key>`
+  (free key from `api.data.gov/signup/`; the same key serves many
+  US-government APIs).
+- **CC0.** 2.8M+ images across 30+ units: Smithsonian American Art
+  Museum, National Portrait Gallery, National Air and Space Museum,
+  National Museum of Natural History (birds, botany, entomology, fishes,
+  herps, mammals, minerals, paleo, anthropology), National Museum of
+  African American History & Culture, National Museum of the American
+  Indian, National Museum of American History, Cooper Hewitt, Hirshhorn,
+  Archives of American Art, EEPA, Freer|Sackler, Smithsonian Libraries.
+- **Gate on the media-level `usage.access`, not the record-level flag.**
+  A record's `metadata_usage.access` can read CC0 while a specific
+  `media.usage.access` does not — only use an image whose
+  **media-level** `usage.access` is CC0, and take its `content`/`ids`
+  URL. Objects still in copyright expose CC0 metadata but **no media
+  file** at all.
+- Record: title, unit/creator, `media.usage` (access + CC0), the object
+  page URL (`record_link`), and the `idsId`/CDN image URL.
+- Broadest single addition for natural-history specimens, portraits,
+  American history and space-history objects. Some unit pages (e.g.
+  `npg.si.edu`) bot-block scripted page loads; the API and CDN do not.
+
+### 2.12 Rijksmuseum — Dutch/European art, decorative arts (CC0/PD; some CC-BY)
+
+- Search (no key): `https://data.rijksmuseum.nl/search/collection?...`
+  (Linked Art search — returns identifiers; resolve each with the
+  Persistent Identifier Resolver and read `dc:rights`/`edm:rights`).
+  IIIF image: `https://iiif.micr.io/{id}/full/{size}/0/default.jpg`.
+  OAI-PMH for bulk: `https://data.rijksmuseum.nl/oai`.
+- Most objects are **CC0 / Public Domain Mark**; some are **CC BY 4.0**
+  (then the credit line is required, attributing "Rijksmuseum"); a
+  minority are rights-restricted → reject.
+- Best for Dutch Golden Age and European paintings, decorative arts,
+  prints and history.
+
+### 2.13 National Gallery of Art, Washington — Western painting & sculpture (CC0)
+
+- No live search API. Download the open-data CSVs from
+  `github.com/NationalGalleryOfArt/opendata` (`data/published_images.csv`,
+  `data/objects.csv`) and join on `depictstmsobjectid` → `objectid`.
+  Images via IIIF: `https://api.nga.gov/iiif/{uuid}/full/!1600,/0/default.jpg`
+  (`info.json` for native dimensions).
+- **Gate: only rows with `published_images.openaccess = 1`** (and
+  `viewtype = "primary"`). `openaccess = 0` rows are resolution-capped /
+  rights-restricted and are **not** open access. CC0.
+- Best for Western painting/sculpture, prints and decorative arts;
+  `assistivetext` gives an auto-description field.
+
+### 2.14 Getty (Open Content Program) — European art, antiquities, photography (CC0)
+
+- Collection data and images on `getty.edu` (no single public search
+  endpoint — browse the collection and use the object's image URL).
+- Getty-owned works in the public domain marked with the **CC0 icon** are
+  CC0. (Getty's collection *text* is CC-BY per record, but that does not
+  cover the images.)
+- **Gate: confirm the object page shows the CC0 Open Content marker** —
+  per-image `VisualItem.subject_to` rights are inconsistently populated on
+  older records. Reject anything without the marker.
+- Best for European painting, antiquities, photography, illuminated
+  manuscripts.
+
+### 2.15 Walters Art Museum — world art & manuscripts (CC0)
+
+- Static data files (v1 API retired 2023):
+  `github.com/WaltersArtMuseum/api-thewalters-org` (`art.csv`,
+  `media.csv`), plus `art.thewalters.org` object pages and PURLs. High-res
+  manuscript images at `thedigitalwalters.org`.
+- **CC0** for digital images of public-domain works and the associated
+  metadata (the long-form object text is GFDL — don't use it as image
+  rights). Exceptions apply to loaned/under-copyright works (small
+  derivative only) → reject those.
+- Best for world art, artifacts and illuminated manuscripts.
+
+### 2.16 Minneapolis Institute of Art (Mia) — world art (CC0 / Public Domain Mark)
+
+- Metadata JSON on GitHub; object pages expose a download button. No
+  formal search API.
+- **Gate: only works marked Public Domain (CC PDM).** Copyrighted / unclear
+  works are offered only at a smaller size and are restricted. (Mia's own
+  site *text* is CC BY; that does not license the images.)
+- Best for world art across 5,000 years; 50k+ PD works.
+
+### 2.17 Paris Musées — French/European art, history, photography (CC0)
+
+- GraphQL API: `apicollections.parismusees.paris.fr` — free account + auth
+  token required. Request `fieldVisuelsPrincipals { entity { vignette } }`
+  for the available image.
+- **CC0** for the images Paris Musées publishes as Open Content (HD
+  ~3000px); everything else is "tous droits réservés" and must be
+  rejected. The public API exposes only the free images + small
+  thumbnails.
+- Best for French/European art, history and 19th–20th c. photography
+  (Atget, Marville, Carjat).
+
+### 2.18 SMK — National Gallery of Denmark — Danish/European art (CC0 / Public Domain Mark)
+
+- `https://api.smk.dk/api/v1/art/search?keys=*&filters=[public_domain:true]&filters=[has_image:true]&offset=0&rows=10`
+  (no key). **Pass `filters` as a repeated parameter — one `[field:value]`
+  bracket per occurrence**; concatenating both brackets into one value is
+  accepted by the server but silently ignores the second condition.
+  Full-res via the item's `image_native` (downloadable JPEG) or IIIF
+  `image_iiif_id` (`{id}/{region}/{size}/{rotation}/default.jpg`).
+- Filter `public_domain:true`; `rights` is usually Public Domain Mark 1.0.
+  Credit "SMK / Statens Museum for Kunst" as good practice.
+- Best for Danish/European art.
+
+### 2.19 Yale University Art Gallery — world art (public domain)
+
+- IIIF/LUX services: `https://media.art.yale.edu/` (IIIF collection) and
+  `https://lux.collections.yale.edu/` (Presentation manifests); images are
+  downloadable from object records that show a download link.
+- Yale's open-access policy: public-domain works may be used freely, and
+  the rights status is shown beneath the image. **Only works with a
+  download link** are open access; the PD statement is "without
+  warranty," so confirm it genuinely is PD.
+- Best for world art (154k+ works).
+
+### 2.20 Cooper Hewitt — design, posters, textiles, objects (CC0)
+
+- GraphQL API: `https://api.collection.cooperhewitt.org/` (token
+  required); docs at `apidocs.cooperhewitt.org`. Each media item carries a
+  `cc0: true` flag when it is licensed CC0.
+- **Gate: only media with `cc0: true`.** Collection *data* is CC0, but the
+  images are only CC0 where that flag is present.
+- Best for design, posters, wallcoverings, textiles and decorative
+  objects. (Also reachable through Smithsonian Open Access, §2.11.)
+
+### 2.21 Library of Congress — history, photography, posters, maps (public domain / "no known restrictions")
+
+- `https://www.loc.gov/` JSON API (append `?fo=json`) and the Prints &
+  Photographs Online Catalog (`https://www.loc.gov/pictures/api`). No key.
+- **Gate:** only items whose Rights Advisory reads **"No known
+  restrictions on publication."** LOC does not own rights and does not
+  guarantee status — "Publication may be restricted" or "Rights not
+  evaluated" → reject. Many pre-1930 and US-government works are PD; the
+  FSA/OWI and Prokudin-Gorskii collections are reliably PD.
+- Best for US & world history, Depression-era color photography, WPA
+  posters, maps, Japanese prints and Civil War photographs.
+
+### 2.22 National Archives (NARA) — US history & photographs (US-government public domain)
+
+- `https://catalog.archives.gov/api/v2/records/search?...` (free api key;
+  send it in the `x-api-key` header). IIIF image delivery.
+- NARA records are US-government works → public domain, with rare
+  exceptions (third-party quotations / copyrighted attachments) — check
+  the record's rights note. API use requires displaying the notice
+  "This product uses the National Archives Catalog API but is not endorsed
+  or certified by the National Archives and Records Administration."
+- Best for historical photographs, documents, maps and presidential-library
+  material.
+
+### 2.23 NYPL Digital Collections — historical photos, maps, prints (CC0 content; **API is non-commercial**)
+
+- `https://api.repo.nypl.org/api/v2/items/search?...&publicDomainOnly=true`
+  (free token; header `Authorization: Token token="<t>"`). Image links are
+  returned for public-domain items.
+- **Gate:** `publicDomainOnly=true` items carry the CC0 / no-known-U.S.-
+  copyright designation. **But the API service itself is licensed for
+  non-commercial use** — a commercial product must confirm those terms,
+  attribute "From the New York Public Library," or (cleaner) use NYPL's
+  public-domain bulk data release
+  (`github.com/NYPL-publicdomain/data-and-utilities`) or the same PD items
+  via Wikimedia/LOC.
+- Best for historical photographs, maps, prints and illustrations.
+
+### 2.24 Internet Archive — book scans & natural-history illustrations (per-item; default ToS non-commercial)
+
+- Metadata API: `https://archive.org/metadata/<identifier>`; files under
+  `https://archive.org/download/<identifier>/`. No key for reads.
+- **Gate:** the site's default Terms of Use are non-commercial; that is
+  overridden **only** when the item, uploader or sponsoring institution
+  states an explicit license. Use only items with a clear
+  PD/CC0/CC-BY/CC-BY-SA statement — treat it like Openverse (§2.8).
+- Best for public-domain book scans and natural-history illustrations
+  (often the origin behind BHL/Wikimedia files).
+
+### 2.25 US Fish & Wildlife Service — wildlife, birds, fish, plants (public domain)
+
+- `https://www.fws.gov/media/library` and
+  `https://www.fws.gov/search/images`. Each item carries a "Media Usage
+  Rights/License" field.
+- **Gate:** use items whose media license reads **Public Domain**.
+  Photographer names are given for credit (courtesy).
+- Best for wildlife, birds, fish, plants, habitats and conservation.
+
+### 2.26 NOAA Photo Library — weather, oceans, coasts, marine life (public domain)
+
+- `https://www.noaa.gov/noaa-collections/photo-library` (~70,000 images;
+  browse/search galleries, per-image "Download").
+- **Public domain** and not subject to copyright. The **exception is
+  video**, which may use third-party footage — images only.
+- Best for weather, oceans, marine life, coasts, sanctuaries, geodesy and
+  satellite/space-weather imagery.
+
+### 2.27 USGS Multimedia Gallery — geology, landscapes, water, maps (public domain)
+
+- `https://www.usgs.gov/products/multimedia-gallery/images`. Gallery items
+  are public domain unless otherwise noted (a "USGS photo by X" credit is
+  normal and should be carried).
+- Best for geology, volcanoes, earthquakes, landscapes, water, historical
+  survey photography, satellite imagery and minerals/fossils.
+
+### 2.28 USDA ARS Image Gallery — plants, crops, insects, microscopy (public domain)
+
+- `https://www.ars.usda.gov/oc/images/image-gallery/` (~6,500 images;
+  categories: Plants, Animals, Crops, Insects, Food, People, Lab Research,
+  Electron/scanning-microscopy).
+- **Public domain** unless otherwise indicated. Credit "Photo courtesy of
+  USDA Agricultural Research Service" (or the named photographer); images
+  must not imply ARS endorsement.
+- Best for plants/crops, insects, agricultural and microscopy imagery.
+
+### 2.29 National Park Service — landscapes, geology, wildlife, historic sites (public domain)
+
+- `https://npgallery.nps.gov/` and the NPS Data API
+  (`https://www.nps.gov/subjects/digital/nps-data-api.htm`, free key),
+  which returns park content incl. images.
+- **Gate:** images **credited to NPS without a © symbol are public
+  domain**; images with a © symbol, or credited to anyone other than NPS,
+  must not be presumed PD → reject or verify with the host park. Some
+  museum-collection images require a permission agreement — skip those.
+- Best for landscapes, geology, wildlife and historic sites.
+
+### 2.30 ESA/Hubble & ESO — space & astronomy (CC-BY 4.0)
+
+- ESA/Hubble: `https://esahubble.org/images/`; ESO:
+  `https://www.eso.org/public/images/`.
+- **CC BY 4.0.** The credit must be reproduced unaltered ("ESA/Hubble", or
+  the ESO credit) and not hidden — this becomes the mandatory `Credit:`
+  line. Logos are excluded. Individual images sometimes carry additional
+  third-party credits — check the caption.
+- Best for planets, moons, nebulae, galaxies, telescopes and astronomy.
+
+### 2.31 Biodiversity Heritage Library — natural-history illustrations (PD/CC0/CC per item)
+
+- API: `https://www.biodiversitylibrary.org/api3` (free API key from
+  `biodiversitylibrary.org/getapikey.aspx`); page images + metadata. The
+  image corpus is also on the AWS Open Data bucket `s3://bhl-open-data`.
+- **Gate:** per-item — the corpus is "Public Domain, CC0, or Creative
+  Commons"; accept PD/CC0/CC-BY/CC-BY-SA (author recoverable for BY/BY-SA)
+  and reject the rest.
+- Best for historical natural-history plates: botanical, zoological,
+  entomological and ornithological illustrations.
+
+### 2.32 iNaturalist — species identification across taxa (CC0/CC-BY/CC-BY-SA — filter!)
+
+- `https://api.inaturalist.org/v1/observations?...&quality_grade=research&photo_license=cc0,cc-by,cc-by-sa&photos=true`.
+  Photos served from the `inaturalist-open-data` domain are openly
+  licensed; photos on `static.inaturalist.org` are not.
+- **The `photo_license` filter is mandatory** — the default pool also
+  contains **CC-BY-NC/ND**, which are rejected. Confirm the *individual
+  photo's* license in the response, and capture the license + author at
+  download time, since observers can change a photo's license later.
+- Best for species questions across taxa (plants, animals, fungi,
+  insects) — a much deeper pool than Commons for regionally specific or
+  obscure species. Prefer research-grade observations.
+
+### 2.33 Museums Victoria — Australia/Oceania science, history, culture (CC-BY / Public Domain)
+
+- JSON API under `https://collections.museumsvictoria.com.au/api/`. Each
+  media object carries a `rightsStatement` and a `licence` block
+  (`shortName`, `uri`).
+- **Gate:** accept items whose licence is **CC BY** or **Public Domain**;
+  skip third-party-copyright material (the API mixes them).
+- Best for Australia/Oceania natural sciences, history, technology and
+  cultural collections — broadens coverage beyond North America/Europe.
 
 ## 3. Per-topic strategy
 
 | Subcategory topic | Primary sources | Question shapes |
 |---|---|---|
-| Flags / Countries / Geography | FlagCDN, Commons maps & landmarks | Which country's flag/country is this? Where is this landmark? |
-| Landmarks / Architecture | Commons (named file + description), Wikipedia REST | In which city/country is this? What is this structure? |
-| Space / Solar System / Astronomy | NASA Image library, Commons | Which planet/moon/nebula is this? What mission? |
-| Art / Paintings / History | Met, AIC, Cleveland, Commons | Who painted this? Which movement/civilization? |
-| Animals / Nature / Birds | Commons (named species files), Openverse→source | Which animal/species is this? |
-| Sports / Athletes / Celebrities / Pop culture | Commons CC-BY/CC-BY-SA portraits and event photos (many athletes and famous people have them — check per subject); PD historical photos | Who is this athlete/person? Which sport/team are they associated with? Prefer landscape or face-centered files that survive a 16:9 crop over tall action shots; keep facts evergreen (achievements pinned to years, not "current") |
+| Flags / Countries / Geography | FlagCDN, Commons maps & landmarks, LOC/CIA-style PD maps | Which country's flag/country is this? Where is this landmark? |
+| Landmarks / Architecture | Commons (named file + description), Wikipedia REST, Smithsonian, NPS | In which city/country is this? What is this structure? |
+| Space / Solar System / Astronomy | NASA Image library, ESA/Hubble, ESO, Commons | Which planet/moon/nebula is this? What mission? |
+| Art / Paintings / Sculpture | Met, AIC, Cleveland, Smithsonian, Rijksmuseum, NGA, Getty, Walters, Mia, Paris Musées, SMK, Yale, Cooper Hewitt, Europeana→source, Commons | Who painted/made this? Which movement/civilization? |
+| US / world history & vintage photography | LOC (FSA/OWI, "no known restrictions"), NARA, NYPL, Smithsonian, Internet Archive, Commons | Which period/place is this? Who is this? What event? |
+| Animals / Nature / Birds | Commons (named species files), iNaturalist (filter!), USFWS, NOAA, USGS, BHL, Openverse→source | Which animal/species is this? |
+| Plants / Agriculture / Insects / Fossils | USDA ARS, BHL, Smithsonian (NMNH), iNaturalist, Commons | Which plant/crop/insect is this? |
+| Earth science / Geology / Volcanoes / Water | USGS, NPS, NOAA, Commons | What landform/process is this? Where is this? |
+| Weather / Oceans / Marine life | NOAA, USFWS, Commons | What weather/ocean phenomenon is this? |
+| National parks / Landscapes | NPS, USGS, NOAA, Commons | Which park/landscape is this? |
+| Sports / Athletes / Celebrities / Pop culture | Commons CC-BY/CC-BY-SA portraits and event photos (many athletes and famous people have them — check per subject); Smithsonian National Portrait Gallery; PD historical photos | Who is this athlete/person? Which sport/team are they associated with? Prefer landscape or face-centered files that survive a 16:9 crop over tall action shots; keep facts evergreen (achievements pinned to years, not "current") |
 | Religion / Language / Math | No reliable open-license photo pool that tests the topic (math → pattern mode fits better) | Prefer text or pattern mode; if image mode is forced, assess feasibility and stop rather than force |
 
 Make sure the image actually tests the subcategory — a generic satellite
@@ -213,7 +517,14 @@ photo in a "Solar System" quiz is fine, a generic satellite photo in
    keep the answer-critical content.
 2. **License-gate** each candidate from its metadata before downloading
    (PD/CC0/CC-BY/CC-BY-SA only; for CC-BY/CC-BY-SA the author must be
-   recoverable for the credit line).
+   recoverable for the credit line). **Gate on the image/media-level
+   rights field, never the collection-level statement** — the field to
+   read is named in that source's §2 entry (e.g. Smithsonian
+   `media.usage.access`, NGA `published_images.openaccess = 1`, LOC Rights
+   Advisory "No known restrictions", Rijksmuseum `dc:rights`, iNaturalist
+   `photo_license`, Cooper Hewitt `cc0`, FWS "Media Usage Rights",
+   Europeana `edm:rights`, GBIF per-media license). When a collection-level
+   claim and the per-image value disagree, the **per-image value wins**.
 3. **Download** a large rendition to the scratchpad
    (`.../opencode/` is pre-approved) with a descriptive filename:
    `curl -sL -A "<UA>" "<url>" -o <scratch>/<subject>.jpg`.
@@ -303,5 +614,30 @@ photo in a "Solar System" quiz is fine, a generic satellite photo in
   credit line embedded in `explanation`; the fuller attribution trail
   (source page, license link, stored path) lives in `review.html` and, 
   through it, the batch folder next to the project.
+- The same `Credit:` line covers the newly added attribution-required
+  sources: **ESA/Hubble** and **ESO** (CC BY 4.0 — reproduce the credit
+  "ESA/Hubble" or the ESO credit verbatim, never hidden), **Rijksmuseum**
+  when the object is CC BY (credit "Rijksmuseum"), and any CC-BY/CC-BY-SA
+  item from Smithsonian, Museums Victoria, BHL, iNaturalist or Europeana.
 - If you cannot prove PD/CC0/CC-BY/CC-BY-SA for a candidate, it does not
   exist for this skill. There is always another subject.
+
+## 6. Rejected sources (do not add)
+
+Commonly suggested but they fail the license gate (§0.2) and/or the
+re-host rule (§0.3). Never source images from these:
+
+| Source | Why it's rejected |
+|---|---|
+| **Harvard Art Museums** | API is **non-commercial use only** *and* requires displaying images from its own URL rather than re-hosting a copy — fails both the license gate and the re-host rule. |
+| **Unsplash** | Left CC0 in 2017 for the bespoke "Unsplash License" (prohibits compiling images to replicate a competing service); no longer public domain. |
+| **Pexels** | Custom "Pexels License" (CC0-like but not CC0), with its own extra restrictions. |
+| **Pixabay** | "Pixabay Content License" since 2019-01-09 (only pre-2019 uploads were CC0); the per-image upload date can't be verified reliably. |
+| **Science Museum Group (UK)** | Images are CC BY-**NC**-SA / CC BY-**NC**-ND; only the metadata is CC0. |
+| **National Gallery, London** | Images are CC BY-**NC**-ND; only titles/facts are CC0/CC-BY. |
+| **Victoria & Albert Museum** | Images sit under bespoke V&A terms (not an accepted CC license), many "all rights reserved". |
+| **David Rumsey Map Collection** | CC BY-**NC**-SA (NonCommercial). Source PD-by-age maps via LOC / Internet Archive / Commons instead. |
+| **Flickr "The Commons" (NKCR)** | "No known copyright restrictions" is an assertion, not a license, and carries no warranty (at least one member, the Smithsonian, contradicts it). Prefer Flickr items explicitly licensed CC0/PDM/CC-BY/CC-BY-SA, or skip Flickr altogether. |
+
+If a candidate's only license is NC/ND, GFDL-only, "fair use", a stock
+preview, or its terms forbid re-hosting, it belongs here — not in §2.
