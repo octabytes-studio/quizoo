@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<!-- Quizoo — Privacy Policy (light + dark, tokens from lib/core/theme/app_colors.dart) -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy · Quizoo</title>
+  <meta name="description" content="How Quizoo collects, uses and protects your data — guest progress saves, profile stats, Firebase analytics, AdMob, Quizoo Pro purchases and account deletion.">
+  <link rel="canonical" href="https://syed-waleed-shah.github.io/quizoo/privacy.html">
+  <meta property="og:title" content="Quizoo — Privacy Policy">
+  <meta property="og:description" content="How Quizoo collects, uses and protects your data. Effective 16 October 2026.">
+  <meta property="og:type" content="article">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F3F0FC">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#120D25">
+  <link rel="icon" href="assets/favicon.png">
+  <script>
+    try {
+      var t = localStorage.getItem('quizoo-theme');
+      if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.dataset.app = 'dark';
+      }
+    } catch (e) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/quizoo-mark-color.png" alt="Quizoo owl mark">
+      <b>Quizoo</b>
+    </a>
+    <span class="tag">PRIVACY POLICY</span>
+    <span class="spacer"></span>
+    <div class="seg" role="group" aria-label="Colour theme">
+      <button id="theme-light" aria-pressed="false" title="Light"><span class="ico">☀️</span><span class="lbl">Light</span></button>
+      <button id="theme-dark" aria-pressed="false" title="Dark"><span class="ico">🌙</span><span class="lbl">Dark</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <span class="float f1">🦉</span><span class="float f2">⚽</span>
+  <span class="float f3">🧠</span><span class="float f4">💎</span>
+  <div class="wrap">
+    <img class="mark" src="assets/quizoo-mark-white.png" alt="" aria-hidden="true">
+    <h1>Privacy Policy</h1>
+    <p class="tagline">What we collect while you play, why we need it, and the controls you have — in plain language, ahead of the fine print.</p>
+    <div class="chips">
+      <span class="chip"><span>📅</span> Effective&nbsp;<span class="mono">16&nbsp;Oct&nbsp;2026</span></span>
+      <span class="chip"><span>🎯</span> Applies to v<span class="mono">1.1.0</span>+</span>
+      <span class="chip"><span>📱</span><span class="mono">com.quizoo.play</span></span>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <div class="card toc-card">
+    <div class="chips">
+      <a class="chip" href="#short"><span class="e">📋</span>Short version</a>
+      <a class="chip" href="#about"><span class="e">🦉</span>About Quizoo</a>
+      <a class="chip" href="#you-give"><span class="e">📝</span>Info you give us</a>
+      <a class="chip" href="#gameplay"><span class="e">🎮</span>Gameplay data</a>
+      <a class="chip" href="#analytics"><span class="e">📊</span>Analytics</a>
+      <a class="chip" href="#ads"><span class="e">📣</span>Advertising</a>
+      <a class="chip" href="#pro"><span class="e">💎</span>Quizoo Pro</a>
+      <a class="chip" href="#content"><span class="e">🔊</span>Audio &amp; images</a>
+      <a class="chip" href="#public"><span class="e">👀</span>What's public</a>
+      <a class="chip" href="#children"><span class="e">🧒</span>Children</a>
+      <a class="chip" href="#deletion"><span class="e">🗑️</span>Deleting data</a>
+      <a class="chip" href="#security"><span class="e">🔐</span>Security</a>
+      <a class="chip" href="#retention"><span class="e">⏳</span>Retention</a>
+      <a class="chip" href="#transfers"><span class="e">🌍</span>Transfers</a>
+      <a class="chip" href="#rights"><span class="e">⚖️</span>Your rights</a>
+      <a class="chip" href="#partners"><span class="e">🤝</span>Service partners</a>
+      <a class="chip" href="#changes"><span class="e">🔄</span>Changes</a>
+      <a class="chip" href="#contact"><span class="e">📮</span>Contact</a>
+    </div>
+  </div>
+
+  <!-- 01 -->
+  <section class="card" id="short">
+    <div class="sec-head">
+      <span class="plate">📋</span>
+      <h2>The short version</h2>
+      <span class="no">01</span>
+    </div>
+    <ul class="lead">
+      <li>We only collect what the game needs to <strong>save your score</strong> and run the features you use.</li>
+      <li>A Quizoo save is created <strong>automatically</strong> — you don't need an email to start playing, and your initial identity is an anonymous, system-generated guest.</li>
+      <li>You can fill your profile (username, avatar, country, city) — it's optional and you choose what it says.</li>
+      <li>We use trusted third parties: <strong>Supabase</strong> for the save service, <strong>Firebase</strong> for analytics and crash reports, <strong>Google AdMob</strong> for ads and <strong>RevenueCat</strong> to manage Quizoo Pro purchases.</li>
+      <li>You can <strong>delete your account permanently</strong> from Settings → <em>Delete account</em>, right inside the app.</li>
+      <li>We never sell your personal data and never sell it to data brokers.</li>
+    </ul>
+    <div class="note ok">
+      <p><span class="lead-e">🛟</span> The details in the numbered sections below are the real policy — this summary is here to make it comfortable, not to replace it.</p>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section class="card" id="about">
+    <div class="sec-head">
+      <span class="plate">🦉</span>
+      <h2>About Quizoo &amp; this policy</h2>
+      <span class="no">02</span>
+    </div>
+    <p>Quizoo ("Quizoo", "the app") is a quiz game for <strong>iOS and Android phones</strong> — 30-level topic ladders, daily challenges, leagues, realtime 1v1 duels and global leaderboards. Quizoo is an independent ("indie") project maintained by its developer — the same one who owns this page.</p>
+    <p>When you install the app on your device, the developer of Quizoo acts as the <strong>data controller</strong> for the personal data described here, while the service partners listed in <a href="#partners">§16 — Service partners</a> act as processors on our behalf.</p>
+    <p>This policy applies to the mobile app. The same web build served for the app's public pages collects essentially nothing, and the in-app legal links (paywall and save-progress sheets) open on this policy.</p>
+    <div class="note">
+      <p><span class="lead-e">🧩</span> Platforms like the Apple App Store and Google Play, and sign-in providers like Google and Apple, process data under <strong>their own</strong> privacy policies. We link to theirs in <a href="#partners">§16</a>.</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section class="card" id="you-give">
+    <div class="sec-head">
+      <span class="plate">📝</span>
+      <h2>Information you give us</h2>
+      <span class="no">03</span>
+    </div>
+    <h3>Your save</h3>
+    <p>The app creates an <strong>anonymous guest session</strong> the first time you launch it. No signup is required. If you want your progress on the leaderboard and across devices, you upgrade that save with <strong>Google, Apple or e-mail</strong> — which gives us your e-mail address, display name and profile picture exactly as that provider shares them (Apple's "Hide My E-mail" relay and "Share name only" options are honoured automatically).</p>
+    <h3>Your profile</h3>
+    <p>You can edit the editable fields (Settings → Profile):</p>
+    <ul class="lead">
+      <li><strong>Username</strong> — 3–20 characters, shown on leaderboards and to duel opponents</li>
+      <li><strong>Avatar</strong> — an emoji from our included set (like <code>🐼</code> or <code>🦁</code>)</li>
+      <li><strong>Country &amp; city</strong> — used for a home flag on leaderboards and keeping local topics sensible</li>
+    </ul>
+    <div class="note">
+      <p><span class="lead-e">🎭</span> Pick a username you're happy to be publicly attached to (see <a href="#public">§9</a>). Don't put your address, phone number, or anything you'd regret into it.</p>
+    </div>
+    <h3>Support during play</h3>
+    <p>If you reach out to us via the public repository (see <a href="#contact">§18</a>), we receive whatever you type into that post.</p>
+  </section>
+
+  <!-- 04 -->
+  <section class="card" id="gameplay">
+    <div class="sec-head">
+      <span class="plate">🎮</span>
+      <h2>Gameplay &amp; technical data</h2>
+      <span class="no">04</span>
+    </div>
+    <p>Playing the game generates the numbers that make it a game. We store them so your save survives between sessions and devices:</p>
+    <ul class="lead">
+      <li><strong>Progress</strong> — XP, player level, coins, gems, hearts, streak days and streak freezes, level stars, and badge completions</li>
+      <li><strong>Skill &amp; leagues</strong> — result per question and level, scores, the anti-repeat count of which questions you've seen, ELO rating, league placement</li>
+      <li><strong>Matches</strong> — duel rounds against matched opponents in realtime (labelled "practice bot" matches are separate)</li>
+      <li><strong>Session timestamps</strong> — when you last played (streak calculations) and when your save was created</li>
+    </ul>
+    <p>On the device itself we also keep settings like chosen language, sound effects, theme mode and your selected content language.</p>
+    <div class="note">
+      <p><span class="lead-e">🫥</span> Guests are displayed as <strong>"Guest 4821"</strong>-style names until they save — the tag is generated from your save ID and doesn't identify you by e-mail or platform account.</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section class="card" id="analytics">
+    <div class="sec-head">
+      <span class="plate">📊</span>
+      <h2>Analytics &amp; crash reports</h2>
+      <span class="no">05</span>
+    </div>
+    <p>We use the <strong>Firebase</strong> suite (Google) to make the game better:</p>
+    <ul class="lead">
+      <li><strong>Google Analytics for Firebase</strong> — pseudonymous usage events (which features are popular, where players drop off) so we can spot dead screens and difficulty spikes</li>
+      <li><strong>Firebase Crashlytics</strong> — automatic crash reports (build version, device model, stack trace) so we can fix what actually broke</li>
+      <li><strong>Remote Config</strong> — server-managed feature flags (daily-challenge rewards, ad frequencies, availability of Pro) with which we ship tweaks without re-publishing an app</li>
+      <li><strong>Firebase Cloud Messaging</strong> — to deliver notifications, such as reminders, if you allow them</li>
+    </ul>
+    <p>Analytics identifiers are pseudonymous and aren't used by us to build advertising profiles, and we do not try to re-identify you from that data.</p>
+  </section>
+
+  <!-- 06 -->
+  <section class="card" id="ads">
+    <div class="sec-head">
+      <span class="plate">📣</span>
+      <h2>Advertising</h2>
+      <span class="no">06</span>
+    </div>
+    <p>Quizoo is free because the game shows ads. We use <strong>Google AdMob</strong>, which may serve banner, native, interstitial or rewarded formats.</p>
+    <p>AdMob relies on <strong>device identifiers</strong> (on Android, the advertising ID if you haven't disabled it; on iOS, the advertising identifier if you permitted tracking) and on consent set in the app. Depending on that consent, ads may be contextual or personalised.</p>
+    <p>In regions where consent law applies (EEA/UK etc.), Google's <strong>UMP consent form</strong> appears before the first ad and can be reached later through your device settings and the <strong>"Ad privacy choices"</strong> row in Settings → Privacy, right in the app.</p>
+    <p>Where you exercise the controls (limit ad tracking, personalised-ads opt out, IAB/behavioural choices), those choices govern AdMob's processing — see Google's ad privacy page via <a href="#partners">§16</a>.</p>
+  </section>
+
+  <!-- 07 -->
+  <section class="card" id="pro">
+    <div class="sec-head">
+      <span class="plate">💎</span>
+      <h2>Purchases &amp; Quizoo Pro</h2>
+      <span class="no">07</span>
+    </div>
+    <p>Quizoo Pro (ad-free plus extra hearts, power-ups, and revive streak-freeze perks) is offered as monthly, yearly and lifetime plans, and purchases are completed by <strong>Apple</strong> or <strong>Google</strong>.</p>
+    <ul class="lead">
+      <li>We never see or store your card numbers — billing happens inside the App Store / Play Store.</li>
+      <li><strong>RevenueCat</strong> receives a receipt/transaction reference from the store plus an anonymous app-user ID, so we can grant your Pro entitlement and honour <strong>Restore purchases</strong>. It never receives your billing details.</li>
+      <li>Your Pro status is stored as a flag on your save (<code>is_pro</code>) and can be re-fetched or re-granted by restoring purchases.</li>
+    </ul>
+    <p>Refunds, cancellation and billing mechanics are covered in our <a href="terms.html">Terms of Service</a>.</p>
+  </section>
+
+  <!-- 08 -->
+  <section class="card" id="content">
+    <div class="sec-head">
+      <span class="plate">🔊</span>
+      <h2>Audio, images &amp; content</h2>
+      <span class="no">08</span>
+    </div>
+    <p>Some questions include narration, images or figures.</p>
+    <ul class="lead">
+      <li><strong>Narration</strong> is recorded in advance — at content-authoring time — and streamed from our save service's object storage. It's generated with third-party text-to-speech tools (ElevenLabs) <em>from authored question text only</em>.</li>
+      <li><strong>We do not record, request, or use your microphone or voice.</strong> Quizoo never asks for microphone permission.</li>
+      <li><strong>Images</strong> are pre-selected open-licence artwork hosted in the same storage; licences that need them carry credit inside the question's explanation.</li>
+      <li><strong>Camera, contacts, location and health data</strong> are never requested.</li>
+    </ul>
+  </section>
+
+  <!-- 09 -->
+  <section class="card" id="public">
+    <div class="sec-head">
+      <span class="plate">👀</span>
+      <h2>What's public on Quizoo</h2>
+      <span class="no">09</span>
+    </div>
+    <p>Quizoo is competitive by design. The following are visible to other players and on public leaderboards:</p>
+    <ul class="lead">
+      <li>Your <strong>username</strong> and <strong>avatar</strong> (or your generated "Guest" name if you haven't saved)</li>
+      <li>Your <strong>country</strong>, where leaderboards or duel screens show flags</li>
+      <li>Your <strong>gameplay stats</strong> that feed leaderboards — XP, league, ELO bracket, wins and duels</li>
+    </ul>
+    <div class="note bad">
+      <p><span class="lead-e">🚫</span> We never publish a player's e-mail, sign-in identity, birthdate, precise location, or contact details. Ever.</p>
+    </div>
+    <p>Choose your username and avatar accordingly — they're your public face across leaderboards, duels and spectator screens.</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="card" id="children">
+    <div class="sec-head">
+      <span class="plate">🧒</span>
+      <h2>Children's privacy</h2>
+      <span class="no">10</span>
+    </div>
+    <p>Quizoo is <strong>not directed at children under 13</strong> (or under the higher minimum age that applies in your jurisdiction, e.g. up to 16 in parts of the EEA). We didn't design it for children and don't knowingly collect their data.</p>
+    <p>If you're a parent or guardian and believe your child gave us personal data, write to us via <a href="#contact">§18</a> and we'll delete that save and all associated data as promptly as we can.</p>
+    <p>The ads are rated family-friendly on the stores, but they're not individually child-directed. If you're worried about a child's exposure to ads, see <a href="#ads">§6</a>.</p>
+  </section>
+
+  <!-- 11 -->
+  <section class="card" id="deletion">
+    <div class="sec-head">
+      <span class="plate">🗑️</span>
+      <h2>Deleting your data</h2>
+      <span class="no">11</span>
+    </div>
+    <h3>Delete account</h3>
+    <p>Settings → <em>Delete account</em> does it right in the app: type your username to confirm, and your entire save — profile, XP, coins, gems, hearts, badges, streaks, league and duel history — is <strong>permanently removed</strong>. Deletion is processed promptly; our providers' routine backup cycles mean copies can linger for a short window before those records are fully overwritten.</p>
+    <h3>Guest saves</h3>
+    <p>You're welcome to keep playing as a guest. A guest save that's never upgraded but also never played again doesn't hang around forever — dormant guest saves are cleared through the retention window in <a href="#retention">§13</a>.</p>
+    <h3>Platform store purchases</h3>
+    <p>Deleting your Quizoo account does <em>not</em> cancel an active Quizoo Pro subscription — cancel that inside the App Store / Google Play account settings first. See <a href="terms.html">Terms §6</a>.</p>
+    <div class="note bad">
+      <p><span class="lead-e">⚠️</span> Deleting is <strong>permanent</strong>. Coins, XP, streaks and Pro flags aren't recoverable once deletion finishes, even if you reinstall.</p>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="card" id="security">
+    <div class="sec-head">
+      <span class="plate">🔐</span>
+      <h2>How we protect data</h2>
+      <span class="no">12</span>
+    </div>
+    <ul class="lead">
+      <li>All network traffic runs over <strong>TLS/HTTPS</strong>.</li>
+      <li>Your save lives in a <strong>hosted database (Supabase)</strong> whose access is governed by <strong>row-level security</strong> — players can only read or edit the privacy-sensitive fields of their own save, and certain fields (XP, gems, hearts) aren't client-editable at all.</li>
+      <li>Secrets (an API key for narration generation, server-adjacent keys) are kept out of the shipped app and out of the source tree.</li>
+      <li>Payments and platform identity belong to Apple / Google — the strongest identity infrastructure in mobile.</li>
+    </ul>
+    <div class="note">
+      <p><span class="lead-e">🛡️</span> No system is perfectly secure on the internet. We apply reasonable measures, but can't guarantee absolute security — see <a href="terms.html">Terms §11</a>.</p>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="card" id="retention">
+    <div class="sec-head">
+      <span class="plate">⏳</span>
+      <h2>Retention</h2>
+      <span class="no">13</span>
+    </div>
+    <p>We keep the data described here only while it's needed:</p>
+    <ul class="lead">
+      <li><strong>Active saves</strong> — kept while the account exists (or while a guest save remains usable on a device).</li>
+      <li><strong>Deleted accounts</strong> — erased promptly per <a href="#deletion">§11</a>; replicas and backups clear within the provider's routine backup cycle.</li>
+      <li><strong>Diagnostics</strong> — crash reports and aggregated analytics expire according to the provider's retention (usually 90 days to 14 months).</li>
+    </ul>
+  </section>
+
+  <!-- 14 -->
+  <section class="card" id="transfers">
+    <div class="sec-head">
+      <span class="plate">🌍</span>
+      <h2>International transfers</h2>
+      <span class="no">14</span>
+    </div>
+    <p>Quizoo's save service, analytics, ads and purchase infrastructure operate <strong>worldwide</strong>, so your data may be processed in countries other than yours, including the United States. Where required (e.g. transfers out of the EEA/UK), we rely on our partners' use of <strong>Standard Contractual Clauses</strong> or similar mechanisms, which they disclose in their own policies (<a href="#partners">§16</a>).</p>
+  </section>
+
+  <!-- 15 -->
+  <section class="card" id="rights">
+    <div class="sec-head">
+      <span class="plate">⚖️</span>
+      <h2>Your rights</h2>
+      <span class="no">15</span>
+    </div>
+    <p>If a law where you live grants these (EU/EEA/UK GDPR, CCPA/CPRA in California, LGPD in Brazil, and so on), you may generally be able to:</p>
+    <ul class="lead">
+      <li><strong>Access</strong> — get a copy of the personal data we hold (your profile and stats are already visible in the app)</li>
+      <li><strong>Rectify</strong> — fix incorrect data (username, country, etc.) in Settings, any time</li>
+      <li><strong>Erase</strong> — delete your save (§11), in app, in seconds</li>
+      <li><strong>Object/restrict</strong> — opt out of ad personalisation (§6) and notifications</li>
+      <li><strong>Portability</strong> — on request, we'll send you a structured file of your core stats</li>
+      <li><strong>Withdraw consent</strong> — e.g. the UMP ad-consent flow in regions that require it</li>
+    </ul>
+    <div class="note ok">
+      <p><span class="lead-e">💸</span> We do not sell your personal data, and we never have. Ads are placed by Google AdMob under Google's rules — the only related profiles come from AdMob's own identifiers per <a href="#ads">§6</a>.</p>
+    </div>
+    <p>Reach us via <a href="#contact">§18</a> and we'll acknowledge or resolve your request (we aim for ≤ 30 days, usually much faster). You can also complain to your local supervisory authority.</p>
+  </section>
+
+  <!-- 16 -->
+  <section class="card" id="partners">
+    <div class="sec-head">
+      <span class="plate">🤝</span>
+      <h2>Service partners</h2>
+      <span class="no">16</span>
+    </div>
+    <p>These independent companies host, measure, and monetise parts of the game, under their own policies:</p>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Service &amp; partner</th><th>What they do for Quizoo</th><th>Their policy</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b class="svc">Supabase, Inc.</b><span class="mono">save backend</span></td>
+            <td>Hosts the database, authentication (anonymous + Google/Apple/e-mail), file storage for audio/images, and server-side functions</td>
+            <td><a href="https://supabase.com/privacy" rel="noopener" target="_blank">supabase.com/privacy</a></td>
+          </tr>
+          <tr>
+            <td><b class="svc">Firebase (Google)</b><span class="mono">tooling</span></td>
+            <td>Analytics (usage events), Crashlytics (crashes), Remote Config (tuning), Cloud Messaging (notifications)</td>
+            <td><a href="https://firebase.google.com/support/privacy" rel="noopener" target="_blank">firebase.google.com/support/privacy</a></td>
+          </tr>
+          <tr>
+            <td><b class="svc">Google AdMob</b><span class="mono">monetisation</span></td>
+            <td>Serve ads, measure ad interactions, gather consent (UMP) where law requires</td>
+            <td><a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">Google ads privacy</a></td>
+          </tr>
+          <tr>
+            <td><b class="svc">RevenueCat, Inc.</b><span class="mono">subscriptions</span></td>
+            <td>Record store transactions, maintain your Quizoo Pro entitlement, restore purchases</td>
+            <td><a href="https://www.revenuecat.com/privacy" rel="noopener" target="_blank">revenuecat.com/privacy</a></td>
+          </tr>
+          <tr>
+            <td><b class="svc">ElevenLabs, Inc.</b><span class="mono">narration</span></td>
+            <td>Generates the pre-recorded question narration during content production (from authored question text; not user data)</td>
+            <td><a href="https://elevenlabs.io/legal/privacy" rel="noopener" target="_blank">elevenlabs.io/legal/privacy</a></td>
+          </tr>
+          <tr>
+            <td><b class="svc">Apple &amp; Google</b><span class="mono">platforms</span></td>
+            <td>App distribution, platform sign-in identity (Google/Apple), purchase processing and store account data</td>
+            <td><a href="https://www.apple.com/legal/privacy/" rel="noopener" target="_blank">Apple</a> · <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Google</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 17 -->
+  <section class="card" id="changes">
+    <div class="sec-head">
+      <span class="plate">🔄</span>
+      <h2>Changes to this policy</h2>
+      <span class="no">17</span>
+    </div>
+    <p>This page carries the <strong>effective date</strong> at the top. When we make material changes (like adding a new analytics feature), we'll let you know inside the app where reasonable — for example on a notice card — and always by updating this page.</p>
+    <p>Continuing to play after a change takes effect means you accept the updated policy. If a change is significant and you don't accept it, deleting your save in §11 stays available.</p>
+  </section>
+
+  <!-- 18 -->
+  <section class="card" id="contact">
+    <div class="sec-head">
+      <span class="plate">📮</span>
+      <h2>How to contact us</h2>
+      <span class="no">18</span>
+    </div>
+    <p>Privacy questions, data requests, a bug near where ads show, or a suspected child's data — open an <strong>issue on our public repository</strong>:</p>
+    <p style="text-align:center; margin-top:14px;">
+      <a class="btn mango sm" href="https://github.com/Syed-Waleed-Shah/quizoo/issues" rel="noopener" target="_blank">🦉&nbsp; GitHub Issues · Syed-Waleed-Shah/quizoo</a>
+    </p>
+    <p style="margin-top:10px;">Public posts are visible — <strong>please don't include personal data</strong> (like your e-mail or username) in the title. We'll pick it up regardless. If a private exchange is needed, we'll move it to store-safe channels.</p>
+    <div class="note ok">
+      <p><span class="lead-e">✅</span> We treat every request under §15 through the same channel, and keep a copy of the policy history in the repository so changes are auditable.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="inner">
+    <img src="assets/quizoo-mark-color.png" alt="" aria-hidden="true">
+    <div class="big">Quizoo — a quiz app that plays like a game.</div>
+    <div class="fine">Privacy Policy · effective 16 October 2026 · maintained by the Quizoo developer.</div>
+    <nav class="links">
+      <a href="index.html">Legal home</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="https://github.com/Syed-Waleed-Shah/quizoo" rel="noopener" target="_blank">Source repo</a>
+    </nav>
+    <div class="mono">© 2026 Quizoo · v1.1.0 (2)</div>
+  </div>
+</footer>
+
+<a class="btp" id="backtop" href="#" aria-label="Back to top">↑</a>
+
+<script src="assets/site.js"></script>
+<script>
+  // Plain back-to-top click (overrides the "#" jump).
+  document.getElementById('backtop').addEventListener('click', function (e) {
+    e.preventDefault();
+    scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+</body>
+</html>
