@@ -143,10 +143,21 @@ def load_keys_config(
     return grouped, malformed, None
 
 
-def is_quota_or_auth_failure(status: int, body: bytes) -> bool:
-    if status == 429:
+def is_pair_failure(status: int, body: bytes) -> bool:
+    """True when the active key/voice *pair* is the problem, so rotation to
+    the next pair for this language is the right move.
+
+    Quota exhaustion and auth rejection both surface as 401/429 and are
+    always pair-level. Additionally, a 404 `voice_not_found` means the active
+    account's key cannot access this `voice_id` at all: the identical request
+    would fail for every question while this pair is active, so it is a pair
+    problem too (not a per-question one). Treating it as a pair failure lets
+    rotation skip past a bad entry to a healthy pair behind it instead of
+    wedging the whole language on that one bad entry.
+    """
+    if status in (401, 429):
         return True
-    if status == 401:
+    if status == 404 and b"voice_not_found" in body:
         return True
     return False
 
@@ -325,7 +336,7 @@ def run_batch(input_path: str, output_path: str) -> int:
                 used_voice_id = pair["voice_id"]
                 break
 
-            if is_quota_or_auth_failure(status, body):
+            if is_pair_failure(status, body):
                 result["key_events"].append(
                     {
                         "language": language_code,
