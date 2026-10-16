@@ -182,6 +182,7 @@ section, footer, .toc-card { scroll-margin-top: 96px; }
 .btn:hover { filter: brightness(1.06); text-decoration: none; }
 .btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--g-sh); }
 .btn.mango { background: var(--p); box-shadow: 0 4px 0 var(--p-sh); }
+.btn.raspberry { background: var(--bad); box-shadow: 0 4px 0 var(--bad-sh); }
 .btn.sm { min-height: 44px; padding: 0 20px; border-radius: 14px;
           font-size: 15.5px; }
 .btn.wfull { width: 100%; }
