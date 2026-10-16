@@ -121,11 +121,18 @@ codes, most commonly:
   Looping requests against a key that will never succeed is worse than
   rotating one pair too eagerly.
 - `429` — rate-limited / over quota.
+- `404` with `voice_not_found` — the active account's key cannot access this
+  `voice_id` at all (e.g. the voice was never shared/granted to that
+  account). This is a *pair*-level problem: the same request would fail for
+  every question while that pair is active, so rotation advances to the next
+  pair for that language rather than retrying the same bad pair per question.
+  Without this, one bad entry wedges a language and hides any healthy pairs
+  behind it.
 
-Any other status (400 bad request, 5xx, network timeout) is treated as a
-per-question failure, not a key failure — retried a couple of times, then
-that single question is marked failed and the run moves on to the next
-question with the *same* key/voice pair still active.
+Any other status (400 bad request, other 404s, 5xx, network timeout) is
+treated as a per-question failure, not a key failure — retried a couple of
+times, then that single question is marked failed and the run moves on to the
+next question with the *same* key/voice pair still active.
 
 Rotation is scoped **per language**, since each language has its own
 independent list of key/voice pairs derived from `elevenlabs_keys.json`'s
