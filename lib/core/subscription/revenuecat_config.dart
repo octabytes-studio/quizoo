@@ -23,12 +23,12 @@ abstract final class RevenueCatConfig {
   static const String entitlementId = 'quizoo_pro';
 
   /// Auto-renewing subscriptions require a Terms of Use (EULA) link on the
-  /// paywall in both stores. **Placeholder** — see the owner checklist in
-  /// plan 023 before release.
-  static const String termsUrl = 'https://example.com/terms';
+  /// paywall in both stores. Hosted on GitHub Pages — see
+  /// `website/terms.html` in the repo and `scripts/deploy-legal-pages.sh`.
+  static const String termsUrl = 'https://octabytes-studio.github.io/quizoo/terms.html';
 
-  /// Required alongside [termsUrl]. **Placeholder** — same owner checklist.
-  static const String privacyUrl = 'https://example.com/privacy';
+  /// Required alongside [termsUrl]. Same hosting as [termsUrl].
+  static const String privacyUrl = 'https://octabytes-studio.github.io/quizoo/privacy.html';
 
   /// Which key this platform should use.
   ///
