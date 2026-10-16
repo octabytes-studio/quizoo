@@ -32,6 +32,11 @@ set -euo pipefail
 
 PAGES_REPO="${PAGES_REPO:-octabytes-studio/quizoo}"
 TARGET_URL="https://github.com/${PAGES_REPO}.git"
+SSH_URL="git@github.com:${PAGES_REPO}.git"
+# Optional: a PAT for the account that owns the target repo, if neither the
+# keychain HTTPS credential nor SSH keys may push there. Never stored.
+#   GITHUB_TOKEN=ghp_xxx ./scripts/deploy-legal-pages.sh
+TOKEN_URL="https://x-access-token:${GITHUB_TOKEN:-}@github.com/${PAGES_REPO}.git"
 BRANCH="gh-pages"
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -72,8 +77,26 @@ touch .nojekyll                                  # let GitHub serve assets/ raw
 
 git add -A
 git commit -q -m "chore: publish Quizoo legal pages from website/ ($(date -u '+%Y-%m-%d %H:%M UTC'))"
-git push --force "$TARGET_URL" "$BRANCH"
 
+# Push: HTTPS (keychain credential) → SSH (org access may key off SSH only)
+# → token via GITHUB_TOKEN if you exported one. None stored by the script.
+push_ok() { git push --force "$1" "$BRANCH"; }
+
+if push_ok "$TARGET_URL" 2>"$TMP/push_http.log"; then
+  :
+elif push_ok "$SSH_URL" 2>"$TMP/push_ssh.log"; then
+  :
+elif [[ -n "${GITHUB_TOKEN:-}" ]] && push_ok "$TOKEN_URL" 2>"$TMP/push_tok.log"; then
+  :
+else
+  cat "$TMP"/push*.log >&2 || true
+  echo
+  echo "✗  Push denied — none of HTTPS / SSH / GITHUB_TOKEN may write to ${PAGES_REPO}."
+  echo "   Grant one of your accounts write access (Settings → Collaborators in"
+  echo "   that repo), or run:  GITHUB_TOKEN=ghp_xxx $0"
+  exit 1
+fi
+rm -f "$TMP"/push*.log
 echo "✓  Pushed ${BRANCH} → ${PAGES_REPO} (branch contains only generated site files)."
 echo
 echo "Live URLs once Pages is enabled:"
