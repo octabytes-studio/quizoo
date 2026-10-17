@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!-- Quizoo — Account deletion (web request resource, Google Play data-safety requirement) -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delete your account · Quizoo</title>
+  <meta name="description" content="Delete your Quizoo account and data — instantly in-app or by web request to the Quizoo team. What's removed, how fast, and what stays with the app stores.">
+  <link rel="canonical" href="https://octabytes-studio.github.io/quizoo/delete-account.html">
+  <meta property="og:title" content="Quizoo — Delete your account">
+  <meta property="og:description" content="Web request channel for deleting your Quizoo account and data.">
+  <meta property="og:type" content="article">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F3F0FC">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#120D25">
+  <link rel="icon" href="assets/favicon.png">
+  <script>
+    try {
+      var t = localStorage.getItem('quizoo-theme');
+      if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.dataset.app = 'dark';
+      }
+    } catch (e) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/quizoo-mark-color.png" alt="Quizoo owl mark">
+      <b>Quizoo</b>
+    </a>
+    <span class="tag">ACCOUNT DELETION</span>
+    <span class="spacer"></span>
+    <div class="seg" role="group" aria-label="Colour theme">
+      <button id="theme-light" aria-pressed="false" title="Light"><span class="ico">☀️</span><span class="lbl">Light</span></button>
+      <button id="theme-dark" aria-pressed="false" title="Dark"><span class="ico">🌙</span><span class="lbl">Dark</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <span class="float f1">🦉</span><span class="float f2">💣</span>
+  <span class="float f3">🗑️</span><span class="float f4">🧨</span>
+  <div class="wrap">
+    <img class="mark" src="assets/quizoo-mark-white.png" alt="" aria-hidden="true">
+    <h1>Delete your account</h1>
+    <p class="tagline">Game over, by choice. Two ways to erase your Quizoo save — instantly inside the app, or by a request you can send from right here.</p>
+    <div class="chips">
+      <span class="chip"><span>⚡</span> In-app: immediate</span>
+      <span class="chip"><span>✉️</span> Web request: ≤ 30 days</span>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <!-- 01 - fastest path -->
+  <section class="card" id="in-app">
+    <div class="sec-head">
+      <span class="plate">⚡</span>
+      <h2>Fastest way — inside the app</h2>
+      <span class="no">01</span>
+    </div>
+    <ol class="num">
+      <li>Open <strong>Quizoo → Settings</strong></li>
+      <li>Tap <strong><em>Delete account</em></strong></li>
+      <li>Confirm by typing your username — this is the safety net, so a confused tap can't nuke the save</li>
+    </ol>
+    <p>That's it: your whole save and every profile field is <strong>erased permanently</strong>, with no waiting period.</p>
+    <div class="note bad">
+      <p><span class="lead-e">⚠️</span> Cancelling a <strong>Quizoo Pro subscription</strong> is not this button! Subscriptions live on your App Store / Google Play account — cancel there <em>first</em>, then delete (<a href="terms.html#subscriptions">Terms §6</a>).</p>
+    </div>
+  </section>
+
+  <!-- 02 - web request -->
+  <section class="card" id="web">
+    <div class="sec-head">
+      <span class="plate">✉️</span>
+      <h2>Request deletion from this page</h2>
+      <span class="no">02</span>
+    </div>
+    <p>If you can't open the app (lost device, uninstalled, account stuck) — send us a deletion request by e-mail. Use the button; it fills in everything we need for you:</p>
+    <p style="text-align:center; margin-top:16px;">
+      <a class="btn raspberry" href="mailto:octabytes.studio@gmail.com?subject=Quizoo%20account%20deletion%20request&body=Hi%20Quizoo%20team%2C%0A%0APlease%20delete%20my%20Quizoo%20account%20and%20all%20associated%20data.%0A%0AUsername%20(if%20you%20saved%20progress)%3A%20%0AAvatar%20emoji%3A%20%0AGuest%20tag%20(if%20you%20never%20upgraded%2C%20like%20%22Guest%204821%22)%3A%20%0ASign-in%20method%20(Google%20%2F%20Apple)%3A%20%0A%0AThanks%20for%20your%20help.%0A">🗑️&nbsp; Send a deletion request</a>
+    </p>
+    <p>If the button won't open your mail app, write to <a href="mailto:octabytes.studio@gmail.com">octabytes.studio@gmail.com</a> with the subject <code>Quizoo account deletion request</code>, or open an issue at <a href="https://github.com/octabytes-studio/quizoo/issues" rel="noopener" target="_blank">our public repo</a>.</p>
+    <h3>What to include</h3>
+    <ul class="lead">
+      <li>Your <strong>username</strong> and avatar emoji (as shown on the leaderboards)</li>
+      <li>If you never upgraded: your <strong>guest tag</strong> (e.g. "Guest 4821")</li>
+      <li>How you saved: <strong>Google / Apple</strong> — or "guest"</li>
+    </ul>
+    <div class="note">
+      <p><span class="lead-e">🛡️</span> We may ask one confirming question before deleting, so nobody can wipe somebody else's save with a forged request. If your mail is the one you used for saving, that's identity enough — no further questions.</p>
+    </div>
+    <div class="note ok">
+      <p><span class="lead-e">⏱️</span> We aim to complete requests <strong>within a week</strong>, and always within <strong>30 days</strong> (with the Privacy Policy's <a href="privacy.html#deletion">§11</a> promise). You'll get a confirmation reply when it's done.</p>
+    </div>
+  </section>
+
+  <!-- 03 - what is deleted -->
+  <section class="card" id="what">
+    <div class="sec-head">
+      <span class="plate">🧹</span>
+      <h2>What disappears &amp; what doesn't</h2>
+      <span class="no">03</span>
+    </div>
+    <h3>Deleted permanently</h3>
+    <ul class="lead">
+      <li>Profile — username, avatar, country/city, language preference and timestamps</li>
+      <li>All progression — XP, player level, coins, gems, hearts, streaks and streak freezes, stars, badges</li>
+      <li>Competition data — ELO, league standing, leaderboard entries, duel history and match results</li>
+      <li>Your Pro status flag and its device linkage</li>
+    </ul>
+    <h3>Not deleted, because it isn't ours</h3>
+    <ul class="lead">
+      <li><strong>Store billing records</strong> — Apple / Google (and their mediator RevenueCat) keep purchase history for accounting and refund handling under their own policies; we never see your card numbers</li>
+      <li><strong>Anonymous, aggregated analytics</strong> already merged into usage numbers (Firebase) — no longer tied to a person</li>
+      <li>Provider copies from routine backup cycles, which auto-expire in their normal window</li>
+    </ul>
+    <div class="note">
+      <p><span class="lead-e">🫥</span> Guest saves too: e-mail us your guest tag or simply reset the app — dormant guest saves are also cleared through the retention policy (<a href="privacy.html#retention">Privacy §13</a>).</p>
+    </div>
+  </section>
+
+  <!-- 04 - after -->
+  <section class="card" id="after">
+    <div class="sec-head">
+      <span class="plate">🎭</span>
+      <h2>Life after deletion</h2>
+      <span class="no">04</span>
+    </div>
+    <p>You can always reinstall and start a new save — it'll begin fresh (a new guest identity, 0 XP, empty streak). Your old username, if you had one, is reused by whoever picks it first.</p>
+    <p>For the full data story, read the <a href="privacy.html">Privacy Policy</a>; for the rules of playing (and the deletion terms' fine print), the <a href="terms.html">Terms of Service</a>.</p>
+  </section>
+
+  <!-- 05 - contact -->
+  <section class="card" id="contact">
+    <div class="sec-head">
+      <span class="plate">📮</span>
+      <h2>Questions about your data?</h2>
+      <span class="no">05</span>
+    </div>
+    <p>Delete-specific questions, access requests, or anything else about your data:</p>
+    <p style="text-align:center; margin-top:14px;">
+      <a class="btn mango sm" href="mailto:octabytes.studio@gmail.com">✉️&nbsp; octabytes.studio@gmail.com</a>
+      <a class="btn sm" href="https://github.com/octabytes-studio/quizoo/issues" rel="noopener" target="_blank">🦉&nbsp; GitHub Issues</a>
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="inner">
+    <img src="assets/quizoo-mark-color.png" alt="" aria-hidden="true">
+    <div class="big">Quizoo — a quiz app that plays like a game.</div>
+    <div class="fine">Account deletion request page · maintained by the Quizoo developer.</div>
+    <nav class="links">
+      <a href="index.html">Legal home</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="https://github.com/octabytes-studio/quizoo" rel="noopener" target="_blank">App repo</a>
+    </nav>
+    <div class="mono">© 2026 Quizoo · v1.1.0 (2)</div>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+
+</body>
+</html>
