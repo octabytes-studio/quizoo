@@ -12,12 +12,23 @@ class PreparedLevel {
     required this.questions,
     required this.secondsPerQuestion,
     required this.isBoss,
+    required this.categoryId,
+    required this.subcategoryName,
   });
 
   final String attemptId;
   final List<Question> questions;
   final int secondsPerQuestion;
   final bool isBoss;
+
+  /// The topic's own context, from the same `start_level_attempt` response —
+  /// replaces the client-side `MockCatalog` lookup that labelled the
+  /// countdown and seeded `QuizRun`'s navigation ids (plan 025).
+  final String categoryId;
+
+  /// Localized display name for this attempt's locale (slug fallback), not
+  /// the raw English slug.
+  final String subcategoryName;
 }
 
 /// The play surface's real endpoint.
@@ -59,6 +70,11 @@ class QuizPlayApi {
         questions: questions,
         secondsPerQuestion: response['secondsPerQuestion'] as int,
         isBoss: response['isBoss'] as bool,
+        // Tolerated as empty during a staged rollout/rollback: the client
+        // falls back to the run's own ids rather than failing to parse
+        // (plan 025, Rollback notes).
+        categoryId: response['categoryId'] as String? ?? '',
+        subcategoryName: response['subcategoryName'] as String? ?? '',
       );
     } catch (error) {
       throw ApiException.fromSupabase(error);
@@ -91,6 +107,37 @@ class QuizPlayApi {
         questions: questions,
         secondsPerQuestion: response['secondsPerQuestion'] as int,
       );
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+  }
+
+  /// Files a report against one question into the existing
+  /// `question_reports` table (plan 025) — insert-self RLS already allows
+  /// exactly this and nothing else.
+  ///
+  /// Unlike every other call here, this is deliberately **not** best-effort:
+  /// the sheet needs to know whether the report was stored before it tells
+  /// the player it was.
+  Future<void> reportQuestion({
+    required String questionId,
+    required String reasonCode,
+    required String locale,
+  }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw const ApiException(
+        'Not signed in',
+        kind: ApiErrorKind.unauthorized,
+      );
+    }
+    try {
+      await _client.from('question_reports').insert({
+        'question_id': questionId,
+        'user_id': userId,
+        'locale': locale,
+        'reason': reasonCode,
+      });
     } catch (error) {
       throw ApiException.fromSupabase(error);
     }

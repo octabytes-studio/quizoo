@@ -434,6 +434,8 @@
       "level": { "type": "int", "example": "12" }
     }
   },
+  "countdownDailyMeta": "DAILY CHALLENGE",
+  "@countdownDailyMeta": { "description": "S-10 countdown meta label for the daily run, which has no subcategory or level number (plan 025 fixed the previous blank '· LEVEL 0' label)." },
   "countdownGetReady": "Get ready…",
   "@countdownGetReady": { "description": "S-10 countdown caption." },
   "countdownGo": "GO",
@@ -620,6 +622,8 @@
   "@resultSeeTrophy": { "description": "Topic Mastered (plan 020): S-21 primary CTA on a level-30 first clear, in place of \"Next level\"." },
   "resultShare": "Share",
   "@resultShare": { "description": "Semantic label for S-21's share button." },
+  "resultShareTitle": "Share your result",
+  "@resultShareTitle": { "description": "S-21 share sheet title (plan 025 replaced the demo share route with this inline sheet)." },
 
   "failedTitle": "So close!",
   "@failedTitle": { "description": "S-22 heading. Reframed as nearly-there, never as a scolding." },
@@ -737,18 +741,48 @@
   "@profileChangesSaved": { "description": "Snackbar shown after Edit Profile saves successfully (plan 019)." },
   "profileUpdateError": "Couldn't save your changes",
   "@profileUpdateError": { "description": "Snackbar shown when Edit Profile's save fails (plan 019)." },
+  "profileUsernameNotAllowed": "That name isn't allowed. Please pick a different one.",
+  "@profileUsernameNotAllowed": { "description": "Plan 025: the server's username-policy refusal (a reserved/profanity term) on profile creation and Edit Profile, instead of the generic save error." },
 
   "contentErrorTitle": "That didn't load",
   "@contentErrorTitle": { "description": "Generic content-error heading for this plan's screens." },
   "contentErrorBody": "Check your connection and give it another go.",
   "@contentErrorBody": { "description": "Generic content-error body." },
 
-  "commonMockFeature": "Mock — no real sharing wired yet",
-  "@commonMockFeature": { "description": "Snackbar for a plan-003 tap that has no real backend behind it (search, invite, duel, add-friend)." },
-  "commonSharedMock": "Shared! (mock — no real sharing wired yet)",
-  "@commonSharedMock": { "description": "Snackbar after tapping a mock share target in ShareSheet." },
+  "commonCopied": "Copied to clipboard",
+  "@commonCopied": { "description": "Snackbar after ShareSheet's Copy target puts the share text on the clipboard (plan 025)." },
+  "commonShareFailed": "Couldn't open that app",
+  "@commonShareFailed": { "description": "Snackbar when a ShareSheet destination's external app could not be opened (plan 025); the sheet stays usable." },
   "shareSpoilerFree": "Spoiler-free — no answers included.",
   "@shareSpoilerFree": { "description": "ShareSheet message line for the daily result and badge-unlocked shares." },
+  "shareResultText": "I just finished level {level} of {topic} on Quizoo with {score} points! 🎉",
+  "@shareResultText": {
+    "description": "S-21 share text sent to WhatsApp/X/Copy. Spoiler-free: score and level only, never answers.",
+    "placeholders": {
+      "level": { "type": "int", "example": "6" },
+      "topic": { "type": "String", "example": "Football" },
+      "score": { "type": "int", "example": "1840" }
+    }
+  },
+  "shareDailyText": "I scored {correct}/{total} on today's Quizoo Daily Challenge — a {streak}-day streak and counting! 🔥",
+  "@shareDailyText": {
+    "description": "S-28 share text. Spoiler-free: the day's tally only, never answers.",
+    "placeholders": {
+      "correct": { "type": "int", "example": "9" },
+      "total": { "type": "int", "example": "10" },
+      "streak": { "type": "int", "example": "12" }
+    }
+  },
+  "shareBadgeText": "I just unlocked the {badge} badge on Quizoo! 🏆",
+  "@shareBadgeText": {
+    "description": "S-23 share text.",
+    "placeholders": { "badge": { "type": "String", "example": "Perfect Week" } }
+  },
+  "shareMasteryText": "I mastered {topic} on Quizoo — every level, every star. 💎",
+  "@shareMasteryText": {
+    "description": "Topic Mastered share text (plan 020/025).",
+    "placeholders": { "topic": { "type": "String", "example": "Football" } }
+  },
 
   "dailyTitle": "Daily",
   "@dailyTitle": { "description": "S-27 top bar title." },
@@ -1120,8 +1154,6 @@
 
   "statsTitle": "Your stats",
   "@statsTitle": { "description": "S-35 top bar title." },
-  "statsRangeChip": "Last 30 days ▾",
-  "@statsRangeChip": { "description": "S-35 non-functional date-range chip (plan 003, Assumption 3)." },
   "statsPointsPerDay": "POINTS PER DAY",
   "@statsPointsPerDay": { "description": "S-35 chart card eyebrow." },
   "statsWeekdayLabels": "M,T,W,T,F,S,S",
@@ -1544,8 +1576,11 @@
   "@settingsPreviewForceUpdate": { "description": "Debug row reaching S-50, which has no real version-check trigger in this mock phase." },
   "settingsPreviewNotificationPermission": "Preview: notification permission",
   "@settingsPreviewNotificationPermission": { "description": "Debug row reaching S-54, which has no real 3-levels-completed trigger wired by default." },
-  "settingsVersion": "Quizoo v1.0.0 (mock build)",
-  "@settingsVersion": { "description": "S-42 footer version string." },
+  "settingsVersion": "Quizoo v{version}",
+  "@settingsVersion": {
+    "description": "S-42 footer version string — the version comes from the build (--dart-define=APP_VERSION, sourced from pubspec.yaml by scripts/build.sh), never hardcoded.",
+    "placeholders": { "version": { "type": "String", "example": "1.1.0 (2)" } }
+  },
 
   "notificationsTitle": "Notifications",
   "@notificationsTitle": { "description": "S-44 top bar title." },
@@ -1578,8 +1613,14 @@
   "@deleteAccountKeep": { "description": "S-52 dominant, ghost-styled action." },
   "deleteAccountDelete": "Delete permanently",
   "@deleteAccountDelete": { "description": "S-52 destructive action, disabled until the typed username matches exactly." },
-  "deleteAccountDone": "Account deleted (mock) — you're browsing as a guest",
-  "@deleteAccountDone": { "description": "Snackbar after the mocked delete signs the player out to Guest." },
+  "deleteAccountDone": "Account deleted",
+  "@deleteAccountDone": { "description": "Snackbar after the real delete removes the account and drops the device to Guest." },
+  "deleteAccountError": "We couldn't delete your account. Check your connection and try again.",
+  "@deleteAccountError": { "description": "S-52 error snackbar when the delete-account function fails; the account is untouched and the screen stays open." },
+  "deleteAccountGuestTitle": "You're browsing as a guest",
+  "@deleteAccountGuestTitle": { "description": "S-52 guard title when the route is reached without a signed-in account." },
+  "deleteAccountGuestBody": "There's no saved account to delete yet. Create one later, and you can delete it from here.",
+  "@deleteAccountGuestBody": { "description": "S-52 guard body explaining why there is nothing to delete." },
 
   "forceUpdateTitle": "Time to update",
   "@forceUpdateTitle": { "description": "S-50 headline." },
@@ -1607,11 +1648,7 @@
   },
 
   "privacyTitle": "Privacy",
-  "@privacyTitle": { "description": "Privacy stub screen top bar title (plan 004, Assumption 4)." },
-  "privacyShowOnLeaderboards": "Show my rank on leaderboards",
-  "@privacyShowOnLeaderboards": { "description": "Privacy stub toggle row." },
-  "privacyShowActivityToFriends": "Show my activity to friends",
-  "@privacyShowActivityToFriends": { "description": "Privacy stub toggle row." },
+  "@privacyTitle": { "description": "Privacy top bar title (plan 004, Assumption 4). Plan 025 removed the two fake toggles this screen used to hold." },
 
   "quizReportLabel": "Report this question",
   "@quizReportLabel": { "description": "S-11 HUD '⋯' semantic label, opening S-51 (plan 004)." },
@@ -1656,6 +1693,54 @@
   "@reportQuestionSubmit": { "description": "S-51 CTA." },
   "reportQuestionSent": "Report sent — thanks for the flag",
   "@reportQuestionSent": { "description": "S-51 snackbar confirmation." },
+  "reportQuestionError": "We couldn't send your report. Check your connection and try again.",
+  "@reportQuestionError": { "description": "S-51 error snackbar when the question_reports insert fails (plan 025); the sheet stays open for a retry." },
+  "reportQuestionUnavailableBody": "This report link is no longer valid. Open the report sheet from the question you want to flag.",
+  "@reportQuestionUnavailableBody": { "description": "S-51 release-safe empty state for a report route reached without a question payload (plan 025)." },
+
+  "safetyActionsLabel": "Player actions",
+  "@safetyActionsLabel": { "description": "Plan 025 semantic label for a player row's ⋯ affordance." },
+  "safetyReportPlayer": "Report player",
+  "@safetyReportPlayer": { "description": "Plan 025 player-actions sheet next to a public username." },
+  "safetyBlockPlayer": "Block player",
+  "@safetyBlockPlayer": { "description": "Plan 025 player-actions sheet action." },
+  "safetyUnblockPlayer": "Unblock player",
+  "@safetyUnblockPlayer": { "description": "Plan 025 player-actions sheet action when already blocked." },
+  "safetyBlockHelper": "Blocking hides them from your leaderboards, duels and matchmaking.",
+  "@safetyBlockHelper": { "description": "Plan 025 player-actions sheet one-line explanation." },
+  "safetyReasonOffensiveName": "Offensive name or avatar",
+  "@safetyReasonOffensiveName": { "description": "Plan 025 player-report reason." },
+  "safetyReasonHarassment": "Harassment or bullying",
+  "@safetyReasonHarassment": { "description": "Plan 025 player-report reason." },
+  "safetyReasonCheating": "Cheating",
+  "@safetyReasonCheating": { "description": "Plan 025 player-report reason." },
+  "safetyReasonImpersonation": "Impersonation",
+  "@safetyReasonImpersonation": { "description": "Plan 025 player-report reason." },
+  "safetyReasonOther": "Something else",
+  "@safetyReasonOther": { "description": "Plan 025 player-report reason." },
+  "safetyReportSubmit": "Send report",
+  "@safetyReportSubmit": { "description": "Plan 025 player-report submit." },
+  "safetyReportSent": "Report sent — thanks for keeping Quizoo safe",
+  "@safetyReportSent": { "description": "Plan 025 player-report confirmation." },
+  "safetyBlocked": "Player blocked — they're hidden from your leaderboards, duels and matchmaking.",
+  "@safetyBlocked": { "description": "Plan 025 confirmation after blocking." },
+  "safetyUnblocked": "Player unblocked",
+  "@safetyUnblocked": { "description": "Plan 025 confirmation after unblocking." },
+  "safetyActionFailed": "That didn't go through. Check your connection and try again.",
+  "@safetyActionFailed": { "description": "Plan 025 error snackbar for a failed report/block/unblock." },
+  "safetyBlockedPlayersTitle": "Blocked players",
+  "@safetyBlockedPlayersTitle": { "description": "Plan 025 Privacy → Blocked players row and screen title." },
+  "safetyBlockedPlayersHelper": "Blocked players are hidden from your leaderboards and matchmaking.",
+  "@safetyBlockedPlayersHelper": { "description": "Plan 025 one-line explanation under the Privacy row." },
+  "safetyBlockedPlayersEmptyTitle": "Nobody blocked",
+  "@safetyBlockedPlayersEmptyTitle": { "description": "Plan 025 blocked-players empty state." },
+  "safetyBlockedPlayersEmptyBody": "Players you block show up here, and you can unblock them any time.",
+  "@safetyBlockedPlayersEmptyBody": { "description": "Plan 025 blocked-players empty state body." },
+  "safetyBlockedOn": "Blocked {date}",
+  "@safetyBlockedOn": {
+    "description": "Plan 025 blocked-players row subtitle.",
+    "placeholders": { "date": { "type": "String", "example": "Oct 17, 2026" } }
+  },
 
   "shareDemoTitle": "Share",
   "@shareDemoTitle": { "description": "S-53's own reserved path, reached with no real result to share." },

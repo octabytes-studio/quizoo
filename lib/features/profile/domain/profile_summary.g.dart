@@ -9,6 +9,7 @@ part of 'profile_summary.dart';
 _BestCategoryEntry _$BestCategoryEntryFromJson(Map<String, dynamic> json) =>
     _BestCategoryEntry(
       subcategoryId: json['subcategoryId'] as String,
+      categoryId: json['categoryId'] as String,
       name: json['name'] as String,
       emoji: json['emoji'] as String,
       plateColor: json['plateColor'] as String,
@@ -21,6 +22,7 @@ _BestCategoryEntry _$BestCategoryEntryFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$BestCategoryEntryToJson(_BestCategoryEntry instance) =>
     <String, dynamic>{
       'subcategoryId': instance.subcategoryId,
+      'categoryId': instance.categoryId,
       'name': instance.name,
       'emoji': instance.emoji,
       'plateColor': instance.plateColor,

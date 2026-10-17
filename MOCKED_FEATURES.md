@@ -5,6 +5,34 @@
 
 ---
 
+## 2026-10-17 — App Review readiness fixes (plan 025) — resolved
+
+| Item | What changed |
+|---|---|
+| Account deletion (was: signs out only) | Real server-side deletion: the `delete-account` Edge Function runs the service-role `delete_account_data(p_user_id)` cleanup and then `admin.auth.admin.deleteUser`, which cascades every owned row. The app awaits it, returns to Guest only on success, and the `(mock)` copy is gone. The Settings row is hidden for guests. |
+| Report question (was: snackbar only) | S-51 is a real route: the play HUD and the failed-result review list push the **actual** question's id/text/context, a `question_reports` row is inserted through `ReportQuestionCubit`, and the sheet only closes once the server stored it. |
+| Mock share (`commonSharedMock`) | Replaced with real WhatsApp / X / clipboard targets (`core/share/share_links.dart` + `share_targets.dart`); a failed external launch shows `commonShareFailed`, Copy shows `commonCopied`. |
+| Mock stats/friends surfaces (`commonMockFeature`) | Removed: the stats range chip, the friends screen's invite/add/duel mock prompts, and the mock snackbar helper itself. |
+| Release-visible DEVELOPER group + dev routes + `mock build` version | The DEVELOPER settings group and the `/dev/screens`, share-demo, notification-permission and force-update routes are `kDebugMode`-gated; the version label comes from `pubspec.yaml` via `--dart-define=APP_VERSION` in `scripts/build.sh`. |
+| MockCatalog crash paths (26 fixtures vs. 207 live subcategories) | `start_level_attempt` now returns `categoryId`/`subcategoryName`; the countdown, Profile best-category rows and locked-badge CTAs navigate/label from server data; the daily countdown gets its own label instead of a blank "· LEVEL 0". |
+| Player safety (UGC requirement) | New `user_reports`/`user_blocks` tables with RLS, a `_blocked_between` predicate enforced in duel matchmaking/join/lobby, a report/block sheet on leaderboard rows and the podium, Privacy → Blocked players, and a server-side username term policy (`username_policy_terms` + `trg_enforce_username_policy`). |
+
+**Owner moderation queries** (run as reports come in):
+
+```sql
+select * from public.question_reports where resolved = false order by created_at;
+select * from public.user_reports      where resolved = false order by created_at;
+```
+
+**Still mocked / follow-ups after plan 025:**
+
+- `leaderboard/presentation/screens/category_leaderboard_screen.dart`'s header still falls back to the Football fixture via `MockCatalog` — unreachable in release today (no call site for `AppRoutes.categoryLeaderboardPath`); tracked as its own follow-up.
+- `home/presentation/screens/search_screen.dart` still resolves a category name via `MockCatalog`.
+- Duel surfaces have no in-duel report/block entry point yet (the leaderboard entry points cover the release requirement); `VsHeader`/`onOpponentTap` is the natural place to add one.
+- `core/mock/mock_catalog.dart` / `mock_questions.dart` remain as fixtures for unreachable design surfaces and tests.
+
+---
+
 ## `core/` — shared mock fixtures still in active use
 
 | File | What's mocked | Impact |
@@ -26,7 +54,7 @@
 | ~~`quiz_play_cubit.dart:887-892,906-919` (`refillHeartsWithCoins`)~~ | **Removed by plan 013**, along with the Shop it depended on — the out-of-lives dialog now offers exactly two actions (watch ad, back to map), no paid coin refill. | — |
 | `data/mock_questions.dart` | A hand-written pool of ~15 football + 10 solar-system questions, explicitly flagged in its own doc comment as a fixture ("plan 002, Assumption 4"). | Low — appears to be **dead code** now; `quiz_play_repository.dart` sources questions from the real Supabase question bank (`start_level_attempt`). Only remaining reference is `lib/app/router.dart:441` (see Dev/Router below). Safe to delete if confirmed unreferenced elsewhere. |
 | `core/ads/ad_unit_ids.dart` + native AdMob App IDs (`Info.plist`, `AndroidManifest.xml`) | **Resolved.** The real AdMob ids are in place (account `ca-app-pub-2195537972404209`) and both App IDs are real. Which set a build serves is chosen by the `SHOW_TEST_ADS` dart-define in `dart_define.json`: `true` = Google's test ads (every mode), `false` = real ads (every mode), absent = test in debug/profile and real in release. `scripts/build.sh` forces `false` for release/profile. | — (a debug run with `--dart-define=SHOW_TEST_ADS=false`, or shipping a release, serves live ads — see `.claude/docs/backend/04-flutter-app-configuration.md` §7). |
-| `presentation/screens/quiz_play_screen.dart:353-370` (report-question sheet) | "Report question" submit handler just pops the sheet and shows a success snackbar — **no backend call, nothing is persisted**. | Medium — players believe their report was sent; it goes nowhere. |
+| `presentation/screens/quiz_play_screen.dart:353-370` (report-question sheet) | ~~"Report question" submit handler just pops the sheet and shows a success snackbar — **no backend call, nothing is persisted**.~~ **Fixed by plan 025** — the HUD's ⋯ now pushes the real report route with the actual question id, and the submit inserts into `question_reports` before the sheet closes. | ~~Medium~~ — resolved 2026-10-17. |
 
 ---
 
@@ -70,9 +98,9 @@ CLAUDE.md §1/§9 requires Presentation → Domain → Data via a repository; th
 
 | File:Line | What's mocked | Impact |
 |---|---|---|
-| `leaderboard/presentation/screens/category_leaderboard_screen.dart:56-58,114,216` | The subcategory's name/emoji/plate-color header comes from `MockCatalog.subcategoryById`, not the real `CategoryDetail`/`Subcategory` the catalog repository would return. Falls back silently to Football if the id isn't in the fixture list. | Medium — any subcategory added to Supabase after the original fixture will show the wrong (Football) header on its leaderboard, even though the actual scores/ranks below it are real. |
-| `achievements/presentation/widgets/badge_detail_dialog.dart:122,147,149` | "Play this topic" CTA and its label resolve the target subcategory via `MockCatalog`, with the same Football fallback on a miss. | Medium — same silent-wrong-topic risk for badges tied to newer subcategories. |
-| `profile/presentation/screens/profile_screen.dart:242` | Tapping a "best category" row looks up the subcategory via `MockCatalog.subcategoryById` instead of data already in `ProfileSummary`. | Medium — same failure mode if `entry.subcategoryId` isn't one of the ~26 fixture ids. |
+| `leaderboard/presentation/screens/category_leaderboard_screen.dart:56-58,114,216` | The subcategory's name/emoji/plate-color header comes from `MockCatalog.subcategoryById`, not the real `CategoryDetail`/`Subcategory` the catalog repository would return. Falls back silently to Football if the id isn't in the fixture list. | Medium — any subcategory added to Supabase after the original fixture will show the wrong (Football) header on its leaderboard, even though the actual scores/ranks below it are real. **No release call site** (nothing navigates to `AppRoutes.categoryLeaderboardPath`); tracked as a follow-up, not fixed by plan 025. |
+| ~~`achievements/presentation/widgets/badge_detail_dialog.dart:122,147,149`~~ | **Fixed by plan 025.** The locked-badge CTA now uses the server-provided `nextCategoryId`/`nextSubcategoryId`/`nextSubcategoryName`, shows only when all three exist, and never touches `MockCatalog`. | ~~Medium~~ — resolved 2026-10-17. |
+| ~~`profile/presentation/screens/profile_screen.dart:242`~~ | **Fixed by plan 025.** `BestCategoryEntry` carries its own `categoryId` from the same query, so the row navigates straight to the right level map — the fixture lookup (and its `StateError` for non-fixture ids) is gone. | ~~Medium~~ — resolved 2026-10-17. |
 | `home/presentation/screens/search_screen.dart:238` | Search result category name resolved via `MockCatalog.categoryById`. | Low-medium — same class of risk. |
 
 ---
@@ -90,8 +118,8 @@ CLAUDE.md §1/§9 requires Presentation → Domain → Data via a repository; th
 
 | File:Line | What's mocked | Impact |
 |---|---|---|
-| `presentation/screens/delete_account_screen.dart:18-24,61-69` | Explicitly commented: *"Mock delete just signs out to Guest and shows a snackbar — there is no real account to erase."* | **High** — a user who completes the typed-confirmation flow believes their account/data was deleted; it was not. Real account and data remain on the server. |
-| `presentation/screens/privacy_settings_screen.dart:9-15,24-25` | "Show on leaderboards" / "Show activity to friends" toggles are local `setState` only — not persisted (not even to `shared_preferences`), and nothing in the leaderboard/friends code reads them. | Medium — settings silently reset every time the screen is reopened and have zero effect on actual visibility. |
+| ~~`presentation/screens/delete_account_screen.dart:18-24,61-69`~~ | **Fixed by plan 025.** Real server-side deletion (`delete-account` Edge Function → `delete_account_data` → `auth.admin.deleteUser`); the screen shows progress, keeps itself open on failure, and only shows success once the server confirmed. The Settings row is hidden for guests. | ~~**High**~~ — resolved 2026-10-17. |
+| ~~`presentation/screens/privacy_settings_screen.dart:9-15,24-25`~~ | **Removed by plan 025.** The two fake `setState` toggles were deleted; the screen now holds only real rows (Blocked players, and Google's ad-privacy choices where they apply). | ~~Medium~~ — resolved 2026-10-17. |
 | `presentation/screens/notification_permission_screen.dart:11-18,39-48` | "Turn on notifications" doesn't request the real OS notification permission (no `permission_handler`/FCM/APNs call) and the picked reminder time is never persisted or scheduled — just a snackbar. Self-documented as reachable only via a debug row, since real trigger tracking ("after 3rd level") is out of scope. | Medium — no real push-notification opt-in exists anywhere in the app yet. |
 
 Real by contrast: `notifications_api.dart` (in-app notification list, mark-read, accept-challenge) and `settings_repository.dart` (sound/music/haptics toggles via `shared_preferences`) are genuinely wired up.
@@ -102,7 +130,7 @@ Real by contrast: `notifications_api.dart` (in-app notification list, mark-read,
 
 | File:Line | What's mocked | Impact |
 |---|---|---|
-| `lib/app/router.dart:436-441` (`_reportQuestionDemo`) | A design-review-only route builds the report-question sheet against `MockQuestions.football.first`, a fixture question. | Low — explicitly a design-review demo route, not reachable through normal navigation. |
+| `lib/app/router.dart` (`_reportQuestionDemo`) | A design-review-only sheet built against `MockQuestions.football.first`. **Updated by plan 025:** the route is now the real `ReportQuestionScreen`; this fixture demo survives only as a `kDebugMode` fallback for a report route reached without a payload, and release builds show a clean unavailable state instead. | Low — debug-only. |
 
 ---
 
@@ -135,6 +163,6 @@ lands even though `profiles.is_pro` is still false.
 1. ~~**Shop/monetization is entirely non-functional**~~ — **the Shop feature was deleted outright (plan 013)**, not fixed; coin packs, "Remove Ads", and power-up purchases no longer exist as a surface at all.
 2. ~~**Quiz Play's in-game economy is disconnected from the wallet**~~ — **fixed by plan 013**: power-ups are now granted once per level and spent from that pool, and "watch ad for heart" is a real `google_mobile_ads` rewarded ad rather than a `Timer`.
 3. ~~**Duel has no real matchmaking**~~ — **fixed by plan 017**: a realtime Duel Arena (challenges + join requests), server-side matchmaking and server-refereed live duels; the bot is now only a labelled practice fallback.
-4. **Delete Account doesn't delete anything** — it signs out to guest and shows a success message.
+4. ~~**Delete Account doesn't delete anything**~~ — **fixed by plan 025**: real server-side deletion through the `delete-account` Edge Function, with the client returning to Guest only once the server confirmed.
 5. ~~**Home's top bar shows a fixed level/streak**~~ — **fixed by plan 019**: `PlayerTopBar` now reads the signed-in player's real `streak_days`/`player_level` from `HomeContent`.
 6. **Quizoo Pro's legal URLs and store catalogue are placeholders** — the code and the database are complete, but the Terms/Privacy URLs are `example.com` and the six real store products need creating in both consoles (plan 023, owner checklist in doc 03 §1).

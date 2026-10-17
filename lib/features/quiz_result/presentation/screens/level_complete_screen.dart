@@ -7,13 +7,17 @@ import 'package:quizoo/core/widgets/ad_break.dart';
 import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/navigation/badge_celebration.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/share/share_targets.dart';
+import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/features/auth/presentation/widgets/save_progress_sheet.dart';
+import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/native_ad_tile.dart';
 import 'package:quizoo/core/widgets/result_wash.dart';
+import 'package:quizoo/core/widgets/share_sheet.dart';
 import 'package:quizoo/features/quiz_result/domain/level_result.dart';
 import 'package:quizoo/features/quiz_result/presentation/bloc/quiz_result_cubit.dart';
 import 'package:quizoo/features/quiz_result/presentation/widgets/score_breakdown_card.dart';
@@ -101,6 +105,29 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
     );
   }
 
+  /// S-53's real destinations (plan 025) — the same `ShareSheet` the demo
+  /// route renders, but opened inline with this result's own preview.
+  void _share() {
+    final l10n = AppLocalizations.of(context);
+    final result = widget.state.result;
+    AppBottomSheet.show<void>(
+      context,
+      builder: (sheetContext) => ShareSheet(
+        title: AppLocalizations.of(sheetContext).resultShareTitle,
+        message: AppLocalizations.of(sheetContext).shareSpoilerFree,
+        preview: _SharePreview(result: result),
+        targets: ShareTargets.real(
+          context: context,
+          text: l10n.shareResultText(
+            result.run.levelNumber,
+            result.run.subcategoryName,
+            result.finalScore,
+          ),
+        ),
+      ),
+    );
+  }
+
   // A `pop`, not a `go` — the play screen reached this one via
   // `pushReplacement`, so the level map is already directly beneath it on the
   // stack. `go` would rebuild the stack from this location alone, dropping
@@ -147,7 +174,7 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
     return ResultWash(
       accent: quizoo.ok,
       onClose: _close,
-      onShare: () => context.push(AppRoutes.share),
+      onShare: _share,
       actions: [
         if (result.unlocksMastery) ...[
           ChunkyButton.gold(
@@ -218,6 +245,46 @@ class _LevelCompleteScreenState extends State<LevelCompleteScreen> {
             padding: EdgeInsets.only(top: AppSpacing.base.h),
           ),
           SizedBox(height: AppSpacing.xl.h),
+        ],
+      ),
+    );
+  }
+}
+
+/// The card shared to the OS's share sheet — topic, level, stars and score,
+/// deliberately spoiler-free (no questions, no answers).
+class _SharePreview extends StatelessWidget {
+  const _SharePreview({required this.result});
+
+  final LevelResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    final quizoo = context.quizoo;
+    final l10n = AppLocalizations.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final run = result.run;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(AppSpacing.base.w),
+      decoration: BoxDecoration(
+        color: quizoo.s2,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: quizoo.ln),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${run.subcategoryName} · ${l10n.resultCompleteTitle(run.levelNumber)}',
+            style: textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w800),
+          ),
+          SizedBox(height: AppSpacing.sm.h),
+          Text(
+            '${'⭐' * result.stars}  ${result.finalScore}',
+            style: AppTypography.glyph(18.sp, height: 1.4),
+          ),
         ],
       ),
     );

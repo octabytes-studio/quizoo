@@ -42,10 +42,14 @@ class CountdownView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.countdownMeta(
-                state.run.subcategoryName.toUpperCase(),
-                state.run.levelNumber,
-              ),
+              // The daily run carries no subcategory/level (plan 025), so it
+              // gets its own label rather than a blank "· LEVEL 0".
+              state.run.isDaily
+                  ? l10n.countdownDailyMeta
+                  : l10n.countdownMeta(
+                      state.run.subcategoryName.toUpperCase(),
+                      state.run.levelNumber,
+                    ),
               style: textTheme.labelSmall!.copyWith(
                 letterSpacing: 2.1,
                 color: arena.onArena.withValues(alpha: 0.6),

@@ -25,10 +25,12 @@ abstract final class RevenueCatConfig {
   /// Auto-renewing subscriptions require a Terms of Use (EULA) link on the
   /// paywall in both stores. Hosted on GitHub Pages — see
   /// `website/terms.html` in the repo and `scripts/deploy-legal-pages.sh`.
-  static const String termsUrl = 'https://octabytes-studio.github.io/quizoo/terms.html';
+  static const String termsUrl =
+      'https://octabytes-studio.github.io/quizoo/terms.html';
 
   /// Required alongside [termsUrl]. Same hosting as [termsUrl].
-  static const String privacyUrl = 'https://octabytes-studio.github.io/quizoo/privacy.html';
+  static const String privacyUrl =
+      'https://octabytes-studio.github.io/quizoo/privacy.html';
 
   /// Which key this platform should use.
   ///

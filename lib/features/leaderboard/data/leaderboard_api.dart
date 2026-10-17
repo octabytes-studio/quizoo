@@ -32,6 +32,18 @@ class LeaderboardApi {
 
   static const int _rosterLimit = 50;
 
+  /// Drops every entry whose player the viewer has blocked (plan 025) —
+  /// applied to the global/country, category and friends rosters alike, so a
+  /// blocked player is invisible on every board their blocker can open.
+  /// Pure and public so the filter is unit-testable without a Supabase mock.
+  static List<LeaderboardEntry> withoutBlocked(
+    List<LeaderboardEntry> entries,
+    Set<String> blockedIds,
+  ) => [
+    for (final entry in entries)
+      if (!blockedIds.contains(entry.playerId)) entry,
+  ];
+
   String _viewFor(LeaderboardPeriod period) => switch (period) {
     LeaderboardPeriod.week => 'lb_weekly_totals',
     LeaderboardPeriod.month => 'lb_monthly_totals',
@@ -75,8 +87,12 @@ class LeaderboardApi {
       final profiles = await _profilesFor([
         for (final row in rows) row['user_id'] as String,
       ]);
+      // Plan 025: a blocked player is hidden from the blocker's board. The
+      // filter runs after the server's limit, so a blocked player in the top
+      // 50 simply leaves one fewer row rather than pulling #51 in.
+      final blocked = await _blockedIds();
 
-      return [
+      return withoutBlocked([
         for (final row in rows)
           _entryFromTotalsRow(
             row,
@@ -84,7 +100,7 @@ class LeaderboardApi {
             profile: profiles[row['user_id']],
             selfId: userId,
           ),
-      ];
+      ], blocked);
     } catch (error) {
       throw ApiException.fromSupabase(error);
     }
@@ -174,7 +190,10 @@ class LeaderboardApi {
             (starsByUser[userId] ?? 0) + (row['stars'] as int? ?? 0);
       }
 
-      return [
+      // Plan 025: the viewer's blocked players never appear on any board.
+      final blocked = await _blockedIds();
+
+      return withoutBlocked([
         for (final row in rows)
           LeaderboardEntry(
             rank: row['rank_subcategory'] as int,
@@ -187,7 +206,7 @@ class LeaderboardApi {
             levelCount: LadderConfigRepository.fallbackTotalLevels,
             starsEarned: starsByUser[row['user_id']] ?? 0,
           ),
-      ];
+      ], blocked);
     } catch (error) {
       throw ApiException.fromSupabase(error);
     }
@@ -317,6 +336,14 @@ class LeaderboardApi {
 
   // ------------------------------------------------------------- internals
 
+  /// The viewer's own block list (plan 025). RLS only exposes rows where the
+  /// caller is the blocker, so this needs no extra filter — and the blocked
+  /// side is never queried by a client.
+  Future<Set<String>> _blockedIds() async {
+    final rows = await _client.from('user_blocks').select('blocked_id');
+    return {for (final row in rows) row['blocked_id'] as String};
+  }
+
   Future<List<LeaderboardEntry>> _friendsRoster(
     LeaderboardPeriod period,
   ) async {
@@ -362,7 +389,10 @@ class LeaderboardApi {
     final ranked = totals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    return [
+    // Plan 025: a blocked friend is hidden from the friends board too.
+    final blocked = await _blockedIds();
+
+    return withoutBlocked([
       for (final (index, entry) in ranked.indexed)
         LeaderboardEntry(
           rank: index + 1,
@@ -373,7 +403,7 @@ class LeaderboardApi {
           score: entry.value,
           isSelf: entry.key == userId,
         ),
-    ];
+    ], blocked);
   }
 
   Future<LeaderboardEntry> _selfProfileEntry(

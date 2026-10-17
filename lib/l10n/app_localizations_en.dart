@@ -442,6 +442,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get countdownDailyMeta => 'DAILY CHALLENGE';
+
+  @override
   String get countdownGetReady => 'Get ready…';
 
   @override
@@ -657,6 +660,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resultShare => 'Share';
 
   @override
+  String get resultShareTitle => 'Share your result';
+
+  @override
   String get failedTitle => 'So close!';
 
   @override
@@ -804,6 +810,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileUpdateError => 'Couldn\'t save your changes';
 
   @override
+  String get profileUsernameNotAllowed =>
+      'That name isn\'t allowed. Please pick a different one.';
+
+  @override
   String get contentErrorTitle => 'That didn\'t load';
 
   @override
@@ -811,13 +821,33 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check your connection and give it another go.';
 
   @override
-  String get commonMockFeature => 'Mock — no real sharing wired yet';
+  String get commonCopied => 'Copied to clipboard';
 
   @override
-  String get commonSharedMock => 'Shared! (mock — no real sharing wired yet)';
+  String get commonShareFailed => 'Couldn\'t open that app';
 
   @override
   String get shareSpoilerFree => 'Spoiler-free — no answers included.';
+
+  @override
+  String shareResultText(int level, String topic, int score) {
+    return 'I just finished level $level of $topic on Quizoo with $score points! 🎉';
+  }
+
+  @override
+  String shareDailyText(int correct, int total, int streak) {
+    return 'I scored $correct/$total on today\'s Quizoo Daily Challenge — a $streak-day streak and counting! 🔥';
+  }
+
+  @override
+  String shareBadgeText(String badge) {
+    return 'I just unlocked the $badge badge on Quizoo! 🏆';
+  }
+
+  @override
+  String shareMasteryText(String topic) {
+    return 'I mastered $topic on Quizoo — every level, every star. 💎';
+  }
 
   @override
   String get dailyTitle => 'Daily';
@@ -1268,9 +1298,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statsTitle => 'Your stats';
-
-  @override
-  String get statsRangeChip => 'Last 30 days ▾';
 
   @override
   String get statsPointsPerDay => 'POINTS PER DAY';
@@ -1797,7 +1824,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Preview: notification permission';
 
   @override
-  String get settingsVersion => 'Quizoo v1.0.0 (mock build)';
+  String settingsVersion(String version) {
+    return 'Quizoo v$version';
+  }
 
   @override
   String get notificationsTitle => 'Notifications';
@@ -1834,8 +1863,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteAccountDelete => 'Delete permanently';
 
   @override
-  String get deleteAccountDone =>
-      'Account deleted (mock) — you\'re browsing as a guest';
+  String get deleteAccountDone => 'Account deleted';
+
+  @override
+  String get deleteAccountError =>
+      'We couldn\'t delete your account. Check your connection and try again.';
+
+  @override
+  String get deleteAccountGuestTitle => 'You\'re browsing as a guest';
+
+  @override
+  String get deleteAccountGuestBody =>
+      'There\'s no saved account to delete yet. Create one later, and you can delete it from here.';
 
   @override
   String get forceUpdateTitle => 'Time to update';
@@ -1873,12 +1912,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyTitle => 'Privacy';
-
-  @override
-  String get privacyShowOnLeaderboards => 'Show my rank on leaderboards';
-
-  @override
-  String get privacyShowActivityToFriends => 'Show my activity to friends';
 
   @override
   String get quizReportLabel => 'Report this question';
@@ -1935,6 +1968,81 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportQuestionSent => 'Report sent — thanks for the flag';
+
+  @override
+  String get reportQuestionError =>
+      'We couldn\'t send your report. Check your connection and try again.';
+
+  @override
+  String get reportQuestionUnavailableBody =>
+      'This report link is no longer valid. Open the report sheet from the question you want to flag.';
+
+  @override
+  String get safetyActionsLabel => 'Player actions';
+
+  @override
+  String get safetyReportPlayer => 'Report player';
+
+  @override
+  String get safetyBlockPlayer => 'Block player';
+
+  @override
+  String get safetyUnblockPlayer => 'Unblock player';
+
+  @override
+  String get safetyBlockHelper =>
+      'Blocking hides them from your leaderboards, duels and matchmaking.';
+
+  @override
+  String get safetyReasonOffensiveName => 'Offensive name or avatar';
+
+  @override
+  String get safetyReasonHarassment => 'Harassment or bullying';
+
+  @override
+  String get safetyReasonCheating => 'Cheating';
+
+  @override
+  String get safetyReasonImpersonation => 'Impersonation';
+
+  @override
+  String get safetyReasonOther => 'Something else';
+
+  @override
+  String get safetyReportSubmit => 'Send report';
+
+  @override
+  String get safetyReportSent => 'Report sent — thanks for keeping Quizoo safe';
+
+  @override
+  String get safetyBlocked =>
+      'Player blocked — they\'re hidden from your leaderboards, duels and matchmaking.';
+
+  @override
+  String get safetyUnblocked => 'Player unblocked';
+
+  @override
+  String get safetyActionFailed =>
+      'That didn\'t go through. Check your connection and try again.';
+
+  @override
+  String get safetyBlockedPlayersTitle => 'Blocked players';
+
+  @override
+  String get safetyBlockedPlayersHelper =>
+      'Blocked players are hidden from your leaderboards and matchmaking.';
+
+  @override
+  String get safetyBlockedPlayersEmptyTitle => 'Nobody blocked';
+
+  @override
+  String get safetyBlockedPlayersEmptyBody =>
+      'Players you block show up here, and you can unblock them any time.';
+
+  @override
+  String safetyBlockedOn(String date) {
+    return 'Blocked $date';
+  }
 
   @override
   String get shareDemoTitle => 'Share';

@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
-import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
@@ -43,9 +42,17 @@ import 'package:quizoo/l10n/app_localizations.dart';
 /// screen with [isOwnProfile] gating the settings gear, rather than a
 /// duplicate screen.
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key, this.isOwnProfile = true});
+  const ProfileScreen({
+    super.key,
+    this.isOwnProfile = true,
+    @visibleForTesting this.profileCubit,
+  });
 
   final bool isOwnProfile;
+
+  /// Test seam: drives the screen from a given Cubit instead of building one
+  /// against the real backend.
+  final ProfileCubit? profileCubit;
 
   @override
   Widget build(BuildContext context) {
@@ -55,35 +62,46 @@ class ProfileScreen extends StatelessWidget {
     // `SessionCubit`'s guest/signed-in split is purely "should we nudge this
     // player to sign in", handled inside `_ProfileLoadedView` — it must never
     // gate whether the profile's own data loads at all.
+    final injected = profileCubit;
+    if (injected != null) {
+      return BlocProvider<ProfileCubit>.value(
+        value: injected,
+        child: _sessionListener(),
+      );
+    }
     return BlocProvider<ProfileCubit>(
       create: (_) =>
           ProfileCubit(ProfileRepository(ProfileApi(supabase)))..load(),
-      child: BlocListener<SessionCubit, SessionState>(
-        // This screen is one of `StatefulShellRoute.indexedStack`'s four
-        // branches, so it's built (and `ProfileCubit.load()`'d) exactly
-        // once and kept alive for the rest of the session — it never
-        // rebuilds on a tab switch. Without this listener, a fresh sign-up
-        // or sign-in changes the very `profiles` row this screen already
-        // fetched as a guest (username, avatar, country all move from
-        // empty/default to the player's own picks), but S-32 keeps showing
-        // that pre-signup snapshot until the app is restarted. The same
-        // gap exists in reverse on logout: `AuthRepository.signOut` hands
-        // the device a brand-new anonymous `profiles` row, so this must
-        // also fire on the SessionSignedIn -> SessionGuest transition, not
-        // only guest -> signed-in.
-        listenWhen: (previous, current) {
-          final wasSignedIn = previous is SessionSignedIn;
-          final isSignedIn = current is SessionSignedIn;
-          if (wasSignedIn != isSignedIn) return true;
-          // Also reload on an in-place profile edit (Edit Profile's Save) —
-          // `AuthUser` is `@freezed`, so `!=` is already value equality.
-          return previous is SessionSignedIn &&
-              current is SessionSignedIn &&
-              previous.user != current.user;
-        },
-        listener: (context, state) => context.read<ProfileCubit>().load(),
-        child: _ProfileView(isOwnProfile: isOwnProfile),
-      ),
+      child: _sessionListener(),
+    );
+  }
+
+  Widget _sessionListener() {
+    return BlocListener<SessionCubit, SessionState>(
+      // This screen is one of `StatefulShellRoute.indexedStack`'s four
+      // branches, so it's built (and `ProfileCubit.load()`'d) exactly
+      // once and kept alive for the rest of the session — it never
+      // rebuilds on a tab switch. Without this listener, a fresh sign-up
+      // or sign-in changes the very `profiles` row this screen already
+      // fetched as a guest (username, avatar, country all move from
+      // empty/default to the player's own picks), but S-32 keeps showing
+      // that pre-signup snapshot until the app is restarted. The same
+      // gap exists in reverse on logout: `AuthRepository.signOut` hands
+      // the device a brand-new anonymous `profiles` row, so this must
+      // also fire on the SessionSignedIn -> SessionGuest transition, not
+      // only guest -> signed-in.
+      listenWhen: (previous, current) {
+        final wasSignedIn = previous is SessionSignedIn;
+        final isSignedIn = current is SessionSignedIn;
+        if (wasSignedIn != isSignedIn) return true;
+        // Also reload on an in-place profile edit (Edit Profile's Save) —
+        // `AuthUser` is `@freezed`, so `!=` is already value equality.
+        return previous is SessionSignedIn &&
+            current is SessionSignedIn &&
+            previous.user != current.user;
+      },
+      listener: (context, state) => context.read<ProfileCubit>().load(),
+      child: _ProfileView(isOwnProfile: isOwnProfile),
     );
   }
 }
@@ -273,17 +291,16 @@ class _ProfileLoadedView extends StatelessWidget {
                     leadingPlateColor: AppGradients.hex(entry.plateColor),
                     trailingValue: '${entry.accuracyPercent}%',
                     trailingLabel: l10n.profileAccuracyLabel,
-                    onTap: () {
-                      final subcategory = MockCatalog.subcategoryById(
+                    // Plan 025: the route is built from the entry's own
+                    // server-provided ids — never a MockCatalog fixture
+                    // lookup, which only covers 26 of the 207 live topics
+                    // and threw StateError for everything else.
+                    onTap: () => context.push(
+                      AppRoutes.levelMapPath(
+                        entry.categoryId,
                         entry.subcategoryId,
-                      );
-                      context.push(
-                        AppRoutes.levelMapPath(
-                          subcategory.categoryId,
-                          subcategory.id,
-                        ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
                 ),
               // Never shown to a guest (there is no real account session to

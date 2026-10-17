@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BestCategoryEntry {
 
- String get subcategoryId; String get name; String get emoji; String get plateColor; int get levelsCleared; int get levelCount; int get starsEarned; int get accuracyPercent;
+ String get subcategoryId; String get categoryId; String get name; String get emoji; String get plateColor; int get levelsCleared; int get levelCount; int get starsEarned; int get accuracyPercent;
 /// Create a copy of BestCategoryEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $BestCategoryEntryCopyWith<BestCategoryEntry> get copyWith => _$BestCategoryEntr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BestCategoryEntry&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.plateColor, plateColor) || other.plateColor == plateColor)&&(identical(other.levelsCleared, levelsCleared) || other.levelsCleared == levelsCleared)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.starsEarned, starsEarned) || other.starsEarned == starsEarned)&&(identical(other.accuracyPercent, accuracyPercent) || other.accuracyPercent == accuracyPercent));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BestCategoryEntry&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.plateColor, plateColor) || other.plateColor == plateColor)&&(identical(other.levelsCleared, levelsCleared) || other.levelsCleared == levelsCleared)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.starsEarned, starsEarned) || other.starsEarned == starsEarned)&&(identical(other.accuracyPercent, accuracyPercent) || other.accuracyPercent == accuracyPercent));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,subcategoryId,name,emoji,plateColor,levelsCleared,levelCount,starsEarned,accuracyPercent);
+int get hashCode => Object.hash(runtimeType,subcategoryId,categoryId,name,emoji,plateColor,levelsCleared,levelCount,starsEarned,accuracyPercent);
 
 @override
 String toString() {
-  return 'BestCategoryEntry(subcategoryId: $subcategoryId, name: $name, emoji: $emoji, plateColor: $plateColor, levelsCleared: $levelsCleared, levelCount: $levelCount, starsEarned: $starsEarned, accuracyPercent: $accuracyPercent)';
+  return 'BestCategoryEntry(subcategoryId: $subcategoryId, categoryId: $categoryId, name: $name, emoji: $emoji, plateColor: $plateColor, levelsCleared: $levelsCleared, levelCount: $levelCount, starsEarned: $starsEarned, accuracyPercent: $accuracyPercent)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $BestCategoryEntryCopyWith<$Res>  {
   factory $BestCategoryEntryCopyWith(BestCategoryEntry value, $Res Function(BestCategoryEntry) _then) = _$BestCategoryEntryCopyWithImpl;
 @useResult
 $Res call({
- String subcategoryId, String name, String emoji, String plateColor, int levelsCleared, int levelCount, int starsEarned, int accuracyPercent
+ String subcategoryId, String categoryId, String name, String emoji, String plateColor, int levelsCleared, int levelCount, int starsEarned, int accuracyPercent
 });
 
 
@@ -65,9 +65,10 @@ class _$BestCategoryEntryCopyWithImpl<$Res>
 
 /// Create a copy of BestCategoryEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? subcategoryId = null,Object? name = null,Object? emoji = null,Object? plateColor = null,Object? levelsCleared = null,Object? levelCount = null,Object? starsEarned = null,Object? accuracyPercent = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? subcategoryId = null,Object? categoryId = null,Object? name = null,Object? emoji = null,Object? plateColor = null,Object? levelsCleared = null,Object? levelCount = null,Object? starsEarned = null,Object? accuracyPercent = null,}) {
   return _then(_self.copyWith(
 subcategoryId: null == subcategoryId ? _self.subcategoryId : subcategoryId // ignore: cast_nullable_to_non_nullable
+as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,plateColor: null == plateColor ? _self.plateColor : plateColor // ignore: cast_nullable_to_non_nullable
@@ -160,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String subcategoryId,  String name,  String emoji,  String plateColor,  int levelsCleared,  int levelCount,  int starsEarned,  int accuracyPercent)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String subcategoryId,  String categoryId,  String name,  String emoji,  String plateColor,  int levelsCleared,  int levelCount,  int starsEarned,  int accuracyPercent)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BestCategoryEntry() when $default != null:
-return $default(_that.subcategoryId,_that.name,_that.emoji,_that.plateColor,_that.levelsCleared,_that.levelCount,_that.starsEarned,_that.accuracyPercent);case _:
+return $default(_that.subcategoryId,_that.categoryId,_that.name,_that.emoji,_that.plateColor,_that.levelsCleared,_that.levelCount,_that.starsEarned,_that.accuracyPercent);case _:
   return orElse();
 
 }
@@ -181,10 +182,10 @@ return $default(_that.subcategoryId,_that.name,_that.emoji,_that.plateColor,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String subcategoryId,  String name,  String emoji,  String plateColor,  int levelsCleared,  int levelCount,  int starsEarned,  int accuracyPercent)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String subcategoryId,  String categoryId,  String name,  String emoji,  String plateColor,  int levelsCleared,  int levelCount,  int starsEarned,  int accuracyPercent)  $default,) {final _that = this;
 switch (_that) {
 case _BestCategoryEntry():
-return $default(_that.subcategoryId,_that.name,_that.emoji,_that.plateColor,_that.levelsCleared,_that.levelCount,_that.starsEarned,_that.accuracyPercent);case _:
+return $default(_that.subcategoryId,_that.categoryId,_that.name,_that.emoji,_that.plateColor,_that.levelsCleared,_that.levelCount,_that.starsEarned,_that.accuracyPercent);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +202,10 @@ return $default(_that.subcategoryId,_that.name,_that.emoji,_that.plateColor,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String subcategoryId,  String name,  String emoji,  String plateColor,  int levelsCleared,  int levelCount,  int starsEarned,  int accuracyPercent)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String subcategoryId,  String categoryId,  String name,  String emoji,  String plateColor,  int levelsCleared,  int levelCount,  int starsEarned,  int accuracyPercent)?  $default,) {final _that = this;
 switch (_that) {
 case _BestCategoryEntry() when $default != null:
-return $default(_that.subcategoryId,_that.name,_that.emoji,_that.plateColor,_that.levelsCleared,_that.levelCount,_that.starsEarned,_that.accuracyPercent);case _:
+return $default(_that.subcategoryId,_that.categoryId,_that.name,_that.emoji,_that.plateColor,_that.levelsCleared,_that.levelCount,_that.starsEarned,_that.accuracyPercent);case _:
   return null;
 
 }
@@ -216,10 +217,11 @@ return $default(_that.subcategoryId,_that.name,_that.emoji,_that.plateColor,_tha
 @JsonSerializable()
 
 class _BestCategoryEntry implements BestCategoryEntry {
-  const _BestCategoryEntry({required this.subcategoryId, required this.name, required this.emoji, required this.plateColor, required this.levelsCleared, required this.levelCount, required this.starsEarned, required this.accuracyPercent});
+  const _BestCategoryEntry({required this.subcategoryId, required this.categoryId, required this.name, required this.emoji, required this.plateColor, required this.levelsCleared, required this.levelCount, required this.starsEarned, required this.accuracyPercent});
   factory _BestCategoryEntry.fromJson(Map<String, dynamic> json) => _$BestCategoryEntryFromJson(json);
 
 @override final  String subcategoryId;
+@override final  String categoryId;
 @override final  String name;
 @override final  String emoji;
 @override final  String plateColor;
@@ -241,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BestCategoryEntry&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.plateColor, plateColor) || other.plateColor == plateColor)&&(identical(other.levelsCleared, levelsCleared) || other.levelsCleared == levelsCleared)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.starsEarned, starsEarned) || other.starsEarned == starsEarned)&&(identical(other.accuracyPercent, accuracyPercent) || other.accuracyPercent == accuracyPercent));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BestCategoryEntry&&(identical(other.subcategoryId, subcategoryId) || other.subcategoryId == subcategoryId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.name, name) || other.name == name)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.plateColor, plateColor) || other.plateColor == plateColor)&&(identical(other.levelsCleared, levelsCleared) || other.levelsCleared == levelsCleared)&&(identical(other.levelCount, levelCount) || other.levelCount == levelCount)&&(identical(other.starsEarned, starsEarned) || other.starsEarned == starsEarned)&&(identical(other.accuracyPercent, accuracyPercent) || other.accuracyPercent == accuracyPercent));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,subcategoryId,name,emoji,plateColor,levelsCleared,levelCount,starsEarned,accuracyPercent);
+int get hashCode => Object.hash(runtimeType,subcategoryId,categoryId,name,emoji,plateColor,levelsCleared,levelCount,starsEarned,accuracyPercent);
 
 @override
 String toString() {
-  return 'BestCategoryEntry(subcategoryId: $subcategoryId, name: $name, emoji: $emoji, plateColor: $plateColor, levelsCleared: $levelsCleared, levelCount: $levelCount, starsEarned: $starsEarned, accuracyPercent: $accuracyPercent)';
+  return 'BestCategoryEntry(subcategoryId: $subcategoryId, categoryId: $categoryId, name: $name, emoji: $emoji, plateColor: $plateColor, levelsCleared: $levelsCleared, levelCount: $levelCount, starsEarned: $starsEarned, accuracyPercent: $accuracyPercent)';
 }
 
 
@@ -261,7 +263,7 @@ abstract mixin class _$BestCategoryEntryCopyWith<$Res> implements $BestCategoryE
   factory _$BestCategoryEntryCopyWith(_BestCategoryEntry value, $Res Function(_BestCategoryEntry) _then) = __$BestCategoryEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String subcategoryId, String name, String emoji, String plateColor, int levelsCleared, int levelCount, int starsEarned, int accuracyPercent
+ String subcategoryId, String categoryId, String name, String emoji, String plateColor, int levelsCleared, int levelCount, int starsEarned, int accuracyPercent
 });
 
 
@@ -278,9 +280,10 @@ class __$BestCategoryEntryCopyWithImpl<$Res>
 
 /// Create a copy of BestCategoryEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? subcategoryId = null,Object? name = null,Object? emoji = null,Object? plateColor = null,Object? levelsCleared = null,Object? levelCount = null,Object? starsEarned = null,Object? accuracyPercent = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? subcategoryId = null,Object? categoryId = null,Object? name = null,Object? emoji = null,Object? plateColor = null,Object? levelsCleared = null,Object? levelCount = null,Object? starsEarned = null,Object? accuracyPercent = null,}) {
   return _then(_BestCategoryEntry(
 subcategoryId: null == subcategoryId ? _self.subcategoryId : subcategoryId // ignore: cast_nullable_to_non_nullable
+as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,emoji: null == emoji ? _self.emoji : emoji // ignore: cast_nullable_to_non_nullable
 as String,plateColor: null == plateColor ? _self.plateColor : plateColor // ignore: cast_nullable_to_non_nullable

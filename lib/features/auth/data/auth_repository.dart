@@ -81,4 +81,8 @@ class AuthRepository {
 
   /// Invalidates the current account's session and drops back to a guest.
   Future<void> signOut() => _api.signOut();
+
+  /// Permanently deletes the signed-in account and all its server-side data,
+  /// then drops back to a fresh anonymous guest (plan 025).
+  Future<void> deleteAccount() => _api.deleteAccount();
 }

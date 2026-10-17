@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/ladder/ladder_config_repository.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/share/share_targets.dart';
 import 'package:quizoo/core/theme/app_colors.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -13,7 +14,6 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
-import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/share_sheet.dart';
 import 'package:quizoo/features/topic_mastery/data/topic_mastery_api.dart';
@@ -71,39 +71,18 @@ class _TopicMasteredView extends StatelessWidget {
   }
 
   void _share(BuildContext context, TopicMastery mastery) {
+    final l10n = AppLocalizations.of(context);
     AppBottomSheet.show<void>(
       context,
       builder: (sheetContext) => ShareSheet(
         title: AppLocalizations.of(sheetContext).masteryShareTitle,
         message: AppLocalizations.of(sheetContext).shareSpoilerFree,
         preview: _SharePreview(mastery: mastery),
-        targets: [
-          ShareTarget(
-            emoji: '💬',
-            label: 'WhatsApp',
-            onTap: () => _confirmShared(sheetContext),
-          ),
-          ShareTarget(
-            emoji: '✖️',
-            label: 'X',
-            onTap: () => _confirmShared(sheetContext),
-          ),
-          ShareTarget(
-            emoji: '🔗',
-            label: 'Copy',
-            onTap: () => _confirmShared(sheetContext),
-          ),
-        ],
+        targets: ShareTargets.real(
+          context: context,
+          text: l10n.shareMasteryText(mastery.topicName),
+        ),
       ),
-    );
-  }
-
-  void _confirmShared(BuildContext context) {
-    Navigator.of(context).maybePop();
-    AppSnackbar.show(
-      context,
-      title: AppLocalizations.of(context).commonSharedMock,
-      intent: SnackbarIntent.success,
     );
   }
 

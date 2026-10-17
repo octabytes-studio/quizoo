@@ -280,7 +280,7 @@ class ProfileApi {
     for (final id in topIds.take(2)) {
       final subcategoryRow = await _client
           .from('subcategories')
-          .select('slug, emoji, plate_color')
+          .select('slug, emoji, plate_color, category_id')
           .eq('id', id)
           .maybeSingle();
       if (subcategoryRow == null) continue;
@@ -295,6 +295,7 @@ class ProfileApi {
       entries.add(
         BestCategoryEntry(
           subcategoryId: id,
+          categoryId: subcategoryRow['category_id'] as String,
           name: subcategoryRow['slug'] as String,
           emoji: subcategoryRow['emoji'] as String,
           plateColor: subcategoryRow['plate_color'] as String,

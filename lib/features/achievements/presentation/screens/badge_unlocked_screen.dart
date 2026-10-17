@@ -5,13 +5,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/share/share_targets.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
-import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/share_sheet.dart';
 import 'package:quizoo/features/achievements/data/achievements_api.dart';
@@ -55,39 +55,18 @@ class _BadgeUnlockedView extends StatelessWidget {
   }
 
   void _share(BuildContext context, BadgeProgress progress) {
+    final l10n = AppLocalizations.of(context);
     AppBottomSheet.show<void>(
       context,
       builder: (sheetContext) => ShareSheet(
         title: AppLocalizations.of(sheetContext).badgeUnlockedShareTitle,
         message: AppLocalizations.of(sheetContext).shareSpoilerFree,
         preview: _SharePreview(progress: progress),
-        targets: [
-          ShareTarget(
-            emoji: '💬',
-            label: 'WhatsApp',
-            onTap: () => _confirmShared(sheetContext),
-          ),
-          ShareTarget(
-            emoji: '✖️',
-            label: 'X',
-            onTap: () => _confirmShared(sheetContext),
-          ),
-          ShareTarget(
-            emoji: '🔗',
-            label: 'Copy',
-            onTap: () => _confirmShared(sheetContext),
-          ),
-        ],
+        targets: ShareTargets.real(
+          context: context,
+          text: l10n.shareBadgeText(progress.badge.name),
+        ),
       ),
-    );
-  }
-
-  void _confirmShared(BuildContext context) {
-    Navigator.of(context).maybePop();
-    AppSnackbar.show(
-      context,
-      title: AppLocalizations.of(context).commonSharedMock,
-      intent: SnackbarIntent.success,
     );
   }
 

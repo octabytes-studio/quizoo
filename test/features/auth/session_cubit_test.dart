@@ -219,6 +219,36 @@ void main() {
     );
 
     blocTest<SessionCubit, SessionState>(
+      'success path: deleting the account erases it server-side and drops '
+      'back to guest',
+      setUp: () {
+        when(() => repository.deleteAccount()).thenAnswer((_) async {});
+      },
+      build: () => SessionCubit(repository),
+      seed: () => const SessionSignedIn(user),
+      act: (cubit) => cubit.deleteAccount(),
+      expect: () => [isA<SessionGuest>()],
+      verify: (_) {
+        verify(() => repository.deleteAccount()).called(1);
+      },
+    );
+
+    blocTest<SessionCubit, SessionState>(
+      'failure path: a failed deletion rethrows and leaves the account '
+      '(and the player) exactly where they were, like signOut',
+      setUp: () {
+        when(
+          () => repository.deleteAccount(),
+        ).thenThrow(const ApiException.network());
+      },
+      build: () => SessionCubit(repository),
+      seed: () => const SessionSignedIn(user),
+      act: (cubit) => cubit.deleteAccount(),
+      expect: () => <SessionState>[],
+      errors: () => [isA<ApiException>()],
+    );
+
+    blocTest<SessionCubit, SessionState>(
       'success path: Edit Profile saves the new username/avatar directly '
       'into SessionSignedIn, with no SessionAuthenticating step',
       setUp: () {

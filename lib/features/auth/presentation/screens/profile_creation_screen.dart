@@ -216,12 +216,16 @@ class _ProfileCreationViewState extends State<_ProfileCreationView> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      // Defence in depth (plan 023, 6.5) — see Edit Profile's twin.
+      // Defence in depth (plan 023, 6.5) — see Edit Profile's twin. Plan 025
+      // adds the server's username-policy refusal, which needs its own copy:
+      // "check your connection" would be actively misleading for it.
       AppSnackbar.show(
         context,
-        title: error.code == 'pro_avatar_required'
-            ? l10n.proAvatarRequired
-            : l10n.profileUpdateError,
+        title: switch (error.code) {
+          'pro_avatar_required' => l10n.proAvatarRequired,
+          'username_not_allowed' => l10n.profileUsernameNotAllowed,
+          _ => l10n.profileUpdateError,
+        },
         intent: SnackbarIntent.error,
       );
       return;

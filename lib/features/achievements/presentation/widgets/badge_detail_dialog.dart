@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_gradients.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -112,20 +111,21 @@ class BadgeDetailDialog extends StatelessWidget {
               ],
             ),
             SizedBox(height: AppSpacing.base.h + 2.h),
-            if (badge.isLocked && progress.nextSubcategoryId != null) ...[
+            // Plan 025: the CTA appears only when the server supplied the
+            // full route (category + subcategory + display name) — no
+            // fixture fallback, and nothing for a topic it cannot address.
+            if (badge.isLocked &&
+                progress.nextCategoryId != null &&
+                progress.nextSubcategoryId != null &&
+                progress.nextSubcategoryName != null) ...[
               ChunkyButton(
-                label: l10n.badgeDetailPlay(
-                  _subcategoryName(progress.nextSubcategoryId!),
-                ),
+                label: l10n.badgeDetailPlay(progress.nextSubcategoryName!),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  final subcategory = MockCatalog.subcategoryById(
-                    progress.nextSubcategoryId!,
-                  );
                   context.push(
                     AppRoutes.levelMapPath(
-                      subcategory.categoryId,
-                      subcategory.id,
+                      progress.nextCategoryId!,
+                      progress.nextSubcategoryId!,
                     ),
                   );
                 },
@@ -140,14 +140,6 @@ class BadgeDetailDialog extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  static String _subcategoryName(String subcategoryId) {
-    try {
-      return MockCatalog.subcategoryById(subcategoryId).name;
-    } on StateError {
-      return MockCatalog.subcategoryById(MockCatalog.footballId).name;
-    }
   }
 }
 
@@ -174,13 +166,18 @@ class _ProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                progress.closestGroupLabel ?? '',
-                style: textTheme.labelSmall,
+              Expanded(
+                child: Text(
+                  progress.closestGroupLabel ?? '',
+                  style: textTheme.labelSmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              SizedBox(width: AppSpacing.sm.w),
               Text(
                 progress.closestFractionLabel ?? '',
                 style: textTheme.labelSmall,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

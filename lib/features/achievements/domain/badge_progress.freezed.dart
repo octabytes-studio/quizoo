@@ -20,7 +20,11 @@ mixin _$BadgeProgress {
  String? get closestFractionLabel;/// 0…1, the thin progress bar under [closestFractionLabel].
  double? get closestProgress;/// "Next up: Hockey — you're on Level 2 of 20."
  String? get nextActionLabel;/// The subcategory the detail dialog's CTA deep-links into.
- String? get nextSubcategoryId; int? get rewardCoins;
+ String? get nextSubcategoryId;/// The route ids the CTA needs, from the same server rows as
+/// [nextSubcategoryId] — plan 025 removed the `MockCatalog` lookup that
+/// crashed for any topic outside the 26-entry fixture.
+ String? get nextCategoryId;/// The topic's display name for the CTA label.
+ String? get nextSubcategoryName; int? get rewardCoins;
 /// Create a copy of BadgeProgress
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,16 +37,16 @@ $BadgeProgressCopyWith<BadgeProgress> get copyWith => _$BadgeProgressCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BadgeProgress&&(identical(other.badge, badge) || other.badge == badge)&&(identical(other.category, category) || other.category == category)&&(identical(other.closestGroupLabel, closestGroupLabel) || other.closestGroupLabel == closestGroupLabel)&&(identical(other.closestFractionLabel, closestFractionLabel) || other.closestFractionLabel == closestFractionLabel)&&(identical(other.closestProgress, closestProgress) || other.closestProgress == closestProgress)&&(identical(other.nextActionLabel, nextActionLabel) || other.nextActionLabel == nextActionLabel)&&(identical(other.nextSubcategoryId, nextSubcategoryId) || other.nextSubcategoryId == nextSubcategoryId)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BadgeProgress&&(identical(other.badge, badge) || other.badge == badge)&&(identical(other.category, category) || other.category == category)&&(identical(other.closestGroupLabel, closestGroupLabel) || other.closestGroupLabel == closestGroupLabel)&&(identical(other.closestFractionLabel, closestFractionLabel) || other.closestFractionLabel == closestFractionLabel)&&(identical(other.closestProgress, closestProgress) || other.closestProgress == closestProgress)&&(identical(other.nextActionLabel, nextActionLabel) || other.nextActionLabel == nextActionLabel)&&(identical(other.nextSubcategoryId, nextSubcategoryId) || other.nextSubcategoryId == nextSubcategoryId)&&(identical(other.nextCategoryId, nextCategoryId) || other.nextCategoryId == nextCategoryId)&&(identical(other.nextSubcategoryName, nextSubcategoryName) || other.nextSubcategoryName == nextSubcategoryName)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,badge,category,closestGroupLabel,closestFractionLabel,closestProgress,nextActionLabel,nextSubcategoryId,rewardCoins);
+int get hashCode => Object.hash(runtimeType,badge,category,closestGroupLabel,closestFractionLabel,closestProgress,nextActionLabel,nextSubcategoryId,nextCategoryId,nextSubcategoryName,rewardCoins);
 
 @override
 String toString() {
-  return 'BadgeProgress(badge: $badge, category: $category, closestGroupLabel: $closestGroupLabel, closestFractionLabel: $closestFractionLabel, closestProgress: $closestProgress, nextActionLabel: $nextActionLabel, nextSubcategoryId: $nextSubcategoryId, rewardCoins: $rewardCoins)';
+  return 'BadgeProgress(badge: $badge, category: $category, closestGroupLabel: $closestGroupLabel, closestFractionLabel: $closestFractionLabel, closestProgress: $closestProgress, nextActionLabel: $nextActionLabel, nextSubcategoryId: $nextSubcategoryId, nextCategoryId: $nextCategoryId, nextSubcategoryName: $nextSubcategoryName, rewardCoins: $rewardCoins)';
 }
 
 
@@ -53,7 +57,7 @@ abstract mixin class $BadgeProgressCopyWith<$Res>  {
   factory $BadgeProgressCopyWith(BadgeProgress value, $Res Function(BadgeProgress) _then) = _$BadgeProgressCopyWithImpl;
 @useResult
 $Res call({
- AppBadge badge, BadgeCategory category, String? closestGroupLabel, String? closestFractionLabel, double? closestProgress, String? nextActionLabel, String? nextSubcategoryId, int? rewardCoins
+ AppBadge badge, BadgeCategory category, String? closestGroupLabel, String? closestFractionLabel, double? closestProgress, String? nextActionLabel, String? nextSubcategoryId, String? nextCategoryId, String? nextSubcategoryName, int? rewardCoins
 });
 
 
@@ -70,7 +74,7 @@ class _$BadgeProgressCopyWithImpl<$Res>
 
 /// Create a copy of BadgeProgress
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? badge = null,Object? category = null,Object? closestGroupLabel = freezed,Object? closestFractionLabel = freezed,Object? closestProgress = freezed,Object? nextActionLabel = freezed,Object? nextSubcategoryId = freezed,Object? rewardCoins = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? badge = null,Object? category = null,Object? closestGroupLabel = freezed,Object? closestFractionLabel = freezed,Object? closestProgress = freezed,Object? nextActionLabel = freezed,Object? nextSubcategoryId = freezed,Object? nextCategoryId = freezed,Object? nextSubcategoryName = freezed,Object? rewardCoins = freezed,}) {
   return _then(_self.copyWith(
 badge: null == badge ? _self.badge : badge // ignore: cast_nullable_to_non_nullable
 as AppBadge,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
@@ -79,6 +83,8 @@ as String?,closestFractionLabel: freezed == closestFractionLabel ? _self.closest
 as String?,closestProgress: freezed == closestProgress ? _self.closestProgress : closestProgress // ignore: cast_nullable_to_non_nullable
 as double?,nextActionLabel: freezed == nextActionLabel ? _self.nextActionLabel : nextActionLabel // ignore: cast_nullable_to_non_nullable
 as String?,nextSubcategoryId: freezed == nextSubcategoryId ? _self.nextSubcategoryId : nextSubcategoryId // ignore: cast_nullable_to_non_nullable
+as String?,nextCategoryId: freezed == nextCategoryId ? _self.nextCategoryId : nextCategoryId // ignore: cast_nullable_to_non_nullable
+as String?,nextSubcategoryName: freezed == nextSubcategoryName ? _self.nextSubcategoryName : nextSubcategoryName // ignore: cast_nullable_to_non_nullable
 as String?,rewardCoins: freezed == rewardCoins ? _self.rewardCoins : rewardCoins // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
@@ -174,10 +180,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AppBadge badge,  BadgeCategory category,  String? closestGroupLabel,  String? closestFractionLabel,  double? closestProgress,  String? nextActionLabel,  String? nextSubcategoryId,  int? rewardCoins)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AppBadge badge,  BadgeCategory category,  String? closestGroupLabel,  String? closestFractionLabel,  double? closestProgress,  String? nextActionLabel,  String? nextSubcategoryId,  String? nextCategoryId,  String? nextSubcategoryName,  int? rewardCoins)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BadgeProgress() when $default != null:
-return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closestFractionLabel,_that.closestProgress,_that.nextActionLabel,_that.nextSubcategoryId,_that.rewardCoins);case _:
+return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closestFractionLabel,_that.closestProgress,_that.nextActionLabel,_that.nextSubcategoryId,_that.nextCategoryId,_that.nextSubcategoryName,_that.rewardCoins);case _:
   return orElse();
 
 }
@@ -195,10 +201,10 @@ return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closest
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AppBadge badge,  BadgeCategory category,  String? closestGroupLabel,  String? closestFractionLabel,  double? closestProgress,  String? nextActionLabel,  String? nextSubcategoryId,  int? rewardCoins)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AppBadge badge,  BadgeCategory category,  String? closestGroupLabel,  String? closestFractionLabel,  double? closestProgress,  String? nextActionLabel,  String? nextSubcategoryId,  String? nextCategoryId,  String? nextSubcategoryName,  int? rewardCoins)  $default,) {final _that = this;
 switch (_that) {
 case _BadgeProgress():
-return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closestFractionLabel,_that.closestProgress,_that.nextActionLabel,_that.nextSubcategoryId,_that.rewardCoins);case _:
+return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closestFractionLabel,_that.closestProgress,_that.nextActionLabel,_that.nextSubcategoryId,_that.nextCategoryId,_that.nextSubcategoryName,_that.rewardCoins);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,10 +221,10 @@ return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closest
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AppBadge badge,  BadgeCategory category,  String? closestGroupLabel,  String? closestFractionLabel,  double? closestProgress,  String? nextActionLabel,  String? nextSubcategoryId,  int? rewardCoins)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AppBadge badge,  BadgeCategory category,  String? closestGroupLabel,  String? closestFractionLabel,  double? closestProgress,  String? nextActionLabel,  String? nextSubcategoryId,  String? nextCategoryId,  String? nextSubcategoryName,  int? rewardCoins)?  $default,) {final _that = this;
 switch (_that) {
 case _BadgeProgress() when $default != null:
-return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closestFractionLabel,_that.closestProgress,_that.nextActionLabel,_that.nextSubcategoryId,_that.rewardCoins);case _:
+return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closestFractionLabel,_that.closestProgress,_that.nextActionLabel,_that.nextSubcategoryId,_that.nextCategoryId,_that.nextSubcategoryName,_that.rewardCoins);case _:
   return null;
 
 }
@@ -230,7 +236,7 @@ return $default(_that.badge,_that.category,_that.closestGroupLabel,_that.closest
 @JsonSerializable()
 
 class _BadgeProgress extends BadgeProgress {
-  const _BadgeProgress({required this.badge, required this.category, this.closestGroupLabel, this.closestFractionLabel, this.closestProgress, this.nextActionLabel, this.nextSubcategoryId, this.rewardCoins}): super._();
+  const _BadgeProgress({required this.badge, required this.category, this.closestGroupLabel, this.closestFractionLabel, this.closestProgress, this.nextActionLabel, this.nextSubcategoryId, this.nextCategoryId, this.nextSubcategoryName, this.rewardCoins}): super._();
   factory _BadgeProgress.fromJson(Map<String, dynamic> json) => _$BadgeProgressFromJson(json);
 
 @override final  AppBadge badge;
@@ -245,6 +251,12 @@ class _BadgeProgress extends BadgeProgress {
 @override final  String? nextActionLabel;
 /// The subcategory the detail dialog's CTA deep-links into.
 @override final  String? nextSubcategoryId;
+/// The route ids the CTA needs, from the same server rows as
+/// [nextSubcategoryId] — plan 025 removed the `MockCatalog` lookup that
+/// crashed for any topic outside the 26-entry fixture.
+@override final  String? nextCategoryId;
+/// The topic's display name for the CTA label.
+@override final  String? nextSubcategoryName;
 @override final  int? rewardCoins;
 
 /// Create a copy of BadgeProgress
@@ -260,16 +272,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BadgeProgress&&(identical(other.badge, badge) || other.badge == badge)&&(identical(other.category, category) || other.category == category)&&(identical(other.closestGroupLabel, closestGroupLabel) || other.closestGroupLabel == closestGroupLabel)&&(identical(other.closestFractionLabel, closestFractionLabel) || other.closestFractionLabel == closestFractionLabel)&&(identical(other.closestProgress, closestProgress) || other.closestProgress == closestProgress)&&(identical(other.nextActionLabel, nextActionLabel) || other.nextActionLabel == nextActionLabel)&&(identical(other.nextSubcategoryId, nextSubcategoryId) || other.nextSubcategoryId == nextSubcategoryId)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BadgeProgress&&(identical(other.badge, badge) || other.badge == badge)&&(identical(other.category, category) || other.category == category)&&(identical(other.closestGroupLabel, closestGroupLabel) || other.closestGroupLabel == closestGroupLabel)&&(identical(other.closestFractionLabel, closestFractionLabel) || other.closestFractionLabel == closestFractionLabel)&&(identical(other.closestProgress, closestProgress) || other.closestProgress == closestProgress)&&(identical(other.nextActionLabel, nextActionLabel) || other.nextActionLabel == nextActionLabel)&&(identical(other.nextSubcategoryId, nextSubcategoryId) || other.nextSubcategoryId == nextSubcategoryId)&&(identical(other.nextCategoryId, nextCategoryId) || other.nextCategoryId == nextCategoryId)&&(identical(other.nextSubcategoryName, nextSubcategoryName) || other.nextSubcategoryName == nextSubcategoryName)&&(identical(other.rewardCoins, rewardCoins) || other.rewardCoins == rewardCoins));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,badge,category,closestGroupLabel,closestFractionLabel,closestProgress,nextActionLabel,nextSubcategoryId,rewardCoins);
+int get hashCode => Object.hash(runtimeType,badge,category,closestGroupLabel,closestFractionLabel,closestProgress,nextActionLabel,nextSubcategoryId,nextCategoryId,nextSubcategoryName,rewardCoins);
 
 @override
 String toString() {
-  return 'BadgeProgress(badge: $badge, category: $category, closestGroupLabel: $closestGroupLabel, closestFractionLabel: $closestFractionLabel, closestProgress: $closestProgress, nextActionLabel: $nextActionLabel, nextSubcategoryId: $nextSubcategoryId, rewardCoins: $rewardCoins)';
+  return 'BadgeProgress(badge: $badge, category: $category, closestGroupLabel: $closestGroupLabel, closestFractionLabel: $closestFractionLabel, closestProgress: $closestProgress, nextActionLabel: $nextActionLabel, nextSubcategoryId: $nextSubcategoryId, nextCategoryId: $nextCategoryId, nextSubcategoryName: $nextSubcategoryName, rewardCoins: $rewardCoins)';
 }
 
 
@@ -280,7 +292,7 @@ abstract mixin class _$BadgeProgressCopyWith<$Res> implements $BadgeProgressCopy
   factory _$BadgeProgressCopyWith(_BadgeProgress value, $Res Function(_BadgeProgress) _then) = __$BadgeProgressCopyWithImpl;
 @override @useResult
 $Res call({
- AppBadge badge, BadgeCategory category, String? closestGroupLabel, String? closestFractionLabel, double? closestProgress, String? nextActionLabel, String? nextSubcategoryId, int? rewardCoins
+ AppBadge badge, BadgeCategory category, String? closestGroupLabel, String? closestFractionLabel, double? closestProgress, String? nextActionLabel, String? nextSubcategoryId, String? nextCategoryId, String? nextSubcategoryName, int? rewardCoins
 });
 
 
@@ -297,7 +309,7 @@ class __$BadgeProgressCopyWithImpl<$Res>
 
 /// Create a copy of BadgeProgress
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? badge = null,Object? category = null,Object? closestGroupLabel = freezed,Object? closestFractionLabel = freezed,Object? closestProgress = freezed,Object? nextActionLabel = freezed,Object? nextSubcategoryId = freezed,Object? rewardCoins = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? badge = null,Object? category = null,Object? closestGroupLabel = freezed,Object? closestFractionLabel = freezed,Object? closestProgress = freezed,Object? nextActionLabel = freezed,Object? nextSubcategoryId = freezed,Object? nextCategoryId = freezed,Object? nextSubcategoryName = freezed,Object? rewardCoins = freezed,}) {
   return _then(_BadgeProgress(
 badge: null == badge ? _self.badge : badge // ignore: cast_nullable_to_non_nullable
 as AppBadge,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
@@ -306,6 +318,8 @@ as String?,closestFractionLabel: freezed == closestFractionLabel ? _self.closest
 as String?,closestProgress: freezed == closestProgress ? _self.closestProgress : closestProgress // ignore: cast_nullable_to_non_nullable
 as double?,nextActionLabel: freezed == nextActionLabel ? _self.nextActionLabel : nextActionLabel // ignore: cast_nullable_to_non_nullable
 as String?,nextSubcategoryId: freezed == nextSubcategoryId ? _self.nextSubcategoryId : nextSubcategoryId // ignore: cast_nullable_to_non_nullable
+as String?,nextCategoryId: freezed == nextCategoryId ? _self.nextCategoryId : nextCategoryId // ignore: cast_nullable_to_non_nullable
+as String?,nextSubcategoryName: freezed == nextSubcategoryName ? _self.nextSubcategoryName : nextSubcategoryName // ignore: cast_nullable_to_non_nullable
 as String?,rewardCoins: freezed == rewardCoins ? _self.rewardCoins : rewardCoins // ignore: cast_nullable_to_non_nullable
 as int?,
   ));

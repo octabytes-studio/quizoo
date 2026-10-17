@@ -7,6 +7,8 @@ import 'package:quizoo/features/auth/data/auth_api.dart';
 import 'package:quizoo/features/auth/data/auth_repository.dart';
 import 'package:quizoo/features/auth/domain/auth_user.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
+import 'package:quizoo/features/profile/data/profile_repository.dart';
+import 'package:quizoo/features/profile/domain/profile_summary.dart';
 import 'package:quizoo/features/profile/presentation/bloc/profile_cubit.dart';
 import 'package:quizoo/features/profile/presentation/screens/profile_screen.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
@@ -15,6 +17,44 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../support/pump_screen.dart';
 
 class _FakeAuthApi extends Mock implements AuthApi {}
+
+class _MockProfileRepository extends Mock implements ProfileRepository {}
+
+/// A loaded summary whose only "Best categories" row is a topic no
+/// `MockCatalog` fixture knows about — the plan-025 regression case: the old
+/// code looked the row up in the 26-entry fixture and threw `StateError` for
+/// anything else.
+ProfileSummary _summaryWithUnfixturedTopic() => const ProfileSummary(
+  username: 'Waleed',
+  avatarEmoji: '🐼',
+  cityLabel: '🇵🇰 Islamabad',
+  joinedLabel: 'Joined Mar 2026',
+  leagueEmoji: '🏅',
+  leagueName: 'Gold',
+  dayStreak: 12,
+  playerLevel: 7,
+  rankTitle: 'Curious Mind',
+  xpIntoLevel: 120,
+  xpToNextLevel: 500,
+  totalPoints: 12400,
+  totalLevels: 42,
+  accuracyPercent: 78,
+  badgeCount: 5,
+  recentBadges: [],
+  bestCategories: [
+    BestCategoryEntry(
+      subcategoryId: 'sub_black_holes',
+      categoryId: 'cat_space',
+      name: 'Black Holes',
+      emoji: '🌌',
+      plateColor: '#3A2A8A',
+      levelsCleared: 3,
+      levelCount: 30,
+      starsEarned: 7,
+      accuracyPercent: 88,
+    ),
+  ],
+);
 
 /// `ProfileScreen` constructs a real `ProfileApi(supabase)` inline (the same
 /// DI-less pattern as `HomeScreen`, see `home_screen_test.dart`). In
@@ -194,5 +234,46 @@ void main() {
 
       expect(find.text('pushed:/settings'), findsOneWidget);
     });
+
+    testWidgets(
+      'tapping a best-category row for a non-fixture topic opens its level '
+      "map straight from the entry's own ids (plan 025)",
+      (tester) async {
+        final repository = _MockProfileRepository();
+        when(
+          () => repository.fetchSummary(),
+        ).thenAnswer((_) async => _summaryWithUnfixturedTopic());
+        final cubit = ProfileCubit(repository);
+        await cubit.load();
+
+        await tester.pumpScreen(
+          ProfileScreen(profileCubit: cubit),
+          session: await signedInSession(),
+        );
+
+        final bestCategory = find.text('Black Holes');
+        await tester.scrollUntilVisible(
+          bestCategory,
+          200,
+          scrollable: find
+              .byWidgetPredicate(
+                (widget) =>
+                    widget is Scrollable &&
+                    widget.axisDirection == AxisDirection.down,
+              )
+              .first,
+        );
+        await tester.tap(bestCategory);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(
+            'pushed:/category/cat_space/subcategory/sub_black_holes/levels',
+          ),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }

@@ -54,6 +54,8 @@ QuizPlayRepository fakeQuizPlayRepository() {
       ),
       secondsPerQuestion: 20,
       isBoss: false,
+      categoryId: MockCatalog.sportsId,
+      subcategoryName: 'Football',
     ),
   );
   return QuizPlayRepository(api);

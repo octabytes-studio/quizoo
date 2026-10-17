@@ -36,6 +36,8 @@ void main() {
         questions: questions,
         secondsPerQuestion: 20,
         isBoss: false,
+        categoryId: 'cat_sports',
+        subcategoryName: 'Football',
       ),
     );
   }
@@ -115,6 +117,18 @@ void main() {
       // The Urdu deal is a different set of questions, so it is a different
       // cache entry rather than a hit on the English one.
       expect(repository.isPrepared(levelId, languageCode: 'ur'), isFalse);
+    });
+
+    test('the server-provided topic context carries through the cache '
+        '(plan 025)', () async {
+      stubSuccess();
+
+      await prepare();
+
+      expect(repository.categoryIdFor(levelId), 'cat_sports');
+      expect(repository.subcategoryNameFor(levelId), 'Football');
+      // Nothing prepared under another language's key.
+      expect(repository.categoryIdFor(levelId, languageCode: 'ur'), isNull);
     });
 
     test('forgetting a level makes a replay re-deal it', () async {

@@ -15,6 +15,8 @@ _BadgeProgress _$BadgeProgressFromJson(Map<String, dynamic> json) =>
       closestProgress: (json['closestProgress'] as num?)?.toDouble(),
       nextActionLabel: json['nextActionLabel'] as String?,
       nextSubcategoryId: json['nextSubcategoryId'] as String?,
+      nextCategoryId: json['nextCategoryId'] as String?,
+      nextSubcategoryName: json['nextSubcategoryName'] as String?,
       rewardCoins: (json['rewardCoins'] as num?)?.toInt(),
     );
 
@@ -27,6 +29,8 @@ Map<String, dynamic> _$BadgeProgressToJson(_BadgeProgress instance) =>
       'closestProgress': instance.closestProgress,
       'nextActionLabel': instance.nextActionLabel,
       'nextSubcategoryId': instance.nextSubcategoryId,
+      'nextCategoryId': instance.nextCategoryId,
+      'nextSubcategoryName': instance.nextSubcategoryName,
       'rewardCoins': instance.rewardCoins,
     };
 

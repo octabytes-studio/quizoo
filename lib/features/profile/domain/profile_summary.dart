@@ -9,6 +9,7 @@ part 'profile_summary.g.dart';
 abstract class BestCategoryEntry with _$BestCategoryEntry {
   const factory BestCategoryEntry({
     required String subcategoryId,
+    required String categoryId,
     required String name,
     required String emoji,
     required String plateColor,

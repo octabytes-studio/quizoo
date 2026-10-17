@@ -23,6 +23,8 @@ class AuthApi {
 
   static const String _oauthRedirect = 'com.quizoo.play://login-callback';
 
+  static const String _deleteAccountFunction = 'delete-account';
+
   /// Lets [SessionCubit] react to an OAuth deep link landing back in the app
   /// — [signInWithVendor] can only *launch* the browser, since a real
   /// provider's sign-in completes out of process.
@@ -181,8 +183,44 @@ class AuthApi {
   ///
   /// [SupabaseClient.auth.signOut] invalidates the account's session token
   /// server-side, not just on-device, which is what actually revokes it.
-  Future<void> signOut() async {
+  Future<void> signOut() => _restartAsGuest();
+
+  /// Permanently deletes the signed-in account server-side (plan 025).
+  ///
+  /// The `delete-account` Edge Function verifies the caller, cleans up the
+  /// rows whose `NO ACTION` FKs would block the profile cascade, and deletes
+  /// the auth user — after which the same guest reset as [signOut] runs, so
+  /// the device lands on a fresh anonymous session rather than no session.
+  ///
+  /// A 401 from the invoke means the account (or its session) is already
+  /// gone — a retry after a response was lost, or a session revoked
+  /// server-side. There is nothing left to delete, so it falls through to
+  /// the guest reset instead of trapping the player on an error for an
+  /// account that no longer exists.
+  Future<void> deleteAccount() async {
     try {
+      await _client.functions.invoke(_deleteAccountFunction);
+    } on FunctionException catch (error) {
+      if (error.status != 401) {
+        throw ApiException(
+          'Account deletion failed',
+          kind: error.status == 0 ? ApiErrorKind.network : ApiErrorKind.server,
+          statusCode: error.status == 0 ? null : error.status,
+        );
+      }
+    } catch (error) {
+      throw ApiException.fromSupabase(error);
+    }
+    await _restartAsGuest();
+  }
+
+  /// The shared "drop back to a working guest" path behind [signOut] and
+  /// [deleteAccount].
+  Future<void> _restartAsGuest() async {
+    try {
+      // The SDK already swallows a 401/403/404 here (invalid, expired or
+      // deleted-user sessions all sign the device out locally first) — see
+      // gotrue's `_signOut` — so an error here is a real failure.
       await _client.auth.signOut();
     } catch (error) {
       throw ApiException.fromSupabase(error);

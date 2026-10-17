@@ -34,6 +34,14 @@ abstract class BadgeProgress with _$BadgeProgress {
 
     /// The subcategory the detail dialog's CTA deep-links into.
     String? nextSubcategoryId,
+
+    /// The route ids the CTA needs, from the same server rows as
+    /// [nextSubcategoryId] — plan 025 removed the `MockCatalog` lookup that
+    /// crashed for any topic outside the 26-entry fixture.
+    String? nextCategoryId,
+
+    /// The topic's display name for the CTA label.
+    String? nextSubcategoryName,
     int? rewardCoins,
   }) = _BadgeProgress;
 

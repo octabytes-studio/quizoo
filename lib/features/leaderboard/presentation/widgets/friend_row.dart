@@ -28,37 +28,46 @@ class FriendRow extends StatelessWidget {
     final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
 
+    // Plan 025: with no duel action wired, a friend row shows no duel pill
+    // at all rather than a button that promises a missing action.
+    final Widget? trailing;
+    if (friend.status == FriendStatus.pending) {
+      trailing = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _RoundIconButton(
+            glyph: '✓',
+            background: quizoo.ok,
+            foreground: Colors.white,
+            semanticLabel: l10n.friendsAccept,
+            onTap: onAccept,
+          ),
+          SizedBox(width: AppSpacing.xs.w + 2.w),
+          _RoundIconButton(
+            glyph: '✕',
+            background: quizoo.s3,
+            foreground: quizoo.tx3,
+            semanticLabel: l10n.friendsDecline,
+            onTap: onDecline,
+          ),
+        ],
+      );
+    } else if (onDuel != null) {
+      trailing = _DuelPill(
+        isEnabled: friend.status == FriendStatus.online,
+        onTap: onDuel,
+      );
+    } else {
+      trailing = null;
+    }
+
     return ListRowTile(
       variant: ListRowVariant.player,
       title: friend.name,
       subtitle: friend.subtitle,
       leadingEmoji: friend.avatarEmoji,
       isPro: friend.isPro,
-      trailing: friend.status == FriendStatus.pending
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _RoundIconButton(
-                  glyph: '✓',
-                  background: quizoo.ok,
-                  foreground: Colors.white,
-                  semanticLabel: l10n.friendsAccept,
-                  onTap: onAccept,
-                ),
-                SizedBox(width: AppSpacing.xs.w + 2.w),
-                _RoundIconButton(
-                  glyph: '✕',
-                  background: quizoo.s3,
-                  foreground: quizoo.tx3,
-                  semanticLabel: l10n.friendsDecline,
-                  onTap: onDecline,
-                ),
-              ],
-            )
-          : _DuelPill(
-              isEnabled: friend.status == FriendStatus.online,
-              onTap: onDuel,
-            ),
+      trailing: trailing,
     );
   }
 }

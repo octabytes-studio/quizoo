@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
-import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
-import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
-import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
@@ -19,6 +16,12 @@ import 'package:quizoo/features/leaderboard/presentation/widgets/friend_row.dart
 import 'package:quizoo/l10n/app_localizations.dart';
 
 /// S-31 — friend requests and the friends list.
+///
+/// The friend system itself is not implemented (see `MOCKED_FEATURES.md`):
+/// this screen is an unreachable design screen, and every affordance that
+/// once promised it with a mock snackbar has been removed (plan 025) — what
+/// remains (requests, accept/decline) is real. It is kept out of release
+/// navigation by having no push site, not by a debug gate.
 class FriendsScreen extends StatelessWidget {
   const FriendsScreen({super.key});
 
@@ -30,15 +33,6 @@ class FriendsScreen extends StatelessWidget {
       child: const _FriendsView(),
     );
   }
-}
-
-void _showMockSnackbar(BuildContext context) {
-  final l10n = AppLocalizations.of(context);
-  AppSnackbar.show(
-    context,
-    title: l10n.commonMockFeature,
-    intent: SnackbarIntent.info,
-  );
 }
 
 class _FriendsView extends StatelessWidget {
@@ -64,9 +58,6 @@ class _FriendsView extends StatelessWidget {
                         state.requests.length,
                       )
                     : null,
-                trailing: _AddFriendButton(
-                  onTap: () => _showMockSnackbar(context),
-                ),
               ),
             ),
             Expanded(
@@ -103,21 +94,12 @@ class _FriendsContent extends StatelessWidget {
         emoji: '🧑‍🤝‍🧑',
         title: l10n.friendsEmptyTitle,
         message: l10n.friendsEmptyBody,
-        action: ChunkyButton(
-          label: l10n.friendsInvite,
-          onPressed: () => _showMockSnackbar(context),
-        ),
-        secondaryAction: ChunkyButton.ghost(
-          label: l10n.friendsFindPeople,
-          onPressed: () => _showMockSnackbar(context),
-        ),
       );
     }
 
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
       children: [
-        _InviteCard(onTap: () => _showMockSnackbar(context)),
         if (state.requests.isNotEmpty) ...[
           SizedBox(height: AppSpacing.base.h),
           Text(
@@ -146,94 +128,11 @@ class _FriendsContent extends StatelessWidget {
           for (final friend in state.accepted)
             Padding(
               padding: EdgeInsets.only(bottom: AppSpacing.sm.h),
-              child: FriendRow(
-                friend: friend,
-                onDuel: () => _showMockSnackbar(context),
-              ),
+              child: FriendRow(friend: friend),
             ),
         ],
         SizedBox(height: AppSpacing.xl.h),
       ],
-    );
-  }
-}
-
-class _InviteCard extends StatelessWidget {
-  const _InviteCard({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final quizoo = context.quizoo;
-    final l10n = AppLocalizations.of(context);
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.base.w - 2.w),
-      decoration: BoxDecoration(
-        color: quizoo.s1,
-        borderRadius: AppRadius.cardAll,
-        border: Border.all(color: quizoo.ln),
-        boxShadow: quizoo.shadow,
-      ),
-      child: Row(
-        children: [
-          Text('🔗', style: AppTypography.glyph(26.sp)),
-          SizedBox(width: AppSpacing.md.w - 1.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.friendsInvite,
-                  style: textTheme.bodyLarge!.copyWith(fontSize: 13.5.sp),
-                ),
-                Text(l10n.friendsInviteReward, style: textTheme.labelSmall),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: onTap,
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 7.h),
-              decoration: BoxDecoration(
-                color: quizoo.g,
-                borderRadius: BorderRadius.circular(AppRadius.rowAvatar.r),
-              ),
-              child: Text(
-                l10n.friendsShare,
-                style: textTheme.labelMedium!.copyWith(color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AddFriendButton extends StatelessWidget {
-  const _AddFriendButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: AppLocalizations.of(context).friendsAdd,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: SizedBox(
-          width: 34.w,
-          height: 34.w,
-          child: const Center(child: Text('➕')),
-        ),
-      ),
     );
   }
 }

@@ -169,14 +169,22 @@ void main() {
       () =>
           repository.isBossFor(any(), languageCode: any(named: 'languageCode')),
     ).thenReturn(isBoss);
+    when(
+      () => repository.categoryIdFor(
+        any(),
+        languageCode: any(named: 'languageCode'),
+      ),
+    ).thenReturn(MockCatalog.sportsId);
+    when(
+      () => repository.subcategoryNameFor(
+        any(),
+        languageCode: any(named: 'languageCode'),
+      ),
+    ).thenReturn('Football');
   }
 
-  Future<void> start(QuizPlayCubit cubit) => cubit.startLevel(
-    levelId: levelId,
-    categoryId: MockCatalog.sportsId,
-    subcategoryName: 'Football',
-    perks: const ProPerks.free(),
-  );
+  Future<void> start(QuizPlayCubit cubit) =>
+      cubit.startLevel(levelId: levelId, perks: const ProPerks.free());
 
   group('QuizPlayCubit', () {
     test('starts in the preparing state', () {
@@ -193,7 +201,19 @@ void main() {
         isA<QuizPlayCountdown>()
             .having((state) => state.beat, 'beat', 3)
             .having((state) => state.run.levelNumber, 'level', 12)
-            .having((state) => state.run.secondsPerQuestion, 'seconds', 20),
+            .having((state) => state.run.secondsPerQuestion, 'seconds', 20)
+            // Plan 025: the run's topic context comes from the repository's
+            // server-provided payload, not the constructor.
+            .having(
+              (state) => state.run.categoryId,
+              'categoryId',
+              MockCatalog.sportsId,
+            )
+            .having(
+              (state) => state.run.subcategoryName,
+              'subcategoryName',
+              'Football',
+            ),
       ],
     );
 

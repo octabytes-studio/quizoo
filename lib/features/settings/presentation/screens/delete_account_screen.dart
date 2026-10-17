@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/core/network/api_exception.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
@@ -19,14 +20,31 @@ import 'package:quizoo/l10n/app_localizations.dart';
 ///
 /// A typed-username gate, case-sensitive and exact (plan 004's Edge cases: a
 /// trimmed or case-insensitive match would weaken the deliberate friction),
-/// with "Delete permanently" disabled until it matches. Mock delete just
-/// signs out to Guest and shows a snackbar — there is no real account to
-/// erase (plan 004, Scope).
+/// with "Delete permanently" disabled until it matches. Deletion is real
+/// (plan 025): [SessionCubit.deleteAccount] calls the `delete-account` Edge
+/// Function, which erases the auth user and every owned row server-side
+/// before the device drops back to Guest.
+///
+/// Guests have no account to erase, so the screen renders an informational
+/// guard instead of the destructive flow — a reviewer reaching this route
+/// (or a deep link) before creating an account is never shown a dead-end
+/// destructive button.
 class DeleteAccountScreen extends StatelessWidget {
-  const DeleteAccountScreen({super.key});
+  const DeleteAccountScreen({super.key, @visibleForTesting this.profileCubit});
+
+  /// Test seam: drives the screen from a given Cubit instead of building one
+  /// against the real backend.
+  final ProfileCubit? profileCubit;
 
   @override
   Widget build(BuildContext context) {
+    final injected = profileCubit;
+    if (injected != null) {
+      return BlocProvider<ProfileCubit>.value(
+        value: injected,
+        child: const _DeleteAccountView(),
+      );
+    }
     return BlocProvider<ProfileCubit>(
       create: (_) =>
           ProfileCubit(ProfileRepository(ProfileApi(supabase)))..load(),
@@ -44,6 +62,7 @@ class _DeleteAccountView extends StatefulWidget {
 
 class _DeleteAccountViewState extends State<_DeleteAccountView> {
   final TextEditingController _controller = TextEditingController();
+  bool _isDeleting = false;
   String _typed = '';
 
   @override
@@ -58,14 +77,35 @@ class _DeleteAccountViewState extends State<_DeleteAccountView> {
     super.dispose();
   }
 
-  void _deletePermanently(BuildContext context) {
-    context.read<SessionCubit>().continueAsGuest();
-    Navigator.of(context).popUntil((route) => route.isFirst);
+  Future<void> _deletePermanently() async {
+    final l10n = AppLocalizations.of(context);
+    final navigator = Navigator.of(context);
+    // Captured before the await: the cubit flips to Guest the moment the
+    // server confirms, which must not matter to the pop below.
+    final session = context.read<SessionCubit>();
+    setState(() => _isDeleting = true);
+    try {
+      await session.deleteAccount();
+    } on ApiException {
+      // The account is untouched server-side — keep the screen (and the
+      // typed username) exactly where they were and say so.
+      if (!mounted) return;
+      setState(() => _isDeleting = false);
+      AppSnackbar.show(
+        context,
+        title: l10n.deleteAccountError,
+        intent: SnackbarIntent.error,
+      );
+      return;
+    }
+    if (!mounted) return;
+    // Shown on the root messenger before the pop, so it survives it.
     AppSnackbar.show(
       context,
-      title: AppLocalizations.of(context).deleteAccountDone,
+      title: l10n.deleteAccountDone,
       intent: SnackbarIntent.info,
     );
+    navigator.popUntil((route) => route.isFirst);
   }
 
   @override
@@ -73,6 +113,7 @@ class _DeleteAccountViewState extends State<_DeleteAccountView> {
     final quizoo = context.quizoo;
     final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
+    final isGuest = context.watch<SessionCubit>().state is SessionGuest;
 
     return Scaffold(
       backgroundColor: quizoo.ov,
@@ -120,12 +161,23 @@ class _DeleteAccountViewState extends State<_DeleteAccountView> {
                       ),
                       SizedBox(height: AppSpacing.md.h),
                       Text(
-                        l10n.deleteAccountTitle,
+                        isGuest
+                            ? l10n.deleteAccountGuestTitle
+                            : l10n.deleteAccountTitle,
                         textAlign: TextAlign.center,
                         style: textTheme.headlineLarge,
                       ),
                       SizedBox(height: 6.h),
-                      if (summary == null) ...[
+                      if (isGuest)
+                        Padding(
+                          padding: EdgeInsets.only(top: AppSpacing.sm.h),
+                          child: Text(
+                            l10n.deleteAccountGuestBody,
+                            textAlign: TextAlign.center,
+                            style: textTheme.bodySmall,
+                          ),
+                        )
+                      else if (summary == null) ...[
                         SizedBox(height: AppSpacing.sm.h),
                         SizedBox(
                           width: 20.w,
@@ -146,7 +198,7 @@ class _DeleteAccountViewState extends State<_DeleteAccountView> {
                           style: textTheme.bodySmall,
                         ),
                       SizedBox(height: AppSpacing.base.h),
-                      if (summary != null) ...[
+                      if (!isGuest && summary != null) ...[
                         Text(
                           l10n.deleteAccountTypeUsername(summary.username),
                           textAlign: TextAlign.center,
@@ -156,6 +208,7 @@ class _DeleteAccountViewState extends State<_DeleteAccountView> {
                         TextField(
                           controller: _controller,
                           textAlign: TextAlign.center,
+                          enabled: !_isDeleting,
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: quizoo.s3,
@@ -169,18 +222,35 @@ class _DeleteAccountViewState extends State<_DeleteAccountView> {
                           ),
                         ),
                       ],
+                      if (_isDeleting && !isGuest) ...[
+                        Center(
+                          child: SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: quizoo.bad,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: AppSpacing.sm.h),
+                      ],
                       SizedBox(height: AppSpacing.base.h + 2.h),
                       ChunkyButton.ghost(
-                        label: l10n.deleteAccountKeep,
-                        onPressed: context.pop,
+                        label: isGuest
+                            ? l10n.commonBack
+                            : l10n.deleteAccountKeep,
+                        onPressed: _isDeleting ? null : context.pop,
                       ),
-                      SizedBox(height: 9.h),
-                      ChunkyButton.danger(
-                        label: l10n.deleteAccountDelete,
-                        onPressed: matches
-                            ? () => _deletePermanently(context)
-                            : null,
-                      ),
+                      if (!isGuest) ...[
+                        SizedBox(height: 9.h),
+                        ChunkyButton.danger(
+                          label: l10n.deleteAccountDelete,
+                          onPressed: matches && !_isDeleting
+                              ? _deletePermanently
+                              : null,
+                        ),
+                      ],
                     ],
                   ),
                 );

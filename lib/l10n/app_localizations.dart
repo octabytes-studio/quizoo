@@ -788,6 +788,12 @@ abstract class AppLocalizations {
   /// **'{subcategory} · LEVEL {level}'**
   String countdownMeta(String subcategory, int level);
 
+  /// S-10 countdown meta label for the daily run, which has no subcategory or level number (plan 025 fixed the previous blank '· LEVEL 0' label).
+  ///
+  /// In en, this message translates to:
+  /// **'DAILY CHALLENGE'**
+  String get countdownDailyMeta;
+
   /// S-10 countdown caption.
   ///
   /// In en, this message translates to:
@@ -1154,6 +1160,12 @@ abstract class AppLocalizations {
   /// **'Share'**
   String get resultShare;
 
+  /// S-21 share sheet title (plan 025 replaced the demo share route with this inline sheet).
+  ///
+  /// In en, this message translates to:
+  /// **'Share your result'**
+  String get resultShareTitle;
+
   /// S-22 heading. Reframed as nearly-there, never as a scolding.
   ///
   /// In en, this message translates to:
@@ -1412,6 +1424,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t save your changes'**
   String get profileUpdateError;
 
+  /// Plan 025: the server's username-policy refusal (a reserved/profanity term) on profile creation and Edit Profile, instead of the generic save error.
+  ///
+  /// In en, this message translates to:
+  /// **'That name isn\'t allowed. Please pick a different one.'**
+  String get profileUsernameNotAllowed;
+
   /// Generic content-error heading for this plan's screens.
   ///
   /// In en, this message translates to:
@@ -1424,23 +1442,47 @@ abstract class AppLocalizations {
   /// **'Check your connection and give it another go.'**
   String get contentErrorBody;
 
-  /// Snackbar for a plan-003 tap that has no real backend behind it (search, invite, duel, add-friend).
+  /// Snackbar after ShareSheet's Copy target puts the share text on the clipboard (plan 025).
   ///
   /// In en, this message translates to:
-  /// **'Mock — no real sharing wired yet'**
-  String get commonMockFeature;
+  /// **'Copied to clipboard'**
+  String get commonCopied;
 
-  /// Snackbar after tapping a mock share target in ShareSheet.
+  /// Snackbar when a ShareSheet destination's external app could not be opened (plan 025); the sheet stays usable.
   ///
   /// In en, this message translates to:
-  /// **'Shared! (mock — no real sharing wired yet)'**
-  String get commonSharedMock;
+  /// **'Couldn\'t open that app'**
+  String get commonShareFailed;
 
   /// ShareSheet message line for the daily result and badge-unlocked shares.
   ///
   /// In en, this message translates to:
   /// **'Spoiler-free — no answers included.'**
   String get shareSpoilerFree;
+
+  /// S-21 share text sent to WhatsApp/X/Copy. Spoiler-free: score and level only, never answers.
+  ///
+  /// In en, this message translates to:
+  /// **'I just finished level {level} of {topic} on Quizoo with {score} points! 🎉'**
+  String shareResultText(int level, String topic, int score);
+
+  /// S-28 share text. Spoiler-free: the day's tally only, never answers.
+  ///
+  /// In en, this message translates to:
+  /// **'I scored {correct}/{total} on today\'s Quizoo Daily Challenge — a {streak}-day streak and counting! 🔥'**
+  String shareDailyText(int correct, int total, int streak);
+
+  /// S-23 share text.
+  ///
+  /// In en, this message translates to:
+  /// **'I just unlocked the {badge} badge on Quizoo! 🏆'**
+  String shareBadgeText(String badge);
+
+  /// Topic Mastered share text (plan 020/025).
+  ///
+  /// In en, this message translates to:
+  /// **'I mastered {topic} on Quizoo — every level, every star. 💎'**
+  String shareMasteryText(String topic);
 
   /// S-27 top bar title.
   ///
@@ -2185,12 +2227,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your stats'**
   String get statsTitle;
-
-  /// S-35 non-functional date-range chip (plan 003, Assumption 3).
-  ///
-  /// In en, this message translates to:
-  /// **'Last 30 days ▾'**
-  String get statsRangeChip;
 
   /// S-35 chart card eyebrow.
   ///
@@ -3032,11 +3068,11 @@ abstract class AppLocalizations {
   /// **'Preview: notification permission'**
   String get settingsPreviewNotificationPermission;
 
-  /// S-42 footer version string.
+  /// S-42 footer version string — the version comes from the build (--dart-define=APP_VERSION, sourced from pubspec.yaml by scripts/build.sh), never hardcoded.
   ///
   /// In en, this message translates to:
-  /// **'Quizoo v1.0.0 (mock build)'**
-  String get settingsVersion;
+  /// **'Quizoo v{version}'**
+  String settingsVersion(String version);
 
   /// S-44 top bar title.
   ///
@@ -3098,11 +3134,29 @@ abstract class AppLocalizations {
   /// **'Delete permanently'**
   String get deleteAccountDelete;
 
-  /// Snackbar after the mocked delete signs the player out to Guest.
+  /// Snackbar after the real delete removes the account and drops the device to Guest.
   ///
   /// In en, this message translates to:
-  /// **'Account deleted (mock) — you\'re browsing as a guest'**
+  /// **'Account deleted'**
   String get deleteAccountDone;
+
+  /// S-52 error snackbar when the delete-account function fails; the account is untouched and the screen stays open.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t delete your account. Check your connection and try again.'**
+  String get deleteAccountError;
+
+  /// S-52 guard title when the route is reached without a signed-in account.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re browsing as a guest'**
+  String get deleteAccountGuestTitle;
+
+  /// S-52 guard body explaining why there is nothing to delete.
+  ///
+  /// In en, this message translates to:
+  /// **'There\'s no saved account to delete yet. Create one later, and you can delete it from here.'**
+  String get deleteAccountGuestBody;
 
   /// S-50 headline.
   ///
@@ -3164,23 +3218,11 @@ abstract class AppLocalizations {
   /// **'Reminders on for {time}'**
   String notificationPermissionOnTitle(String time);
 
-  /// Privacy stub screen top bar title (plan 004, Assumption 4).
+  /// Privacy top bar title (plan 004, Assumption 4). Plan 025 removed the two fake toggles this screen used to hold.
   ///
   /// In en, this message translates to:
   /// **'Privacy'**
   String get privacyTitle;
-
-  /// Privacy stub toggle row.
-  ///
-  /// In en, this message translates to:
-  /// **'Show my rank on leaderboards'**
-  String get privacyShowOnLeaderboards;
-
-  /// Privacy stub toggle row.
-  ///
-  /// In en, this message translates to:
-  /// **'Show my activity to friends'**
-  String get privacyShowActivityToFriends;
 
   /// S-11 HUD '⋯' semantic label, opening S-51 (plan 004).
   ///
@@ -3283,6 +3325,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Report sent — thanks for the flag'**
   String get reportQuestionSent;
+
+  /// S-51 error snackbar when the question_reports insert fails (plan 025); the sheet stays open for a retry.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t send your report. Check your connection and try again.'**
+  String get reportQuestionError;
+
+  /// S-51 release-safe empty state for a report route reached without a question payload (plan 025).
+  ///
+  /// In en, this message translates to:
+  /// **'This report link is no longer valid. Open the report sheet from the question you want to flag.'**
+  String get reportQuestionUnavailableBody;
+
+  /// Plan 025 semantic label for a player row's ⋯ affordance.
+  ///
+  /// In en, this message translates to:
+  /// **'Player actions'**
+  String get safetyActionsLabel;
+
+  /// Plan 025 player-actions sheet next to a public username.
+  ///
+  /// In en, this message translates to:
+  /// **'Report player'**
+  String get safetyReportPlayer;
+
+  /// Plan 025 player-actions sheet action.
+  ///
+  /// In en, this message translates to:
+  /// **'Block player'**
+  String get safetyBlockPlayer;
+
+  /// Plan 025 player-actions sheet action when already blocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock player'**
+  String get safetyUnblockPlayer;
+
+  /// Plan 025 player-actions sheet one-line explanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocking hides them from your leaderboards, duels and matchmaking.'**
+  String get safetyBlockHelper;
+
+  /// Plan 025 player-report reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Offensive name or avatar'**
+  String get safetyReasonOffensiveName;
+
+  /// Plan 025 player-report reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment or bullying'**
+  String get safetyReasonHarassment;
+
+  /// Plan 025 player-report reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheating'**
+  String get safetyReasonCheating;
+
+  /// Plan 025 player-report reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Impersonation'**
+  String get safetyReasonImpersonation;
+
+  /// Plan 025 player-report reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get safetyReasonOther;
+
+  /// Plan 025 player-report submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get safetyReportSubmit;
+
+  /// Plan 025 player-report confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent — thanks for keeping Quizoo safe'**
+  String get safetyReportSent;
+
+  /// Plan 025 confirmation after blocking.
+  ///
+  /// In en, this message translates to:
+  /// **'Player blocked — they\'re hidden from your leaderboards, duels and matchmaking.'**
+  String get safetyBlocked;
+
+  /// Plan 025 confirmation after unblocking.
+  ///
+  /// In en, this message translates to:
+  /// **'Player unblocked'**
+  String get safetyUnblocked;
+
+  /// Plan 025 error snackbar for a failed report/block/unblock.
+  ///
+  /// In en, this message translates to:
+  /// **'That didn\'t go through. Check your connection and try again.'**
+  String get safetyActionFailed;
+
+  /// Plan 025 Privacy → Blocked players row and screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked players'**
+  String get safetyBlockedPlayersTitle;
+
+  /// Plan 025 one-line explanation under the Privacy row.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked players are hidden from your leaderboards and matchmaking.'**
+  String get safetyBlockedPlayersHelper;
+
+  /// Plan 025 blocked-players empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody blocked'**
+  String get safetyBlockedPlayersEmptyTitle;
+
+  /// Plan 025 blocked-players empty state body.
+  ///
+  /// In en, this message translates to:
+  /// **'Players you block show up here, and you can unblock them any time.'**
+  String get safetyBlockedPlayersEmptyBody;
+
+  /// Plan 025 blocked-players row subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked {date}'**
+  String safetyBlockedOn(String date);
 
   /// S-53's own reserved path, reached with no real result to share.
   ///

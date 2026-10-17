@@ -8,8 +8,6 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/anchored_banner_ad.dart';
-import 'package:quizoo/core/widgets/app_chip.dart';
-import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/distribution_chart.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
@@ -52,21 +50,7 @@ class _StatsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SimpleTopBar(
-              title: l10n.statsTitle,
-              trailing: GestureDetector(
-                onTap: () => AppSnackbar.show(
-                  context,
-                  title: l10n.commonMockFeature,
-                  intent: SnackbarIntent.info,
-                ),
-                behavior: HitTestBehavior.opaque,
-                // S-35's range picker is non-functional mock chrome in this
-                // phase — a real recompute is out of scope (plan 003,
-                // Assumption 3).
-                child: AppChip.status(label: l10n.statsRangeChip),
-              ),
-            ),
+            SimpleTopBar(title: l10n.statsTitle),
             Expanded(
               child: BlocBuilder<StatsCubit, StatsState>(
                 builder: (context, state) => switch (state) {

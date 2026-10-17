@@ -111,6 +111,10 @@ fi
 # --dart-define overrides --dart-define-from-file, so this wins over
 # "SHOW_TEST_ADS": true in dart_define.json (see lib/core/ads/ad_unit_ids.dart).
 DART_DEFINE_ARGS+=(--dart-define=SHOW_TEST_ADS=false)
+# The Settings footer's version string is sourced from pubspec.yaml at build
+# time (plan 025) — `--dart-define` wins over the define file, so a release
+# build can never show a stale version (see lib/core/app_version.dart).
+DART_DEFINE_ARGS+=(--dart-define=APP_VERSION="$VERSION")
 
 # Sets the global OBF_ARGS array. $1 = platform subdir name for the symbols output
 # (android / ios). Bash 3.2 (macOS's default /bin/bash) has no `mapfile`, so this

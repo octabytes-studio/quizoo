@@ -210,6 +210,9 @@ abstract final class AppRoutes {
   /// no `sXX` alias below.
   static const String privacySettings = '/settings/privacy';
 
+  /// Blocked players management (plan 025) — reached from Privacy.
+  static const String blockedPlayers = '/settings/blocked-players';
+
   // ----------------------------------------------- system states & overlays
   /// S-46 Offline.
   static const String offline = '/offline';

@@ -149,8 +149,6 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
   /// them into the repository, so this resolves from cache with no network.
   Future<void> startLevel({
     required String levelId,
-    required String categoryId,
-    required String subcategoryName,
     required ProPerks perks,
     String languageCode = 'en',
   }) async {
@@ -209,8 +207,14 @@ class QuizPlayCubit extends Cubit<QuizPlayState> {
       attemptId: attemptId,
       levelId: levelId,
       subcategoryId: subcategoryId,
-      subcategoryName: subcategoryName,
-      categoryId: categoryId,
+      // Server-provided topic context (plan 025), from this same attempt's
+      // response — never the client-side MockCatalog fixture, which only
+      // covers 26 of the 207 live subcategories.
+      subcategoryName:
+          _repository.subcategoryNameFor(levelId, languageCode: languageCode) ??
+          '',
+      categoryId:
+          _repository.categoryIdFor(levelId, languageCode: languageCode) ?? '',
       levelNumber: levelNumber,
       // Server-authoritative, from the same start_level_attempt response
       // that dealt these questions — never re-derived from a client-side

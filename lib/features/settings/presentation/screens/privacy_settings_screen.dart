@@ -2,30 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quizoo/app/ads_cubit.dart';
+import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/simple_top_bar.dart';
 import 'package:quizoo/features/settings/presentation/widgets/settings_row.dart';
-import 'package:quizoo/features/settings/presentation/widgets/settings_toggle_row.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 /// Privacy & leaderboard visibility.
 ///
 /// The bible lists this as a settings row with a "›" affordance but never
-/// mockups its own destination (plan 004, Assumption 4) — this stub is a
-/// reasonable reading of the row's own label: two on/off toggles, held as
-/// local, ephemeral UI state (CLAUDE.md §3) since there is no backend for
-/// either preference to reach.
-class PrivacySettingsScreen extends StatefulWidget {
+/// mockups its own destination (plan 004, Assumption 4). Plan 025 removed the
+/// two fake toggles it used to hold ("show me on leaderboards", "show my
+/// activity to friends"): neither had a backend, both looked real, and a
+/// toggle that silently does nothing is worse than no toggle. What is real
+/// stays: Google's ad-privacy choices where they apply (plan 022), and the
+/// player-safety surface the app actually has — blocked players.
+class PrivacySettingsScreen extends StatelessWidget {
   const PrivacySettingsScreen({super.key});
-
-  @override
-  State<PrivacySettingsScreen> createState() => _PrivacySettingsScreenState();
-}
-
-class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
-  bool _showOnLeaderboards = true;
-  bool _showActivityToFriends = true;
 
   @override
   Widget build(BuildContext context) {
@@ -52,19 +47,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 horizontal: AppSpacing.screenMargin.w,
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SettingsToggleRow(
-                    title: l10n.privacyShowOnLeaderboards,
-                    value: _showOnLeaderboards,
-                    onChanged: (value) =>
-                        setState(() => _showOnLeaderboards = value),
+                  SettingsRow(
+                    title: l10n.safetyBlockedPlayersTitle,
+                    onTap: () => context.push(AppRoutes.blockedPlayers),
                   ),
-                  SizedBox(height: AppSpacing.sm.h),
-                  SettingsToggleRow(
-                    title: l10n.privacyShowActivityToFriends,
-                    value: _showActivityToFriends,
-                    onChanged: (value) =>
-                        setState(() => _showActivityToFriends = value),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      top: AppSpacing.xs.h,
+                      left: AppSpacing.xs.w,
+                    ),
+                    child: Text(
+                      l10n.safetyBlockedPlayersHelper,
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                   ),
                   if (showAdChoices) ...[
                     SizedBox(height: AppSpacing.sm.h),

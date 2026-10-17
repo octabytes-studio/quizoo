@@ -401,6 +401,12 @@ verify_jwt = false
 [functions.sync-pro-status]
 verify_jwt = true
 
+# Plan 025: real account deletion, called from the app with the signed-in
+# user's JWT; the gateway rejects unauthenticated calls before the function
+# body runs (which then re-verifies the token itself).
+[functions.delete-account]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

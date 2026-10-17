@@ -197,12 +197,15 @@ class _EditProfileViewState extends State<_EditProfileView> {
       if (!mounted) return;
       // Defence in depth (plan 023, 6.5): the picker already locks Pro
       // avatars for a free player, but the server is the real gate and this
-      // is what its refusal looks like.
+      // is what its refusal looks like. Plan 025 adds the username-policy
+      // refusal, which needs its own copy rather than the generic error.
       AppSnackbar.show(
         context,
-        title: error.code == 'pro_avatar_required'
-            ? l10n.proAvatarRequired
-            : l10n.profileUpdateError,
+        title: switch (error.code) {
+          'pro_avatar_required' => l10n.proAvatarRequired,
+          'username_not_allowed' => l10n.profileUsernameNotAllowed,
+          _ => l10n.profileUpdateError,
+        },
         intent: SnackbarIntent.error,
       );
     } finally {

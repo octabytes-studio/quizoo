@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/router/app_route_observer.dart';
 import 'package:quizoo/core/router/app_routes.dart';
+import 'package:quizoo/core/share/share_targets.dart';
 import 'package:quizoo/core/subscription/paywall_source.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
 import 'package:quizoo/core/widgets/app_snackbar.dart';
@@ -41,9 +43,12 @@ import 'package:quizoo/features/profile/presentation/screens/profile_screen.dart
 import 'package:quizoo/features/profile/presentation/screens/stats_screen.dart';
 import 'package:quizoo/features/quiz_play/data/mock_questions.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
+import 'package:quizoo/features/quiz_play/domain/report_question_args.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/quiz_play_screen.dart';
+import 'package:quizoo/features/quiz_play/presentation/screens/report_question_screen.dart';
 import 'package:quizoo/features/quiz_result/presentation/screens/answer_review_screen.dart';
 import 'package:quizoo/features/quiz_result/presentation/screens/quiz_result_screen.dart';
+import 'package:quizoo/features/settings/presentation/screens/blocked_players_screen.dart';
 import 'package:quizoo/features/settings/presentation/screens/delete_account_screen.dart';
 import 'package:quizoo/features/settings/presentation/screens/force_update_screen.dart';
 import 'package:quizoo/features/settings/presentation/screens/notification_permission_screen.dart';
@@ -375,20 +380,31 @@ abstract final class AppRouter {
           builder: (context, state) => const PrivacySettingsScreen(),
         ),
         GoRoute(
+          path: AppRoutes.blockedPlayers,
+          parentNavigatorKey: rootNavigatorKey,
+          builder: (context, state) => const BlockedPlayersScreen(),
+        ),
+        GoRoute(
           path: AppRoutes.deleteAccount,
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const DeleteAccountScreen(),
         ),
-        GoRoute(
-          path: AppRoutes.notificationPermission,
-          parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) => const NotificationPermissionScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.forceUpdate,
-          parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) => const ForceUpdateScreen(),
-        ),
+        // Plan 025: preview/demo screens are registered in debug builds only —
+        // a release build must not expose them even via a crafted deep link.
+        // `kDebugMode` is a compile-time constant, so the release route table
+        // simply does not contain them.
+        if (kDebugMode) ...[
+          GoRoute(
+            path: AppRoutes.notificationPermission,
+            parentNavigatorKey: rootNavigatorKey,
+            builder: (context, state) => const NotificationPermissionScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.forceUpdate,
+            parentNavigatorKey: rootNavigatorKey,
+            builder: (context, state) => const ForceUpdateScreen(),
+          ),
+        ],
 
         // System states & overlays
         GoRoute(
@@ -396,29 +412,37 @@ abstract final class AppRouter {
           parentNavigatorKey: rootNavigatorKey,
           builder: (context, state) => const HomeScreen(forceOffline: true),
         ),
-        // S-51 is a sheet, reached for design review directly at its own path
-        // with a fixture question — every real call site opens it from
-        // `features/quiz_play`'s HUD instead (see `QuizHud`).
+        // S-51 — the real report flow (plan 025): the payload rides on the
+        // route's `extra`. A null payload in a debug build falls back to the
+        // old fixture demo (design review); a release build gets a clean
+        // unavailable sheet, never a fixture question.
         GoRoute(
           path: AppRoutes.reportQuestion,
           parentNavigatorKey: rootNavigatorKey,
-          pageBuilder: (context, state) =>
-              _sheetPage(state, _reportQuestionDemo(context)),
+          pageBuilder: (context, state) {
+            final args = state.extra as ReportQuestionArgs?;
+            if (args == null && kDebugMode) {
+              return _sheetPage(state, _reportQuestionDemo(context));
+            }
+            return _sheetPage(state, ReportQuestionScreen(args: args));
+          },
         ),
-        // S-53 likewise — every real call site (quiz result, daily result)
-        // builds its own preview and opens `ShareSheet` directly.
-        GoRoute(
-          path: AppRoutes.share,
-          parentNavigatorKey: rootNavigatorKey,
-          pageBuilder: (context, state) =>
-              _sheetPage(state, _shareDemo(context)),
-        ),
+        // S-53 is a design-review demo with mock callbacks — like the preview
+        // screens above, it exists in debug builds only (plan 025).
+        if (kDebugMode) ...[
+          GoRoute(
+            path: AppRoutes.share,
+            parentNavigatorKey: rootNavigatorKey,
+            pageBuilder: (context, state) =>
+                _sheetPage(state, _shareDemo(context)),
+          ),
 
-        GoRoute(
-          path: AppRoutes.screenIndex,
-          parentNavigatorKey: rootNavigatorKey,
-          builder: (context, state) => const ScreenIndexScreen(),
-        ),
+          GoRoute(
+            path: AppRoutes.screenIndex,
+            parentNavigatorKey: rootNavigatorKey,
+            builder: (context, state) => const ScreenIndexScreen(),
+          ),
+        ],
       ],
     );
   }
@@ -474,9 +498,9 @@ abstract final class AppRouter {
     );
   }
 
-  /// S-51 built for design review — a fixture question, since there is no
-  /// real "current question" outside `features/quiz_play`'s own HUD, which
-  /// opens this same sheet directly (see `QuizHud`).
+  /// S-51's debug-build design-review fallback: a fixture question, since a
+  /// route reached without a payload has no real "current question" outside
+  /// `features/quiz_play`'s own HUD. Debug only — see the route builder.
   static Widget _reportQuestionDemo(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final question = MockQuestions.football.first;
@@ -502,28 +526,15 @@ abstract final class AppRouter {
     );
   }
 
-  /// S-53 likewise — every real call site (quiz result, daily result) builds
-  /// its own preview and opens [ShareSheet] directly.
+  /// S-53 built for design review — debug-only after plan 025, and wired to
+  /// the same real [ShareTargets] every production surface uses.
   static Widget _shareDemo(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    void confirm() {
-      Navigator.of(context).pop();
-      AppSnackbar.show(
-        context,
-        title: l10n.commonSharedMock,
-        intent: SnackbarIntent.success,
-      );
-    }
-
     return ShareSheet(
       title: l10n.shareDemoTitle,
       message: l10n.shareSpoilerFree,
       preview: Text(l10n.shareDemoPreview),
-      targets: [
-        ShareTarget(emoji: '💬', label: 'WhatsApp', onTap: confirm),
-        ShareTarget(emoji: '✖️', label: 'X', onTap: confirm),
-        ShareTarget(emoji: '🔗', label: 'Copy', onTap: confirm),
-      ],
+      targets: ShareTargets.real(context: context, text: l10n.shareDemoPreview),
     );
   }
 }

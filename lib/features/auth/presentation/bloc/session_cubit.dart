@@ -164,6 +164,17 @@ class SessionCubit extends Cubit<SessionState> {
     if (!isClosed) emit(const SessionGuest());
   }
 
+  /// Permanently deletes the account server-side (plan 025) and drops back
+  /// to a fresh anonymous guest.
+  ///
+  /// Same contract as [signOut]: rethrows on failure rather than emitting
+  /// [SessionFailure] — the destructive screen shows its own error and keeps
+  /// the account (and the player) exactly where they were.
+  Future<void> deleteAccount() async {
+    await _repository.deleteAccount();
+    if (!isClosed) emit(const SessionGuest());
+  }
+
   @override
   Future<void> close() {
     unawaited(_authStateSubscription?.cancel());

@@ -115,6 +115,8 @@ class AchievementsApi {
     closestProgress: closest?.progress,
     nextActionLabel: closest?.nextActionLabel,
     nextSubcategoryId: closest?.nextSubcategoryId,
+    nextCategoryId: closest?.nextCategoryId,
+    nextSubcategoryName: closest?.nextSubcategoryName,
     rewardCoins: row['coin_reward'] as int? ?? 0,
   );
 
@@ -404,6 +406,12 @@ class AchievementsApi {
       nextSubcategoryId: subcategoryRows.isEmpty
           ? null
           : subcategoryRows.first['id'] as String,
+      // Plan 025: the CTA route and label come from these same server rows —
+      // never a client-side MockCatalog lookup, which only knows 26 topics.
+      nextCategoryId: bestCategoryId,
+      nextSubcategoryName: subcategoryRows.isEmpty
+          ? null
+          : subcategoryRows.first['slug'] as String,
     );
   }
 }
@@ -415,6 +423,8 @@ class _ClosestProgress {
     this.fractionLabel,
     this.progress,
     this.nextSubcategoryId,
+    this.nextCategoryId,
+    this.nextSubcategoryName,
   });
 
   final String? groupLabel;
@@ -422,4 +432,6 @@ class _ClosestProgress {
   final double? progress;
   final String nextActionLabel;
   final String? nextSubcategoryId;
+  final String? nextCategoryId;
+  final String? nextSubcategoryName;
 }

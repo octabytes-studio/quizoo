@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:quizoo/core/ads/ad_placement.dart';
 import 'package:quizoo/core/widgets/ad_break.dart';
 import 'package:quizoo/core/navigation/badge_celebration.dart';
+import 'package:quizoo/core/share/share_targets.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
-import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/distribution_chart.dart';
 import 'package:quizoo/core/widgets/native_ad_card.dart';
@@ -78,39 +78,22 @@ class _DailyResultLoadedView extends StatelessWidget {
   final VoidCallback onLeave;
 
   void _share(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     AppBottomSheet.show<void>(
       context,
       builder: (sheetContext) => ShareSheet(
         title: AppLocalizations.of(sheetContext).dailyResultShareTitle,
         message: AppLocalizations.of(sheetContext).shareSpoilerFree,
         preview: _SharePreview(result: result),
-        targets: [
-          ShareTarget(
-            emoji: '💬',
-            label: 'WhatsApp',
-            onTap: () => _confirmShared(sheetContext),
+        targets: ShareTargets.real(
+          context: context,
+          text: l10n.shareDailyText(
+            result.correctCount,
+            result.totalCount,
+            result.streakNow,
           ),
-          ShareTarget(
-            emoji: '✖️',
-            label: 'X',
-            onTap: () => _confirmShared(sheetContext),
-          ),
-          ShareTarget(
-            emoji: '🔗',
-            label: 'Copy',
-            onTap: () => _confirmShared(sheetContext),
-          ),
-        ],
+        ),
       ),
-    );
-  }
-
-  void _confirmShared(BuildContext context) {
-    Navigator.of(context).maybePop();
-    AppSnackbar.show(
-      context,
-      title: AppLocalizations.of(context).commonSharedMock,
-      intent: SnackbarIntent.success,
     );
   }
 

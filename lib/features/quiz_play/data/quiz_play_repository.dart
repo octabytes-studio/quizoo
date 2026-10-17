@@ -85,6 +85,18 @@ class QuizPlayRepository {
   bool? isBossFor(String levelId, {String languageCode = 'en'}) =>
       _prefetched[_key(levelId, languageCode)]?.isBoss;
 
+  /// The topic's category id, from the same `start_level_attempt` response
+  /// [questionsFor] resolved — replaces `MockCatalog`'s fixture lookup when
+  /// building [QuizRun] (plan 025).
+  String? categoryIdFor(String levelId, {String languageCode = 'en'}) =>
+      _prefetched[_key(levelId, languageCode)]?.categoryId;
+
+  /// The topic's localized display name, from the same server response —
+  /// replaces the `MockCatalog` lookup the countdown used to render (plan
+  /// 025). Falls back to the empty string only if the server omitted it.
+  String? subcategoryNameFor(String levelId, {String languageCode = 'en'}) =>
+      _prefetched[_key(levelId, languageCode)]?.subcategoryName;
+
   /// Drops a level's cache so a replay re-deals it. Called when a run ends.
   void forget(String levelId) =>
       _prefetched.removeWhere((key, _) => key.startsWith('$levelId@'));
@@ -95,6 +107,17 @@ class QuizPlayRepository {
   Future<DailyQuestionSession> questionsForDaily({
     required String languageCode,
   }) => _api.fetchDailyQuestions(languageCode: languageCode);
+
+  /// Files a question report through [QuizPlayApi.reportQuestion] (plan 025).
+  Future<void> reportQuestion({
+    required String questionId,
+    required String reasonCode,
+    required String locale,
+  }) => _api.reportQuestion(
+    questionId: questionId,
+    reasonCode: reasonCode,
+    locale: locale,
+  );
 
   static String _key(String levelId, String languageCode) =>
       '$levelId@$languageCode';

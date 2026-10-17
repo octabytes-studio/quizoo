@@ -10,6 +10,7 @@ import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_spacing.dart';
+import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/app_chip.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
@@ -17,6 +18,7 @@ import 'package:quizoo/core/widgets/empty_state_view.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/list_row_tile.dart';
 import 'package:quizoo/core/widgets/native_ad_tile.dart';
+import 'package:quizoo/core/widgets/player_actions_sheet.dart';
 import 'package:quizoo/core/widgets/segmented_tabs.dart';
 import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
 import 'package:quizoo/features/leaderboard/data/leaderboard_api.dart';
@@ -171,6 +173,26 @@ class _LeaderboardRoster extends StatelessWidget {
 
   final LeaderboardLoaded state;
 
+  /// Plan 025: the shared report/block sheet, then a reload so a block
+  /// disappears (or an unblock returns) immediately. Own rows are never
+  /// offered this — self-block is meaningless and the DB rejects it.
+  Future<void> _openPlayerActions(
+    BuildContext context,
+    LeaderboardEntry entry,
+  ) async {
+    if (entry.isSelf) return;
+    final changed = await PlayerActionsSheet.show(
+      context,
+      playerId: entry.playerId,
+      playerName: entry.name,
+      // Rosters are already filtered by the viewer's block list, so a
+      // player visible here is by definition not blocked.
+      isBlocked: false,
+    );
+    if (changed != true || !context.mounted) return;
+    context.read<LeaderboardCubit>().load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final podium = state.podium;
@@ -205,7 +227,12 @@ class _LeaderboardRoster extends StatelessWidget {
       padding: EdgeInsets.only(top: AppSpacing.md.h, bottom: AppSpacing.md.h),
       children: [
         if (podium.length == 3)
-          Podium(first: podium[0], second: podium[1], third: podium[2]),
+          Podium(
+            first: podium[0],
+            second: podium[1],
+            third: podium[2],
+            onTap: (entry) => _openPlayerActions(context, entry),
+          ),
         SizedBox(height: AppSpacing.lg.h),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.screenMargin.w),
@@ -219,7 +246,13 @@ class _LeaderboardRoster extends StatelessWidget {
                   ),
                 Padding(
                   padding: EdgeInsets.only(bottom: AppSpacing.sm.h),
-                  child: _LeaderboardRow(entry: entry, localeName: localeName),
+                  child: _LeaderboardRow(
+                    entry: entry,
+                    localeName: localeName,
+                    onActions: entry.isSelf
+                        ? null
+                        : () => _openPlayerActions(context, entry),
+                  ),
                 ),
               ],
             ],
@@ -231,14 +264,23 @@ class _LeaderboardRoster extends StatelessWidget {
 }
 
 class _LeaderboardRow extends StatelessWidget {
-  const _LeaderboardRow({required this.entry, required this.localeName});
+  const _LeaderboardRow({
+    required this.entry,
+    required this.localeName,
+    this.onActions,
+  });
 
   final LeaderboardEntry entry;
   final String localeName;
 
+  /// Non-null on every row but the viewer's own: shows the small ⋯ that
+  /// opens the report/block sheet (plan 025).
+  final VoidCallback? onActions;
+
   @override
   Widget build(BuildContext context) {
     final quizoo = context.quizoo;
+    final l10n = AppLocalizations.of(context);
     // Plan 023: own row, so the local entitlement is OR'd in — see `proBadge`.
     final localIsPro = context.select<SubscriptionCubit, bool>(
       (cubit) => cubit.state.isPro,
@@ -266,24 +308,47 @@ class _LeaderboardRow extends StatelessWidget {
         isSelf: entry.isSelf,
         localIsPro: localIsPro,
       ),
-      trailing: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            AppFormat.number(entry.score, localeName),
-            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-              fontSize: 14.5.sp,
-              fontWeight: FontWeight.w800,
-              color: quizoo.tx,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppFormat.number(entry.score, localeName),
+                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  fontSize: 14.5.sp,
+                  fontWeight: FontWeight.w800,
+                  color: quizoo.tx,
+                ),
+              ),
+              Text(
+                deltaLabel,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall!.copyWith(color: deltaColor),
+              ),
+            ],
+          ),
+          if (onActions != null) ...[
+            SizedBox(width: AppSpacing.sm.w),
+            Semantics(
+              button: true,
+              label: l10n.safetyActionsLabel,
+              child: GestureDetector(
+                onTap: onActions,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w),
+                  child: Text(
+                    '⋯',
+                    style: AppTypography.glyph(18.sp, color: quizoo.tx3),
+                  ),
+                ),
+              ),
             ),
-          ),
-          Text(
-            deltaLabel,
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall!.copyWith(color: deltaColor),
-          ),
+          ],
         ],
       ),
     );

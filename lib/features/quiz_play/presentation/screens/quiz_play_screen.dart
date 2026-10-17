@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/app/subscription_cubit.dart';
 import 'package:quizoo/core/content_language/language_direction.dart';
-import 'package:quizoo/core/mock/mock_catalog.dart';
 import 'package:quizoo/core/network/supabase_client.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_motion.dart';
@@ -16,13 +15,10 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/arena_colors.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/answer_option.dart';
-import 'package:quizoo/core/widgets/app_bottom_sheet.dart';
-import 'package:quizoo/core/widgets/app_snackbar.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/content_language_scope.dart';
 import 'package:quizoo/core/widgets/error_state_view.dart';
 import 'package:quizoo/core/widgets/question_media_plate.dart';
-import 'package:quizoo/core/widgets/report_question_sheet.dart';
 import 'package:quizoo/features/daily/data/daily_api.dart';
 import 'package:quizoo/features/daily/data/daily_repository.dart';
 import 'package:quizoo/features/daily/domain/daily_result.dart';
@@ -33,6 +29,7 @@ import 'package:quizoo/features/quiz_play/data/quiz_play_repository.dart';
 import 'package:quizoo/features/quiz_play/data/stored_audio_tts_service.dart';
 import 'package:quizoo/features/quiz_play/domain/question.dart';
 import 'package:quizoo/features/quiz_play/domain/quiz_run.dart';
+import 'package:quizoo/features/quiz_play/domain/report_question_args.dart';
 import 'package:quizoo/features/quiz_play/presentation/bloc/heart_ad_cubit.dart';
 import 'package:quizoo/features/quiz_play/presentation/bloc/quiz_play_cubit.dart';
 import 'package:quizoo/features/quiz_play/presentation/screens/countdown_screen.dart';
@@ -96,14 +93,8 @@ class QuizPlayScreen extends StatelessWidget {
           dailyRepository: DailyRepository(DailyApi(supabase)),
         );
         if (levelId != null) {
-          final (subcategoryId, _) = MockCatalog.parseLevelId(levelId);
-          final subcategory = MockCatalog.subcategories
-              .where((candidate) => candidate.id == subcategoryId)
-              .firstOrNull;
           cubit.startLevel(
             levelId: levelId,
-            categoryId: subcategory?.categoryId ?? '',
-            subcategoryName: subcategory?.name ?? '',
             // Plan 023: the run's hearts and power-ups come from the
             // entitlement, not from a fixed constant.
             perks: context.read<SubscriptionCubit>().state.perks,
@@ -347,31 +338,22 @@ class _QuestionView extends StatelessWidget {
 
   final QuizPlayInProgress state;
 
-  /// S-51 — reached from the HUD's "⋯", never a second tap away.
+  /// S-51 — reached from the HUD's "⋯", never a second tap away. Plan 025:
+  /// pushes the real report route with this question's own id/text and the
+  /// run's topic context, so the stored row points at what the player saw.
   void _openReportSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final question = state.question;
-    AppBottomSheet.show<void>(
-      context,
-      builder: (sheetContext) => ReportQuestionSheet(
-        title: l10n.reportQuestionTitle,
-        message: l10n.reportQuestionMeta(question.text),
-        reasons: [
-          l10n.reportReasonWrong,
-          l10n.reportReasonUnclear,
-          l10n.reportReasonTranslation,
-          l10n.reportReasonOffensive,
-          l10n.reportReasonImage,
-        ],
-        submitLabel: l10n.reportQuestionSubmit,
-        onSubmit: (_) {
-          Navigator.of(sheetContext).pop();
-          AppSnackbar.show(
-            context,
-            title: l10n.reportQuestionSent,
-            intent: SnackbarIntent.success,
-          );
-        },
+    final run = state.run;
+    final languageCode = context.read<ContentLanguageCubit>().state.code;
+    context.push(
+      AppRoutes.reportQuestion,
+      extra: ReportQuestionArgs(
+        questionId: state.question.id,
+        questionText: state.question.text,
+        topicLabel: run.isDaily
+            ? l10n.countdownDailyMeta
+            : '${run.subcategoryName} · ${l10n.homeLevelShort(run.levelNumber)}',
+        languageCode: languageCode,
       ),
     );
   }

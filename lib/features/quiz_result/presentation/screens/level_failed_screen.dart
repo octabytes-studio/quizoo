@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quizoo/app/content_language_cubit.dart';
 import 'package:quizoo/core/format/app_format.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/theme/app_radius.dart';
@@ -9,6 +11,7 @@ import 'package:quizoo/core/theme/app_typography.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/chunky_button.dart';
 import 'package:quizoo/core/widgets/result_wash.dart';
+import 'package:quizoo/features/quiz_play/domain/report_question_args.dart';
 import 'package:quizoo/features/quiz_result/presentation/bloc/quiz_result_cubit.dart';
 import 'package:quizoo/features/quiz_result/presentation/widgets/missed_question_row.dart';
 import 'package:quizoo/l10n/app_localizations.dart';
@@ -125,9 +128,23 @@ class LevelFailedScreen extends StatelessWidget {
                       padding: EdgeInsets.only(bottom: 7.h),
                       child: MissedQuestionRow(
                         answer: answer,
-                        // Reviewing a question is plan 004's report/review
-                        // surface; here the row's job is to name the miss.
-                        onTap: () => context.push(AppRoutes.reportQuestion),
+                        // Plan 025: the tap files a report about *this* missed
+                        // question — id, text and run context ride the route,
+                        // instead of opening a fixture question.
+                        onTap: () => context.push(
+                          AppRoutes.reportQuestion,
+                          extra: ReportQuestionArgs(
+                            questionId: answer.question.id,
+                            questionText: answer.question.text,
+                            topicLabel:
+                                '${run.subcategoryName} · '
+                                '${l10n.homeLevelShort(run.levelNumber)}',
+                            languageCode: context
+                                .read<ContentLanguageCubit>()
+                                .state
+                                .code,
+                          ),
+                        ),
                       ),
                     ),
                 ],

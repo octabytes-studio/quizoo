@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quizoo/app/connectivity_cubit.dart';
 import 'package:quizoo/app/theme_cubit.dart';
 import 'package:quizoo/app/subscription_cubit.dart';
+import 'package:quizoo/core/app_version.dart';
 import 'package:quizoo/core/models/app_theme_mode.dart';
 import 'package:quizoo/core/router/app_routes.dart';
 import 'package:quizoo/core/subscription/paywall_source.dart';
@@ -12,6 +14,7 @@ import 'package:quizoo/core/theme/app_spacing.dart';
 import 'package:quizoo/core/theme/quizoo_colors.dart';
 import 'package:quizoo/core/widgets/segmented_tabs.dart';
 import 'package:quizoo/core/widgets/simple_top_bar.dart';
+import 'package:quizoo/features/auth/presentation/bloc/session_cubit.dart';
 import 'package:quizoo/features/settings/data/settings_repository.dart';
 import 'package:quizoo/features/settings/presentation/bloc/settings_cubit.dart';
 import 'package:quizoo/features/settings/presentation/widgets/settings_row.dart';
@@ -164,35 +167,48 @@ class _SettingsView extends StatelessWidget {
                     title: l10n.settingsPrivacy,
                     onTap: () => context.push(AppRoutes.privacySettings),
                   ),
-                  SizedBox(height: AppSpacing.sm.h),
-                  SettingsRow(
-                    title: l10n.settingsDeleteAccount,
-                    isDestructive: true,
-                    onTap: () => context.push(AppRoutes.deleteAccount),
-                  ),
+                  // Plan 025: only a real account can be deleted — a guest
+                  // has nothing to erase, so the destructive row stays
+                  // hidden rather than leading to a dead end.
+                  if (context.watch<SessionCubit>().state
+                      is SessionSignedIn) ...[
+                    SizedBox(height: AppSpacing.sm.h),
+                    SettingsRow(
+                      title: l10n.settingsDeleteAccount,
+                      isDestructive: true,
+                      onTap: () => context.push(AppRoutes.deleteAccount),
+                    ),
+                  ],
                   SizedBox(height: AppSpacing.lg.h),
-                  _GroupLabel(l10n.settingsDeveloper),
-                  SizedBox(height: AppSpacing.sm.h),
-                  SettingsToggleRow(
-                    title: l10n.settingsSimulateOffline,
-                    value: isOffline,
-                    onChanged: (_) =>
-                        context.read<ConnectivityCubit>().toggle(),
-                  ),
-                  SizedBox(height: AppSpacing.sm.h),
-                  SettingsRow(
-                    title: l10n.settingsPreviewForceUpdate,
-                    onTap: () => context.push(AppRoutes.forceUpdate),
-                  ),
-                  SizedBox(height: AppSpacing.sm.h),
-                  SettingsRow(
-                    title: l10n.settingsPreviewNotificationPermission,
-                    onTap: () => context.push(AppRoutes.notificationPermission),
-                  ),
-                  SizedBox(height: AppSpacing.xl.h),
+                  // Plan 025: developer controls never appear in a release
+                  // build — `kDebugMode` is false there, so the whole group
+                  // (label, simulated-offline toggle and both previews)
+                  // compiles out of the release surface.
+                  if (kDebugMode) ...[
+                    _GroupLabel(l10n.settingsDeveloper),
+                    SizedBox(height: AppSpacing.sm.h),
+                    SettingsToggleRow(
+                      title: l10n.settingsSimulateOffline,
+                      value: isOffline,
+                      onChanged: (_) =>
+                          context.read<ConnectivityCubit>().toggle(),
+                    ),
+                    SizedBox(height: AppSpacing.sm.h),
+                    SettingsRow(
+                      title: l10n.settingsPreviewForceUpdate,
+                      onTap: () => context.push(AppRoutes.forceUpdate),
+                    ),
+                    SizedBox(height: AppSpacing.sm.h),
+                    SettingsRow(
+                      title: l10n.settingsPreviewNotificationPermission,
+                      onTap: () =>
+                          context.push(AppRoutes.notificationPermission),
+                    ),
+                    SizedBox(height: AppSpacing.xl.h),
+                  ],
                   Center(
                     child: Text(
-                      l10n.settingsVersion,
+                      l10n.settingsVersion(appVersion),
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ),

@@ -92,6 +92,8 @@ void main() {
           questions: [],
           secondsPerQuestion: 20,
           isBoss: false,
+          categoryId: 'cat_sports',
+          subcategoryName: 'Football',
         ),
       );
 
